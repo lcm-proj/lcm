@@ -6,7 +6,7 @@
 
 #include "tokenize.h"
 
-static const char single_char_toks[] = "();\",:\'[].";
+static const char single_char_toks[] = "();\",:\'[]"; // no '.' so that name spaces are one token
 static const char op_chars[] = "!~<>=&|^%*+=/";
 
 #define MAX_TOKEN_LEN 1024

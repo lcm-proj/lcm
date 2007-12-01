@@ -5,6 +5,7 @@
 
 typedef struct tokenize tokenize_t;
 
+/** A simple, approximately C compatible tokenizer. **/
 struct tokenize
 {
 	// current token

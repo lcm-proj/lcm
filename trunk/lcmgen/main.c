@@ -108,8 +108,8 @@ int64_t lcm_struct_hash(lcm_struct_t *lr)
         // hash the dimensionality information
         int ndim = g_ptr_array_size(lm->dimensions);
         v = hash_update(v, ndim);
-        for (int i = 0; i < ndim; i++) {
-            lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
+        for (int j = 0; j < ndim; j++) {
+            lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, j);
             v = hash_update(v, dim->mode);
             v = hash_string_update(v, dim->size);
         }
@@ -223,10 +223,11 @@ void require_next(tokenize_t *t, const char *description)
         parse_error(t, "End of file reached, expected %s.", description);
 }
 
-/* a very simple heuristic: does the type name contain the letters "int"? */
+/* a very simple heuristic; we only match types that begin with "int" or "uint" */
 int is_integer_type(const char *typename)
 {
-    if (strstr(typename, "int")!=NULL)
+    if (!strncmp(typename, "uint", 4) ||
+        !strncmp(typename, "int", 3))
         return 1;
     return 0;
 }
