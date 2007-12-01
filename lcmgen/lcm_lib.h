@@ -42,7 +42,7 @@ struct __lcm_hash_ptr
 ////////////////////////////////////////////////////////////////////////////////////////
 // BYTE
 
-#define __byte_hash_recursive(p) 0
+#define __byte_hash_recursive(p) 1
 #define __byte_decode_array_cleanup(p, sz) {}
 #define byte_encoded_size(p) ( sizeof(int64_t) + sizeof(uint8_t) )
 
@@ -81,7 +81,7 @@ static inline int __byte_clone_array(const uint8_t *p, uint8_t *q, int elements)
 ////////////////////////////////////////////////////////////////////////////////////////
 // INT8_T
 
-#define __int8_t_hash_recursive(p) 0
+#define __int8_t_hash_recursive(p) 2
 #define __int8_t_decode_array_cleanup(p, sz) {}
 #define int8_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int8_t) )
 
@@ -121,7 +121,7 @@ static inline int __int8_t_clone_array(const int8_t *p, int8_t *q, int elements)
 ////////////////////////////////////////////////////////////////////////////////////////
 // INT16_T
 
-#define __int16_t_hash_recursive(p) 0
+#define __int16_t_hash_recursive(p) 3
 #define __int16_t_decode_array_cleanup(p, sz) {}
 #define int16_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int16_t) )
 
@@ -174,7 +174,7 @@ static inline int __int16_t_clone_array(const int16_t *p, int16_t *q, int elemen
 ////////////////////////////////////////////////////////////////////////////////////////
 // INT32_T
 
-#define __int32_t_hash_recursive(p) 0
+#define __int32_t_hash_recursive(p) 4
 #define __int32_t_decode_array_cleanup(p, sz) {}
 #define int32_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int32_t) )
 
@@ -229,7 +229,7 @@ static inline int __int32_t_clone_array(const int32_t *p, int32_t *q, int elemen
 ////////////////////////////////////////////////////////////////////////////////////////
 // INT64_T
 
-#define __int64_t_hash_recursive(p) 0
+#define __int64_t_hash_recursive(p) 5
 #define __int64_t_decode_array_cleanup(p, sz) {}
 #define int64_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int64_t) )
 
@@ -291,7 +291,7 @@ static inline int __int64_t_clone_array(const int64_t *p, int64_t *q, int elemen
 ////////////////////////////////////////////////////////////////////////////////////////
 // FLOAT
 
-#define __float_hash_recursive(p) 0
+#define __float_hash_recursive(p) 6
 #define __float_decode_array_cleanup(p, sz) {}
 #define float_encoded_size(p) ( sizeof(int64_t) + sizeof(float) )
 
@@ -319,7 +319,7 @@ static inline int __float_clone_array(const float *p, float *q, int elements)
 ////////////////////////////////////////////////////////////////////////////////////////
 // DOUBLE
 
-#define __double_hash_recursive(p) 0
+#define __double_hash_recursive(p) 7
 #define __double_decode_array_cleanup(p, sz) {}
 #define double_encoded_size(p) ( sizeof(int64_t) + sizeof(double) )
 
@@ -347,7 +347,7 @@ static inline int __double_clone_array(const double *p, double *q, int elements)
 ////////////////////////////////////////////////////////////////////////////////////////
 // STRING
 
-#define __string_hash_recursive(p) 0
+#define __string_hash_recursive(p) 8
 
 static inline int __string_decode_array_cleanup(char **s, int elements)
 {
