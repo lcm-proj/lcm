@@ -8,23 +8,27 @@
 
 /////////////////////////////////////////////////
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #ifndef g_ptr_array_size
 #define g_ptr_array_size(x) ((x)->len)
 #endif
 
-typedef struct lcm_type lcm_type_t;
+/////////////////////////////////////////////////
+// lcm_typename_t: represents the name of a type, including package
+//
+typedef struct lcm_typename lcm_typename_t;
 
-struct lcm_type
+struct lcm_typename
 {
-  	char *typename;
+  	char *typename;  // fully-qualified name, e.g., "edu.mit.dgc.laser_t"
+    char *package;   // package name, e.g., "edu.mit.dgc"
+    char *shortname; // e.g., "laser_t"
 };
 
 /////////////////////////////////////////////////
+// lcm_dimension_t: represents the size of a dimension of an
+//                  array. The size can be either dynamic (a variable)
+//                  or a constant.
+//
 typedef enum { LCM_CONST, LCM_VAR } lcm_dimension_mode_t;
 
 typedef struct lcm_dimension lcm_dimension_t;
@@ -36,13 +40,15 @@ struct lcm_dimension
 };
 
 /////////////////////////////////////////////////
-
+// lcm_member_t: represents one member of a struct, including (if its
+//               an array), its dimensions.
+//
 typedef struct lcm_member lcm_member_t;
 
 struct lcm_member
 {
-	lcm_type_t *type;
-	char       *membername;
+    lcm_typename_t *type;
+	char           *membername;
 
 	// an array of lcm_dimension_t. A scalar is a 1-dimensional array
 	// of length 1.
@@ -50,12 +56,13 @@ struct lcm_member
 };
 
 /////////////////////////////////////////////////
-
+// lcm_struct_t: a first-class LCM object declaration
+//
 typedef struct lcm_struct lcm_struct_t;
 
 struct lcm_struct
 {
-	char *structname;    // name of the data type
+    lcm_typename_t *structname; // name of the data type
   
 	GPtrArray *members;  // lcm_member_t
 
@@ -68,7 +75,9 @@ struct lcm_struct
 };
 
 /////////////////////////////////////////////////
-
+// lcm_enum_value_t: the symbolic name of an enum and its constant
+//                   value.
+//
 typedef struct lcm_enum_value lcm_enum_value_t;
 
 struct lcm_enum_value
@@ -78,12 +87,12 @@ struct lcm_enum_value
 };
 
 /////////////////////////////////////////////////
-
+// lcm_enum_t: an enumeration, also a first-class LCM object.
+//
 typedef struct lcm_enum lcm_enum_t;
-
 struct lcm_enum
 {
-	char *enumname;     // name of the enum
+    lcm_typename_t *enumname; // name of the enum
 	
 	GPtrArray *values;   // legal values for the enum
 	char *lcmfile;      // file/path of function that declared it
@@ -94,10 +103,14 @@ struct lcm_enum
 };
 
 /////////////////////////////////////////////////
+// lcmgen_t: State used when parsing LCM declarations. The gopt is
+//           essentially a set of key-value pairs that configure
+//           various options. structs and enums are populated
+//           according to the parsed definitions.
+//
+typedef struct lcmgen lcmgen_t;
 
-typedef struct lcm lcm_t;
-
-struct lcm
+struct lcmgen
 {
 	getopt_t *gopt;
 	GPtrArray *structs; // lcm_struct_t
@@ -108,13 +121,23 @@ struct lcm
 // Helper functions
 /////////////////////////////////////////////////
 
+// Returns 1 if the argument is a built-in type (e.g., "int64_t", "float").
 int lcm_is_primitive_type(const char *t);
+
+// Returns the member of a struct by name. Returns NULL on error.
 lcm_member_t *lcm_find_member(lcm_struct_t *lr, const char *name);
-int lcm_needs_generation(lcm_t *lcm, const char *declaringfile, const char *outfile);
 
+// Returns 1 if the "lazy" option is enabled AND the file "outfile" is
+// older than the file "declaringfile"
+int lcm_needs_generation(lcmgen_t *lcmgen, const char *declaringfile, const char *outfile);
 
-#ifdef __cplusplus
-}
-#endif
+// create a new parsing context.
+lcmgen_t *lcmgen_create();
+
+// for debugging, emit the contents to stdout
+void lcmgen_dump(lcmgen_t *lcm);
+
+// parse the provided file
+int lcmgen_handle_file(lcmgen_t *lcm, const char *path);
 
 #endif

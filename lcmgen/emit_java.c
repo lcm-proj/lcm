@@ -81,7 +81,7 @@ static void make_accessor(lcm_member_t *lm, const char *obj, char *s)
         pos += sprintf(&s[pos],"[%c]", 'a'+d);
 }
 
-int emit_java(lcm_t *lcm)
+int emit_java(lcmgen_t *lcm)
 {
     GHashTable *type_table = g_hash_table_new(g_str_hash, g_str_equal);
 
@@ -121,7 +121,7 @@ int emit_java(lcm_t *lcm)
         char path[1024];
         char classname[1024];
 
-        sprintf(classname, "%s", le->enumname);
+        sprintf(classname, "%s", le->enumname->typename);
 
         sprintf(path, "%s%s%s.java", getopt_get_string(lcm->gopt, "jpath"), 
                 strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
@@ -151,11 +151,11 @@ int emit_java(lcm_t *lcm)
 
         for (unsigned int v = 0; v < g_ptr_array_size(le->values); v++) {
             lcm_enum_value_t *lev = g_ptr_array_index(le->values, v);
-            emit(1, "static final %s %-16s = new %s(%i);", le->enumname, lev->valuename, le->enumname, lev->value);
+            emit(1, "static final %s %-16s = new %s(%i);", le->enumname->typename, lev->valuename, le->enumname->typename, lev->value);
             emit(0," ");            
         }
 
-        emit(1,"protected %s(int value) { this.value = value; }", le->enumname);
+        emit(1,"protected %s(int value) { this.value = value; }", le->enumname->typename);
         emit(0," ");
 
         emit(1,"public int getValue() { return value; }");
@@ -174,9 +174,9 @@ int emit_java(lcm_t *lcm)
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public static %s _decodeRecursiveFactory(DataInputStream ins) throws IOException", le->enumname);
+        emit(1,"public static %s _decodeRecursiveFactory(DataInputStream ins) throws IOException", le->enumname->typename);
         emit(1,"{");
-        emit(2,"%s o = new %s(0);", le->enumname, le->enumname);
+        emit(2,"%s o = new %s(0);", le->enumname->typename, le->enumname->typename);
         emit(2,"o._decodeRecursive(ins);");
         emit(2,"return o;");
         emit(1,"}");
@@ -219,7 +219,7 @@ int emit_java(lcm_t *lcm)
         char path[1024];
         char classname[1024];
 
-        sprintf(classname, "%s", lr->structname);
+        sprintf(classname, "%s", lr->structname->typename);
 
         sprintf(path, "%s%s%s.java", getopt_get_string(lcm->gopt, "jpath"), 
                 strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
@@ -302,10 +302,10 @@ int emit_java(lcm_t *lcm)
 
         emit(1, "public static long _hashRecursive(ArrayList<Class> classes)");
         emit(1, "{");
-        emit(2, "if (classes.contains(%s.class))", lr->structname);
+        emit(2, "if (classes.contains(%s.class))", lr->structname->typename);
         emit(3,     "return 0L;");
         emit(0, " ");
-        emit(2, "classes.add(%s.class);", lr->structname);
+        emit(2, "classes.add(%s.class);", lr->structname->typename);
 
         emit(2, "long hash = LCM_FINGERPRINT_BASE");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
@@ -376,9 +376,9 @@ int emit_java(lcm_t *lcm)
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public static %s _decodeRecursiveFactory(DataInputStream ins) throws IOException", lr->structname);
+        emit(1,"public static %s _decodeRecursiveFactory(DataInputStream ins) throws IOException", lr->structname->typename);
         emit(1,"{");
-        emit(2,"%s o = new %s();", lr->structname, lr->structname);
+        emit(2,"%s o = new %s();", lr->structname->typename, lr->structname->typename);
         emit(2,"o._decodeRecursive(ins);");
         emit(2,"return o;");
         emit(1,"}");

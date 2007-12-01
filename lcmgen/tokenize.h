@@ -5,7 +5,7 @@
 
 typedef struct tokenize tokenize_t;
 
-/** A simple, approximately C compatible tokenizer. **/
+/** Tokenizer incrementally tokenizes an input stream. **/
 struct tokenize
 {
 	// current token

@@ -7,7 +7,6 @@
 #include <inttypes.h>
 
 #include "lcmgen.h"
-#include "getopt.h"
 
 #define INDENT(n) (4*(n))
 
@@ -79,7 +78,7 @@ void setup_c_options(getopt_t *gopt)
 }
 
 /** Emit output that is common to every header file **/
-static void emit_header_top(lcm_t *lcm, FILE *f, char *name)
+static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
 {
     fprintf(f, 
             "// THIS IS AN AUTOMATICALLY GENERATED FILE.  DO NOT MODIFY\n"
@@ -113,7 +112,7 @@ static void emit_header_top(lcm_t *lcm, FILE *f, char *name)
 }
 
 /** Emit output that is common to every header file **/
-static void emit_header_bottom(lcm_t *lcm, FILE *f)
+static void emit_header_bottom(lcmgen_t *lcm, FILE *f)
 {
     fprintf(f, "#ifdef __cplusplus\n");
     fprintf(f, "}\n");
@@ -122,9 +121,9 @@ static void emit_header_bottom(lcm_t *lcm, FILE *f)
     fprintf(f, "#endif\n");
 }
 
-static void emit_enum(lcm_t *lcm, FILE *f, lcm_enum_t *le)
+static void emit_enum(lcmgen_t *lcm, FILE *f, lcm_enum_t *le)
 {
-    char *tn = le->enumname;
+    char *tn = le->enumname->typename;
 
     emit(0, "enum _%s {", tn);
     
@@ -220,7 +219,7 @@ static void emit_enum(lcm_t *lcm, FILE *f, lcm_enum_t *le)
     emit(0,"}");
     emit(0," ");
     
-    emit(0, "static inline int __%s_decode_array_cleanup(%s *in, int elements)", le->enumname, le->enumname);
+    emit(0, "static inline int __%s_decode_array_cleanup(%s *in, int elements)", le->enumname->typename, le->enumname->typename);
     emit(0, "{");
     emit(1, "return 0;");
     emit(0, "}");
@@ -246,9 +245,9 @@ static void emit_enum(lcm_t *lcm, FILE *f, lcm_enum_t *le)
 }
 
 /** Emit header file output specific to a particular type of struct. **/
-static void emit_header_struct(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
 
     for (unsigned int i = 0; i < g_ptr_array_size(ls->members); i++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, i);
@@ -288,9 +287,9 @@ static void emit_header_struct(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, " ");
 }
 
-static void emit_header_prototypes(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
     emit(0,"int  %s_encode(void *buf, int offset, int maxlen, const %s *p);", tn, tn);
     emit(0,"int  %s_decode(const void *buf, int offset, int maxlen, %s *p);", tn, tn);
     emit(0,"int  %s_encoded_size(const %s *p);", tn, tn);
@@ -328,7 +327,7 @@ static void emit_auto_generated_warning(FILE *f)
 }
 
 /** Emit output common to every C file. **/
-static void emit_c_top(lcm_t *lcm, FILE *f, const char *header_name)
+static void emit_c_top(lcmgen_t *lcm, FILE *f, const char *header_name)
 {
     emit_auto_generated_warning(f);
 
@@ -337,14 +336,14 @@ static void emit_c_top(lcm_t *lcm, FILE *f, const char *header_name)
 }
 
 /** Emit output common to every C file. **/
-static void emit_c_bottom(lcm_t *lcm, FILE *f, const char *header_name)
+static void emit_c_bottom(lcmgen_t *lcm, FILE *f, const char *header_name)
 {
     // nothing to emit.
 }
 
-static void emit_c_struct_get_hash(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
 
     emit(0, "static int __%s_hash_computed;", tn);
     emit(0, "static int64_t __%s_hash;", tn);
@@ -418,7 +417,7 @@ static char *make_array_size(lcm_member_t *lm, const char *n, int dim, char *tmp
     return tmp;
 }
 
-static void emit_c_array_loops_start(lcm_t *lcm, FILE *f, lcm_member_t *lm, const char *n, int flags)
+static void emit_c_array_loops_start(lcmgen_t *lcm, FILE *f, lcm_member_t *lm, const char *n, int flags)
 {
     char tmp1[1024], tmp2[1024];
 
@@ -456,7 +455,7 @@ static void emit_c_array_loops_start(lcm_t *lcm, FILE *f, lcm_member_t *lm, cons
     }
 }
 
-static void emit_c_array_loops_end(lcm_t *lcm, FILE *f, lcm_member_t *lm, const char *n, int flags)
+static void emit_c_array_loops_end(lcmgen_t *lcm, FILE *f, lcm_member_t *lm, const char *n, int flags)
 {
     char tmp1[1024];
 
@@ -478,9 +477,9 @@ static void emit_c_array_loops_end(lcm_t *lcm, FILE *f, lcm_member_t *lm, const 
     }
 }
 
-static void emit_c_encode_array(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_c_encode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
     char tmp1[1024], tmp2[1024];
 
     emit(0,"int __%s_encode_array(void *buf, int offset, int maxlen, const %s *p, int elements)", tn, tn);
@@ -510,9 +509,9 @@ static void emit_c_encode_array(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0," ");
 }
 
-static void emit_c_encode(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_c_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
 
     emit(0,"int %s_encode(void *buf, int offset, int maxlen, const %s *p)", tn, tn);
     emit(0,"{");
@@ -530,9 +529,9 @@ static void emit_c_encode(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0," ");
 }
 
-static void emit_c_decode_array(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_c_decode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
     char tmp1[1024], tmp2[1024];
 
     emit(0,"int __%s_decode_array(const void *buf, int offset, int maxlen, %s *p, int elements)", tn, tn);
@@ -562,9 +561,9 @@ static void emit_c_decode_array(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0," ");
 }
 
-static void emit_c_decode_array_cleanup(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_c_decode_array_cleanup(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
     char tmp1[1024], tmp2[1024];
 
     emit(0,"int __%s_decode_array_cleanup(%s *p, int elements)", tn, tn);
@@ -592,9 +591,9 @@ static void emit_c_decode_array_cleanup(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
 }
 
 
-static void emit_c_decode(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_c_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
 
     emit(0,"int %s_decode(const void *buf, int offset, int maxlen, %s *p)", tn, tn);
     emit(0,"{");
@@ -614,9 +613,9 @@ static void emit_c_decode(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0," ");
 }
 
-static void emit_c_decode_cleanup(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_c_decode_cleanup(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
     
     emit(0,"int %s_decode_cleanup(%s *p)", tn, tn);
     emit(0,"{");
@@ -625,9 +624,9 @@ static void emit_c_decode_cleanup(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0," ");
 }
 
-static void emit_c_encoded_array_size(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_c_encoded_array_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
     char tmp1[128], tmp2[128];
 
     emit(0,"int __%s_encoded_array_size(const %s *p, int elements)", tn, tn);
@@ -655,9 +654,9 @@ static void emit_c_encoded_array_size(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0," ");
 }
 
-static void emit_c_encoded_size(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_c_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char *tn = ls->structname;
+    char *tn = ls->structname->typename;
     
     emit(0,"int %s_encoded_size(const %s *p)", tn, tn);
     emit(0,"{");
@@ -666,9 +665,9 @@ static void emit_c_encoded_size(lcm_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0," ");
 }
 
-static void emit_c_clone_array(lcm_t *lcm, FILE *f, lcm_struct_t *lr)
+static void emit_c_clone_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
-    char *tn = lr->structname;
+    char *tn = lr->structname->typename;
     char tmp1[128], tmp2[128], tmp3[128];
 
     emit(0,"int __%s_clone_array(const %s *p, %s *q, int elements)", tn, tn, tn);
@@ -696,9 +695,9 @@ static void emit_c_clone_array(lcm_t *lcm, FILE *f, lcm_struct_t *lr)
     emit(0," ");
 }
 
-static void emit_c_copy(lcm_t *lcm, FILE *f, lcm_struct_t *lr)
+static void emit_c_copy(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
-    char *tn = lr->structname;
+    char *tn = lr->structname->typename;
     
     emit(0,"%s *%s_copy(const %s *p)", tn, tn, tn);
     emit(0,"{");
@@ -709,9 +708,9 @@ static void emit_c_copy(lcm_t *lcm, FILE *f, lcm_struct_t *lr)
     emit(0," ");
 }
 
-static void emit_c_destroy(lcm_t *lcm, FILE *f, lcm_struct_t *lr)
+static void emit_c_destroy(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
-    char *tn = lr->structname;
+    char *tn = lr->structname->typename;
     
     emit(0,"void %s_destroy(%s *p)", tn, tn);
     emit(0,"{");
@@ -721,7 +720,7 @@ static void emit_c_destroy(lcm_t *lcm, FILE *f, lcm_struct_t *lr)
     emit(0," ");
 }
 
-static void emit_c_struct_lcpublish(lcm_t *lcm, FILE *f, lcm_struct_t *lr)
+static void emit_c_struct_lcpublish(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
     fprintf(f, 
             "int %s_lc_publish(lc_t *lc, const char *channel, const %s *p)\n"
@@ -737,13 +736,13 @@ static void emit_c_struct_lcpublish(lcm_t *lcm, FILE *f, lcm_struct_t *lr)
             "      int status = lc_publish (lc, channel, buf, data_size);\n"
             "      free (buf);\n"
             "      return status;\n"
-            "}\n\n", lr->structname,lr->structname, lr->structname, 
-            lr->structname);
+            "}\n\n", lr->structname->typename,lr->structname->typename, lr->structname->typename, 
+            lr->structname->typename);
 }
 
-static void emit_c_struct_lcsubscribe(lcm_t *lcm, FILE *f, lcm_struct_t *lr)
+static void emit_c_struct_lcsubscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
-    const char *rn = lr->structname;
+    const char *rn = lr->structname->typename;
 
     fprintf(f,
             "static\n"
@@ -805,7 +804,7 @@ static void emit_c_struct_lcsubscribe(lcm_t *lcm, FILE *f, lcm_struct_t *lr)
         );
 }
 
-int emit_c(lcm_t *lcm)
+int emit_c(lcmgen_t *lcm)
 {
     char header_name[1024], c_name[1024];
 
@@ -817,21 +816,21 @@ int emit_c(lcm_t *lcm)
 
         const char *prefix = getopt_get_string(lcm->gopt, "cprefix");
         if (strlen (prefix)) {
-            char *new_enumname = malloc (strlen (prefix) + strlen (le->enumname) + 1);
+            char *new_enumname = malloc (strlen (prefix) + strlen (le->enumname->typename) + 1);
             strcpy (new_enumname, prefix);
-            strcat (new_enumname, le->enumname);
-            free (le->enumname);
-            le->enumname = new_enumname;
+            strcat (new_enumname, le->enumname->typename);
+            free (le->enumname->typename);
+            le->enumname->typename = new_enumname;
         }
 
         // ENUM header file
-        sprintf(header_name, "%s.h", le->enumname);
+        sprintf(header_name, "%s.h", le->enumname->typename);
         if (lcm_needs_generation(lcm, le->lcmfile, header_name)) {
             FILE *f = fopen(header_name, "w");
             if (f == NULL)
                 return -1;
 
-            emit_header_top(lcm, f, le->enumname);
+            emit_header_top(lcm, f, le->enumname->typename);
             emit_enum(lcm, f, le);
             emit_header_bottom(lcm, f); 
 
@@ -839,7 +838,7 @@ int emit_c(lcm_t *lcm)
         }
 
         // ENUM C file
-        sprintf(c_name, "%s.c", le->enumname);
+        sprintf(c_name, "%s.c", le->enumname->typename);
         if (lcm_needs_generation(lcm, le->lcmfile, c_name)) {
             FILE *f = fopen(c_name, "w");
             fprintf(f, "/** This is the .c file for an enum type. All of the declarations\n");
@@ -858,21 +857,21 @@ int emit_c(lcm_t *lcm)
 
         const char *prefix = getopt_get_string(lcm->gopt, "cprefix");
         if (strlen (prefix)) {
-            char *new_enumname = malloc (strlen (prefix) + strlen (lr->structname) + 1);
+            char *new_enumname = malloc (strlen (prefix) + strlen (lr->structname->typename) + 1);
             strcpy (new_enumname, prefix);
-            strcat (new_enumname, lr->structname);
-            free (lr->structname);
-            lr->structname = new_enumname;
+            strcat (new_enumname, lr->structname->typename);
+            free (lr->structname->typename);
+            lr->structname->typename = new_enumname;
         }
 
         // STRUCT header file
-        sprintf(header_name, "%s.h", lr->structname);
+        sprintf(header_name, "%s.h", lr->structname->typename);
         if (lcm_needs_generation(lcm, lr->lcmfile, header_name)) {
             FILE *f = fopen(header_name, "w");
             if (f == NULL)
                 return -1;
             
-            emit_header_top(lcm, f, lr->structname);
+            emit_header_top(lcm, f, lr->structname->typename);
             emit_header_struct(lcm, f, lr);
             emit_header_prototypes(lcm, f, lr);
             emit_header_bottom(lcm, f);
@@ -881,7 +880,7 @@ int emit_c(lcm_t *lcm)
         }
 
         // STRUCT C file
-        sprintf(c_name, "%s.c", lr->structname);
+        sprintf(c_name, "%s.c", lr->structname->typename);
         if (lcm_needs_generation(lcm, lr->lcmfile, c_name)) {
             FILE *f = fopen(c_name, "w");
             if (f == NULL)
