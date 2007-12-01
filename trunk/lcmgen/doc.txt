@@ -1,0 +1,90 @@
+Computing fingerprints
+
+Fingerprints ensure that the encoding and decoding methods agree on
+the format of a data type. The fingerprints are a function,
+recursively, of all of the types that a type contains. This creates a
+potential problem when types could be mutually recursive: we must
+avoid an infinite recursion.
+
+The basic idea is for each type to have a "base" fingerprint, which
+we'll denote for type "A" as "K_A". K_A is a constant derived from the
+lcm type description (and it's stored as lcm_struct->hash). We wish to
+compute the actual fingerprint (or hash), A(), which is a function of
+all of A's contained types.
+
+In addition, so that we can recognize a recursion, the A() function
+takes an argument, which is a list of the types already visited. E.g.,
+C(<A,B>) indicates that we wish to compute the hash of type C, given
+that C is a member of type B, which is a member of type A.  We avoid
+recursions by setting C(<list>) = 0 if <list> contains C. 
+
+The contribution of primitive types is handled via the K_A; there is
+no recursion for them.
+
+A small wrinkle arises from the above definitions: if types A, B, and
+C are mutually recursive, we can have two types with the same
+hash. This is clearly undesirable. We fix this by making the order of
+recursion relevant: at each node in the tree, we rotate the value
+(bitwise) 1 bit to the left. A type that is included at recursion
+depth N has its contribution rotated by N bits.
+
+Note that this mechanism is entirely unnecessary for enumerations
+(they cannot contain other types); for enumerations, we just use the
+hash in lcmenum->hash.
+
+PSEUDO-CODE 
+-----------
+
+v = compute_hash(type, parents)
+
+  if type \in parents
+     return 0
+
+  v = K_type;
+
+  for each members m of type
+      v += compute_hash(m, <parents, type>)
+
+  return rot_left(v);
+
+When encoding/decode a type T, we would use compute_hash(T, <>) as the
+hash function.
+
+EXAMPLE
+-------
+
+struct A
+{
+	B b;
+	C c;
+}
+
+struct B
+{
+	A a;
+}
+
+struct C
+{
+	B b;
+}
+
+Diagramatically, we can compute their hashes by showing the children
+of each branch. We use lower case to indicate a terminal leaf (where
+the leaf is the same class as one of its parents).
+
+         A                B                  C
+       /   \              |                  |
+      B     C             A                  B
+      |     |            / \                 |
+      a     B           b   C                A
+            |               |               / \
+            a               b              b   c
+
+A() = R{K_A + R{K_B}} + R{K_C + R{K_B}}}
+
+B() = R{K_B + R{K_A + R{K_C}}}
+
+C() = R{K_C + R{K_B + R{K_A}}}
+
+Note that without the rotations, B() == C().

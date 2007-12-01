@@ -1,0 +1,8 @@
+lcmgen - Parses lcm type specifications, generating language-specific
+         implementations
+
+src    - C runtime implementation of LC
+
+java   - Java runtime implementation of LC
+
+python - Python runtime implementation of LC
