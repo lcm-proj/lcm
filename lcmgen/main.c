@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     if (getopt_get_bool(gopt, "java")) {
         did_something = 1;
         if (emit_java(lcm)) {
-            printf("An error occured while emitting Java code.\n");
+            perror("An error occured while emitting Java code.\n");
         }
     }
 

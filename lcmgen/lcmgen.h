@@ -112,7 +112,8 @@ typedef struct lcmgen lcmgen_t;
 
 struct lcmgen
 {
-	getopt_t *gopt;
+    char      *package; // remembers the last-specified package name, which is prepended to other types.
+	getopt_t  *gopt;
 	GPtrArray *structs; // lcm_struct_t
 	GPtrArray *enums;   // lcm_enum_t (declared at top level)
 };

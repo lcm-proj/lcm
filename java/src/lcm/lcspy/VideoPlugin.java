@@ -8,9 +8,8 @@ import java.io.*;
 import javax.swing.*;
 import javax.imageio.*;
 
-import lc.*;
-import lcmtypes.*;
-
+import lcm.lc.*;
+import lcm.lcmtypes.*;
 import lcm.util.*;
 
 /** A plugin for viewing video_t data **/
@@ -65,11 +64,7 @@ public class VideoPlugin implements LCSpyPlugin
 	    setSize(400,300);
 	    setVisible(true);
 
-	    try {
-		LC.getSingleton().subscribe(cd.name, this);
-	    } catch (IOException ex) {
-		System.out.println("ex: "+ex);
-	    }
+	    LC.getSingleton().subscribe(cd.name, this);
 	}
 
 	BufferedImage handleRAW(image_t v)

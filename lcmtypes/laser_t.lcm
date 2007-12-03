@@ -1,4 +1,19 @@
-struct mit.laser_t 
+struct lcm.lcmtypes.laser_t
 {
-	int64_t utime;
+	int64_t  utime;
+
+	// range data (meters)
+	int32_t  nranges;
+	float    ranges[nranges];
+
+	// intensity data, in sensor-specific units
+	int32_t  nintensities;
+	float    intensities[nintensities];
+
+	// the angle (in radians) to the first point in nranges,
+	// relative to the laser scanner's own coordinate frame.
+	float    rad0; 
+
+	// the number of radians between each successive sample
+	float    radstep;
 }

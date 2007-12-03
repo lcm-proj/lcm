@@ -388,11 +388,7 @@ public class LaserPlugin implements LCSpyPlugin
 	    setSize(500,400);
 	    setVisible(true);
 
-	    try {
-		LC.getSingleton().subscribe(cd.name, this);
-	    } catch (IOException ex) {
-		System.out.println("ex: "+ex);
-	    }
+	    LC.getSingleton().subscribe(cd.name, this);
 	}
 
 	public void messageReceived(String channel, DataInputStream ins)

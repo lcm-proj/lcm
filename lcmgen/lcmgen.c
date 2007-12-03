@@ -10,6 +10,7 @@
 
 #include "lcmgen.h"
 #include "tokenize.h"
+#include "sprintfalloc.h"
 
 /** The LCM grammar is implemented here with a recursive-descent parser.
     handle_file is the top-level function, which calls parse_struct/parse_enum,
@@ -100,10 +101,15 @@ lcmgen_t *lcmgen_create()
     lcmgen_t *lcmgen = (lcmgen_t*) calloc(1, sizeof(lcmgen_t));
     lcmgen->structs = g_ptr_array_new();
     lcmgen->enums = g_ptr_array_new();
+    lcmgen->package = strdup("");
+
     return lcmgen;
 }
 
-lcm_typename_t *lcm_typename_create(const char *typename)
+// Parse a type into package and class name.  If no package is
+// specified, we will try to use the package from the last specified
+// "package" directive, like in Java.
+lcm_typename_t *lcm_typename_create(lcmgen_t *lcmgen, const char *typename)
 {
     lcm_typename_t *lt = (lcm_typename_t*) calloc(1, sizeof(lcm_typename_t));
 
@@ -117,8 +123,16 @@ lcm_typename_t *lcm_typename_create(const char *typename)
     char *tmp = strdup(typename);
     char *rtmp = strrchr(tmp, '.');
     if (rtmp == NULL) {
-        lt->package = ""; 
         lt->shortname = tmp;
+        if (lcm_is_primitive_type(lt->shortname)) {
+            lt->package = strdup("");
+        } else {
+            // we're overriding the package name using the last directive.
+            lt->package = strdup(lcmgen->package);
+            lt->typename = sprintfalloc("%s%s%s", lt->package, 
+                                        strlen(lcmgen->package)>0 ? "." : "",
+                                        lt->shortname);
+        }
     } else {
         lt->package = tmp;
         *rtmp = 0;
@@ -128,22 +142,22 @@ lcm_typename_t *lcm_typename_create(const char *typename)
     return lt;
 }
 
-lcm_struct_t *lcm_struct_create(const char *lcmfile, const char *structname)
+lcm_struct_t *lcm_struct_create(lcmgen_t *lcmgen, const char *lcmfile, const char *structname)
 {
     lcm_struct_t *lr = (lcm_struct_t*) calloc(1, sizeof(lcm_struct_t));
     lr->lcmfile    = strdup(lcmfile);
-    lr->structname = lcm_typename_create(structname);
+    lr->structname = lcm_typename_create(lcmgen, structname);
     lr->members    = g_ptr_array_new();
     lr->enums      = g_ptr_array_new();
     lr->structs    = g_ptr_array_new();
     return lr;
 }
 
-lcm_enum_t *lcm_enum_create(const char *lcmfile, const char *name)
+lcm_enum_t *lcm_enum_create(lcmgen_t *lcmgen, const char *lcmfile, const char *name)
 {
     lcm_enum_t *le = (lcm_enum_t*) calloc(1, sizeof(lcm_enum_t));
     le->lcmfile  = strdup(lcmfile);
-    le->enumname = lcm_typename_create(name);
+    le->enumname = lcm_typename_create(lcmgen, name);
     le->values   = g_ptr_array_new();
 
     return le;
@@ -297,7 +311,7 @@ void parse_require(tokenize_t *t, char *tok)
 
 // require that the next token exist (not EOF). Description is a
 // human-readable description of what was expected to be read. 
-void require_next(tokenize_t *t, const char *description)
+void tokenize_next_or_fail(tokenize_t *t, const char *description)
 {
     int res = tokenize_next(t);
     if (res == EOF)
@@ -324,17 +338,17 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
     }
 
     // standard declaration
-    require_next(t, "type identifier");
+    tokenize_next_or_fail(t, "type identifier");
     
     if (!isalpha(t->token[0]) && t->token[0]!='_')
         parse_error(t, "invalid type name");
     
-    lt = lcm_typename_create(t->token);
+    lt = lcm_typename_create(lcmgen, t->token);
 
     while (1) {
 
         // get the lcm type name
-        require_next(t, "name identifier");
+        tokenize_next_or_fail(t, "name identifier");
 
         if (!lcm_is_legal_member_name(t->token))
             parse_error(t, "Invalid member name: must start with [a-zA-Z_].");
@@ -353,7 +367,7 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
         while (parse_try_consume(t, "[")) {
 
             // pull out the size of the dimension, either a number or a variable name.
-            require_next(t, "array size");
+            tokenize_next_or_fail(t, "array size");
 
             lcm_dimension_t *dim = (lcm_dimension_t*) calloc(1, sizeof(lcm_dimension_t));
             
@@ -412,12 +426,12 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
 
 int parse_enum_value(lcm_enum_t *le, tokenize_t *t)
 {
-    require_next(t, "enum name");
+    tokenize_next_or_fail(t, "enum name");
 
     lcm_enum_value_t *lev = lcm_enum_value_create(t->token);
 
     if (parse_try_consume(t, "=")) {
-        require_next(t, "enum value literal");
+        tokenize_next_or_fail(t, "enum value literal");
 
         lev->value = strtol(t->token, NULL, 0);
     } else {
@@ -451,10 +465,10 @@ lcm_struct_t *parse_struct(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
 {
     char     *name;
 
-    require_next(t, "struct name");
+    tokenize_next_or_fail(t, "struct name");
     name = strdup(t->token);
 
-    lcm_struct_t *lr = lcm_struct_create(lcmfile, name);
+    lcm_struct_t *lr = lcm_struct_create(lcmgen, lcmfile, name);
     
     parse_require(t, "{");
     
@@ -472,10 +486,10 @@ lcm_enum_t *parse_enum(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
 {
     char     *name;
 
-    require_next(t, "enum name");
+    tokenize_next_or_fail(t, "enum name");
     name = strdup(t->token);
 
-    lcm_enum_t *le = lcm_enum_create(lcmfile, name);
+    lcm_enum_t *le = lcm_enum_create(lcmgen, lcmfile, name);
     parse_require(t, "{");
     
     while (!parse_try_consume(t, "}")) {
@@ -499,6 +513,13 @@ int parse_entity(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
     if (res==EOF)
         return EOF;
 
+    if (!strcmp(t->token, "package")) {
+        tokenize_next_or_fail(t, "package name");
+        lcmgen->package = strdup(t->token);
+        parse_require(t, ";");
+        return 0;
+    }
+
     if (!strcmp(t->token, "struct")) {
         lcm_struct_t *lr = parse_struct(lcmgen, lcmfile, t);
         g_ptr_array_add(lcmgen->structs, lr);
@@ -513,7 +534,6 @@ int parse_entity(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
 
     if (!strcmp(t->token, "union")) {
         parse_error(t,"unions not implemented\n");
-
         return 0;
     }
 

@@ -7,8 +7,8 @@ import java.io.*;
 import javax.swing.*;
 import java.util.*;
 
-import lc.*;
-import lcmtypes.*;
+import lcm.lc.*;
+import lcm.lcmtypes.*;
 
 /** A plugin for viewing laser_t data **/
 public class RadarPluginRaw implements LCSpyPlugin
@@ -406,11 +406,7 @@ public class RadarPluginRaw implements LCSpyPlugin
 	    setSize(250,400);
 	    setVisible(true);
 
-	    try {
-		LC.getSingleton().subscribe(cd.name, this);
-	    } catch (IOException ex) {
-		System.out.println("ex: "+ex);
-	    }
+	    LC.getSingleton().subscribe(cd.name, this);
 	}
 
 	public void messageReceived(String channel, DataInputStream ins)

@@ -114,8 +114,9 @@ int emit_java(lcmgen_t *lcm)
         lcm_enum_t *le = g_ptr_array_index(lcm->enums, en);
 
         char *classname = le->enumname->typename;
-        char *path = sprintfalloc("%s%s%s%s%s.java", 
+        char *path = sprintfalloc("%s%s%s%s%s%s.java", 
                                   getopt_get_string(lcm->gopt, "jpath"),
+                                  strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
                                   dots_to_slashes(le->enumname->package),
                                   strlen(le->enumname->package) > 0 ? "/" : "",
                                   strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
@@ -209,8 +210,9 @@ int emit_java(lcmgen_t *lcm)
         lcm_struct_t *lr = g_ptr_array_index(lcm->structs, st);
 
         char *classname = lr->structname->typename;
-        char *path = sprintfalloc("%s%s%s%s%s.java", 
+        char *path = sprintfalloc("%s%s%s%s%s%s.java", 
                                   getopt_get_string(lcm->gopt, "jpath"), 
+                                  strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
                                   dots_to_slashes(lr->structname->package),
                                   strlen(lr->structname->package) > 0 ? "/" :"",
                                   strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
@@ -218,8 +220,6 @@ int emit_java(lcmgen_t *lcm)
 
         if (!lcm_needs_generation(lcm, lr->lcmfile, path))
             continue;
-
-        printf("%s\n", path);
 
         FILE *f = fopen(path, "w");
         if (f==NULL)
@@ -232,6 +232,13 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "import java.io.*;");
         emit(0, "import java.util.*;");
         emit(0, " ");
+
+        for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
+            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
+            
+            if (!lcm_is_primitive_type(lm->type->typename) && strcmp(lm->type->package, lr->structname->package))
+                emit(0, "import %s;", lm->type->package);
+        }
 
         emit(0, "public class %s %s", lr->structname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
         emit(0, "{");

@@ -65,7 +65,7 @@
 <target name="clean-java" >
  <delete>
   <fileset dir="build" includes="**/*.class"/>
-  <fileset dir="src/lcmtypes/" includes="*.java"/>
+  <fileset dir="src/lcm/lcmtypes/" includes="*.java"/>
   <fileset dir="." includes="**/*~" defaultexcludes="no"/>
   <fileset dir="." includes="lcm.jar"/>
  </delete>
