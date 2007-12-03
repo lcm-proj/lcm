@@ -632,7 +632,7 @@ lcm_member_t *lcm_find_member(lcm_struct_t *lr, const char *name)
             return lm;
     }
 
-    assert(0);
+    return NULL;
 }
 
 int lcm_needs_generation(lcmgen_t *lcmgen, const char *declaringfile, const char *outfile)
@@ -655,4 +655,22 @@ int lcm_needs_generation(lcmgen_t *lcmgen, const char *declaringfile, const char
         return 1;
 
     return instat.st_mtime > outstat.st_mtime;
+}
+
+/** Is the member an array of constant size? If it is not an array, it returns zero. **/
+int lcm_is_constant_size_array(lcm_member_t *lm)
+{
+    int ndim = g_ptr_array_size(lm->dimensions);
+    
+    if (ndim == 0)
+        return 1;
+
+    for (int i = 0; i < ndim; i++) {
+        lcm_dimension_t *dim = g_ptr_array_index(lm->dimensions, i);
+        
+        if (dim->mode == LCM_VAR)
+            return 0;
+    }
+
+    return 1;
 }

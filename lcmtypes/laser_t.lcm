@@ -1,5 +1,4 @@
-struct edu.mit.laser_t 
+struct mit.laser_t 
 {
 	int64_t utime;
-
 }

@@ -140,4 +140,8 @@ void lcmgen_dump(lcmgen_t *lcm);
 // parse the provided file
 int lcmgen_handle_file(lcmgen_t *lcm, const char *path);
 
+// Are all of the dimensions of this array constant?
+// (scalars return 1)
+int lcm_is_constant_size_array(lcm_member_t *lm);
+
 #endif

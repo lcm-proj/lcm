@@ -18,8 +18,7 @@ void setup_java_options(getopt_t *gopt)
 {
     getopt_add_string(gopt, 0,   "jpackage",  "lcm",      "Java package name");
     getopt_add_string(gopt, 0,   "jpath",     "",         "Java file destination directory");
-    getopt_add_string(gopt, 0,   "jlcmclass", "lcm.LCM",  "Classpath of LCM class library.");
-    getopt_add_string(gopt, 0,   "jimp",      "lc.LCEncodable", "Types implement this");
+    getopt_add_string(gopt, 0,   "jdecl",      "implements lcm.lc.LCEncodable", "String added to class declarations");
 }
 
 typedef struct
@@ -37,21 +36,6 @@ static primitive_info_t *prim(char *storage, char *decode, char *encode)
     p->encode = encode;
 
     return p;
-}
-
-/** Is the member an array of constant size? If it is not an array, it returns zero. **/
-static int is_constant_size_array(lcm_member_t *lm)
-{
-    int ndim = g_ptr_array_size(lm->dimensions);
-    
-    for (int i = 0; i < ndim; i++) {
-        lcm_dimension_t *dim = g_ptr_array_index(lm->dimensions, i);
-        
-        if (dim->mode == LCM_VAR)
-            return 0;
-    }
-
-    return 1;
 }
 
 /** # -> replace1
@@ -140,10 +124,7 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "import java.util.*;");
         emit(0, " ");
 
-        emit_start(0, "public class %s", classname);
-        if (strlen(getopt_get_string(lcm->gopt, "jimp"))>0)
-            emit_continue(" implements %s", getopt_get_string(lcm->gopt, "jimp"));
-        emit_end(" ");
+        emit(0, "public class %s %s", classname, getopt_get_string(lcm->gopt, "jdecl"));
 
         emit(0, "{");
         emit(1, "public int value;");
@@ -238,11 +219,7 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "import java.util.*;");
         emit(0, " ");
 
-        emit_start(0, "public class %s", classname);
-        if (strlen(getopt_get_string(lcm->gopt, "jimp"))>0)
-            emit_continue(" implements %s", getopt_get_string(lcm->gopt, "jimp"));
-        emit_end(" ");
-
+        emit(0, "public class %s %s", classname, getopt_get_string(lcm->gopt, "jdecl"));
         emit(0, "{");
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
@@ -272,7 +249,7 @@ int emit_java(lcmgen_t *lcm)
             lcm_member_t *lm = g_ptr_array_index(lr->members, member);
             primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
 
-            if (g_ptr_array_size(lm->dimensions)==0 || !is_constant_size_array(lm))
+            if (g_ptr_array_size(lm->dimensions)==0 || !lcm_is_constant_size_array(lm))
                 continue;
 
             emit_start(2, "%s = new ", lm->membername);

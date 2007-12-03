@@ -16,7 +16,7 @@ LCMGEN = lcmgen
 
 all:	$(LCMGEN)
 
-LCMGEN_OBJS = main.o lcmgen.o getopt.o tokenize.o emit_c.o emit_java.o emit_python.o
+LCMGEN_OBJS = main.o sprintfalloc.o lcmgen.o getopt.o tokenize.o emit_c.o emit_java.o emit_python.o
 
 $(LCMGEN): $(LCMGEN_OBJS)
 	$(CC) -o $@ $(LCMGEN_OBJS) $(LDFLAGS)

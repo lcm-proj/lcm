@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export LCM=../bin/lcm
+export LCM=../lcmgen/lcmgen
 export LCMTYPES=../lcmtypes/*.lcm
 export OUTPATH=src/lcm/lcmtypes
 
