@@ -41,7 +41,7 @@
   </fileset>
 
   <manifest>
-   <attribute name="Main-Class" value="lcm.log.LogPlayer" />
+   <attribute name="Main-Class" value="lcm.logging.LogPlayer" />
   </manifest>
  </jar>
  <copy file="lcm.jar" todir="." />
