@@ -1,4 +1,4 @@
-package lcm.logger;
+package lcm.logging;
 
 public interface JScrubberListener
 {

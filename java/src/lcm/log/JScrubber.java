@@ -1,4 +1,4 @@
-package lcm.logger;
+package lcm.logging;
 
 import java.awt.*;
 import java.awt.event.*;
