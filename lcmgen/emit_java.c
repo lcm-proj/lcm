@@ -5,6 +5,7 @@
 #include <inttypes.h>
 
 #include "lcmgen.h"
+#include "sprintfalloc.h"
 #include "getopt.h"
 
 #define INDENT(n) (4*(n))
@@ -14,9 +15,19 @@
 #define emit_end(...) do { fprintf(f, __VA_ARGS__); fprintf(f, "\n"); } while (0)
 #define emit(n, ...) do { fprintf(f, "%*s", INDENT(n), ""); fprintf(f, __VA_ARGS__); fprintf(f, "\n"); } while (0)
 
+static char *dots_to_slashes(const char *s)
+{
+    char *p = strdup(s);
+
+    for (char *t=p; *t!=0; t++)
+        if (*t == '.')
+            *t = '/';
+
+    return p;
+}
+
 void setup_java_options(getopt_t *gopt)
 {
-    getopt_add_string(gopt, 0,   "jpackage",  "lcm",      "Java package name");
     getopt_add_string(gopt, 0,   "jpath",     "",         "Java file destination directory");
     getopt_add_string(gopt, 0,   "jdecl",      "implements lcm.lc.LCEncodable", "String added to class declarations");
 }
@@ -102,14 +113,13 @@ int emit_java(lcmgen_t *lcm)
     for (unsigned int en = 0; en < g_ptr_array_size(lcm->enums); en++) {
         lcm_enum_t *le = g_ptr_array_index(lcm->enums, en);
 
-        char path[1024];
-        char classname[1024];
-
-        sprintf(classname, "%s", le->enumname->typename);
-
-        sprintf(path, "%s%s%s.java", getopt_get_string(lcm->gopt, "jpath"), 
-                strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
-                classname);
+        char *classname = le->enumname->typename;
+        char *path = sprintfalloc("%s%s%s%s%s.java", 
+                                  getopt_get_string(lcm->gopt, "jpath"),
+                                  dots_to_slashes(le->enumname->package),
+                                  strlen(le->enumname->package) > 0 ? "/" : "",
+                                  strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
+                                  le->enumname->shortname);
 
         if (!lcm_needs_generation(lcm, le->lcmfile, path))
             continue;
@@ -118,13 +128,14 @@ int emit_java(lcmgen_t *lcm)
         if (f==NULL)
             return -1;
 
-        emit(0, "package %s;", getopt_get_string(lcm->gopt, "jpackage"));
+        if (strlen(le->enumname->package) > 0)
+            emit(0, "package %s;", le->enumname->package);
         emit(0, " ");
         emit(0, "import java.io.*;");
         emit(0, "import java.util.*;");
         emit(0, " ");
 
-        emit(0, "public class %s %s", classname, getopt_get_string(lcm->gopt, "jdecl"));
+        emit(0, "public class %s %s", le->enumname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
 
         emit(0, "{");
         emit(1, "public int value;");
@@ -136,7 +147,7 @@ int emit_java(lcmgen_t *lcm)
             emit(0," ");            
         }
 
-        emit(1,"protected %s(int value) { this.value = value; }", le->enumname->typename);
+        emit(1,"protected %s(int value) { this.value = value; }", le->enumname->shortname);
         emit(0," ");
 
         emit(1,"public int getValue() { return value; }");
@@ -169,7 +180,7 @@ int emit_java(lcmgen_t *lcm)
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public %s(DataInputStream ins) throws IOException", classname);
+        emit(1,"public %s(DataInputStream ins) throws IOException", le->enumname->shortname);
         emit(1,"{");
         emit(2,"long hash = ins.readLong();");
         emit(2,"if (hash != LCM_FINGERPRINT)");
@@ -197,29 +208,32 @@ int emit_java(lcmgen_t *lcm)
     for (unsigned int st = 0; st < g_ptr_array_size(lcm->structs); st++) {
         lcm_struct_t *lr = g_ptr_array_index(lcm->structs, st);
 
-        char path[1024];
-        char classname[1024];
-
-        sprintf(classname, "%s", lr->structname->typename);
-
-        sprintf(path, "%s%s%s.java", getopt_get_string(lcm->gopt, "jpath"), 
-                strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
-                classname);
+        char *classname = lr->structname->typename;
+        char *path = sprintfalloc("%s%s%s%s%s.java", 
+                                  getopt_get_string(lcm->gopt, "jpath"), 
+                                  dots_to_slashes(lr->structname->package),
+                                  strlen(lr->structname->package) > 0 ? "/" :"",
+                                  strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
+                                  lr->structname->shortname);
 
         if (!lcm_needs_generation(lcm, lr->lcmfile, path))
             continue;
+
+        printf("%s\n", path);
 
         FILE *f = fopen(path, "w");
         if (f==NULL)
             return -1;
 
-        emit(0, "package %s;", getopt_get_string(lcm->gopt, "jpackage"));
+        if (strlen(lr->structname->package) > 0)
+            emit(0, "package %s;", lr->structname->package);
+
         emit(0, " ");
         emit(0, "import java.io.*;");
         emit(0, "import java.util.*;");
         emit(0, " ");
 
-        emit(0, "public class %s %s", classname, getopt_get_string(lcm->gopt, "jdecl"));
+        emit(0, "public class %s %s", lr->structname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
         emit(0, "{");
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
@@ -241,7 +255,7 @@ int emit_java(lcmgen_t *lcm)
         emit(0," ");
 
         // public constructor
-        emit(1,"public %s()", classname);
+        emit(1,"public %s()", lr->structname->shortname);
         emit(1,"{");
 
         // pre-allocate any fixed-size arrays.
@@ -344,7 +358,7 @@ int emit_java(lcmgen_t *lcm)
         ///////////////// decode //////////////////
 
         // decoding constructor
-        emit(1,"public %s(DataInputStream ins) throws IOException", classname);
+        emit(1,"public %s(DataInputStream ins) throws IOException", lr->structname->shortname);
         emit(1,"{");
         emit(2,"if (ins.readLong() != LCM_FINGERPRINT)");
         emit(3,     "throw new IOException(\"LCM Decode error: bad fingerprint\");");

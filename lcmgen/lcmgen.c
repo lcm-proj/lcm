@@ -121,6 +121,7 @@ lcm_typename_t *lcm_typename_create(const char *typename)
         lt->shortname = tmp;
     } else {
         lt->package = tmp;
+        *rtmp = 0;
         lt->shortname = &rtmp[1];
     }
 
