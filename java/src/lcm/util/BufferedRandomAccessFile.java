@@ -371,12 +371,12 @@ public class BufferedRandomAccessFile
 			char c = (char) (buffer[bufferPosition++]&0xff);
 
 			if (c=='\n') {
-			    piece = new String(buffer, 0, buffstart, bufferPosition - buffstart - 1);
+			    piece = new String(buffer, buffstart, bufferPosition - buffstart - 1);
 			    break;
 			}
 
 			if (c=='\r') {
-			    piece = new String(buffer, 0, buffstart, bufferPosition - buffstart - 1);
+			    piece = new String(buffer, buffstart, bufferPosition - buffstart - 1);
 
 			    // this logic is untested.
 			    if (false && bufferPosition + bufferPosition < length) {
@@ -398,7 +398,7 @@ public class BufferedRandomAccessFile
 			return sb.toString();
 		    }
 
-		piece = new String(buffer, 0, buffstart, bufferPosition - buffstart);
+		piece = new String(buffer, buffstart, bufferPosition - buffstart);
 
 		if (sb == null)
 		    sb = new StringBuilder();
