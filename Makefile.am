@@ -1,0 +1,3 @@
+SUBDIRS = m4 lcmgen po 
+#EXTRA_DIST = @PACKAGE@.spec
+ACLOCAL_AMFLAGS = -I m4
