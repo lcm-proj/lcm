@@ -19,6 +19,6 @@ lcmgen_SOURCES = main.c \
 
 lcmgen_LDADD = $(GLIB_LIBS)
 
-#man_MANS = camview.1
+man_MANS = lcmgen.1
 
-#EXTRA_DIST = camview.1
+EXTRA_DIST = lcmgen.1

@@ -1,0 +1,69 @@
+.TH lcmgen 1 2007-12-13 "LCM" "Lightweight Communications and Marshalling (LCM)"
+.SH NAME
+lcmgen
+.SH SYNOPSIS
+.TP 5
+\fBlcmgen \fI[options]\fR \fIFILE\fR...
+
+.SH DESCRIPTION
+.PP
+\fBlcmgen\fR is the Lightweight Communications and Marshalling code generation
+utility.  It takes as input one or more \fB.lcm\fR files containing LCM message
+type definitions, and generates language-specific bindings for marshalling and
+unmarshalling messages of the specified types.
+
+Currently, \fBlcmgen\fR is capable of generating language bindings for C,
+Python, and Java.  Exactly one of \fB\-j\fR, \fB\-c\fR, or \fB\-p\fR must be
+specified.
+
+.SH OPTIONS
+The following options are provided by \fBlcmgen\fR:
+.TP
+.B \-c, \-\-c
+Emit C code.
+.TP
+.B \-\-c-cpath \fIDIR\fR
+Destination directory for generated .c files. (default: current directory)
+.TP
+.B \-\-c-hpath \fIDIR\fR
+Destination directory for generated .h files. (default: current directory)
+.TP
+.B \-\-cinclude \fIDIR\fR
+Generated #include lines reference this directory
+.TP
+.B \-j, \-\-java
+Emit Java code.
+.TP
+.B \-\-jpath \fIDIR\fR
+Destination base directory for generated Java files. (default: current
+directory)
+.TP
+.B \-p, \-\-python
+Emit Python code.
+.TP
+.B \-\-ppath \fIDIR\fR
+Destination base directory for generated Python files. (default: current
+directory)
+.TP
+.B \-\-lazy
+Generate output file only if .lcm is newer than output file (or if output file
+does not already exist).
+.TP
+.B \-d, \-\-debug
+Show parsed files
+.TP
+.B \-t, \-\-tokenize
+Show tokenization
+.TP
+.B \-h
+Prints this help text and exits.
+
+.SH AUTHORS
+
+This manual page was written by Albert Huang <ashuang@alum.mit.edu>.
+Permission is granted to copy, distribute 
+and/or modify this document under the terms of the GNU 
+Free Documentation License, Version 1.1 or any later 
+version published by the Free Software Foundation; with no 
+Invariant Sections, no Front-Cover Texts and no Back-Cover 
+Texts. 
