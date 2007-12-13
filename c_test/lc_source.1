@@ -1,0 +1,42 @@
+.TH lc_source 1 2007-12-13 "LC" "Lightweight Communications (LC)"
+.SH NAME
+lc_source
+.SH SYNOPSIS
+.TP 5
+\fBlc_source \fI[options]\fR
+
+.SH DESCRIPTION
+.PP
+\fBlc_source\fR is a utility for testing the Lightweight Communications library
+(LC).  \fBlc_source\fR transmits random messages on either a specified LC
+channel or random LC channels.  Messages can be randomly sized, or a specified
+fixed size.
+
+.SH OPTIONS
+The following options are provided by \fBlc_source\fR:
+.TP
+.B \-m \fICHAN\fR
+Transmits messages on channel \fICHAN\fR (default: random channels)
+.TP
+.B \-p \fIDELAY\fR
+Wait \fIDELAY\fR microseconds between transmissions (default: 10000)
+.TP
+.B \-s \fISIZE\fR
+Transmit packets of size \fISIZE\fR bytes.  If \fISIZE\fR is 0 (default),
+then packets are randomly sized between 1 and 65,000 bytes
+.TP
+.B \-v
+verbose mode.  Prints a summary of each packet
+.TP
+.B \-h
+Prints this help text and exits.
+
+.SH AUTHORS
+
+This manual page was written by Albert Huang <ashuang@alum.mit.edu>.
+Permission is granted to copy, distribute 
+and/or modify this document under the terms of the GNU 
+Free Documentation License, Version 1.1 or any later 
+version published by the Free Software Foundation; with no 
+Invariant Sections, no Front-Cover Texts and no Back-Cover 
+Texts. 
