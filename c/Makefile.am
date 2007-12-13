@@ -20,5 +20,5 @@ liblcinclude_HEADERS = \
 
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = liblc.pc
-EXTRA_DIST = liblc.pc.in
+pkgconfig_DATA = lc.pc
+EXTRA_DIST = lc.pc.in

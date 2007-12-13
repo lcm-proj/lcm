@@ -58,7 +58,7 @@ AC_SUBST(LIBTOOL)
 AC_OUTPUT([
   Makefile
   c/Makefile
-  c/liblc.pc
+  c/lc.pc
   c_test/Makefile
   lcmgen/Makefile
   m4/Makefile

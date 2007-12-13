@@ -8,4 +8,4 @@ Description: Lightweight Communications interprocess communications package
 Requires:
 Version: @VERSION@
 Libs: -L${libdir} -llc
-Cflags: -I${includedir}/liblc -I${includedir}
+Cflags: -I${includedir}/lc -I${includedir}
