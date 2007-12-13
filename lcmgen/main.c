@@ -86,14 +86,14 @@ int main(int argc, char *argv[])
     if (getopt_get_bool(gopt, "java")) {
         did_something = 1;
         if (emit_java(lcm)) {
-            perror("An error occured while emitting Java code.\n");
+            perror("An error occurred while emitting Java code.\n");
         }
     }
 
     if (getopt_get_bool(gopt, "python")) {
         did_something = 1;
         if (emit_python(lcm)) {
-            printf("An error occured while emitting Python code.\n");
+            printf("An error occurred while emitting Python code.\n");
         }
     }
 
