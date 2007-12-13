@@ -60,6 +60,7 @@ AC_OUTPUT([
   c/Makefile
   c/lcm.pc
   c_test/Makefile
+  logger/Makefile
   lcmgen/Makefile
   m4/Makefile
   po/Makefile.in
