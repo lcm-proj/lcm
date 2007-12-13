@@ -2,23 +2,29 @@ AM_CFLAGS =
 
 INCLUDES = $(GLIB_CFLAGS)
 
-lib_LTLIBRARIES = liblc.la
+lib_LTLIBRARIES = liblcm.la
 
-liblc_la_LDFLAGS = -version-info @LIBLC_VERSION_INFO@
-liblc_la_SOURCES = \
+liblcm_la_LDFLAGS = -version-info @LIBLCM_VERSION_INFO@
+liblcm_la_SOURCES = \
 	dbg.h \
 	lc.c \
 	lc.h \
 	ringbuffer.c \
-	ringbuffer.h 
+	ringbuffer.h \
+	eventlog.c \
+	eventlog.h \
+	ioutils.h \
+	lcm.h
 
-liblc_la_LIBADD = $(GLIB_LIBS)
+liblcm_la_LIBADD = $(GLIB_LIBS)
 
-liblcincludedir = $(includedir)/lc
-liblcinclude_HEADERS = \
-	lc.h 
+liblcmincludedir = $(includedir)/lcm
+liblcminclude_HEADERS = \
+	lc.h \
+	eventlog.h \
+	lcm.h
 
 
 pkgconfigdir = $(libdir)/pkgconfig
-pkgconfig_DATA = lc.pc
-EXTRA_DIST = lc.pc.in
+pkgconfig_DATA = lcm.pc
+EXTRA_DIST = lcm.pc.in
