@@ -1,3 +1,3 @@
-SUBDIRS = m4 c c_test lcmgen logger po 
+SUBDIRS = m4 liblcm liblcm-test lcmgen lcm-logger po 
 #EXTRA_DIST = @PACKAGE@.spec
 ACLOCAL_AMFLAGS = -I m4

@@ -57,10 +57,10 @@ AC_SUBST(LIBTOOL)
 
 AC_OUTPUT([
   Makefile
-  c/Makefile
-  c/lcm.pc
-  c_test/Makefile
-  logger/Makefile
+  liblcm/Makefile
+  liblcm/lcm.pc
+  liblcm-test/Makefile
+  lcm-logger/Makefile
   lcmgen/Makefile
   m4/Makefile
   po/Makefile.in
