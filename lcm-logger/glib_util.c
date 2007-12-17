@@ -154,82 +154,82 @@ signal_pipe_glib_quit_on_kill (GMainLoop *mainloop)
 }
 
 static int
-lc_message_ready (GIOChannel *source, GIOCondition cond, lc_t *lc)
+lcm_message_ready (GIOChannel *source, GIOCondition cond, lcm_t *lcm)
 {
-    lc_handle (lc);
+    lcm_handle (lcm);
     return TRUE;
 }
 
 typedef struct {
     GIOChannel *ioc;
     guint sid;
-    lc_t *lc;
-} glib_attached_lc_t;
+    lcm_t *lcm;
+} glib_attached_lcm_t;
 
-static GHashTable *lc_glib_sources = NULL;
-static GStaticMutex lc_glib_sources_mutex = G_STATIC_MUTEX_INIT;
+static GHashTable *lcm_glib_sources = NULL;
+static GStaticMutex lcm_glib_sources_mutex = G_STATIC_MUTEX_INIT;
 
 int
-glib_mainloop_attach_lc (lc_t *lc)
+glib_mainloop_attach_lcm (lcm_t *lcm)
 {
-    g_static_mutex_lock (&lc_glib_sources_mutex);
+    g_static_mutex_lock (&lcm_glib_sources_mutex);
 
-    if (!lc_glib_sources) {
-        lc_glib_sources = g_hash_table_new (g_direct_hash, g_direct_equal);
+    if (!lcm_glib_sources) {
+        lcm_glib_sources = g_hash_table_new (g_direct_hash, g_direct_equal);
     }
 
-    if (g_hash_table_lookup (lc_glib_sources, lc)) {
-        dbg ("LC %p already attached to mainloop\n", lc);
-        g_static_mutex_unlock (&lc_glib_sources_mutex);
+    if (g_hash_table_lookup (lcm_glib_sources, lcm)) {
+        dbg ("LC %p already attached to mainloop\n", lcm);
+        g_static_mutex_unlock (&lcm_glib_sources_mutex);
         return -1;
     }
 
-    glib_attached_lc_t *galc = 
-        (glib_attached_lc_t*) calloc (1, sizeof (glib_attached_lc_t));
+    glib_attached_lcm_t *galcm = 
+        (glib_attached_lcm_t*) calloc (1, sizeof (glib_attached_lcm_t));
 
-    galc->ioc = g_io_channel_unix_new (lc_get_fileno (lc));
-    galc->sid = g_io_add_watch (galc->ioc, G_IO_IN, (GIOFunc) lc_message_ready, 
-            lc);
-    galc->lc = lc;
+    galcm->ioc = g_io_channel_unix_new (lcm_get_fileno (lcm));
+    galcm->sid = g_io_add_watch (galcm->ioc, G_IO_IN, (GIOFunc) lcm_message_ready, 
+            lcm);
+    galcm->lcm = lcm;
 
-    dbg ("inserted LC %p into glib mainloop\n", lc);
-    g_hash_table_insert (lc_glib_sources, lc, galc);
+    dbg ("inserted LC %p into glib mainloop\n", lcm);
+    g_hash_table_insert (lcm_glib_sources, lcm, galcm);
 
-    g_static_mutex_unlock (&lc_glib_sources_mutex);
+    g_static_mutex_unlock (&lcm_glib_sources_mutex);
     return 0;
 }
 
 int
-glib_mainloop_detach_lc (lc_t *lc)
+glib_mainloop_detach_lcm (lcm_t *lcm)
 {
-    g_static_mutex_lock (&lc_glib_sources_mutex);
-    if (!lc_glib_sources) {
-        dbg ("no lc glib sources\n");
-        g_static_mutex_unlock (&lc_glib_sources_mutex);
+    g_static_mutex_lock (&lcm_glib_sources_mutex);
+    if (!lcm_glib_sources) {
+        dbg ("no lcm glib sources\n");
+        g_static_mutex_unlock (&lcm_glib_sources_mutex);
         return -1;
     }
 
-    glib_attached_lc_t *galc = 
-        (glib_attached_lc_t*) g_hash_table_lookup (lc_glib_sources, lc);
+    glib_attached_lcm_t *galcm = 
+        (glib_attached_lcm_t*) g_hash_table_lookup (lcm_glib_sources, lcm);
 
-    if (!galc) {
+    if (!galcm) {
         dbg ("couldn't find matching gaLC\n");
-        g_static_mutex_unlock (&lc_glib_sources_mutex);
+        g_static_mutex_unlock (&lcm_glib_sources_mutex);
         return -1;
     }
 
     dbg ("detaching LC from glib\n");
-    g_io_channel_unref (galc->ioc);
-    g_source_remove (galc->sid);
+    g_io_channel_unref (galcm->ioc);
+    g_source_remove (galcm->sid);
 
-    g_hash_table_remove (lc_glib_sources, lc);
-    free (galc);
+    g_hash_table_remove (lcm_glib_sources, lcm);
+    free (galcm);
 
-    if (g_hash_table_size (lc_glib_sources) == 0) {
-        g_hash_table_destroy (lc_glib_sources);
-        lc_glib_sources = NULL;
+    if (g_hash_table_size (lcm_glib_sources) == 0) {
+        g_hash_table_destroy (lcm_glib_sources);
+        lcm_glib_sources = NULL;
     }
 
-    g_static_mutex_unlock (&lc_glib_sources_mutex);
+    g_static_mutex_unlock (&lcm_glib_sources_mutex);
     return 0;
 }

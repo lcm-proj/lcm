@@ -44,10 +44,10 @@ struct logger
     int64_t time0;
     char    *fname;
     int     filenum;
-    lc_t    *lc;
+    lcm_t    *lcm;
 };
 
-int message_handler (const lc_recv_buf_t *rbuf, void *u)
+int message_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     logger_t *l = (logger_t*) u;
     lcm_eventlog_event_t  le;
@@ -214,24 +214,24 @@ int main(int argc, char *argv[])
 
     //////// begin logging
     
-    logger.lc = lc_create();
-    assert(logger.lc);
+    logger.lcm = lcm_create();
+    assert(logger.lcm);
     
-    res = lc_init(logger.lc, NULL);
+    res = lcm_init(logger.lcm, NULL);
     assert (!res);
 
-    lc_subscribe(logger.lc, ".*", message_handler, &logger);
+    lcm_subscribe(logger.lcm, ".*", message_handler, &logger);
 
     GMainLoop *mainloop = g_main_loop_new (NULL, FALSE);
     signal_pipe_glib_quit_on_kill (mainloop);
-    glib_mainloop_attach_lc (logger.lc);
+    glib_mainloop_attach_lcm (logger.lcm);
 
     // main loop
     g_main_loop_run (mainloop);
 
     // cleanup
-    glib_mainloop_detach_lc (logger.lc);
-    lc_destroy (logger.lc);
+    glib_mainloop_detach_lcm (logger.lcm);
+    lcm_destroy (logger.lcm);
     lcm_eventlog_destroy (logger.log);
     if (logger.fname)
         free(logger.fname);

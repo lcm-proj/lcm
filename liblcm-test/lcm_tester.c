@@ -14,7 +14,7 @@
 #include <time.h>
 #include <sys/select.h>
 
-#include <lc.h>
+#include <lcm.h>
 
 static int64_t 
 timestamp_now ()
@@ -50,34 +50,32 @@ int default_count = 0;
 int catchall_count = 0;
 
 static int 
-test_handler (const lc_recv_buf_t *rbuf, void *u)
+test_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     test_count++;
     return 0;
 }
 
 static int 
-test_handler2 (const lc_recv_buf_t *rbuf, void *u)
+test_handler2 (const lcm_recv_buf_t *rbuf, void *u)
 {
     test_count2++;
     return 0;
 }
 
 static int 
-catchall_handler (const lc_recv_buf_t *rbuf, void *u)
+catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     catchall_count++;
     return 0;
 }
 
-#ifdef LC_USE_REGEX
 static int
-regex_handler (const lc_recv_buf_t *rbuf, void *u)
+regex_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     printf ("regex handler\n");
     return 0;
 }
-#endif
 
 int main (int argc, char **argv)
 {
@@ -93,74 +91,72 @@ int main (int argc, char **argv)
     char *payload = malloc (datalen);
     strcpy (payload, words[windex]);
     
-//  lc_params_t lc_args;
-//  lc_args.local_iface = INADDR_ANY;
-//  lc_args.mc_addr = inet_addr ("225.0.0.3");
-//  lc_args.mc_port = htons (2006);
+//  lcm_params_t lcm_args;
+//  lcm_args.local_iface = INADDR_ANY;
+//  lcm_args.mc_addr = inet_addr ("225.0.0.3");
+//  lcm_args.mc_port = htons (2006);
 
-    lc_t *lc = lc_create ();
-    if (! lc) {
-        fprintf (stderr, "couldn't allocate lc_t\n");
+    lcm_t *lcm = lcm_create ();
+    if (! lcm) {
+        fprintf (stderr, "couldn't allocate lcm_t\n");
         return 1;
     }
-    status = lc_init (lc, NULL);
+    status = lcm_init (lcm, NULL);
     if (0 != status) {
-        fprintf (stderr, "error initializing lc context\n");
+        fprintf (stderr, "error initializing lcm context\n");
         return 1;
     }
 
-    printf ("LC: testing handler registration and unregistration... \n");
+    printf ("LCM: testing handler registration and unregistration... \n");
 #define FAIL_IFSNE(expected) if (status != expected) { \
-    printf ("LC: ERROR in handler registration!  %s:%d\n", \
+    printf ("LCM: ERROR in handler registration!  %s:%d\n", \
             __FILE__, __LINE__);\
     return 1; \
 }
 #define FAIL_IF_BAD_HID(hid) if (hid == NULL) { \
-    printf ("LC: ERROR in handler registration!  %s:%d\n", \
+    printf ("LCM: ERROR in handler registration!  %s:%d\n", \
             __FILE__, __LINE__);\
     return 1; \
 }
 #define FAIL_IF_GOOD_HID(hid) if (hid != NULL) { \
-    printf ("LC: ERROR in handler registration!  %s:%d\n", \
+    printf ("LCM: ERROR in handler registration!  %s:%d\n", \
             __FILE__, __LINE__);\
     return 1; \
 }
 
     // register a couple handlers
-    lc_handler_t *h = NULL;
-    h = lc_subscribe (lc, "TEST", test_handler, 0);
+    lcm_handler_t *h = NULL;
+    h = lcm_subscribe (lcm, "TEST", test_handler, 0);
     FAIL_IF_BAD_HID (h);
-    lc_handler_t *h2 = lc_subscribe (lc, "TEST", test_handler2, 0);
+    lcm_handler_t *h2 = lcm_subscribe (lcm, "TEST", test_handler2, 0);
     FAIL_IF_BAD_HID (h2);
 
     // unregister and re-register the first handler
-    status = lc_unsubscribe (lc, h);
+    status = lcm_unsubscribe (lcm, h);
     FAIL_IFSNE (0);
-    h = lc_subscribe (lc, "TEST", test_handler, 0);
+    h = lcm_subscribe (lcm, "TEST", test_handler, 0);
     FAIL_IF_BAD_HID (h);
 
     // unregister the same handler twice, expect failure the second time
-    status = lc_unsubscribe_by_func (lc, "TEST", test_handler, 0);
+    status = lcm_unsubscribe_by_func (lcm, "TEST", test_handler, 0);
     FAIL_IFSNE (0);
-    status = lc_unsubscribe (lc, h);
+    status = lcm_unsubscribe (lcm, h);
     //    FAIL_IFSNE (-1);
 
     // register default and catchall handlers
-    h = lc_subscribe (lc, ".*", catchall_handler, 0);
+    h = lcm_subscribe (lcm, ".*", catchall_handler, 0);
     FAIL_IF_BAD_HID (h);
 
-#ifdef LC_USE_REGEX
     // register a regex handler
-    h = lc_subscribe (lc, "TE.*", regex_handler, 0);
+    h = lcm_subscribe (lcm, "TE.*", regex_handler, 0);
     FAIL_IF_BAD_HID (h);
-#endif
 
     // transmit a bunch of messages to self-receive
-    int fd = lc_get_fileno (lc);
+    int fd = lcm_get_fileno (lcm);
     int ntransmitted = 0;
     int ntotransmit = 15;
 
-    printf ("LC: transmitting %d messages to self-receive...\n", 
+    printf ("LCM: transmitting %d messages to self-receive...\n", 
             ntotransmit * 2);
 
     int64_t send_interval = 100000;
@@ -180,18 +176,18 @@ int main (int argc, char **argv)
         status=select (fd + 1,&readfds,0,0,&timeout);
 
         if (status < 0) { 
-            fprintf (stderr, "ERROR! LC select failed\n");
+            fprintf (stderr, "ERROR! LCM select failed\n");
             perror ("select");
             return 1;
         }
 
         if (FD_ISSET (fd,&readfds)) {
-            lc_handle (lc);
+            lcm_handle (lcm);
         }
 
         if (timestamp_now () >= time_to_send) {
-            lc_publish (lc, "TEST", payload, datalen);
-            lc_publish (lc, "12345", payload, datalen);
+            lcm_publish (lcm, "TEST", payload, datalen);
+            lcm_publish (lcm, "12345", payload, datalen);
             ntransmitted++;
 
             time_to_send = timestamp_now () + send_interval;
@@ -204,36 +200,36 @@ int main (int argc, char **argv)
     timeout.tv_sec = 0; timeout.tv_usec = 100000;
     select (fd + 1,&readfds,0,0,&timeout);
     if (FD_ISSET (fd,&readfds)) {
-        lc_handle (lc);
+        lcm_handle (lcm);
     }
     FD_ZERO (&readfds);
     FD_SET (fd,&readfds);
     timeout.tv_sec = 0; timeout.tv_usec = 100000;
     select (fd + 1,&readfds,0,0,&timeout);
     if (FD_ISSET (fd,&readfds)) {
-        lc_handle (lc);
+        lcm_handle (lcm);
     }
 
-    // test transmit-only lc_t
-    printf ("LC: testing transmit-only lc_t...\n");
-    lc_t *tlc = lc_create ();
-    lc_params_t tlc_params;
-    lc_params_init_defaults (&tlc_params);
-    tlc_params.transmit_only = 1;
-    status = lc_init (tlc, &tlc_params);
+    // test transmit-only lcm_t
+    printf ("LCM: testing transmit-only lcm_t...\n");
+    lcm_t *tlcm = lcm_create ();
+    lcm_params_t tlcm_params;
+    lcm_params_init_defaults (&tlcm_params);
+    tlcm_params.transmit_only = 1;
+    status = lcm_init (tlcm, &tlcm_params);
     if (0 != status) {
-        printf ("LC:  ERROR initializing transmit-only lc_t!\n");
+        printf ("LCM:  ERROR initializing transmit-only lcm_t!\n");
         return 1;
     }
     // registering a handler should fail
-    h = lc_subscribe (tlc, "TEST", test_handler, NULL);
+    h = lcm_subscribe (tlcm, "TEST", test_handler, NULL);
     FAIL_IF_GOOD_HID (h);
-    status = lc_unsubscribe_by_func (tlc, "TEST", test_handler, NULL);
+    status = lcm_unsubscribe_by_func (tlcm, "TEST", test_handler, NULL);
     //    FAIL_IFSNE (-1);
-    // invoking lc_handle should fail
-    status = lc_handle (tlc);
+    // invoking lcm_handle should fail
+    status = lcm_handle (tlcm);
     FAIL_IFSNE (-1);
-    status = lc_publish (tlc, "TEST", payload, datalen);
+    status = lcm_publish (tlcm, "TEST", payload, datalen);
     FAIL_IFSNE (0);
 
     FD_ZERO (&readfds);
@@ -241,12 +237,12 @@ int main (int argc, char **argv)
     timeout.tv_sec = 0; timeout.tv_usec = 100000;
     select (fd + 1,&readfds,0,0,&timeout);
     if (FD_ISSET (fd,&readfds)) {
-        lc_handle (lc);
+        lcm_handle (lcm);
     }
-    lc_destroy (tlc);
+    lcm_destroy (tlcm);
 #undef FAIL_IFSNE
 
-    lc_destroy (lc);
+    lcm_destroy (lcm);
 
     free (payload);
 
@@ -256,12 +252,12 @@ int main (int argc, char **argv)
         ntotransmit*2+1 == catchall_count;
 
     if (! matched) {
-        printf ("LC: receive count - "
+        printf ("LCM: receive count - "
                 "test: %d test2: %d default: %d catchall: %d\n",
                 test_count, test_count2, default_count, catchall_count);
         printf ("ERROR:  message receive count does not match expected!!\n");
         return 1;
     } 
-    printf ("LC: OK!\n");
+    printf ("LCM: OK!\n");
     return 0;
 }

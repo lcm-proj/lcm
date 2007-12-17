@@ -5,7 +5,7 @@
 #include <sys/time.h>
 #include <sys/select.h>
 
-#include <lc.h>
+#include <lcm.h>
 
 static int64_t timestamp_now()
 {
@@ -28,7 +28,7 @@ static double data_rate_alpha = 0.7;
 static int64_t rate_accum = 0;
 
 static int 
-handler (const lc_recv_buf_t *rbuf, void *u)
+handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     uint32_t seqno = *((uint32_t*)rbuf->data);
     if (expected_seqno != seqno && seqno > expected_seqno) {
@@ -80,23 +80,23 @@ main(int argc, char **argv)
     }
     const char *channel = argv[1];
 
-    lc_t *lc = lc_create ();
-    if (!lc) return 1;
+    lcm_t *lcm = lcm_create ();
+    if (!lcm) return 1;
 
-    lc_params_t lcp;
-    lc_params_init_defaults (&lcp);
+    lcm_params_t lcmp;
+    lcm_params_init_defaults (&lcmp);
     if (argc == 3) {
-        lcp.recv_buf_size = atoi (argv[2]);
+        lcmp.recv_buf_size = atoi (argv[2]);
     }
-    lc_init (lc, &lcp);
+    lcm_init (lcm, &lcmp);
 
-    lc_subscribe (lc, channel, handler, NULL);
+    lcm_subscribe (lcm, channel, handler, NULL);
 
     while(1) {
-        lc_handle (lc);
+        lcm_handle (lcm);
     }
 
-    lc_destroy (lc);
+    lcm_destroy (lcm);
 
     return 0;
 }

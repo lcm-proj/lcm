@@ -10,35 +10,35 @@
 #define ALIGNMENT 32
 
 #define MAGIC 0x067f8687
-typedef struct _lc_ringbuf_rec lc_ringbuf_rec_t;
+typedef struct _lcm_ringbuf_rec lcm_ringbuf_rec_t;
 
 #define EXTRA_RETENTIVE 0
 
-struct _lc_ringbuf_rec
+struct _lcm_ringbuf_rec
 {
     int32_t           magic;
-    lc_ringbuf_rec_t *prev;
-    lc_ringbuf_rec_t *next;
+    lcm_ringbuf_rec_t *prev;
+    lcm_ringbuf_rec_t *next;
     unsigned int  length;
     char          buf[];
 };
 
-struct _lc_ringbuf {
+struct _lcm_ringbuf {
     char *data;
     unsigned int   size;                 // allocated size of data
     unsigned int   used;                 // total bytes currently allocated
 
-    lc_ringbuf_rec_t *head;
-    lc_ringbuf_rec_t *tail;
+    lcm_ringbuf_rec_t *head;
+    lcm_ringbuf_rec_t *tail;
 };
 
-static inline void ringbuf_self_test(lc_ringbuf_t *ring)
+static inline void ringbuf_self_test(lcm_ringbuf_t *ring)
 {
     if (!EXTRA_RETENTIVE)
         return;
 
-    lc_ringbuf_rec_t *prev = NULL;
-    lc_ringbuf_rec_t *rec = ring->head;
+    lcm_ringbuf_rec_t *prev = NULL;
+    lcm_ringbuf_rec_t *rec = ring->head;
     
     if (rec == NULL) {
         assert(ring->tail == NULL);
@@ -67,12 +67,12 @@ static inline void ringbuf_self_test(lc_ringbuf_t *ring)
     // check for loops?
 }
 
-lc_ringbuf_t *
-lc_ringbuf_new (unsigned int ring_size)
+lcm_ringbuf_t *
+lcm_ringbuf_new (unsigned int ring_size)
 {
-    lc_ringbuf_t * ring;
+    lcm_ringbuf_t * ring;
 
-    ring = malloc (sizeof (lc_ringbuf_t));
+    ring = malloc (sizeof (lcm_ringbuf_t));
     ring->data = (char*) malloc (ring_size);
     ring->size = ring_size;
     ring->used = 0;
@@ -82,13 +82,13 @@ lc_ringbuf_new (unsigned int ring_size)
 }
 
 void
-lc_ringbuf_free (lc_ringbuf_t * ring)
+lcm_ringbuf_free (lcm_ringbuf_t * ring)
 {
     free (ring->data);
     free (ring);
 }
 
-char * lc_ringbuf_alloc (lc_ringbuf_t *ring, unsigned int len)
+char * lcm_ringbuf_alloc (lcm_ringbuf_t *ring, unsigned int len)
 {
     // Two possible configurations of the ring buffer:
     //
@@ -99,7 +99,7 @@ char * lc_ringbuf_alloc (lc_ringbuf_t *ring, unsigned int len)
     //      ^tail                         ^head
     ringbuf_self_test(ring);
  
-    len += sizeof(lc_ringbuf_rec_t);
+    len += sizeof(lcm_ringbuf_rec_t);
     len = (len + ALIGNMENT - 1) & (~(ALIGNMENT - 1));
 
     if (!ring->head) {
@@ -108,7 +108,7 @@ char * lc_ringbuf_alloc (lc_ringbuf_t *ring, unsigned int len)
             return NULL;
         }
 
-        lc_ringbuf_rec_t *rec = (lc_ringbuf_rec_t*) ring->data;
+        lcm_ringbuf_rec_t *rec = (lcm_ringbuf_rec_t*) ring->data;
         ring->tail = ring->head = rec;
         rec->prev = rec->next = NULL;
         rec->length = len;
@@ -121,7 +121,7 @@ char * lc_ringbuf_alloc (lc_ringbuf_t *ring, unsigned int len)
 
     assert (ring->head && ring->tail);
 
-    lc_ringbuf_rec_t *rec;
+    lcm_ringbuf_rec_t *rec;
 
     // Try to allocate from the current alloc_pos first; if that
     // fails, try to allocate from offset 0.
@@ -129,15 +129,15 @@ char * lc_ringbuf_alloc (lc_ringbuf_t *ring, unsigned int len)
 
     if (ring->head > ring->tail) {
         if (candidate1 + len <= (char*)ring->head) {
-            rec = (lc_ringbuf_rec_t*) candidate1;
+            rec = (lcm_ringbuf_rec_t*) candidate1;
         } else {
             return NULL; // no space!
         }
     } else {
         if (candidate1 + len <= ring->data + ring->size) {
-            rec = (lc_ringbuf_rec_t*) candidate1;
+            rec = (lcm_ringbuf_rec_t*) candidate1;
         } else if (ring->data + len < (char*)ring->head) {
-            rec = (lc_ringbuf_rec_t*)ring->data;
+            rec = (lcm_ringbuf_rec_t*)ring->data;
         } else {
             return NULL; // no space!
         }
@@ -158,25 +158,25 @@ char * lc_ringbuf_alloc (lc_ringbuf_t *ring, unsigned int len)
     return rec->buf;
 }
 
-double lc_ringbuf_available(lc_ringbuf_t *ring)
+double lcm_ringbuf_available(lcm_ringbuf_t *ring)
 {
     return ((double) ring->size - ring->used) / ring->size;
 }
 
 void 
-lc_ringbuf_shrink_last(lc_ringbuf_t *ring, const char *buf, 
+lcm_ringbuf_shrink_last(lcm_ringbuf_t *ring, const char *buf, 
         unsigned int newlen)
 {
     ringbuf_self_test(ring);
 
-    lc_ringbuf_rec_t *rec = 
-        (lc_ringbuf_rec_t*) (buf - offsetof(lc_ringbuf_rec_t, buf));
+    lcm_ringbuf_rec_t *rec = 
+        (lcm_ringbuf_rec_t*) (buf - offsetof(lcm_ringbuf_rec_t, buf));
     // make sure this is the most recent alloc
     assert (rec == ring->tail);
     assert (rec->magic == MAGIC);
 
     // compute the new size
-    newlen += sizeof(lc_ringbuf_rec_t);
+    newlen += sizeof(lcm_ringbuf_rec_t);
     newlen = (newlen + ALIGNMENT - 1) & (~(ALIGNMENT - 1));
 
     assert (rec->length >= newlen);
@@ -194,12 +194,12 @@ lc_ringbuf_shrink_last(lc_ringbuf_t *ring, const char *buf,
  * Releases a previously-allocated chunk of the ring buffer.  Only the most
  * recently allocated, or the least recently allocated chunk can be released.
  */
-void lc_ringbuf_dealloc (lc_ringbuf_t * ring, char * buf)
+void lcm_ringbuf_dealloc (lcm_ringbuf_t * ring, char * buf)
 {
     ringbuf_self_test(ring);
 
-    lc_ringbuf_rec_t *rec = 
-        (lc_ringbuf_rec_t*) (buf - offsetof(lc_ringbuf_rec_t, buf));
+    lcm_ringbuf_rec_t *rec = 
+        (lcm_ringbuf_rec_t*) (buf - offsetof(lcm_ringbuf_rec_t, buf));
 
     assert (rec == ring->head || rec == ring->tail);
 

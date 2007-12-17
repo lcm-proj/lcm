@@ -1,21 +1,21 @@
-#ifndef __pylc_h__
-#define __pylc_h__
+#ifndef __pylcm_h__
+#define __pylcm_h__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 #include <Python.h>
-#include <lc/lc.h>
+#include <lcm/lcm.h>
 
 typedef struct {
     PyObject_HEAD
 
-    lc_t *lc;
+    lcm_t *lcm;
 
     PyObject *all_handlers;
 
     int exception_raised;
-} PyLCObject;
+} PyLCMObject;
 
 #ifdef __cplusplus
 }

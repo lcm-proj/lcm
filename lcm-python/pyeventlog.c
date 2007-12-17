@@ -1,11 +1,11 @@
 #include <Python.h>
 
-#include "eventlog.c"
+#include <lcm/eventlog.h>
 
 typedef struct {
     PyObject_HEAD
 
-    eventlog_t *eventlog;
+    lcm_eventlog_t *eventlog;
     char mode;
 } PyLogObject;
 
@@ -19,7 +19,7 @@ static PyObject *
 pylog_close (PyLogObject *self)
 {
     if (self->eventlog) {
-        eventlog_destroy (self->eventlog);
+        lcm_eventlog_destroy (self->eventlog);
         self->eventlog = NULL;
     }
     Py_INCREF (Py_None);
@@ -40,7 +40,8 @@ pylog_read_next_event (PyLogObject *self)
         return NULL;
     }
 
-    eventlog_event_t *next_event = eventlog_read_next_event (self->eventlog);
+    lcm_eventlog_event_t *next_event = 
+        lcm_eventlog_read_next_event (self->eventlog);
     if (!next_event) {
         Py_INCREF (Py_None);
         return Py_None;
@@ -52,7 +53,7 @@ pylog_read_next_event (PyLogObject *self)
             next_event->channel, next_event->channellen,
             next_event->data, next_event->datalen);
 
-    eventlog_free_event (next_event);
+    lcm_eventlog_free_event (next_event);
 
     return result;
 }
@@ -97,7 +98,7 @@ pylog_seek_to_timestamp (PyLogObject *self, PyObject *arg)
         return NULL;
     }
 
-    if (0 == eventlog_seek_to_timestamp(self->eventlog, timestamp)) {
+    if (0 == lcm_eventlog_seek_to_timestamp(self->eventlog, timestamp)) {
         Py_INCREF (Py_None);
         return Py_None;
     } else {
@@ -133,7 +134,7 @@ pylog_write_next_event (PyLogObject *self, PyObject *args)
         return NULL;
     }
 
-    eventlog_event_t le = {
+    lcm_eventlog_event_t le = {
         .eventnum = 0,
         .timestamp = utime,
         .channellen = channellen,
@@ -142,7 +143,7 @@ pylog_write_next_event (PyLogObject *self, PyObject *args)
         .data = data
     };
 
-    if (0 != eventlog_write_event (self->eventlog, &le)) {
+    if (0 != lcm_eventlog_write_event (self->eventlog, &le)) {
         PyErr_SetFromErrno (PyExc_IOError);
         return NULL;
     }
@@ -207,7 +208,7 @@ static void
 pylog_dealloc(PyLogObject *self)
 {
     if (self->eventlog) {
-        eventlog_destroy (self->eventlog);
+        lcm_eventlog_destroy (self->eventlog);
     }
     self->ob_type->tp_free((PyObject*)self);
 }
@@ -233,9 +234,9 @@ pylog_initobj(PyObject *s, PyObject *args, PyObject *kwds)
         return -1;
     }
 
-    if (self->eventlog) { eventlog_destroy (self->eventlog); }
+    if (self->eventlog) { lcm_eventlog_destroy (self->eventlog); }
 
-    self->eventlog = eventlog_create (filename, mode);
+    self->eventlog = lcm_eventlog_create (filename, mode);
     if (!self->eventlog) {
         PyErr_SetFromErrno (PyExc_IOError);
         return -1;

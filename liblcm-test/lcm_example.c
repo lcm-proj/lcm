@@ -14,27 +14,27 @@
 #include <time.h>
 #include <sys/select.h>
 
-#include <lc.h>
+#include <lcm.h>
 
 int test_count = 0;
 int test_count2 = 0;
 int catchall_count = 0;
 
-int test_handler (const lc_recv_buf_t *rbuf, void *u)
+int test_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     printf ("handling [%s] msg (content: %s)\n", rbuf->channel, rbuf->data);
     test_count++;
     return 0;
 }
 
-int test_handler2 (const lc_recv_buf_t *rbuf, void *u)
+int test_handler2 (const lcm_recv_buf_t *rbuf, void *u)
 {
     printf ("handling [%s] msg (content: %s)\n", rbuf->channel, rbuf->data);
     test_count2++;
     return 0;
 }
 
-int catchall_handler (const lc_recv_buf_t *rbuf, void *u)
+int catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     catchall_count++;
     return 0;
@@ -55,30 +55,30 @@ int main (int argc, char **argv)
     char *payload = malloc (datalen);
     strcpy (payload, words[windex]);
     
-    lc_params_t lc_args;
-    lc_params_init_defaults (&lc_args);
-//    lc_args.local_iface = inet_addr ("192.168.0.2");
-//  lc_args.local_iface = INADDR_ANY;
-//  lc_args.mc_addr = inet_addr ("225.0.0.3");
-//  lc_args.mc_port = htons (2006);
+    lcm_params_t lcm_args;
+    lcm_params_init_defaults (&lcm_args);
+//    lcm_args.local_iface = inet_addr ("192.168.0.2");
+//  lcm_args.local_iface = INADDR_ANY;
+//  lcm_args.mc_addr = inet_addr ("225.0.0.3");
+//  lcm_args.mc_port = htons (2006);
 
-    lc_t *lc = lc_create ();
-    if (! lc) {
-        fprintf (stderr, "couldn't allocate lc_t\n");
+    lcm_t *lcm = lcm_create ();
+    if (! lcm) {
+        fprintf (stderr, "couldn't allocate lcm_t\n");
         return 1;
     }
-    status = lc_init (lc, &lc_args);
+    status = lcm_init (lcm, &lcm_args);
     if (0 != status) {
-        fprintf (stderr, "error initializing lc context\n");
+        fprintf (stderr, "error initializing lcm context\n");
         return 1;
     }
 
-    lc_subscribe (lc, "TEST", test_handler, 0);
-    lc_subscribe (lc, "TEST", test_handler2, 0);
-    lc_unsubscribe_by_func ( lc, "TEST", test_handler, 0);
-//    lc_subscribe (lc, ".*", catchall_handler, 0);
+    lcm_subscribe (lcm, "TEST", test_handler, 0);
+    lcm_subscribe (lcm, "TEST", test_handler2, 0);
+    lcm_unsubscribe_by_func ( lcm, "TEST", test_handler, 0);
+//    lcm_subscribe (lcm, ".*", catchall_handler, 0);
 
-    int fd = lc_get_fileno (lc);
+    int fd = lcm_get_fileno (lcm);
 
     int ntransmitted = 0;
 
@@ -91,16 +91,16 @@ int main (int argc, char **argv)
         status=select (fd + 1,&readfds,0,0,&timeout);
         if (0 == status) {
             printf ("sending\n");
-            lc_publish (lc, "TEST", payload, datalen);
-            lc_publish (lc, "12345", payload, datalen);
+            lcm_publish (lcm, "TEST", payload, datalen);
+            lcm_publish (lcm, "12345", payload, datalen);
             ntransmitted++;
         } else if (FD_ISSET (fd,&readfds)) {
-            lc_handle (lc);
+            lcm_handle (lcm);
             printf ("=====================================================\n");
         }
     }
 
-    lc_destroy (lc);
+    lcm_destroy (lcm);
 
     printf ("transmitted: %d\n", ntransmitted);
     printf ("test: %d test2: %d catchall: %d\n", 

@@ -14,9 +14,9 @@
 #include <time.h>
 #include <sys/select.h>
 
-#include <lc.h>
+#include <lcm.h>
 
-int catchall_handler (const lc_recv_buf_t *rbuf, void *u)
+int catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     printf("catchall handler [%s] (content: %s)\n", rbuf->channel, rbuf->data);
     return 0;
@@ -26,26 +26,26 @@ int main(int argc, char **argv)
 {
     int status;
 
-    lc_params_t lc_args;
-    lc_params_init_defaults (&lc_args);
+    lcm_params_t lcm_args;
+    lcm_params_init_defaults (&lcm_args);
 
-    lc_t *lc = lc_create();
-    if (! lc) {
-        fprintf(stderr, "couldn't allocate lc_t\n");
+    lcm_t *lcm = lcm_create();
+    if (! lcm) {
+        fprintf(stderr, "couldn't allocate lcm_t\n");
         return 1;
     }
-    status = lc_init (lc, &lc_args);
+    status = lcm_init (lcm, &lcm_args);
     if (0 != status) {
-        fprintf(stderr, "error initializing lc context\n");
+        fprintf(stderr, "error initializing lcm context\n");
         return 1;
     }
-    lc_subscribe (lc, ".*", catchall_handler, NULL);
+    lcm_subscribe (lcm, ".*", catchall_handler, NULL);
 
     while(1) {
-		lc_handle (lc);
+		lcm_handle (lcm);
    }
 
-    lc_destroy (lc);
+    lcm_destroy (lcm);
     
     return 0;
 }

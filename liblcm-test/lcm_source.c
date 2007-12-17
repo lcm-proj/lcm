@@ -1,4 +1,4 @@
-// file: lc_source.c
+// file: lcm_source.c
 // desc: utility to basically spew garbage on the LC channels to use up 
 //       bandwidth.
 
@@ -11,7 +11,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include <lc.h>
+#include <lcm.h>
 
 #define DEFAULT_TRANSMIT_INTERVAL_USEC 10000
 
@@ -34,7 +34,7 @@ make_msg_channel (char *buf, int maxlen)
 static void 
 usage()
 {
-    printf("usage: lc_source [OPTIONS]\n"
+    printf("usage: lcm_source [OPTIONS]\n"
            "\n"
            "periodically transmits LC messages.\n"
            "\n"
@@ -92,18 +92,18 @@ int main(int argc, char **argv)
         };
     }
 
-    lc_params_t lc_args;
-    lc_params_init_defaults (&lc_args);
-    lc_args.transmit_only = 1;
+    lcm_params_t lcm_args;
+    lcm_params_init_defaults (&lcm_args);
+    lcm_args.transmit_only = 1;
 
-    lc_t *lc = lc_create();
-    if (! lc) {
-        fprintf(stderr, "couldn't allocate lc_t\n");
+    lcm_t *lcm = lcm_create();
+    if (! lcm) {
+        fprintf(stderr, "couldn't allocate lcm_t\n");
         return 1;
     }
-    status = lc_init (lc, &lc_args);
+    status = lcm_init (lcm, &lcm_args);
     if (0 != status) {
-        fprintf(stderr, "error initializing lc context\n");
+        fprintf(stderr, "error initializing lcm context\n");
         return 1;
     }
 
@@ -128,7 +128,7 @@ int main(int argc, char **argv)
         if (sz >= sizeof (seqno)) memcpy (data, &seqno, sizeof (seqno));
 
         // spew
-        lc_publish (lc, channel, data, sz);
+        lcm_publish (lcm, channel, data, sz);
 
         if (verbose) {
             printf("packet type: [%s] size: %d\n", channel, sz);
@@ -147,7 +147,7 @@ int main(int argc, char **argv)
         seqno++;
     }
 
-    lc_destroy (lc);
+    lcm_destroy (lcm);
     
     return 0;
 }

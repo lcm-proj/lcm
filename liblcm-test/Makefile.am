@@ -1,19 +1,19 @@
-INCLUDES = -I$(top_srcdir)/c
+INCLUDES = -I$(top_srcdir)/liblcm
 
-bin_PROGRAMS = lc_example lc_sink lc_source lc_tester
+bin_PROGRAMS = lcm_example lcm_sink lcm_source lcm_tester
 
-lc_example_SOURCES = lc_example.c 
-lc_example_LDADD = $(GLIB_LIBS) ../c/liblcm.la
+lcm_example_SOURCES = lcm_example.c 
+lcm_example_LDADD = $(GLIB_LIBS) ../liblcm/liblcm.la
 
-lc_sink_SOURCES = lc_sink.c 
-lc_sink_LDADD = $(GLIB_LIBS) ../c/liblcm.la
+lcm_sink_SOURCES = lcm_sink.c 
+lcm_sink_LDADD = $(GLIB_LIBS) ../liblcm/liblcm.la
 
-lc_source_SOURCES = lc_source.c 
-lc_source_LDADD = $(GLIB_LIBS) ../c/liblcm.la
+lcm_source_SOURCES = lcm_source.c 
+lcm_source_LDADD = $(GLIB_LIBS) ../liblcm/liblcm.la
 
-lc_tester_SOURCES = lc_tester.c 
-lc_tester_LDADD = $(GLIB_LIBS) ../c/liblcm.la
+lcm_tester_SOURCES = lcm_tester.c 
+lcm_tester_LDADD = $(GLIB_LIBS) ../liblcm/liblcm.la
 
-man_MANS = lc_example.1 lc_sink.1 lc_source.1 lc_tester.1
+man_MANS = lcm_example.1 lcm_sink.1 lcm_source.1 lcm_tester.1
 
-EXTRA_DIST = lc_example.1 lc_sink.1 lc_source.1 lc_tester.1
+EXTRA_DIST = lcm_example.1 lcm_sink.1 lcm_source.1 lcm_tester.1

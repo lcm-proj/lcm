@@ -1,7 +1,7 @@
 #ifndef __lcm_logger_glib_util_h__
 #define __lcm_logger_glib_util_h__
 
-#include <lc.h>
+#include <lcm.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,9 +31,9 @@ int signal_pipe_attach_glib (signal_pipe_glib_handler_t user_func,
 // also invokes signal_pipe_cleanup() on receiving these signals.
 int signal_pipe_glib_quit_on_kill (GMainLoop *mainloop);
 
-int glib_mainloop_attach_lc (lc_t *lc);
+int glib_mainloop_attach_lcm (lcm_t *lcm);
 
-int glib_mainloop_detach_lc (lc_t *lc);
+int glib_mainloop_detach_lcm (lcm_t *lcm);
 
 #ifdef __cplusplus
 }

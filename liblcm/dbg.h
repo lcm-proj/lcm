@@ -37,8 +37,8 @@ extern "C" {
 // ================== add debugging modes here ======================
 
 #define DBG_TEST    DBG_MODE(1) /* foo */
-#define DBG_LC      DBG_MODE(2)
-#define DBG_LC_MSG  DBG_MODE(3)
+#define DBG_LCM      DBG_MODE(2)
+#define DBG_LCM_MSG  DBG_MODE(3)
 #define DBG_MAIN    DBG_MODE(4)
 #define DBG_5       DBG_MODE(5)
 #define DBG_6       DBG_MODE(6)
@@ -59,8 +59,8 @@ extern "C" {
 { "all", DBG_ALL }, \
 { "error", DBG_ERROR }, \
 { "test", DBG_TEST }, \
-{ "lc", DBG_LC }, \
-{ "lc_msg", DBG_LC_MSG }, \
+{ "lc", DBG_LCM }, \
+{ "lc_msg", DBG_LCM_MSG }, \
 { "main", DBG_MAIN }, \
 { "5", DBG_5 }, \
 { "6", DBG_6 }, \
@@ -78,8 +78,8 @@ extern "C" {
 
 #define DBG_COLORTAB \
 { DBG_TEST, _CYAN_ }, \
-{ DBG_LC, _RED_ }, \
-{ DBG_LC_MSG, _RED_ }, \
+{ DBG_LCM, _RED_ }, \
+{ DBG_LCM_MSG, _RED_ }, \
 { DBG_MAIN, _YELLOW_ }, \
 { DBG_5, _GREEN_ }, \
 { DBG_6, _BLUE_ }, \
