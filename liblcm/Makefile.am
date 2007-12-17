@@ -22,7 +22,8 @@ liblcmincludedir = $(includedir)/lcm
 liblcminclude_HEADERS = \
 	lc.h \
 	eventlog.h \
-	lcm.h
+	lcm.h \
+	lcm_coretypes.h
 
 
 pkgconfigdir = $(libdir)/pkgconfig

@@ -33,7 +33,7 @@ extern "C" {
 #define LCM_CONF_FILE "/etc/lcm.conf"
 
 typedef struct _lcm lcm_t;
-typedef struct _lcm_handler lcm_handler_t;
+typedef struct _lcm_subscription lcm_subscription_t;
 
 /**
  * lcm_params_t:
@@ -144,13 +144,14 @@ int lcm_get_fileno (const lcm_t *lcm);
  *             on the specified channel
  * @userdata:  this will be passed to the callback function.
  *
- * registers a callback function to handle all messages of a certain type.
- * Multiple handlers can be registered for a given type
+ * registers a callback function that will be invoked any time a message on the
+ * specified channel is received.  Multiple callbacks can be subscribed for a
+ * given channel.
  *
- * Returns: a lcm_handler_id_t to identify the newly registered handler, which
- *          can be passed to lcm_unsubscribe
+ * Returns: a lcm_subscription_t to identify the new subscription,
+ *          which can be passed to lcm_unsubscribe
  */
-lcm_handler_t *lcm_subscribe (lcm_t *lcm, const char *channel, 
+lcm_subscription_t *lcm_subscribe (lcm_t *lcm, const char *channel, 
 				   lcm_msg_handler_t handler, void *userdata);
 
 /**
@@ -168,7 +169,7 @@ int lcm_unsubscribe_by_func (lcm_t *lcm, const char *channel,
  * unregisters a message handler so that it will no longer be invoked when the
  * specified message type is received.
  */
-int lcm_unsubscribe (lcm_t *lcm, lcm_handler_t *handler);
+int lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *handler);
 
 /**
  * lcm_publish:

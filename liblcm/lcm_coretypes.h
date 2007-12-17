@@ -134,12 +134,13 @@ static inline int __int16_t_encode_array(void *_buf, int offset, int maxlen, con
 {
     int total_size = sizeof(int16_t) * elements;
     uint8_t *buf = (uint8_t*) _buf;
+    int pos = offset;
+    int element;
 
     if (maxlen < total_size)
         return -1;
 
-    int pos = offset;
-    for (int element = 0; element < elements; element++) {
+    for (element = 0; element < elements; element++) {
         int16_t v = p[element];
         buf[pos++] = (v>>8) & 0xff;
         buf[pos++] = (v & 0xff);
@@ -152,12 +153,13 @@ static inline int __int16_t_decode_array(const void *_buf, int offset, int maxle
 {
     int total_size = sizeof(int16_t) * elements;
     uint8_t *buf = (uint8_t*) _buf;
+    int pos = offset;
+    int element;
 
     if (maxlen < total_size)
         return -1;
 
-    int pos = offset;
-    for (int element = 0; element < elements; element++) {
+    for (element = 0; element < elements; element++) {
         p[element] = (buf[pos]<<8) + buf[pos+1];
         pos+=2;
     }
@@ -187,12 +189,13 @@ static inline int __int32_t_encode_array(void *_buf, int offset, int maxlen, con
 {
     int total_size = sizeof(int32_t) * elements;
     uint8_t *buf = (uint8_t*) _buf;
+    int pos = offset;
+    int element;
 
     if (maxlen < total_size)
         return -1;
 
-    int pos = offset;
-    for (int element = 0; element < elements; element++) {
+    for (element = 0; element < elements; element++) {
         int32_t v = p[element];
         buf[pos++] = (v>>24)&0xff;
         buf[pos++] = (v>>16)&0xff;
@@ -207,12 +210,13 @@ static inline int __int32_t_decode_array(const void *_buf, int offset, int maxle
 {
     int total_size = sizeof(int32_t) * elements;
     uint8_t *buf = (uint8_t*) _buf;
+    int pos = offset;
+    int element;
 
     if (maxlen < total_size)
         return -1;
 
-    int pos = offset;
-    for (int element = 0; element < elements; element++) {
+    for (element = 0; element < elements; element++) {
         p[element] = (buf[pos+0]<<24) + (buf[pos+1]<<16) + (buf[pos+2]<<8) + buf[pos+3];
         pos+=4;
     }
@@ -242,12 +246,13 @@ static inline int __int64_t_encode_array(void *_buf, int offset, int maxlen, con
 {
     int total_size = sizeof(int64_t) * elements;
     uint8_t *buf = (uint8_t*) _buf;
+    int pos = offset;
+    int element;
 
     if (maxlen < total_size)
         return -1;
 
-    int pos = offset;
-    for (int element = 0; element < elements; element++) {
+    for (element = 0; element < elements; element++) {
         int64_t v = p[element];
         buf[pos++] = (v>>56)&0xff;
         buf[pos++] = (v>>48)&0xff;
@@ -266,12 +271,13 @@ static inline int __int64_t_decode_array(const void *_buf, int offset, int maxle
 {
     int total_size = sizeof(int64_t) * elements;
     uint8_t *buf = (uint8_t*) _buf;
+    int pos = offset;
+    int element;
 
     if (maxlen < total_size)
         return -1;
 
-    int pos = offset;
-    for (int element = 0; element < elements; element++) {
+    for (element = 0; element < elements; element++) {
         int64_t a = (buf[pos+0]<<24) + (buf[pos+1]<<16) + (buf[pos+2]<<8) + buf[pos+3];
         pos+=4;
         int64_t b = (buf[pos+0]<<24) + (buf[pos+1]<<16) + (buf[pos+2]<<8) + buf[pos+3];
@@ -351,7 +357,8 @@ static inline int __double_clone_array(const double *p, double *q, int elements)
 
 static inline int __string_decode_array_cleanup(char **s, int elements)
 {
-    for (int element = 0; element < elements; element++)
+    int element;
+    for (element = 0; element < elements; element++)
         free(s[element]);
     return 0;
 }
@@ -359,7 +366,8 @@ static inline int __string_decode_array_cleanup(char **s, int elements)
 static inline int __string_encoded_array_size(char * const *s, int elements)
 {
     int size = 0;
-    for (int element = 0; element < elements; element++)
+    int element;
+    for (element = 0; element < elements; element++)
         size += 4 + strlen(s[element]) + 1;
 
     return size;
@@ -373,8 +381,9 @@ static inline int __string_encoded_size(char * const *s)
 static inline int __string_encode_array(void *_buf, int offset, int maxlen, char * const *p, int elements)
 {
     int pos = 0, thislen;
+    int element;
 
-    for (int element = 0; element < elements; element++) {
+    for (element = 0; element < elements; element++) {
         int length = strlen(p[element]) + 1; // length includes \0
 
         thislen = __int32_t_encode_array(_buf, offset + pos, maxlen - pos, &length, 1);
@@ -390,8 +399,9 @@ static inline int __string_encode_array(void *_buf, int offset, int maxlen, char
 static inline int __string_decode_array(const void *_buf, int offset, int maxlen, char **p, int elements)
 {
     int pos = 0, thislen;
+    int element;
 
-    for (int element = 0; element < elements; element++) {
+    for (element = 0; element < elements; element++) {
         int length;
 
         // read length including \0
@@ -408,7 +418,8 @@ static inline int __string_decode_array(const void *_buf, int offset, int maxlen
 
 static inline int __string_clone_array(char * const *p, char **q, int elements)
 {
-    for (int element = 0; element < elements; element++)
+    int element;
+    for (element = 0; element < elements; element++)
         q[element] = strdup(p[element]);
     return 0;
 }

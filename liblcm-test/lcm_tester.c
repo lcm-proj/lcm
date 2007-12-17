@@ -125,10 +125,10 @@ int main (int argc, char **argv)
 }
 
     // register a couple handlers
-    lcm_handler_t *h = NULL;
+    lcm_subscription_t *h = NULL;
     h = lcm_subscribe (lcm, "TEST", test_handler, 0);
     FAIL_IF_BAD_HID (h);
-    lcm_handler_t *h2 = lcm_subscribe (lcm, "TEST", test_handler2, 0);
+    lcm_subscription_t *h2 = lcm_subscribe (lcm, "TEST", test_handler2, 0);
     FAIL_IF_BAD_HID (h2);
 
     // unregister and re-register the first handler

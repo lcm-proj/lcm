@@ -70,7 +70,7 @@ static const char *map_type_name(const char *t)
 
 void setup_c_options(getopt_t *gopt)
 {
-    getopt_add_bool   (gopt, 0, "clcfuncs",   0,        "Add LC publish/subscribe convenience function");
+//    getopt_add_bool   (gopt, 0, "clcfuncs",   0,        "Add LC publish/subscribe convenience function");
     getopt_add_string (gopt, 0, "c-cpath",    ".",      "Location for .c files");
     getopt_add_string (gopt, 0, "c-hpath",    ".",      "Location for .h files");
     getopt_add_string (gopt, 0, "cinclude",   "",       "Generated #include lines reference this folder");
@@ -83,16 +83,14 @@ static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
     
     fprintf(f, "#include <stdint.h>\n");
     fprintf(f, "#include <stdlib.h>\n");
-    fprintf(f, "#include \"%s%slcm_lib.h\"\n",
-            getopt_get_string(lcm->gopt, "cinclude"),
-            strlen(getopt_get_string(lcm->gopt, "cinclude"))>0 ? "/" : "");
+    fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
+//    fprintf(f, "#include \"%s%slcm_lib.h\"\n",
+//            getopt_get_string(lcm->gopt, "cinclude"),
+//            strlen(getopt_get_string(lcm->gopt, "cinclude"))>0 ? "/" : "");
 
-    if( getopt_get_bool(lcm->gopt, "clcfuncs") ) {
-        fprintf(f, "#include <lc/lc.h>\n");
-        fprintf(f, "#include \"%s%slcm_lc.h\"\n", 
-                getopt_get_string(lcm->gopt, "cinclude"),
-                strlen(getopt_get_string(lcm->gopt, "cinclude"))>0 ? "/" : "");
-    }
+//    if( getopt_get_bool(lcm->gopt, "clcfuncs") ) {
+        fprintf(f, "#include <lcm/lcm.h>\n");
+//    }
     fprintf(f, "\n");
         
     fprintf(f, "#ifndef _%s_h\n", name);
@@ -174,6 +172,16 @@ static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"void %s_destroy(%s *p);", tn_, tn_);
     emit(0," ");
 
+//        if (getopt_get_bool(lcmgen->gopt, "clcfuncs")) {
+    emit(0,"typedef struct _%s_subscription_t %s_subscription_t;", tn_, tn_);
+    emit(0,"typedef int (*%s_handler_t)(const char *channel, const %s *msg, void *user);", tn_, tn_);
+    emit(0, "");
+    emit(0,"int %s_publish(lcm_t *lcm, const char *channel, const %s *p);", tn_, tn_);
+    emit(0,"%s_subscription_t* %s_subscribe (lcm_t *lcm, const char *channel, %s_handler_t f, void *userdata);", tn_, tn_, tn_);
+    emit(0,"int %s_unsubscribe(lcm_t *lcm, %s_subscription_t* hid);", tn_, tn_);
+    emit(0, " ");
+// }
+//
     emit(0,"// LCM support functions. Users should not call these");
     emit(0,"int64_t __%s_get_hash();", tn_);
     emit(0,"int64_t __%s_hash_recursive(const __lcm_hash_ptr *p);", tn_);
@@ -183,6 +191,7 @@ static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"int     __%s_encoded_array_size(const %s *p, int elements);", tn_, tn_);
     emit(0,"int     __%s_clone_array(const %s *p, %s *q, int elements);", tn_, tn_, tn_);
     emit(0, " ");
+
 }
 
 static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -196,7 +205,8 @@ static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     emit(0, "int64_t __%s_hash_recursive(const __lcm_hash_ptr *p)", tn_);
     emit(0, "{");
-    emit(1,     "for (const __lcm_hash_ptr *fp = p; fp != NULL; fp = fp->parent)");
+    emit(1,     "const __lcm_hash_ptr *fp;");
+    emit(1,     "for (fp = p; fp != NULL; fp = fp->parent)");
     emit(2,         "if (fp->v == __%s_get_hash)", tn_);
     emit(3,              "return 0;");
     emit(0, " ");
@@ -327,9 +337,9 @@ static void emit_c_encode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     emit(0,"int __%s_encode_array(void *buf, int offset, int maxlen, const %s *p, int elements)", tn_, tn_);
     emit(0,"{");
-    emit(1,    "int pos = 0, thislen;");
+    emit(1,    "int pos = 0, thislen, element;");
     emit(0," ");
-    emit(1,    "for (int element = 0; element < elements; element++) {");
+    emit(1,    "for (element = 0; element < elements; element++) {");
     emit(0," ");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, m);
@@ -380,9 +390,9 @@ static void emit_c_decode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     emit(0,"int __%s_decode_array(const void *buf, int offset, int maxlen, %s *p, int elements)", tn_, tn_);
     emit(0,"{");
-    emit(1,    "int pos = 0, thislen;");
+    emit(1,    "int pos = 0, thislen, element;");
     emit(0," ");
-    emit(1,    "for (int element = 0; element < elements; element++) {");
+    emit(1,    "for (element = 0; element < elements; element++) {");
     emit(0," ");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, m);
@@ -412,7 +422,8 @@ static void emit_c_decode_array_cleanup(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls
 
     emit(0,"int __%s_decode_array_cleanup(%s *p, int elements)", tn_, tn_);
     emit(0,"{");
-    emit(1,    "for (int element = 0; element < elements; element++) {");
+    emit(1,    "int element;");
+    emit(1,    "for (element = 0; element < elements; element++) {");
     emit(0," ");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, m);
@@ -476,8 +487,8 @@ static void emit_c_encoded_array_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     emit(0,"int __%s_encoded_array_size(const %s *p, int elements)", tn_, tn_);
     emit(0,"{");
-    emit(1,"int size = 0;");
-    emit(1,    "for (int element = 0; element < elements; element++) {");
+    emit(1,"int size = 0, element;");
+    emit(1,    "for (element = 0; element < elements; element++) {");
     emit(0," ");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, m);
@@ -518,7 +529,8 @@ static void emit_c_clone_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 
     emit(0,"int __%s_clone_array(const %s *p, %s *q, int elements)", tn_, tn_, tn_);
     emit(0,"{");
-    emit(1,    "for (int element = 0; element < elements; element++) {");
+    emit(1,    "int element;");
+    emit(1,    "for (element = 0; element < elements; element++) {");
     emit(0," ");
     for (unsigned int m = 0; m < g_ptr_array_size(lr->members); m++) {
         lcm_member_t *lm = g_ptr_array_index(lr->members, m);
@@ -568,10 +580,12 @@ static void emit_c_destroy(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
     emit(0," ");
 }
 
-static void emit_c_struct_lcpublish(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
+static void emit_c_struct_publish(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
+    char *tn = lr->structname->typename;
+    char *tn_ = dots_to_underscores(tn);
     fprintf(f, 
-            "int %s_lc_publish(lc_t *lc, const char *channel, const %s *p)\n"
+            "int %s_publish(lcm_t *lc, const char *channel, const %s *p)\n"
             "{\n"
             "      int max_data_size = %s_encoded_size (p);\n"
             "      char *buf = (char*) malloc (max_data_size);\n"
@@ -581,35 +595,27 @@ static void emit_c_struct_lcpublish(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "          free (buf);\n"
             "          return data_size;\n"
             "      }\n"
-            "      int status = lc_publish (lc, channel, buf, data_size);\n"
+            "      int status = lcm_publish (lc, channel, buf, data_size);\n"
             "      free (buf);\n"
             "      return status;\n"
-            "}\n\n", lr->structname->typename,lr->structname->typename, lr->structname->typename, 
-            lr->structname->typename);
+            "}\n\n", tn_, tn_, tn_, tn_);
 }
 
-static void emit_header_lc_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
-{
-    char *tn = ls->structname->typename;
-    char *tn_ = dots_to_underscores(tn);
-
-    emit(0,"// LC functions");
-    
-    emit(0,"typedef int (*%s_lc_handler_t)(const char *channel, const %s *msg, void *user);", tn_, tn_);
-    emit(0,"int %s_lc_publish(lc_t *lc, const char *channel, const %s *p);", tn_, tn_);
-    emit(0,"lcm_lc_handler_t* %s_lc_subscribe (lc_t *lc, const char *channel, %s_lc_handler_t f, void *userdata);", tn_, tn_);
-    emit(0,"int %s_lc_unsubscribe(lc_t *lc, lcm_lc_handler_t* hid);", tn_);
-    emit(0, " ");
-}
-
-static void emit_c_struct_lcsubscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
+static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
     const char *tn = lr->structname->typename;
     char *tn_ = dots_to_underscores(tn);
 
     fprintf(f,
+            "struct _%s_subscription_t {\n"
+            "    void *user_handler;\n"
+            "    void *userdata;\n"
+            "    char *channel;\n"
+            "    lcm_subscription_t *lc_h;\n"
+            "};\n", tn_);
+    fprintf(f,
             "static\n"
-            "int %s_lc_handler_stub (const lc_recv_buf_t *rbuf, void *userdata)\n"
+            "int %s_handler_stub (const lcm_recv_buf_t *rbuf, void *userdata)\n"
             "{\n"
             "    int status;\n"
             "    %s p;\n"
@@ -620,50 +626,49 @@ static void emit_c_struct_lcsubscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "        return status;\n"
             "    }\n"
             "\n"
-            "    lcm_lc_handler_t *h;\n"
-            "    h = (lcm_lc_handler_t*) userdata;\n"
-            "    %s_lc_handler_t callback = (%s_lc_handler_t)h->user_handler;\n"
+            "    %s_subscription_t *h = (%s_subscription_t*) userdata;\n"
+            "    %s_handler_t callback = (%s_handler_t)h->user_handler;\n"
             "    status = callback (rbuf->channel, &p, h->userdata);\n"
             "\n"
             "    %s_decode_cleanup( &p );\n"
             "    return status;\n"
-            "}\n\n", tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_
+            "}\n\n", tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_
         );
 
     fprintf(f,
-            "lcm_lc_handler_t* %s_lc_subscribe (lc_t *lc, \n"
+            "%s_subscription_t* %s_subscribe (lcm_t *lcm, \n"
             "                    const char *channel, \n"
-            "                    %s_lc_handler_t f, void *userdata)\n"
+            "                    %s_handler_t f, void *userdata)\n"
             "{\n"
-            "    lcm_lc_handler_t *n = (lcm_lc_handler_t*)\n"
-            "                       malloc(sizeof(lcm_lc_handler_t));\n"
+            "    %s_subscription_t *n = (%s_subscription_t*)\n"
+            "                       malloc(sizeof(%s_subscription_t));\n"
             "    n->user_handler = f;\n"
             "    n->userdata = userdata;\n"
             "    n->channel = strdup (channel);\n"
-            "    n->lc_h = lc_subscribe (lc, channel, \n"
-            "                                 %s_lc_handler_stub, n);\n"
+            "    n->lc_h = lcm_subscribe (lcm, channel, \n"
+            "                                 %s_handler_stub, n);\n"
             "    if (n->lc_h == NULL) {\n"
-            "        fprintf (stderr,\"couldn't reg %s LC handler!\\n\");\n"
+            "        fprintf (stderr,\"couldn't reg %s LCM handler!\\n\");\n"
             "        free (n);\n"
             "        return NULL;\n"
             "    }\n"
             "    return n;\n"
-            "}\n\n", tn_, tn_, tn_, tn_
+            "}\n\n", tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_
         );
 
     fprintf(f,
-            "int %s_lc_unsubscribe(lc_t *lc, lcm_lc_handler_t* hid)\n"
+            "int %s_unsubscribe(lcm_t *lcm, %s_subscription_t* hid)\n"
             "{\n"
-            "    int status = lc_unsubscribe (lc, hid->lc_h);\n"
+            "    int status = lcm_unsubscribe (lcm, hid->lc_h);\n"
             "    if (0 != status) {\n"
             "        fprintf(stderr, \n"
-            "           \"couldn't unsubscribe %s_lc_handler %%p!\\n\", hid);\n"
+            "           \"couldn't unsubscribe %s_handler %%p!\\n\", hid);\n"
             "        return -1;\n"
             "    }\n"
             "    free (hid->channel);\n"
             "    free (hid);\n"
             "    return 0;\n"
-            "}\n\n", tn_, tn_
+            "}\n\n", tn_, tn_, tn_
         );
 }
 
@@ -744,8 +749,8 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
 
         emit(0, "static inline int __%s_decode_array(const void *_buf, int offset, int maxlen, %s *p, int elements)", tn_, tn_);
         emit(0, "{");
-        emit(1,    "int pos = 0, thislen;");
-        emit(1,     "for (int element = 0; element < elements; element++) {");
+        emit(1,    "int pos = 0, thislen, element;");
+        emit(1,     "for (element = 0; element < elements; element++) {");
         emit(2,         "int32_t v;");
         emit(2,         "thislen = __int32_t_decode_array(_buf, offset + pos, maxlen - pos, &v, 1);");
         emit(2,         "if (thislen < 0) return thislen; else pos += thislen;");
@@ -838,8 +843,6 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *lr)
         emit_header_top(lcmgen, f, tn_);
         emit_header_struct(lcmgen, f, lr);
         emit_header_prototypes(lcmgen, f, lr);
-        if (getopt_get_bool(lcmgen->gopt, "clcfuncs"))
-            emit_header_lc_prototypes(lcmgen, f, lr);
 
         emit_header_bottom(lcmgen, f);
         fclose(f);
@@ -852,6 +855,7 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *lr)
             return -1;
         
         emit_auto_generated_warning(f);
+        fprintf(f, "#include <string.h>\n");
         fprintf(f, "#include \"%s%s%s.h\"\n",
                 getopt_get_string(lcmgen->gopt, "cinclude"),
                 strlen(getopt_get_string(lcmgen->gopt, "cinclude"))>0 ? "/" : "",
@@ -873,10 +877,10 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *lr)
         emit_c_copy(lcmgen, f, lr);
         emit_c_destroy(lcmgen, f, lr);
         
-        if( getopt_get_bool(lcmgen->gopt, "clcfuncs" ) ) {
-            emit_c_struct_lcpublish(lcmgen, f, lr );
-            emit_c_struct_lcsubscribe(lcmgen, f, lr );
-        }
+//        if( getopt_get_bool(lcmgen->gopt, "clcfuncs" ) ) {
+            emit_c_struct_publish(lcmgen, f, lr );
+            emit_c_struct_subscribe(lcmgen, f, lr );
+//        }
         
         fclose(f);
     }

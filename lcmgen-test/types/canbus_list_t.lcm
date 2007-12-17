@@ -1,0 +1,11 @@
+package lcm.lcmtypes;
+
+struct canbus_list_t
+{
+	// mostly useless since can messages include time stamps; 	
+	// time at which entire list was sent.
+	int64_t  utime;
+
+	int32_t  num_messages;
+	canbus_t messages[num_messages];
+}

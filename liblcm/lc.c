@@ -73,7 +73,7 @@ typedef struct _lcm_frag_buf {
     int64_t   first_packet_utime;
 } lcm_frag_buf_t;
 
-struct _lcm_handler {
+struct _lcm_subscription {
     char             *channel;
     lcm_msg_handler_t  handler;
     void             *userdata;
@@ -136,7 +136,7 @@ struct _lcm {
 
     GPtrArray   *handlers_all;  // list containing *all* handlers
     GHashTable  *handlers_map;  // map of channel name (string) to GPtrArray 
-                                // of matching handlers (lcm_handler_t*)
+                                // of matching handlers (lcm_subscription_t*)
 
     GHashTable  *frag_bufs;
     uint32_t    frag_bufs_total_size;
@@ -284,12 +284,12 @@ is_buf_queue_empty (lcm_buf_queue_t * q)
 }
 
 static inline void
-lcm_handler_free (lcm_handler_t *h) 
+lcm_handler_free (lcm_subscription_t *h) 
 {
     assert (!h->callback_scheduled);
     regfree (&h->preg);
     free (h->channel);
-    memset (h, 0, sizeof (lcm_handler_t));
+    memset (h, 0, sizeof (lcm_subscription_t));
     free (h);
 }
 
@@ -505,7 +505,7 @@ lcm_self_test (lcm_t *lcm)
     int success = 0;
     int status;
     // register a handler for the self test message
-    lcm_handler_t *h = lcm_subscribe (lcm, "LCM_SELF_TEST", 
+    lcm_subscription_t *h = lcm_subscribe (lcm, "LCM_SELF_TEST", 
                                            lcm_self_test_handler, &success);
 
     // transmit a message
@@ -1131,7 +1131,7 @@ lcm_init (lcm_t *lcm, const lcm_params_t *args)
 }
 
 // free the array that we associate for each channel, and the key. Don't free
-// the lcm_handler_t*s.
+// the lcm_subscription_t*s.
 static void 
 map_free_handlers_callback(gpointer _key, gpointer _value, gpointer _data)
 {
@@ -1163,7 +1163,7 @@ lcm_destroy (lcm_t *lcm)
     g_hash_table_destroy (lcm->frag_bufs);
 
     for (int i = 0; i < g_ptr_array_size(lcm->handlers_all); i++) {
-        lcm_handler_t *h = g_ptr_array_index(lcm->handlers_all, i);
+        lcm_subscription_t *h = g_ptr_array_index(lcm->handlers_all, i);
         h->callback_scheduled = 0; // XXX hack...
         lcm_handler_free(h);
     }
@@ -1195,11 +1195,11 @@ lcm_get_fileno (const lcm_t *lcm)
 struct map_callback_data
 {
     lcm_t *lcm;
-    lcm_handler_t *h;
+    lcm_subscription_t *h;
 };
 
 static int 
-is_handler_subscriber(lcm_handler_t *h, char *channel_name)
+is_handler_subscriber(lcm_subscription_t *h, char *channel_name)
 {
     int match = 0;
 
@@ -1213,7 +1213,7 @@ is_handler_subscriber(lcm_handler_t *h, char *channel_name)
 static void 
 map_add_handler_callback(gpointer _key, gpointer _value, gpointer _data)
 {
-    lcm_handler_t *h = (lcm_handler_t*) _data;
+    lcm_subscription_t *h = (lcm_subscription_t*) _data;
     char *channel_name = (char*) _key;
     GPtrArray *handlers = (GPtrArray*) _value;
 
@@ -1228,12 +1228,12 @@ static void
 map_remove_handler_callback(gpointer _key, gpointer _value, 
         gpointer _data)
 {
-    lcm_handler_t *h = (lcm_handler_t*) _data;
+    lcm_subscription_t *h = (lcm_subscription_t*) _data;
     GPtrArray *handlers = (GPtrArray*) _value;
     g_ptr_array_remove_fast(handlers, h);
 }
 
-lcm_handler_t
+lcm_subscription_t
 *lcm_subscribe (lcm_t *lcm, const char *channel, 
                      lcm_msg_handler_t handler, void *userdata)
 {
@@ -1245,7 +1245,7 @@ lcm_handler_t
     dbg (DBG_LCM, "registering %s handler %p\n", channel, handler);
 
     // create and populate a new message handler struct
-    lcm_handler_t *h = (lcm_handler_t*)calloc (1, sizeof (lcm_handler_t));
+    lcm_subscription_t *h = (lcm_subscription_t*)calloc (1, sizeof (lcm_subscription_t));
     h->channel = strdup(channel);
     h->handler = handler;
     h->userdata = userdata;
@@ -1271,7 +1271,7 @@ lcm_handler_t
 }
 
 int 
-lcm_unsubscribe (lcm_t *lcm, lcm_handler_t *h)
+lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *h)
 {
     g_static_rec_mutex_lock (&lcm->mutex);
 
@@ -1302,7 +1302,7 @@ lcm_unsubscribe_by_func (lcm_t *lcm, const char *channel,
     g_static_rec_mutex_lock (&lcm->mutex);
 
     for (int i = 0; i < g_ptr_array_size(lcm->handlers_all); i++) {
-        lcm_handler_t *h = g_ptr_array_index(lcm->handlers_all, i);
+        lcm_subscription_t *h = g_ptr_array_index(lcm->handlers_all, i);
         if (h->handler == handler && h->userdata == userdata) {
             g_hash_table_foreach(lcm->handlers_map, map_remove_handler_callback, 
                     h);
@@ -1493,7 +1493,7 @@ lcm_handle (lcm_t *lcm)
 
         // find all the matching handlers
         for (int i = 0; i < g_ptr_array_size(lcm->handlers_all); i++) {
-            lcm_handler_t *h = g_ptr_array_index(lcm->handlers_all, i);
+            lcm_subscription_t *h = g_ptr_array_index(lcm->handlers_all, i);
             if (is_handler_subscriber(h, lcmb->channel_name))
                 g_ptr_array_add(handlers, h);
         }
@@ -1506,7 +1506,7 @@ lcm_handle (lcm_t *lcm)
     // callbacks.
     int nhandlers = g_ptr_array_size (handlers);
     for (int i = 0; i < nhandlers; i++) {
-        lcm_handler_t *h = g_ptr_array_index(handlers, i);
+        lcm_subscription_t *h = g_ptr_array_index(handlers, i);
         h->callback_scheduled = 1;
     }
 
@@ -1519,7 +1519,7 @@ lcm_handle (lcm_t *lcm)
 
     // now, call the handlers.
     for (int i = 0; i < nhandlers; i++) {
-        lcm_handler_t *h = g_ptr_array_index(handlers, i);
+        lcm_subscription_t *h = g_ptr_array_index(handlers, i);
         int invoke = ! h->marked_for_deletion;
         g_static_rec_mutex_unlock (&lcm->mutex);
         if (invoke) {
@@ -1531,7 +1531,7 @@ lcm_handle (lcm_t *lcm)
     // unref the handlers and check if any should be deleted
     GList *to_remove = NULL;
     for (int i = 0; i < nhandlers; i++) {
-        lcm_handler_t *h = g_ptr_array_index(handlers, i);
+        lcm_subscription_t *h = g_ptr_array_index(handlers, i);
         h->callback_scheduled = 0;
         if (h->marked_for_deletion) {
             to_remove = g_list_prepend (to_remove, h);
@@ -1539,7 +1539,7 @@ lcm_handle (lcm_t *lcm)
     }
     // actually delete handlers marked for deletion
     for (;to_remove; to_remove = g_list_delete_link (to_remove, to_remove)) {
-        lcm_handler_t *h = to_remove->data;
+        lcm_subscription_t *h = to_remove->data;
         g_ptr_array_remove (lcm->handlers_all, h);
         g_hash_table_foreach (lcm->handlers_map, map_remove_handler_callback, h);
         lcm_handler_free (h);

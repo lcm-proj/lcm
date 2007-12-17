@@ -1,0 +1,9 @@
+struct lcm.lcmtypes.canbus_t
+{
+	int64_t utime; 
+	
+	int32_t id; // CAN message identifier
+	
+	int32_t len;
+	byte    data[len];
+}
