@@ -7,12 +7,10 @@ LCM refers to the message type specification
 lcmgen   - Parses lcm type specifications, generating language-specific
            implementations
 
-logger   - Minimalist logging implementation.
+lcm-logger   - Minimalist logging implementation.
 
-c        - C runtime implementation of LC
+liblcm       - C runtime implementation of LCM
 
-java     - Java runtime implementation of LC, plus logging tools
+lcm-java     - Java runtime implementation of LCM, plus logging tools
 
-python   - Python runtime implementation of LC
-
-lcmtypes - Example and commonly used types.
+lcm-python   - Python runtime implementation of LCM

@@ -1,0 +1,79 @@
+<?xml version="1.0" ?>
+
+<project name="lcm" default="build" basedir=".">
+
+<!-- Build everything -->
+<target name="build" depends="lcmtypes,build-java,build-jar"/>
+
+<!-- Clean everything -->
+<target name="clean" depends="clean-java"/>
+
+<!-- Dist Clean everyting -->
+<target name="distclean" depends="clean">
+  <delete dir="build"/>
+  <delete dir="docs"/>
+  <delete file="lcm.jar"/>
+  <delete dir="depcache"/>
+</target>
+
+<target name="lcmtypes">
+<exec executable="./gen-lcmtypes.sh">
+</exec>
+</target>
+
+<!-- Build docs -->
+<target name="docs">
+<javadoc sourcepath="src/"
+         packagenames="lcm.*,lcmtypes.*"
+         defaultexcludes="yes"
+         destdir="docs/api"
+         Public="yes"
+         source="1.5"
+/>
+</target>
+
+<!-- Build Jar -->
+<target name="build-jar">
+<jar destfile="lcm.jar">
+
+  <fileset dir="build">
+    <include name="**/*.class" />
+  </fileset>
+
+  <manifest>
+   <attribute name="Main-Class" value="lcm.logging.LogPlayer" />
+  </manifest>
+ </jar>
+ <copy file="lcm.jar" todir="." />
+</target>
+
+<target name="build-java">
+ <!-- This compiles all the java -->
+ <javac
+  srcdir="src"
+  includes="**/*.java"
+  debug="on"
+  optimize="off"
+  destdir="build"
+  compiler="extJavac"
+  classpath="src"
+  source="1.5"
+  >
+</javac>
+</target>
+
+<target name="clean-java" >
+ <delete>
+  <fileset dir="build" includes="**/*.class"/>
+  <fileset dir="src/lcm/lcmtypes/" includes="*.java"/>
+  <fileset dir="." includes="**/*~" defaultexcludes="no"/>
+  <fileset dir="." includes="lcm.jar"/>
+ </delete>
+</target>
+
+<target name="build-scripts" depends="build-jar">
+    <exec dir="." executable="./make-java-scripts"/>
+</target>
+
+</project>
+
