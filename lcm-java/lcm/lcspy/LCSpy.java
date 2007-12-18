@@ -129,9 +129,9 @@ public class LCSpy
 		}
 	    });
 
-	plugins.add(new LaserPlugin());
-	plugins.add(new VideoPlugin());
- 	plugins.add(new RadarPluginRaw());
+	//plugins.add(new LaserPlugin());
+	//plugins.add(new VideoPlugin());
+ 	//plugins.add(new RadarPluginRaw());
  }
 
     void createViewer(ChannelData cd)

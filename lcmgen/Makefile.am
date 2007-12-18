@@ -7,8 +7,6 @@ lcmgen_SOURCES = main.c \
 				 sprintfalloc.h \
 				 lcmgen.c \
 				 lcmgen.h \
-				 lcm_lc.h \
-				 lcm_lib.h \
 				 getopt.c \
 				 getopt.h \
 				 tokenize.c \

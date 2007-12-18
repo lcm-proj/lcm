@@ -6,6 +6,16 @@ AM_INIT_AUTOMAKE(lcm, 0.0.1)
 
 AC_PROG_CC
 AM_PATH_GLIB_2_0(,,,gthread)
+AC_PATH_PROGS(JAR, [jar])
+AC_PATH_PROGS(JAVAC, [javac])
+
+if test "x$JAR" = x -o "x$JAVAC" = x; then
+    AC_MSG_WARN([Java support disabled])
+else
+    JAVA_FOUND="yes"
+fi
+
+AM_CONDITIONAL(HAVE_JAVA, test "x$JAVA_FOUND" = "xyes")
 
 dnl ---------------------------------------------------------------------------
 dnl When making a release:
@@ -14,7 +24,7 @@ dnl     then increment REVISION.
 dnl  2. If the interface has been changed since the last release, increment
 dnl     CURRENT, and set REVISION to 0.
 dnl  3. If the interface changes consist solely of additions, increment AGE.
-dnl  4. If the interface has removed elements, set AGE to 0.
+dnl  4. If the interface has removed or changed elements, set AGE to 0.
 dnl ---------------------------------------------------------------------------
 LIBLCM_AGE=0
 LIBLCM_REVISION=0
@@ -62,9 +72,16 @@ AC_OUTPUT([
   liblcm-test/Makefile
   lcm-logger/Makefile
   lcmgen/Makefile
+  lcm-java/Makefile
   m4/Makefile
   po/Makefile.in
 ])
+
+if test "x$JAVA_FOUND" = "xyes"; then
+    JAVA_STR="Enabled"
+else
+    JAVA_STR="Disabled"
+fi
 
 echo -n "
 
@@ -72,4 +89,5 @@ Configuration (LCM):
 
 	Source code location:  ${srcdir}
 	Compiler:              ${CC}
+        Java Support:          ${JAVA_STR}
 "
