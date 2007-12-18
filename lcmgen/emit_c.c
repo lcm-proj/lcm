@@ -123,11 +123,14 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     for (unsigned int i = 0; i < g_ptr_array_size(ls->members); i++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, i);
         
-        if (!lcm_is_primitive_type(lm->type->typename))
+        if (!lcm_is_primitive_type(lm->type->typename)) {
+            char *other_tn = dots_to_underscores (lm->type->typename);
             fprintf(f, "#include \"%s%s%s.h\"\n",
                     getopt_get_string(lcm->gopt, "cinclude"),
                     strlen(getopt_get_string(lcm->gopt, "cinclude"))>0 ? "/" : "",
-                    tn_);
+                    other_tn);
+            free (other_tn);
+        }
     }
 
     emit(0, "typedef struct _%s %s;", tn_, tn_);
@@ -298,7 +301,8 @@ static void emit_c_array_loops_start(lcmgen_t *lcm, FILE *f, lcm_member_t *lm, c
                  make_array_size(lm, n, i));
         }
 
-        emit(2+i, "for (int %c = 0; %c < %s; %c++) {", var, var, make_array_size(lm, "p", i), var);
+        emit(2+i, "{ int %c;", var);
+        emit(2+i, "for (%c = 0; %c < %s; %c++) {", var, var, make_array_size(lm, "p", i), var);
     }
 
     if (flags & FLAG_EMIT_MALLOCS) {
@@ -321,6 +325,7 @@ static void emit_c_array_loops_end(lcmgen_t *lcm, FILE *f, lcm_member_t *lm, con
             char *accessor =  make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1 - i);
             emit(indent+1, "if (%s) free(%s);", accessor, accessor);
         }
+        emit(indent, "}");
         emit(indent, "}");
     }
 
@@ -722,8 +727,8 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
         // is.
         emit(0, "static inline int __%s_encode_array(void *_buf, int offset, int maxlen, const %s *p, int elements)", tn_, tn_);
         emit(0, "{");
-        emit(1,    "int pos = 0, thislen;");
-        emit(1,     "for (int element = 0; element < elements; element++) {");
+        emit(1,    "int pos = 0, thislen, element;");
+        emit(1,     "for (element = 0; element < elements; element++) {");
         emit(2,         "int32_t v = (int32_t) p[element];");
         emit(2,         "thislen = __int32_t_encode_array(_buf, offset + pos, maxlen - pos, &v, 1);");
         emit(2,         "if (thislen < 0) return thislen; else pos += thislen;");
