@@ -24,7 +24,7 @@ init_lcm(void)
     m = Py_InitModule3("_lcm", lcmmod_methods, lcmmod_doc);
 
     Py_INCREF((PyObject *)&pylcmeventlog_type);
-    if (PyModule_AddObject(m, "Eventlog", 
+    if (PyModule_AddObject(m, "EventLog", 
                 (PyObject *)&pylcmeventlog_type) != 0) {
         return;
     }

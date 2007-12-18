@@ -249,7 +249,7 @@ pylog_initobj(PyObject *s, PyObject *args, PyObject *kwds)
 PyTypeObject pylcmeventlog_type = {
     PyObject_HEAD_INIT(0)   /* Must fill in type value later */
     0,                  /* ob_size */
-    "_dgc.eventlog",            /* tp_name */
+    "EventLog",            /* tp_name */
     sizeof(PyLogObject),     /* tp_basicsize */
     0,                  /* tp_itemsize */
     (destructor)pylog_dealloc,     /* tp_dealloc */
@@ -288,5 +288,4 @@ PyTypeObject pylcmeventlog_type = {
     pylog_new,             /* tp_new */
     PyObject_Del,               /* tp_free */
 };
-
 
