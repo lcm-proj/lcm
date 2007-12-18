@@ -7,8 +7,8 @@ lib_LTLIBRARIES = liblcm.la
 liblcm_la_LDFLAGS = -version-info @LIBLCM_VERSION_INFO@
 liblcm_la_SOURCES = \
 	dbg.h \
-	lc.c \
-	lc.h \
+	lcm_udp.c \
+	lcm_udp.h \
 	ringbuffer.c \
 	ringbuffer.h \
 	eventlog.c \
@@ -20,7 +20,7 @@ liblcm_la_LIBADD = $(GLIB_LIBS)
 
 liblcmincludedir = $(includedir)/lcm
 liblcminclude_HEADERS = \
-	lc.h \
+	lcm_udp.h \
 	eventlog.h \
 	lcm.h \
 	lcm_coretypes.h

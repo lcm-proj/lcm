@@ -1,12 +1,3 @@
-// file: lc.h
-// desc: Lightweight Communications package.
-//
-//      provides a mechanism for inter-host inter-process communications.
-//
-//      should be used in conjunction with a marshalling package like LCM
-//
-//      all LCM functions are thread-safe
-
 #ifndef __lightweight_comunications_h__
 #define __lightweight_comunications_h__
 
@@ -89,14 +80,6 @@ typedef int (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf, void *user_data);
  * constructor
  */
 lcm_t * lcm_create ();
-
-/**
- * lcm_create_and_init_or_die:
- *
- * convenience constructor.  If lcm can't be created, the program is terminated
- * with a nonzero exit code.
- */
-lcm_t * lcm_create_and_init_or_die ();
 
 /**
  * lcm_init:

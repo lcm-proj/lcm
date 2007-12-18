@@ -1,5 +1,3 @@
-// file: lc.c
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -26,7 +24,7 @@
 
 #include <glib.h>
 
-#include "lc.h"
+#include "lcm_udp.h"
 #include "dbg.h"
 #include "ringbuffer.h"
 
@@ -338,23 +336,6 @@ lcm_create ()
 
     g_static_rec_mutex_init (&lcm->mutex);
     g_static_mutex_init (&lcm->transmit_lock);
-    return lcm;
-}
-
-lcm_t * 
-lcm_create_and_init_or_die ()
-{
-    lcm_t *lcm = lcm_create ();
-    if (! lcm) { 
-        fprintf (stderr, "Error allocating LCM!\n");
-        exit (1);
-    }
-
-    if (0 != lcm_init (lcm, NULL)) {
-        fprintf (stderr, "Error initializing LCM!\n");
-        lcm_destroy (lcm);
-        exit (1);
-    }   
     return lcm;
 }
 

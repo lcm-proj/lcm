@@ -514,12 +514,14 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
             pdname,
             have_package ? G_DIR_SEPARATOR_S : "");
     free (pdname);
-    if (! g_file_test (package_dir, G_FILE_TEST_EXISTS)) {
-        g_mkdir_with_parents (package_dir, 0755);
-    }
-    if (!g_file_test (package_dir, G_FILE_TEST_IS_DIR)) {
-        err ("Could not create directory %s\n", package_dir);
-        return -1;
+    if (strlen (package_dir)) {
+        if (! g_file_test (package_dir, G_FILE_TEST_EXISTS)) {
+            g_mkdir_with_parents (package_dir, 0755);
+        }
+        if (!g_file_test (package_dir, G_FILE_TEST_IS_DIR)) {
+            err ("Could not create directory %s\n", package_dir);
+            return -1;
+        }
     }
 
     // write the package __init__.py file, if necessary
