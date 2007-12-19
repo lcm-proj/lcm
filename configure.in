@@ -1,5 +1,5 @@
 AC_PREREQ(2.50)
-AC_INIT(lcmgen/lcmgen.h)
+AC_INIT(lcm/lcm.h)
 AM_CONFIG_HEADER(config.h)
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(lcm, 0.0.1)
@@ -38,6 +38,15 @@ AC_SUBST(LIBLCM_VERSION_INFO)
 AM_DISABLE_STATIC
 AM_PROG_LIBTOOL
 
+dnl ------------------
+dnl Python support
+dnl ------------------
+AC_PYTHON_DEVEL
+AM_PATH_PYTHON([2.4],, [:])
+AM_CONDITIONAL([HAVE_PYTHON], [test "$pythonexists" = "yes"])
+
+pylcmexecdir="$pyexecdir/$PACKAGE"
+AC_SUBST(pylcmexecdir)
 
 dnl ---------------------------------------------------------------------------
 dnl i18n support
@@ -67,12 +76,13 @@ AC_SUBST(LIBTOOL)
 
 AC_OUTPUT([
   Makefile
-  liblcm/Makefile
-  liblcm/lcm.pc
+  lcm/Makefile
+  lcm/lcm.pc
   liblcm-test/Makefile
   lcm-logger/Makefile
   lcmgen/Makefile
   lcm-java/Makefile
+  lcm-python/Makefile
   m4/Makefile
   po/Makefile.in
 ])
@@ -83,11 +93,18 @@ else
     JAVA_STR="Disabled"
 fi
 
+if test "$pythonexists" = "yes"; then
+    PYTHON_STR="Enabled"
+else
+    PYTHON_STR="Disabled"
+fi
+
 echo -n "
 
 Configuration (LCM):
 
 	Source code location:  ${srcdir}
 	Compiler:              ${CC}
-        Java Support:          ${JAVA_STR}
+	Java Support:          ${JAVA_STR}
+	Python Support:        ${PYTHON_STR}
 "

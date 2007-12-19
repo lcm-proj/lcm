@@ -168,21 +168,23 @@ static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     char *tn = ls->structname->typename;
     char *tn_ = dots_to_underscores(tn);
 
-    emit(0,"int  %s_encode(void *buf, int offset, int maxlen, const %s *p);", tn_, tn_);
-    emit(0,"int  %s_decode(const void *buf, int offset, int maxlen, %s *p);", tn_, tn_);
-    emit(0,"int  %s_encoded_size(const %s *p);", tn_, tn_);
     emit(0,"%s   *%s_copy(const %s *p);", tn_, tn_, tn_);
     emit(0,"void %s_destroy(%s *p);", tn_, tn_);
-    emit(0," ");
+    emit(0,"");
 
 //        if (getopt_get_bool(lcmgen->gopt, "clcfuncs")) {
     emit(0,"typedef struct _%s_subscription_t %s_subscription_t;", tn_, tn_);
     emit(0,"typedef int (*%s_handler_t)(const char *channel, const %s *msg, void *user);", tn_, tn_);
-    emit(0, "");
+    emit(0,"");
     emit(0,"int %s_publish(lcm_t *lcm, const char *channel, const %s *p);", tn_, tn_);
     emit(0,"%s_subscription_t* %s_subscribe (lcm_t *lcm, const char *channel, %s_handler_t f, void *userdata);", tn_, tn_, tn_);
     emit(0,"int %s_unsubscribe(lcm_t *lcm, %s_subscription_t* hid);", tn_, tn_);
-    emit(0, " ");
+    emit(0,"");
+    emit(0,"int  %s_encode(void *buf, int offset, int maxlen, const %s *p);", tn_, tn_);
+    emit(0,"int  %s_decode(const void *buf, int offset, int maxlen, %s *p);", tn_, tn_);
+    emit(0,"int  %s_decode_cleanup(%s *p);", tn_, tn_);
+    emit(0,"int  %s_encoded_size(const %s *p);", tn_, tn_);
+    emit(0,"");
 // }
 //
     emit(0,"// LCM support functions. Users should not call these");
@@ -193,7 +195,7 @@ static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"int     __%s_decode_array_cleanup(%s *p, int elements);", tn_, tn_);
     emit(0,"int     __%s_encoded_array_size(const %s *p, int elements);", tn_, tn_);
     emit(0,"int     __%s_clone_array(const %s *p, %s *q, int elements);", tn_, tn_, tn_);
-    emit(0, " ");
+    emit(0,"");
 
 }
 

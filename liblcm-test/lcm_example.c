@@ -14,7 +14,7 @@
 #include <time.h>
 #include <sys/select.h>
 
-#include <lcm.h>
+#include <lcm/lcm.h>
 
 int test_count = 0;
 int test_count2 = 0;

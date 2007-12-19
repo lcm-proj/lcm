@@ -14,7 +14,7 @@
 #include <time.h>
 #include <sys/select.h>
 
-#include <lcm.h>
+#include <lcm/lcm.h>
 
 int catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
 {

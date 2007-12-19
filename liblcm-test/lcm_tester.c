@@ -14,7 +14,7 @@
 #include <time.h>
 #include <sys/select.h>
 
-#include <lcm.h>
+#include <lcm/lcm.h>
 
 static int64_t 
 timestamp_now ()

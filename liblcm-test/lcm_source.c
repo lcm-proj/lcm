@@ -11,7 +11,7 @@
 #include <sys/time.h>
 #include <time.h>
 
-#include <lcm.h>
+#include <lcm/lcm.h>
 
 #define DEFAULT_TRANSMIT_INTERVAL_USEC 10000
 
