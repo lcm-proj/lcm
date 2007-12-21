@@ -505,7 +505,6 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
     // create the package directory, if necessary
     char **dirs = g_strsplit (pc->name, ".", 0);
     char *pdname = g_build_filenamev (dirs);
-    g_strfreev (dirs);
     char package_dir[PATH_MAX];
     int have_package = dirs[0] != NULL;
     sprintf(package_dir, "%s%s%s%s", getopt_get_string(lcm->gopt, "ppath"), 
@@ -513,6 +512,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
             G_DIR_SEPARATOR_S : "", 
             pdname,
             have_package ? G_DIR_SEPARATOR_S : "");
+    g_strfreev (dirs);
     free (pdname);
     if (strlen (package_dir)) {
         if (! g_file_test (package_dir, G_FILE_TEST_EXISTS)) {
