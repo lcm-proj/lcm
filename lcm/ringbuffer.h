@@ -18,7 +18,7 @@ void lcm_ringbuf_free (lcm_ringbuf_t * ring);
  */
 char * lcm_ringbuf_alloc (lcm_ringbuf_t * ring, unsigned int len);
 
-/**
+/*
  * resizes the most recently allocated chunk of the ring buffer.  The newly
  * requested size must be smaller than the original chunk size.
  */

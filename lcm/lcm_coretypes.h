@@ -22,8 +22,8 @@ union double_uint64
 	uint64_t  i;
 };
 
-typedef struct __lcm_hash_ptr __lcm_hash_ptr;
-struct __lcm_hash_ptr
+typedef struct ___lcm_hash_ptr __lcm_hash_ptr;
+struct ___lcm_hash_ptr
 {
     const __lcm_hash_ptr *parent;
     void *v;

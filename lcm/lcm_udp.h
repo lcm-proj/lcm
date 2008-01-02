@@ -40,31 +40,32 @@ typedef struct _lcm_subscription lcm_subscription_t;
  *                  SO_RCVBUF.  0 indicates to use the default settings.
  *
  */
-typedef struct _lcm_params
-{
+typedef struct _lcm_params_t lcm_params_t;
+struct _lcm_params_t {
     in_addr_t local_iface;
     in_addr_t mc_addr;
     uint16_t mc_port;
     int transmit_only;
     uint8_t mc_ttl; 
     int recv_buf_size;
-} lcm_params_t;
+};
 
 /**
  * lcm_recv_buf_t:
  * @channel:   the LCM channel on which the message was received
  * @data:      the data received (raw bytes)
  * @data_size: the length of the data received (in bytes)
- * @recv_time: timestamp (micrseconds since the epoch) at which the first data
+ * @recv_utime: timestamp (micrseconds since the epoch) at which the first data
  *             bytes of the messages were were received.
  */
-typedef struct _lcm_recv_buf
+typedef struct _lcm_recv_buf_t lcm_recv_buf_t;
+struct _lcm_recv_buf_t
 {
     char *channel;
     uint8_t *data;
     uint32_t data_size;
     int64_t recv_utime;
-} lcm_recv_buf_t;
+};
 
 /**
  * lcm_msg_handler_t:

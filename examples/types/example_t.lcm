@@ -1,0 +1,4 @@
+struct example_t
+{
+    float blah;
+}

@@ -8,20 +8,21 @@
 extern "C" {
 #endif
 
-typedef struct
+typedef struct _lcm_eventlog_t lcm_eventlog_t;
+struct _lcm_eventlog_t
 {
     FILE *f;
     int64_t eventcount;
-} lcm_eventlog_t;
+};
 
-typedef struct
-{
+typedef struct _lcm_eventlog_event_t lcm_eventlog_event_t;
+struct _lcm_eventlog_event_t {
     int64_t eventnum, timestamp;
     int32_t channellen, datalen;
 
     char     *channel;
     char     *data;
-} lcm_eventlog_event_t;
+};
 
 // mode must be "r" or "w"
 lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode);
