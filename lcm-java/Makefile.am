@@ -11,7 +11,19 @@ clean-local:
 	rm -f $(JARFILE)
 
 if HAVE_JAVA
-noinst_DATA = $(JARFILE)
+jar_DATA = $(JARFILE)
+
+bin_PROGRAMS = lcm-jlogplayer
+
+lcm-jlogplayer:
+	@echo > $@ "#!/bin/sh"
+	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.logger.LogPlayer $*"
+	chmod 755 $@
+
+lcm-lcspy:
+	@echo > $@ "#!/bin/sh"
+	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.lcspy.LCSpy $*"
+	chmod 755 $@
 
 dist_noinst_JAVA = \
     lcm/lc/LCEncodable.java \

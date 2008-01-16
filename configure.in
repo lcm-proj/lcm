@@ -48,6 +48,9 @@ AM_CONDITIONAL([HAVE_PYTHON], [test "$pythonexists" = "yes"])
 pylcmexecdir="$pyexecdir/$PACKAGE"
 AC_SUBST(pylcmexecdir)
 
+jardir="$datadir/java"
+AC_SUBST(jardir)
+
 dnl ---------------------------------------------------------------------------
 dnl i18n support
 dnl ---------------------------------------------------------------------------

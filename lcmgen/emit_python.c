@@ -171,7 +171,7 @@ static void
 emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(1, "def _decode_one(buf):");
-    emit (2, "self = %s()\n", ls->structname->typename);
+    emit (2, "self = %s()\n", ls->structname->shortname);
 
     GQueue *struct_fmt = g_queue_new ();
     GQueue *struct_members = g_queue_new ();
@@ -254,7 +254,7 @@ emit_python_decode (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit (2, "else:");
     emit (3,     "buf = StringIO.StringIO(data)");
     emit (2, "if buf.read(8) != %s._get_packed_fingerprint():", 
-            ls->structname->typename);
+            ls->structname->shortname);
     emit (3,     "raise ValueError(\"Decode error\")");
     emit (2, "return %s._decode_one (buf)", ls->structname->shortname);
     emit (1, "decode = staticmethod (decode)");
