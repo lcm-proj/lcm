@@ -1,0 +1,174 @@
+<refentry id="quickstart-c" revision="16 Jan 2008">
+<refmeta>
+    <refentrytitle>LCM Quickstart Guide for C</refentrytitle>
+</refmeta>
+
+<refnamediv>
+    <refname>LCM Quickstart Guide for C</refname>
+    <refpurpose>An example use case from start to finish</refpurpose>
+</refnamediv>
+
+<refsect1 id="intro">
+    <title>Introduction</title>
+    <para>
+    This Quickstart Guide will walk you through the main tasks for
+    exchange messages between two applications:
+    </para>
+    <itemizedlist>
+        <listitem>Create a type definition.</listitem>
+        <listitem>Initializing LCM in your application.</listitem>
+        <listitem>Publish an instance of the data.</listitem>
+        <listitem>Subscribe to the data.</listitem>
+    </itemizedlist>
+    <para>
+    This guide is intended for C users, although the type definition
+    is the same for all languages.
+    </para>
+</refsect1>
+
+<refsect1>
+    <title>Defining the data type</title>
+
+    <para>
+    When exchanging messages between two applications, think of the data
+    as a C struct.  You may have multiple fields, each with its own type
+    and name.  Some of these fields may be structs themselves, or arrays.
+    Basically, any data type you can imagine as a C struct can be used
+    as an LCM message type.  Because LCM supports multiple languages, you
+    have to define this type in a language-neutral specification that looks
+    very similar to C.  Let's define an example type called
+    <type>example_t</type>.
+    Put it in a file called <filename>example_t.lcm</filename>.
+    (In general, the file name
+    should match the type name, with the "lcm" extension added).  This
+    file can live in your primary source code directory.  .h and .c files
+    will be automatically generated using the <command>lcmgen</command> tool.
+    </para>
+
+    <para>Here are the contents of <filename>example_t.lcm</filename>:</para>
+
+    <programlisting>
+struct example_t
+{
+    int64_t  timestamp;
+    double   position[3];
+    double   orientation[4];
+    int32_t  num_ranges;
+    int16_t  ranges[num_ranges];
+}</programlisting>
+    
+    <para>
+    The predefined types available for use in the struct are: 
+    <type>int8_t</type>, <type>int16_t</type>, <type>int32_t</type>,
+    <type>int64_t</type>, <type>byte</type>, <type>float</type>,
+    <type>double</type>, <type>string</type>, <type>boolean</type>.
+    These are mostly self-explanatory.  In C, <type>byte</type> corresponds
+    to the C type <type>uint8_t</type>.  string corresponds to
+    <type>char *</type>, and is null-terminated.  Note that unsigned
+    types are not defined, since there is no equivalent in Java.
+    </para>
+
+    <para>
+    In addition, you can refer to any other LCM types in the definition
+    of your struct, as long as the matching .lcm file for that type exists
+    in the same directory.  In this way, you can create arrays of structs
+    or nested structs.
+    </para>
+
+    <para>
+    To generate the .h and .c files from the type definition, run
+    <command>lcmgen -c example_t.lcm</command>.  The -c argument could
+    be replaced with -j or -p to generate Java or Python, respectively.
+    </para>
+
+</refsect1>
+
+<refsect1>
+    <title>Initializing LCM</title>
+
+    <para>
+    The first task for any application that uses LCM is to
+    initialize the library.  Here's an example of that (and how to clean
+    up after itself as well):
+    </para>
+
+    <programlisting>
+#include &lt;lcm/lcm.h&gt;
+
+int main (int argc, char ** argv)
+{
+    lcm_t * lcm;
+
+    lcm = lcm_create ();
+    if (!lcm)
+        return 1;
+    if (lcm_init (lcm, NULL) &lt; 0)
+        return 1;
+
+    /* Your application goes here */
+
+    lcm_destroy (lcm);
+}
+</programlisting>
+
+    <para>
+    <function><link linkend="lcm-create">lcm_create</link>()</function> is
+    responsible for allocating memory and preparing the library.
+    <function><link linkend="lcm-init">lcm_init</link>()</function> establishes
+    the necessary network connections to start sending and receiving data
+    using LCM.  The NULL second argument means to use the default parameters.
+    The default multicast IP address and port are taken from the environment
+    variable LCM_MCADDR if present.  If not, they are taken from a system-wide
+    config file /etc/lcm.conf.  If that file is not present, the default
+    values are 239.255.76.67:7667.  Likewise, the multicast time-to-live
+    (TTL) is first taken from LCM_TTL, then /etc/lcm.conf, and the final
+    default is 0.
+    </para>
+
+    <para>
+    These defaults can be programmatically overridden by specifying values
+    for <structname><link linkend="lcm-params-t">lcm_params_t</link></structname>
+    supplied to <function><link linkend="lcm-init">lcm_init</link>()</function>.
+    This example shows choosing a new TTL of 1:
+    </para>
+
+    <programlisting>
+lcm_t * lcm;
+lcm = lcm_create ();
+
+lcm_params_t lp;
+lcm_params_init_defaults (&amp;lp);
+lp.mc_ttl = 1;
+lcm_init (lcm, &amp;lp);
+</programlisting>
+</refsect1>
+
+<refsect1>
+    <title>Publishing LCM data</title>
+
+    <para>When you create an LCM data type, and generate C code with
+    <command>lcmgen</command>, that data type will then be available as
+    a C struct with the same name.  For <type>example_t</type>, we can
+    instatiate some data as follows:
+    </para>
+
+    <programlisting>
+#include "example_t.h"
+
+...
+
+static int
+my_func ()
+{
+    example_t my_data;
+}
+</programlisting>
+
+</refsect1>
+
+</refentry>
+
+
+
+
+

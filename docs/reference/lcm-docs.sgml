@@ -7,6 +7,11 @@
   </bookinfo>
 
   <chapter>
+    <title>Tutorial</title>
+    <xi:include href="quickstart-c.sgml"/>
+  </chapter>
+
+  <chapter>
     <title>API Reference</title>
     <xi:include href="xml/lcm.xml"/>
     <xi:include href="xml/eventlog.xml"/>
