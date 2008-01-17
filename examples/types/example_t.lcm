@@ -1,4 +1,8 @@
 struct example_t
 {
-    float blah;
+    int64_t  timestamp;
+    double   position[3];
+    double   orientation[4]; 
+    int32_t  num_ranges;
+    int16_t  ranges[num_ranges];
 }

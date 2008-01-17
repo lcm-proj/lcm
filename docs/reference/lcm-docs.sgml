@@ -7,8 +7,10 @@
   </bookinfo>
 
   <chapter>
-    <title>Tutorial</title>
+    <title>Manual</title>
+    <xi:include href="intro.sgml"/>
     <xi:include href="quickstart-c.sgml"/>
+    <xi:include href="multicast-setup.sgml"/>
   </chapter>
 
   <chapter>

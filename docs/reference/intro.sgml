@@ -1,0 +1,88 @@
+<refentry id="intro" revision="17 Jan 2008">
+<refmeta>
+    <refentrytitle>Introduction to LCM</refentrytitle>
+</refmeta>
+
+<refnamediv>
+    <refname>Introduction to LCM</refname>
+    <refpurpose>An overview of how LCM works</refpurpose>
+</refnamediv>
+
+<refsect1>
+    <title>What is LCM?</title>
+
+    <para>LCM stands for Lightweight Communications and Marshalling.  The
+    <emphasis>communications</emphasis> aspect of LCM is that it allows
+    multiple senders and receivers to use a network for sending and
+    receiving messages to each other using a shared channel.  The
+    <emphasis>marshalling</emphasis> aspect of LCM is that it provides
+    you the ability to define your own data types that are automatically
+    encoded into data packets in a platform- and language-independent
+    fashion.  Most users will use both of these capabilities at the same
+    time even though they can be separated if desired.</para>
+
+    <para>The design goals for the communications system are:</para>
+    
+    <itemizedlist>
+        <listitem>Supports many-to-many operation in which there may be several
+        senders and receivers for a particular message type</listitem>
+        <listitem>No per-network or per-host daemon needed for relaying
+        of data</listitem>
+        <listitem>Each packet transmitted appears on the wire no more than
+        one time</listitem>
+        <listitem>Minimal latency</listitem>
+        <listitem>Scales to high bandwidth</listitem>
+    </itemizedlist>
+
+    <para>The design goals for the marshalling system are:</para>
+
+    <itemizedlist>
+        <listitem>Absolute type-safety, in which an application that decodes
+        a packet is certain that it was sent with the same type in mind,
+        even if the two applications were compiled separately</listitem>
+        <listitem>Platform- and language-independence, with the goal that
+        at least C and Java would be first-class users</listitem>
+        <listitem>Ease of use, so that data types could be manipulated using
+        standard constructs of the target language both before and after
+        marshalling (e.g. structs in C)</listitem>
+    </itemizedlist>
+
+    <para>These are some properties that LCM <emphasis>does not</emphasis>
+    have:</para>
+
+    <itemizedlist>
+        <listitem>LCM does not guarantee delivery of a particular message.</listitem>
+        <listitem>LCM does not guarantee ordering of messages.</listitem>
+        <listitem>LCM is not easy to use across wide-area networks.</listitem>
+    </itemizedlist>
+</refsect1>
+
+<refsect1>
+    <title>Communications System</title>
+
+    <para>LCM uses <emphasis>UDP multicast</emphasis> for its underlying
+    communications mechanism.  The primary reason for this is so that
+    multiple senders and receivers can connect to the same data channel
+    without requiring a central server of some type that copies packets
+    or maintains separate point-to-point links.  Instead, this maintainance
+    is performed directly by the network stacks of the hosts, switches,
+    and routers on the network.</para>
+
+    <para>Another advantage of UDP multicast is that multiple applications
+    on the same host behave much the same as multiple applications spread
+    across multiple hosts.  This is in contrast to UDP broadcast, in which
+    generally only one application per host can listen on a specific
+    port.  UDP multicast also has the advantage of routability across multiple
+    subnets as long as the routers are configured properly (generally
+    possible within an organization but not Internet-wide).</para>
+
+    <para>That said, UDP multicast can have quirks in getting it to work
+    properly on a LAN, or even a single host.  These issues are discussed
+    in the Section <xref linkend="multicast-setup"/>.</para>
+</refsect1> 
+
+<refsect1>
+    <title>Marshalling System</title>
+</refsect1>
+
+</refentry>

@@ -1,14 +1,14 @@
-<refentry id="quickstart-c" revision="16 Jan 2008">
+<refentry id="quickstart-c" revision="17 Jan 2008">
 <refmeta>
-    <refentrytitle>LCM Quickstart Guide for C</refentrytitle>
+    <refentrytitle>Quickstart Guide for C</refentrytitle>
 </refmeta>
 
 <refnamediv>
-    <refname>LCM Quickstart Guide for C</refname>
+    <refname>Quickstart Guide for C</refname>
     <refpurpose>An example use case from start to finish</refpurpose>
 </refnamediv>
 
-<refsect1 id="intro">
+<refsect1>
     <title>Introduction</title>
     <para>
     This Quickstart Guide will walk you through the main tasks for
@@ -22,26 +22,28 @@
     </itemizedlist>
     <para>
     This guide is intended for C users, although the type definition
-    is the same for all languages.
+    is the same for all languages.  If you haven't already, you should
+    read the <xref linkend="intro"/> first to understand the basic theory
+    of LCM's operation.
     </para>
 </refsect1>
 
 <refsect1>
-    <title>Defining the data type</title>
+    <title>Defining a data type</title>
 
-    <para>
-    When exchanging messages between two applications, think of the data
-    as a C struct.  You may have multiple fields, each with its own type
-    and name.  Some of these fields may be structs themselves, or arrays.
-    Basically, any data type you can imagine as a C struct can be used
-    as an LCM message type.  Because LCM supports multiple languages, you
-    have to define this type in a language-neutral specification that looks
-    very similar to C.  Let's define an example type called
-    <type>example_t</type>.
-    Put it in a file called <filename>example_t.lcm</filename>.
-    (In general, the file name
-    should match the type name, with the "lcm" extension added).  This
-    file can live in your primary source code directory.  .h and .c files
+    <para> When exchanging messages between two applications, you may have
+    many different types of data.  LCM allows you to define these types in
+    much the same way you would define a struct in C.  You can have multiple
+    fields, each with its own type and name.  Some of these fields may be
+    structs themselves, or arrays.  Basically, any data type you can imagine
+    as a C struct can be used as an LCM message type.  Because LCM supports
+    multiple languages, you have to define this type in a language-neutral
+    specification that looks very similar to C.</para>
+    
+    <para>Let's define an example type called <type>example_t</type>.  Put it
+    in a file called <filename>example_t.lcm</filename>.  (In general, the
+    file name should match the type name, with the "lcm" extension added).
+    This file can live in your primary source code directory.  .h and .c files
     will be automatically generated using the <command>lcmgen</command> tool.
     </para>
 
@@ -108,6 +110,7 @@ int main (int argc, char ** argv)
     /* Your application goes here */
 
     lcm_destroy (lcm);
+    return 0;
 }
 </programlisting>
 
@@ -146,23 +149,185 @@ lcm_init (lcm, &amp;lp);
 <refsect1>
     <title>Publishing LCM data</title>
 
-    <para>When you create an LCM data type, and generate C code with
+    <para>When you create an LCM data type and generate C code with
     <command>lcmgen</command>, that data type will then be available as
-    a C struct with the same name.  For <type>example_t</type>, we can
-    instatiate some data as follows:
+    a C struct with the same name.  For <type>example_t</type>, the C
+    struct that gets generated looks like this:
+    </para>
+
+    <programlisting>
+typedef struct _example_t example_t;
+struct _example_t
+{
+    int64_t    timestamp;
+    double     position[3];
+    double     orientation[4];
+    int32_t    num_ranges;
+    int16_t    *ranges;
+};
+</programlisting>
+
+    <para>Notice here that fixed-length arrays in LCM appear as fixed-length
+    C arrays.  Variable length arrays appear as pointers in C.  More
+    on that below.</para>
+    
+    <para>
+    We can instatiate and then publish some sample data as follows:
     </para>
 
     <programlisting>
 #include "example_t.h"
 
-...
-
-static int
-my_func ()
+static void
+send_message (lcm_t * lcm)
 {
-    example_t my_data;
+    example_t my_data = {
+        .timestamp = 0,
+        .position = { 1, 2, 3 },
+        .orientation = { 1, 0, 0, 0 },
+    };
+    int16_t ranges[15];
+    int i;
+    for (i = 0; i &lt; 15; i++)
+        ranges[i] = i;
+
+    my_data.num_ranges = 15;
+    my_data.ranges = ranges;
+
+    example_t_publish (lcm, "EXAMPLE", &amp;my_data);
 }
 </programlisting>
+
+    <para>Note that <varname>my_data.ranges</varname> refers to a variable
+    length array defined by the <type>example_t</type> LCM type, and is
+    represented by a pointer in the generated C struct.  It is up to the
+    programmer to set this pointer to an array of the proper type, and set
+    <varname>my_data.num_ranges</varname> to a value smaller or equal to the
+    number of elements in that array.  When the data is marshalled,
+    <varname>my_data.num_ranges</varname> determines how many elements will
+    actually be read and transmitted from <varname>my_data.ranges</varname>.
+    If <varname>my_data.num_ranges</varname> is set to 0, the value of
+    <varname>my_data.ranges</varname> is ignored.</para>
+
+    <para>The call to <function><link
+    linkend="example-t-publish">example_t_publish</link>()</function>
+    serializes the data into a byte stream and transmits the packet using LCM
+    to any interested receivers.  The string <literal>"EXAMPLE"</literal> is
+    the <emphasis>channel name</emphasis>, which is a string transmitted with
+    each packet that identifies the contents to receivers.  Receivers
+    subscribe to different channels using this identifier, allowing
+    uninteresting data to be discarded quickly and efficiently.</para>
+
+    <para>This full example is available in runnable form as
+    <filename>examples/send_message.c</filename> in the LCM source
+    distribution.</para>
+</refsect1>
+
+<refsect1>
+    <title>Receiving LCM Messages</title>
+
+    <para>As discussed above, each LCM message is transmitted with
+    a <emphasis>channel name</emphasis> attached to it.  It is these channel
+    names which are used to determine which LCM messages you will receive
+    in a given application.  It is important for senders and receivers to
+    agree on the channel names which will be used for each message type.
+    It is theoretically possible to transmit messages having a different
+    type using the same channel name.  However, doing so will produce
+    undesirable results on the receiver because subscriptions are
+    established with a single type in mind.  If a message of another type is
+    received on that channel, a decode error will occur.</para>
+
+    <para>Here is a sample program that sets up LCM and
+    adds a subscription to the <literal>"EXAMPLE"</literal> channel.
+    Whenever a message is received on this channel, its contents are
+    printed out.  If messages on other channels are being transmitted over
+    the network, this program will not see them because it only has a
+    subscription to the <literal>"EXAMPLE"</literal> channel.
+    A particular instance of LCM may have an unlimited number of
+    subscriptions.</para>
+
+    <programlisting>
+#include &lt;stdio.h&gt;
+#include &lt;inttypes.h&gt;
+#include &lt;lcm/lcm.h&gt;
+#include "example_t.h"
+
+static int
+my_handler (const char * channel, const example_t * msg, void * user)
+{
+    int i;
+    printf ("Received message on channel \"%s\":\n", channel);
+    printf ("  timestamp   = %"PRId64"\n", msg->timestamp);
+    printf ("  position    = (%f, %f, %f)\n",
+            msg-&gt;position[0], msg-&gt;position[1], msg-&gt;position[2]);
+    printf ("  orientaiton = (%f, %f, %f, %f)\n",
+            msg-&gt;orientation[0], msg-&gt;orientation[1], msg-&gt;orientation[2],
+            msg-&gt;orientation[3]);
+    printf ("  ranges:");
+    for (i = 0; i &lt; msg->num_ranges; i++)
+        printf (" %d", msg->ranges[i]);
+    printf ("\n");
+    return 0;
+}
+
+int
+main (int argc, char ** argv)
+{
+    lcm_t * lcm;
+
+    lcm = lcm_create ();
+    if (!lcm)
+        return 1;
+    if (lcm_init (lcm, NULL) &lt; 0)
+        return 1;
+
+    example_t_subscription_t * sub =
+        example_t_subscribe (lcm, "EXAMPLE", &amp;my_handler, NULL);
+
+    while (1)
+        lcm_handle (lcm);
+
+    example_t_unsubscribe (lcm, sub);
+    lcm_destroy (lcm);
+    return 0;
+}
+</programlisting>
+
+    <para>A key design principal for this subscription code is that it is
+    <emphasis>event driven</emphasis>.  The application supplies a callback
+    with <function><link
+    linkend="example-t-subscribe">example_t_subscribe</link></function> that
+    is called whenever a message is available.  This happens inside a single
+    thread without need for concurrency, since the callback is dispatched from
+    within the <function><link
+    linkend="lcm-handle">lcm_handle</link></function> function.</para>
+
+    <para>It is important to call <function><link
+    linkend="lcm-handle">lcm_handle</link></function> whenever work needs to
+    be done by LCM.  If no work is needed, the function will block until there
+    is.  For applications without another type of main loop, it is suitable to
+    call <function><link linkend="lcm-handle">lcm_handle</link></function> in
+    a loop as seen above.  However, most applications already use some type of
+    main loop.  In these cases, it is best to monitor the LCM file descriptor,
+    which can be obtained with <function><link
+    linkend="lcm-get-fileno">lcm_get_fileno</link></function>.  Whenever this
+    file descriptor becomes readable, the application should call
+    <function><link linkend="lcm-handle">lcm_handle</link></function>, which
+    is guaranteed to not block in such a situation.</para>
+
+    <para>This full example is available in runnable form as
+    <filename>examples/listener.c</filename> in the LCM source
+    distribution.</para>
+</refsect1>
+
+<refsect1>
+    <title>Conclusion</title>
+
+    <para>You have now created an LCM type, a sender, and a receiver.
+    To show it all working, you can run the <command>listener</command>
+    example on the command line.  Then, each time you run
+    <command>send-message</command>, you should see the listener
+    print out the contents of the message.</para>
 
 </refsect1>
 

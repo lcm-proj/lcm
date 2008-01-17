@@ -1,0 +1,11 @@
+<refentry id="multicast-setup" revision="17 Jan 2008">
+<refmeta>
+    <refentrytitle>UDP Multicast Setup</refentrytitle>
+</refmeta>
+
+<refnamediv>
+    <refname>UDP Multicast Setup</refname>
+    <refpurpose>Getting maximum performance on your LAN or local host</refpurpose>
+</refnamediv>
+
+</refentry>
