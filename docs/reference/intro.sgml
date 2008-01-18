@@ -32,6 +32,7 @@
         one time</listitem>
         <listitem>Minimal latency</listitem>
         <listitem>Scales to high bandwidth</listitem>
+        <listitem>No practical limit on packet size</listitem>
     </itemizedlist>
 
     <para>The design goals for the marshalling system are:</para>
@@ -42,7 +43,7 @@
         even if the two applications were compiled separately</listitem>
         <listitem>Platform- and language-independence, with the goal that
         at least C and Java would be first-class users</listitem>
-        <listitem>Ease of use, so that data types could be manipulated using
+        <listitem>Ease of use, so that data types can be manipulated using
         standard constructs of the target language both before and after
         marshalling (e.g. structs in C)</listitem>
     </itemizedlist>
@@ -79,10 +80,78 @@
     <para>That said, UDP multicast can have quirks in getting it to work
     properly on a LAN, or even a single host.  These issues are discussed
     in the Section <xref linkend="multicast-setup"/>.</para>
+
+    <para>Using LCM requires you to pick an IP address to serve as the
+    multicast group for all messages.  This IP address is distinct from
+    any one host's address and is used by every machine to subscribe to
+    the group.  You must also pick a UDP port over which messages will be
+    exchanged.  The default IP is 239.255.76.67 and port is 7667.  This IP
+    is in the special administrative range that is not routable between
+    networks.  You must also choose a time-to-live (TTL) which represents
+    the maximum number of routers that a packet can pass through.  The
+    default of 0 prevents your packets from leaving a single host.  Using
+    1 will allow your packets to be received anywhere on a single subnet.
+    Note that multicast traffic is treated like broadcast traffic within
+    a subnet, in that every machine on the subnet will receive the traffic,
+    even if it is not subscribed to the multicast group.  This can be
+    prevented using a feature called <emphasis>IGMP snooping</emphasis>
+    which is available on higher-end managed switches.  See Section
+    <xref linkend="multicast-setup"/>.</para>
+
+    <para>After choosing the multicast group, LCM subscribe to the multicast
+    group during initialization of the library by sending out the necessary
+    IGMP requests onto the subnet.  After this subscription, that host will
+    receive packets destined to the IP address assigned to the group.  The
+    network stack of the host will assure that any applications listening on
+    the correct UDP port receive the traffic.  Unlike normal UDP or TCP
+    connections, multiple applications on the same host are allowed to listen
+    to the same multicast port.</para>
+
+    <para>The format of LCM packets is very simple.  A packet consists of a
+    variable-length ASCII string identifier followed by variable-length buffer
+    of opaque data.  This opaque data will generally be a marshalled LCM data
+    type.  The string identifier is called the <emphasis>channel
+    name</emphasis> and is the basis for the subscription mechanism in LCM.
+    At the LCM library level, packets are filtered out that do not contain
+    channel names to which the application has subscribed.  The packets
+    corresponding to subscribed channels are passed through to the
+    application, either with the opaque buffer intact or already unmarshalled,
+    depending on which API is being used.</para>
+
+    <para>Since UDP has a packet-size limit of 65K, LCM will automatically
+    perform high-level fragmentation and reassembly if a packet requires
+    it.</para>
+
+    <para>Choosing UDP as the transport mechanism for LCM has some
+    implications for the practical use of the library.  Most importantly,
+    since packets could be lost, it is important to design your applications
+    and protocols so this is not a problem.  It is advisable to transmit
+    time-sensitive data at a fixed rate so that if a packet is lost, the
+    receiving application will immediately recover with the most recent data
+    as it is received.  The frequency of your transmit rate will be determined
+    by how sensitive your application is to latency.  Transmitting at a fixed
+    rate also has the advantage that your network will be operating under a
+    steady-state amount of bandwidth and you will not need to worry about the
+    effects of momentary spikes in traffic.</para>
+
+    <para>Protocols requiring guaranteed request-response semantics can also
+    be a challenge when using UDP.  It is not practical to implement such a
+    scheme for a many-to-many network, however, if you need one-to-one
+    communications as part of your LCM network, guaranteed delivery of
+    request-response protocols can be achieved as follows: Encode the state of
+    the "handshake" using data fields in both the request and response data
+    types.  For example, the requester continues to send the request packet
+    until the response packet contains confirmation of its receipt.  The
+    responder then continues to resend the response until the requestor
+    confirms receipt of it.  If your protocols are already designed around
+    fixed data rates, this handshaking procedure is easy to implement.</para>
+    
 </refsect1> 
 
 <refsect1>
     <title>Marshalling System</title>
+
+    <para>Write me.</para>
 </refsect1>
 
 </refentry>

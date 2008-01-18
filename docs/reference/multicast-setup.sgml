@@ -8,4 +8,93 @@
     <refpurpose>Getting maximum performance on your LAN or local host</refpurpose>
 </refnamediv>
 
+<refsect1>
+    <title>Using LCM on a single host</title>
+
+    <para>A quirk of multicast, at least on Linux, is that the loopback
+    interface 127.0.0.1 cannot be used for multicast traffic.  This means
+    that to use LCM, even for inter-application communication on a single
+    host, <emphasis>you must have a network interface</emphasis>.  If
+    this network interface is already connected to the Internet, LCM will
+    generally "just work" because the default route
+    will allow LCM to find the correct network interface for multicast
+    traffic.</para>
+
+    <para>If the network interface is not connected to anything, you
+    must explicitly enable it for multicast traffic.  First, bring the
+    interface up using a command like <command>ifconfig eth0 up</command>.
+    It need not be assigned an IP address.  Then, you must add a route
+    for multicast traffic.  For LCM's default multicast group, the
+    command would be:</para>
+    <blockquote>
+    <command>route add -net 239.255.0.0/16 dev eth0</command>
+    </blockquote>
+
+    <para>Remember, you must always do this to use LCM locally if your machine
+    is <emphasis>not connected</emphasis> to any external network.</para>
+
+    <title>Choosing a TTL</title>
+
+    <para>LCM by default uses a time-to-live (TTL) value of 0.  This will
+    prevent any LCM packets from being transmitted on the wire.  Only local
+    applications will see them.  Choose a value of 1 for the entire subnet to
+    see the traffic.  Even larger values will enable the packets to pass
+    through routers.  However, these routers must be set up with multicast
+    routing tables in order to successfully relay multicast traffic.</para>
+
+    <note>It has been observed in Linux that if a network interface is
+    reconfigured (reconnecting to a new wireless access point, assigned a new
+    IP address, etc.), currently running LCM applications will start using a
+    TTL of 1, even if 0 was assigned at startup.  This can cause traffic to
+    "leak" onto the network when you don't expect it.  To recover from this
+    situation you need to restart any LCM processes.  To avoid this scenario,
+    it is a good idea to assign an explicit multicast route to a wired
+    interface rather than a wireless interface when you wish to keep your TTL
+    at 0.</note>
+
+    <title>Using IGMP snooping</title>
+
+    <para>When the multicast protocol was designed, it was intended that on
+    local subnets it would act like broadcast traffic.  However, for
+    high-bandwidth applications, this may not be desirable since it will
+    degrade the bandwidth available for hosts not participating in the
+    multicast group.</para>
+
+    <para>Switch manufacturers have come up with a solution to this problem
+    called "IGMP snooping".  IGMP snooping consists of two parts.  First, the
+    switch must monitor network traffic across its ports and decode any IGMP
+    packets that deal with multicast group subscriptions.  The switch can then
+    send multicast traffic for a particular group only to those ports where a
+    subscription request has been observed.  The second part is IGMP querying.
+    Hosts will only send out subscription requests upon first subscribing or
+    when queried by a router.  In order for the switch to maintain its state,
+    these queries must be sent every few minutes.  If there is no router on
+    your subnet sending these queries, you must configure the switch to send
+    out "fake queries".  Without this, the hosts will eventually stop sending
+    IGMP subscription requests, and the switch will "fail open" causing all
+    multicast traffic to be broadcast again.</para>
+
+    <title>Mixed-speed networks</title>
+
+    <para>If you have a subnet with devices of different speeds, such as
+    10Mbps links mixed with 100Mbps links, be extra careful using multicast.
+    LCM traffic will be sent to all devices (unless you enable IGMP snooping,
+    above).  If two 100Mbps devices are exchanging more than 10Mbps of
+    traffic, this traffic will be relayed to the slow device by the switch,
+    even if that device does not run LCM.  This can overwhelm the bandwidth of
+    that link, and depending on the switch, may even cause back pressure on
+    the 100Mbps devices.  That means, not only will the 10Mbps link be
+    swamped, but the 100Mbps devices will be unable to transmit faster than
+    10Mbps because their send queues will start filling up and cause
+    blocking writes in the LCM API.</para>
+
+    <para>The easiest solution to this problem is to enable IGMP snooping, as
+    described above.  If that is not available, sometimes it is sufficient to
+    upgrade from consumer-grade switches to managed switches, which often have
+    better buffering strategies.  As a last resort, separating the slow
+    devices from high-speed devices using two levels of switches can also
+    improve the situation.</para>
+
+</refsect1>
+
 </refentry>
