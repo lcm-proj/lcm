@@ -1,17 +1,17 @@
-<refentry id="quickstart-c" revision="17 Jan 2008">
+<refentry id="tutorial-c" revision="17 Jan 2008">
 <refmeta>
-    <refentrytitle>Quickstart Guide for C</refentrytitle>
+    <refentrytitle>Tutorial for C</refentrytitle>
 </refmeta>
 
 <refnamediv>
-    <refname>Quickstart Guide for C</refname>
+    <refname>Tutorial for C</refname>
     <refpurpose>An example use case from start to finish</refpurpose>
 </refnamediv>
 
 <refsect1>
     <title>Introduction</title>
     <para>
-    This Quickstart Guide will walk you through the main tasks for
+    This tutorial will walk you through the main tasks for
     exchange messages between two applications:
     </para>
     <itemizedlist>
