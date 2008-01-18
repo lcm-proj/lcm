@@ -434,7 +434,7 @@ lcm_params_init_defaults (lcm_params_t *lp)
         }
     } else {
         fprintf (stderr, "Using default LCM multicast address: " 
-                LCM_DEFAULT_MC_ADDR "\n");
+                LCM_DEFAULT_MC_ADDR ":%d\n", LCM_DEFAULT_MC_PORT);
         lp->mc_addr = inet_addr (LCM_DEFAULT_MC_ADDR);
         lp->mc_port = htons (LCM_DEFAULT_MC_PORT);
         mc_addr_set = 1;
