@@ -4,6 +4,26 @@
 <book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
   <bookinfo>
     <title>LCM Reference Manual</title>
+    <authorgroup>
+    <author>
+        <firstname>David</firstname>
+        <surname>Moore</surname>
+    </author>
+    <author>
+        <firstname>Albert</firstname>
+        <surname>Huang</surname>
+    </author>
+    <author>
+        <firstname>Edwin</firstname>
+        <surname>Olson</surname>
+    </author>
+    </authorgroup>
+
+    <copyright>
+    <year>2008</year>
+    <holder>David Moore, Albert Huang, Edwin Olson</holder>
+    </copyright>
+
   </bookinfo>
 
   <chapter>
