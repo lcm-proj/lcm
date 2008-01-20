@@ -7,5 +7,5 @@ struct canbus_list_t
 	int64_t  utime;
 
 	int32_t  num_messages;
-	canbus_t messages[num_messages];
+	lcm.lcmtypes.canbus_t messages[num_messages];
 }

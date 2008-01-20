@@ -462,7 +462,7 @@ static void emit_c_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"int %s_decode(const void *buf, int offset, int maxlen, %s *p)", tn_, tn_);
     emit(0,"{");
     emit(1,    "int pos = 0, thislen;");
-    emit(1,    "int64_t hash = __%s_get_hash(NULL);", tn_);
+    emit(1,    "int64_t hash = __%s_get_hash();", tn_);
     emit(0," ");
     emit(1,    "int64_t this_hash;");
     emit(1,    "thislen = __int64_t_decode_array(buf, offset + pos, maxlen - pos, &this_hash, 1);");

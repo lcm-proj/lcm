@@ -1,4 +1,6 @@
-struct lcm.lcmtypes.canbus_t
+package lcm.lcmtypes;
+
+struct canbus_t
 {
 	int64_t utime; 
 	
