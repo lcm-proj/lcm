@@ -190,7 +190,7 @@ static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 // }
 //
     emit(0,"// LCM support functions. Users should not call these");
-    emit(0,"int64_t __%s_get_hash();", tn_);
+    emit(0,"int64_t __%s_get_hash(void);", tn_);
     emit(0,"int64_t __%s_hash_recursive(const __lcm_hash_ptr *p);", tn_);
     emit(0,"int     __%s_encode_array(void *buf, int offset, int maxlen, const %s *p, int elements);", tn_, tn_);
     emit(0,"int     __%s_decode_array(const void *buf, int offset, int maxlen, %s *p, int elements);", tn_, tn_);
@@ -233,7 +233,7 @@ static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "}");
     emit(0, " ");
 
-    emit(0, "int64_t __%s_get_hash()", tn_);
+    emit(0, "int64_t __%s_get_hash(void)", tn_);
     emit(0, "{");
     emit(1, "if (!__%s_hash_computed) {", tn_);
     emit(2,      "__%s_hash = __%s_hash_recursive(NULL);", tn_, tn_);
