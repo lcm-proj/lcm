@@ -94,6 +94,7 @@ AC_OUTPUT([
   docs/reference/Makefile
   m4/Makefile
   po/Makefile.in
+  m4macros/Makefile
 ])
 
 if test "x$JAVA_FOUND" = "xyes"; then

@@ -1,0 +1,2 @@
+this directory contains m4 macros that lcm installs on a system so that
+other autotoolized programs can easily test for and link against lcm
