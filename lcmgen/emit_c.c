@@ -65,7 +65,7 @@ static const char *map_type_name(const char *t)
     if (!strcmp(t,"byte"))
         return "uint8_t";
 
-    return t;
+    return dots_to_underscores (t);
 }
 
 void setup_c_options(getopt_t *gopt)
@@ -139,10 +139,12 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, m);
+//        char *tname = dots_to_underscores (lm->
 
         int ndim = g_ptr_array_size(lm->dimensions);
         if (ndim == 0) {
-            emit(1, "%-10s %s;", map_type_name(lm->type->typename), lm->membername);
+            emit(1, "%-10s %s;", map_type_name(lm->type->typename), 
+                    lm->membername);
         } else {
             if (lcm_is_constant_size_array(lm)) {
                 emit_start(1, "%-10s %s", map_type_name(lm->type->typename), lm->membername);
@@ -355,7 +357,7 @@ static void emit_c_encode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         
         int indent = 2+imax(0, g_ptr_array_size(lm->dimensions) - 1);
         emit(indent, "thislen = __%s_encode_array(buf, offset + pos, maxlen - pos, %s, %s);", 
-             lm->type->typename,
+             dots_to_underscores (lm->type->typename),
              make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1),
              make_array_size(lm, "p", g_ptr_array_size(lm->dimensions) - 1));
         emit(indent, "if (thislen < 0) return thislen; else pos += thislen;");
@@ -408,7 +410,7 @@ static void emit_c_decode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
         int indent = 2+imax(0, g_ptr_array_size(lm->dimensions) - 1);
         emit(indent, "thislen = __%s_decode_array(buf, offset + pos, maxlen - pos, %s, %s);", 
-             lm->type->typename,
+             dots_to_underscores (lm->type->typename),
              make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1),
              make_array_size(lm, "p", g_ptr_array_size(lm->dimensions) - 1));
         emit(indent, "if (thislen < 0) return thislen; else pos += thislen;");
@@ -439,7 +441,7 @@ static void emit_c_decode_array_cleanup(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls
 
         int indent = 2+imax(0, g_ptr_array_size(lm->dimensions) - 1);
         emit(indent, "__%s_decode_array_cleanup(%s, %s);", 
-             lm->type->typename,
+             dots_to_underscores (lm->type->typename),
              make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1),
              make_array_size(lm, "p", g_ptr_array_size(lm->dimensions) - 1));
 
@@ -504,7 +506,7 @@ static void emit_c_encoded_array_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         
         int indent = 2+imax(0, g_ptr_array_size(lm->dimensions) - 1);
         emit(indent, "size += __%s_encoded_array_size(%s, %s);",
-             lm->type->typename,
+             dots_to_underscores (lm->type->typename),
              make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1),
              make_array_size(lm, "p", g_ptr_array_size(lm->dimensions) - 1));
         
@@ -546,7 +548,7 @@ static void emit_c_clone_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
         
         int indent = 2+imax(0, g_ptr_array_size(lm->dimensions) - 1);
         emit(indent, "__%s_clone_array(%s, %s, %s);",
-             lm->type->typename,
+             dots_to_underscores (lm->type->typename),
              make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1),
              make_accessor(lm, "q", g_ptr_array_size(lm->dimensions) - 1),
              make_array_size(lm, "p", g_ptr_array_size(lm->dimensions) - 1));
@@ -696,7 +698,7 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
 
         ///////////////////////////////////////////////////////////////////
         // the enum declaration itself
-        emit(0, "enum _%s {", tn);
+        emit(0, "enum _%s {", tn_);
         for (unsigned int i = 0; i < g_ptr_array_size(le->values); i++) {
             lcm_enum_value_t *lev = g_ptr_array_index(le->values, i);
             emit(1," %s = %d%s", lev->valuename, lev->value, i==(g_ptr_array_size(le->values)-1) ? "" : ",");
