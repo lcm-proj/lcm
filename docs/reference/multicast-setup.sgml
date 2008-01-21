@@ -95,6 +95,80 @@
     devices from high-speed devices using two levels of switches can also
     improve the situation.</para>
 
+    <title>Kernel UDP receive buffer sizing</title>
+
+    <note><para>Much of this information is taken from <ulink
+    url="http://www.29west.com/docs/THPM/udp-buffer-sizing.html">http://www.29west.com/docs/THPM/udp-buffer-sizing.html</ulink></para></note>
+
+    <para>When used on a properly shielded local area network, the most common
+    source of dropped and lost packets is not electrical disturbances.
+    Instead, it will usually be packet buffers that have reached capacity and
+    cannot store any more packets.</para>
+
+    <para>Operating system kernels typically allocate both a
+    <emphasis>send buffer</emphasis> and <emphasis>receive buffer</emphasis>
+    for a network socket.  The send buffer stores packets that the operating
+    system has agreed to transmit (i.e. a call to <function>send()</function>
+            was successful) but that it hasn't actually yet transmitted over
+    the network.  The receive buffer stores packets that the operating system
+    has received from the network, but that the application hasn't yet
+    retrieved.  In both cases, the buffers have a maximum capacity, and no new
+    packets can be sent or received if that capacity is reached.  In the
+    send case, a call to <function>send()</function> blocks until there is
+    space in the buffer (or fails with <literal>EAGAIN</literal> for
+    non-blocking sockets).  In the receive case, incoming packets are simply
+    discarded.</para>
+    
+    <para>When LCM is used in a high-bandwidth application, it may become
+    necessary to increase the maximum kernel receive buffer size to avoid
+    dropped packets.  There are two steps to this process.  First, the kernel
+    must be configured to allow larger receive buffers.  Second, the
+    application must request a larger receive buffer.</para>
+   
+    <para>Configuring the kernel can be done without rebooting, but requires
+    superuser privileges.  <xref linkend="table:kernel-udp-buffer-resizing"/>
+    demonstrates how to do this and set a 2MB maximum buffer size.
+    </para>
+
+<table id="table:kernel-udp-buffer-resizing">
+    <title>Setting Kernel UDP Receive Buffer Maximum Size</title>
+
+    <tgroup cols="2">
+        <tbody>
+            <row>
+                <entry><para>Linux</para></entry>
+                <entry><literal>sysctl -w net.core.rmem_max=2097152</literal></entry>
+            </row>
+            <row>
+                <entry><para>Solaris</para></entry>
+                <entry><literal>ndd -set /dev/udp udp_max_buf 2097152</literal></entry>
+            </row>
+            <row>
+                <entry><para>FreeBSD, Darwin</para></entry>
+                <entry><literal>sysctl -w kern.ipc.maxsockbuf=2097152</literal>
+                </entry>
+            </row>
+        </tbody>
+    </tgroup>
+</table>
+
+    <para>Most GNU/Linux distributions also allow setting this permanently
+    using the file <filename>/etc/sysctl.conf</filename>.  To do this, insert
+    the following line into the file somewhere:
+    <screen>
+    net.core.rmem_max=2097152
+    </screen>
+    </para>
+
+    <para>An LCM application that expects to receive large amounts of data
+    very quickly (e.g. greater than 1-2 MB/s) should request a larger receive
+    buffer.  This is done by calling <function><link
+    linkend="lcm-init">lcm_init</link>()</function>, and passing it a
+    <classname><link linkend="lcm-params-t">lcm_params_t</link></classname>
+    struct with a non-zero <literal>recv_buf_size</literal> field.  In our
+    initial projects, which involved typical data rates of 10 MB/s, a 2 MB
+    receive buffer was generally sufficient.</para>
+
 </refsect1>
 
 </refentry>
