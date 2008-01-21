@@ -1,0 +1,27 @@
+1.  Update NEWS
+2.  Bump the version number in configure.in at the line:
+      AM_INIT_AUTOMAKE(libcam, x.y.z)
+3.  Update the AGE, REVISION, and CURRENT variables.  See configure.in
+      comments for details.
+4.  Check out a clean copy of the repository:
+      svn co https://lcm.googlecode.com/svn/trunk lcm-rel
+5.  gtkdocize --copy 
+6.  autoreconf -i
+7.  ./configure --enable-gtk-doc
+8.  make; make
+9.  make distcheck
+10. Fix any errors that appear in step 9, and repeat.
+11. Take the resulting tarball, extract it, build it, install it, make sure
+      the basic executables run.
+12. Upload the tarball to google code.
+13. Make sure the outstanding changes are commited to SVN.
+14. Create a tag:
+      svn copy https://lcm.googlecode.com/svn/trunk https://lcm.googlecode.com/svn/tags/lcm_x_y_z
+15. Copy built docs to www directory:
+      cd docs
+      make install prefix=/somewhere_temporary
+      cp -r /somewhere_temporary/share/gtk-doc/html/lcm www/reference
+16. Update any mime types if necessary:
+      svn propset svn:mime-type text/html *.html
+17. Commit the docs
+18. Update the web site
