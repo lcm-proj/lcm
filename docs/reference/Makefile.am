@@ -25,11 +25,11 @@ SCANGOBJ_OPTIONS=
 
 # Extra options to supply to gtkdoc-scan.
 # e.g. SCAN_OPTIONS=--deprecated-guards="GTK_DISABLE_DEPRECATED" 
-SCAN_OPTIONS=--source-dir=../../examples/types
+SCAN_OPTIONS=--source-dir=$(top_builddir)/examples/types
 
 # Extra options to supply to gtkdoc-mkdb.
 # e.g. MKDB_OPTIONS=--sgml-mode --output-format=xml
-MKDB_OPTIONS=--sgml-mode --output-format=xml --source-dir=../../examples/types
+MKDB_OPTIONS=--sgml-mode --output-format=xml --source-dir=$(top_builddir)/examples/types
 
 # Extra options to supply to gtkdoc-mktmpl
 # e.g. MKTMPL_OPTIONS=--only-section-tmpl
@@ -75,4 +75,4 @@ include $(top_srcdir)/gtk-doc.make
 
 # Other files to distribute
 # e.g. EXTRA_DIST += version.xml.in
-EXTRA_DIST += 
+EXTRA_DIST += intro.sgml multicast-setup.sgml tutorial-c.sgml
