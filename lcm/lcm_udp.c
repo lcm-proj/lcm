@@ -433,7 +433,7 @@ lcm_params_init_defaults (lcm_params_t *lp)
             }
         }
     } else {
-        fprintf (stderr, "Using default LCM multicast address: " 
+        dbg (DBG_LCM, "Using default LCM multicast address: " 
                 LCM_DEFAULT_MC_ADDR ":%d\n", LCM_DEFAULT_MC_PORT);
         lp->mc_addr = inet_addr (LCM_DEFAULT_MC_ADDR);
         lp->mc_port = htons (LCM_DEFAULT_MC_PORT);
@@ -952,7 +952,7 @@ lcm_init (lcm_t *lcm, const lcm_params_t *args)
 
     // set multicast TTL
     if (0 == args->mc_ttl) {
-        fprintf (stderr, "LCM multicast TTL set to 0.  Packets will not "
+        dbg (DBG_LCM, "LCM multicast TTL set to 0.  Packets will not "
                 "leave localhost\n");
     }
     dbg (DBG_LCM, "LCM: setting multicast packet TTL to %d\n", args->mc_ttl);
@@ -1055,6 +1055,13 @@ lcm_init (lcm_t *lcm, const lcm_params_t *args)
             status = getsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF, 
                     (char*)&sockbufsize, &retsize);
             dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", sockbufsize);
+
+            if (args->recv_buf_size > sockbufsize) {
+                g_warning ("LCM UDP receive buffer size (%d) \n"
+                        "       is smaller than reqested! (%d)\n"
+                        "       For more info: http://lcm.googlecode.com\n", 
+                        args->recv_buf_size, sockbufsize);
+            }
         }
 
         // bind

@@ -94,7 +94,7 @@ extern "C" {
 { DBG_15, _BMAGENTA_ }, \
 { DBG_16, _BWHITE_ } \
 
-#define DBG_ENV     "DBG"
+#define DBG_ENV     "LCM_DBG"
 
 
 // ===================  do not modify after this line ==================
