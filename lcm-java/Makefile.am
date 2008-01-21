@@ -13,7 +13,8 @@ clean-local:
 if HAVE_JAVA
 jar_DATA = $(JARFILE)
 
-bin_PROGRAMS = lcm-jlogplayer lcm-lcspy
+bin_SCRIPTS = lcm-jlogplayer lcm-lcspy
+CLEANFILES = $(bin_SCRIPTS)
 
 lcm-jlogplayer:
 	@echo > $@ "#!/bin/sh"
