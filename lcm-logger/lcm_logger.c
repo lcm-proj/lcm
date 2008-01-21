@@ -14,7 +14,7 @@
 
 #include <glib.h>
 
-#include <lcm.h>
+#include <lcm/lcm.h>
 
 #include "glib_util.h"
 

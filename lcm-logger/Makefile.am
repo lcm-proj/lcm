@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir)/lcm $(GLIB_CFLAGS)
+INCLUDES = -I$(top_srcdir) $(GLIB_CFLAGS)
 
 bin_PROGRAMS = lcm-logger
 

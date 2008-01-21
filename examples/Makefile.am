@@ -1,5 +1,6 @@
 SUBDIRS = types
 
+INCLUDES = -I$(top_srcdir)
 noinst_PROGRAMS = send-message listener
 
 send_message_SOURCES = send_message.c

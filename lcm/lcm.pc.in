@@ -4,8 +4,8 @@ libdir=@libdir@
 includedir=@includedir@
 
 Name: lcm
-Description: Lightweight Communications and Marshaller (LCM)
+Description: Lightweight Communications and Marshalling (LCM)
 Requires:
 Version: @VERSION@
 Libs: -L${libdir} -llcm
-Cflags: -I${includedir}/lcm -I${includedir}
+Cflags: -I${includedir}

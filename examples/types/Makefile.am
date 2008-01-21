@@ -1,5 +1,6 @@
 noinst_LIBRARIES = libtypes.a
 
+INCLUDES = -I$(top_srcdir)
 LCMGEN = ../../lcmgen/lcmgen
 
 nodist_libtypes_a_SOURCES = \

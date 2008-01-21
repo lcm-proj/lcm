@@ -1,7 +1,7 @@
 #ifndef __lcm_logger_glib_util_h__
 #define __lcm_logger_glib_util_h__
 
-#include <lcm.h>
+#include <lcm/lcm.h>
 
 #ifdef __cplusplus
 extern "C" {
