@@ -33,6 +33,8 @@
     <para>Remember, you must always do this to use LCM locally if your machine
     is <emphasis>not connected</emphasis> to any external network.</para>
 
+</refsect1>
+<refsect1>
     <title>Choosing a TTL</title>
 
     <para>LCM by default uses a time-to-live (TTL) value of 0.  This will
@@ -52,6 +54,8 @@
     interface rather than a wireless interface when you wish to keep your TTL
     at 0.</note>
 
+</refsect1>
+<refsect1>
     <title>Using IGMP snooping</title>
 
     <para>When the multicast protocol was designed, it was intended that on
@@ -95,6 +99,8 @@
     devices from high-speed devices using two levels of switches can also
     improve the situation.</para>
 
+</refsect1>
+<refsect1 id="kernel-receive-buffer-size">
     <title>Kernel UDP receive buffer sizing</title>
 
     <note><para>Much of this information is taken from <ulink
