@@ -2,6 +2,8 @@ package lcm.logging;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.*;
+import java.awt.geom.*;
 import java.io.*;
 import java.util.*;
 import java.net.*;
@@ -28,9 +30,10 @@ public class LogPlayer extends JComponent
     Log log;
     JButton playButton = new JButton("Play ");
     JButton stepButton = new JButton("Step");
-    JButton fasterButton = new JButton(">>");
-    JButton slowerButton = new JButton("<<");
-    JLabel  speedLabel = new JLabel("1.0");
+    JButton fasterButton;
+    //    JButton fasterButton = new JButton(">>");
+    JButton slowerButton; // = new JButton("<<");
+    JLabel  speedLabel = new JLabel("1.0", JLabel.CENTER);
     double  speed = 1.0;
 
     static final int POS_MAX = 10000;
@@ -206,6 +209,18 @@ public class LogPlayer extends JComponent
 	timeLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
 	posLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
 
+	fasterButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, false)));
+	fasterButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.cyan, false)));
+	fasterButton.setPressedIcon(new ImageIcon(makeArrowImage(Color.red, false)));
+	fasterButton.setBorderPainted(false);
+	fasterButton.setContentAreaFilled(false);
+
+	slowerButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, true)));
+	slowerButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.cyan, true)));
+	slowerButton.setPressedIcon(new ImageIcon(makeArrowImage(Color.red, true)));
+	slowerButton.setBorderPainted(false);
+	slowerButton.setContentAreaFilled(false);
+
 	Font buttonFont = new Font("SansSerif", Font.PLAIN, 10);
 	fasterButton.setFont(buttonFont);
 	slowerButton.setFont(buttonFont);
@@ -213,7 +228,7 @@ public class LogPlayer extends JComponent
 	stepButton.setFont(buttonFont);
 
 	JPanel p = new JPanel();
-	p.setLayout(new FlowLayout());
+	p.setLayout(new GridLayout(1,3,0,0));
 	p.add(slowerButton);
 	p.add(speedLabel);
 	p.add(fasterButton);
@@ -227,7 +242,7 @@ public class LogPlayer extends JComponent
 	    new GridBagConstraints(2, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
 
 	add(p,           
-	    new GridBagConstraints(3, row, REMAINDER, 1, 0.0,    0.0,    EAST,      HORIZONTAL, insets,                  0,    0));
+	    new GridBagConstraints(3, row, REMAINDER, 1, 0.0,    0.0,    EAST,      NONE,       insets,                  0,    0));
 	row++;
 
 	add(js,
@@ -860,4 +875,47 @@ public class LogPlayer extends JComponent
 	    System.out.println("Exception: "+ex);
 	}
     }
+
+    static BufferedImage makeArrowImage(Color fillColor, boolean flip)
+    {
+	int height = 18, width = 18;
+	BufferedImage im = new BufferedImage(width,height, BufferedImage.TYPE_INT_ARGB);
+	
+	Graphics2D g = im.createGraphics();
+	g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+	g.setColor(new Color(0,0,0,0));
+	//	g.setColor(new Color(0,0,255,128));
+	g.fillRect(0,0,width,height);
+
+	if (flip) {
+	    g.translate(width-1, height/2);
+	    g.scale(-height/2, height/2);
+	} else {
+	    g.translate(0, height/2);
+	    g.scale(height/2, height/2);
+	}
+
+	g.setStroke(new BasicStroke(0f));
+	GeneralPath gp = new GeneralPath();
+	gp.moveTo(0,-1);
+	gp.lineTo(1,0);
+	gp.lineTo(0,1);
+	gp.lineTo(0,-1);
+
+	g.setColor(fillColor);
+	g.fill(gp);
+	g.setColor(Color.black);
+	g.draw(gp);
+
+	g.translate(.75, 0);
+
+	g.setColor(fillColor);
+	g.fill(gp);
+	g.setColor(Color.black);
+	g.draw(gp);
+
+	return im;
+    }
+
 }
