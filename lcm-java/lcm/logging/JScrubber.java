@@ -27,7 +27,7 @@ public class JScrubber extends JComponent
     double zoom0, zoom1; // positions (0,1) representing the left and right end of the zoom scrubber
     int cy, cy2;
 
-    int lastDrawX = -1; // used to eliminate extra redraws
+    int lastDrawX = -1, lastDrawX2 = -1; // used to eliminate extra redraws
 
     ArrayList<JScrubberListener> listeners = new ArrayList<JScrubberListener>();
 
@@ -342,6 +342,7 @@ public class JScrubber extends JComponent
 	g.drawOval(getX2(position)-KNOBSIZE/2, cy2 - KNOBSIZE/2, KNOBSIZE, KNOBSIZE);
 	
 	lastDrawX = getX(position);
+	lastDrawX2 = getX2(position);
     }
 
     void userSet(double newpos)
@@ -362,13 +363,10 @@ public class JScrubber extends JComponent
 
 	this.position = pos;
 
-	int x = getX2(position); //(int) (MARGIN + position*(getWidth()-MARGIN*2));
-	if (Math.abs(x - lastDrawX) > 1) {
-	    updateGeometry();
-	    // now we've updated geometry, maybe we don't need to draw.
-	    if (Math.abs(x - lastDrawX) > 1)
-		repaint();
-	}
+	updateGeometry();
+	// now we've updated geometry, maybe we don't need to draw.
+	if (Math.abs(getX(position) - lastDrawX) > 1 || Math.abs(getX2(position) - lastDrawX2) > 1)
+	    repaint();
 
 	for (Bookmark b : bookmarks)
 	    {

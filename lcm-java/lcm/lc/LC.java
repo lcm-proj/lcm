@@ -224,13 +224,6 @@ public class LC
 	    }
 	}
 
-	/*
-	boolean has_subscribers (String channel)
-	{
-	    return subscriptions.containsKey(channel) || snoopers.size() > 0;
-	}
-	*/
-
 	void dispatch_message (String channel, byte[] data, int data_offset, int data_length)
 	{
 	    synchronized (subscriptions) {

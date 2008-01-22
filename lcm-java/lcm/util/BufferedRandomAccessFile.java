@@ -172,6 +172,22 @@ public class BufferedRandomAccessFile
 
     public void readFully(byte[] b, int offset, int length) throws IOException
     {
+	while (length > 0) {
+	    int bufferAvailable = bufferLength - bufferPosition;
+	    int thiscopy = Math.min(bufferAvailable, length);
+	    if (thiscopy == 0) {
+		flushBuffer();
+		bufferSeek(bufferOffset + bufferLength);
+		continue;
+	    }
+
+	    System.arraycopy(buffer, bufferPosition, b, offset, thiscopy);
+	    bufferPosition += thiscopy;
+	    offset += thiscopy;
+	    length -= thiscopy;
+
+	}
+
 	/*	
          if (length > BUFFER_SIZE)
 	    {
@@ -183,8 +199,10 @@ public class BufferedRandomAccessFile
 	    }
 	*/
 
+	/*
 	for (int i = offset; i < offset+length; i++)
 	    b[i] = (byte) read();
+	*/
     }
 
     public void readFully(byte[] b) throws IOException
