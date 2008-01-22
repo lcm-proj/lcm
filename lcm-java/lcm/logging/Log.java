@@ -10,6 +10,8 @@ import lcm.util.*;
 public class Log
 {
     BufferedRandomAccessFile raf;
+    //RandomAccessFile raf;
+
     static final int LOG_MAGIC = 0xEDA1DA01;
     String path;
 
@@ -26,6 +28,7 @@ public class Log
     {
 	this.path = path;
 	raf = new BufferedRandomAccessFile(path, mode);
+	//raf = new RandomAccessFile(path, mode);
     }
 
     public String getPath()

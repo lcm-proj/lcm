@@ -89,7 +89,7 @@ public class BufferedRandomAccessFile
     {
 	flushBuffer();
 
-	long newOffset = seekOffset - (seekOffset & (BUFFER_SIZE - 1));
+	long newOffset = seekOffset - (seekOffset & (BUFFER_SIZE - 1L));
 	if (newOffset == bufferOffset) {
 	    bufferPosition = (int) (seekOffset - bufferOffset);
 	    return;
@@ -104,11 +104,13 @@ public class BufferedRandomAccessFile
 	// we always ask for an amount that should be exactly available.
 	raf.seek(bufferOffset);
 	raf.readFully(buffer, 0, bufferLength);
+
+	// System.out.printf("%08x %08x %08x %08x\n", seekOffset, bufferOffset, bufferPosition, bufferLength);
     }
 
-    public int read() throws IOException
+    public final int read() throws IOException
     {
-	if (bufferOffset + bufferPosition > length)
+	if (bufferOffset + bufferPosition >= length)
 	    throw new EOFException("EOF");
 
 	if (bufferPosition >= bufferLength)
@@ -162,20 +164,24 @@ public class BufferedRandomAccessFile
     public short readShort() throws IOException
     {
 	short v = 0;
-	v |= ((read()&0xff)<<8);
-	v |= ((read()&0xff));
+	v |= (read()<<8);
+	v |= (read());
 
 	return v;
     }
 
     public void readFully(byte[] b, int offset, int length) throws IOException
     {
-	if (length > BUFFER_SIZE)
+	/*	
+         if (length > BUFFER_SIZE)
 	    {
 		raf.seek(bufferOffset + bufferPosition);
 		raf.readFully(b, offset, length);
+
+		// XXX: must update bufferOffset
 		return;
 	    }
+	*/
 
 	for (int i = offset; i < offset+length; i++)
 	    b[i] = (byte) read();
@@ -197,10 +203,10 @@ public class BufferedRandomAccessFile
     public int readInt() throws IOException
     {
 	int v = 0;
-	v |= ((read()&0xff)<<24);
-	v |= ((read()&0xff)<<16);
-	v |= ((read()&0xff)<<8);
-	v |= ((read()&0xff));
+	v |= (read()<<24);
+	v |= (read()<<16);
+	v |= (read()<<8);
+	v |= (read());
 
 	return v;
     }

@@ -219,7 +219,7 @@ public class LogPlayer extends JComponent
 	p.add(fasterButton);
 	//                         x  y    w          h  fillx   filly   anchor     fill        insets,                  ix,   iy
 	add(logName,
-	    new GridBagConstraints(0, row, 3,         1, 0.0,    0.0,    WEST,      NONE,       insets,                  0,    0));
+	    new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       insets,                  0,    0));
 
 	add(playButton,           
 	    new GridBagConstraints(1, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
@@ -247,9 +247,9 @@ public class LogPlayer extends JComponent
 	/// spacers
 
 	add(Box.createHorizontalStrut(90),
-	    new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
+	    new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    WEST,    NONE,       insets,                  0,    0));
 	add(Box.createHorizontalStrut(100),           
-	    new GridBagConstraints(1, 0,   1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
+	    new GridBagConstraints(1, 0,   1,         1, 0.0,    0.0,    WEST,    NONE,       insets,                  0,    0));
 
 	///////////////////////////
 	row++;
@@ -546,7 +546,7 @@ public class LogPlayer extends JComponent
 	}
 
 	loadPreferences(path+".jlp");
- 	doPlay();
+	doPlay();
    }
 
     void setPlaying(boolean t)
