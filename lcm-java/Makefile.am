@@ -18,12 +18,12 @@ CLEANFILES = $(bin_SCRIPTS)
 
 lcm-jlogplayer:
 	@echo > $@ "#!/bin/sh"
-	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.logger.LogPlayer $*"
+	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.logging.LogPlayer \$$*"
 	chmod 755 $@
 
 lcm-lcspy:
 	@echo > $@ "#!/bin/sh"
-	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.lcspy.LCSpy $*"
+	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.lcspy.LCSpy \$$*"
 	chmod 755 $@
 
 dist_noinst_JAVA = \
