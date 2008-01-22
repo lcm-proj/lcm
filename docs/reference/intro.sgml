@@ -255,5 +255,5 @@
       occurs: this can be detected by a large discontinuity in the
       timestamps of an physically grounded event stream.</listitem>
   </itemizedlist>
-
+</refsect1>
 </refentry>
