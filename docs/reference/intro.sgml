@@ -16,10 +16,12 @@
     multiple senders and receivers to use a network for sending and
     receiving messages to each other using a shared channel.  The
     <emphasis>marshalling</emphasis> aspect of LCM is that it provides
-    you the ability to define your own data types that are automatically
-    encoded into data packets in a platform- and language-independent
-    fashion.  Most users will use both of these capabilities at the same
-    time even though they can be separated if desired.</para>
+    you the ability to define your own data types that are
+    automatically encoded into data packets in a platform- and
+    language-independent fashion.  Most users will use both of these
+    capabilities at the same time even though they can be separated if
+    desired. LCM also includes a logging facility, allowing LCM
+    traffic to be recorded and replayed.</para>
 
     <para>The design goals for the communications system are:</para>
     
@@ -80,6 +82,10 @@
     <para>That said, UDP multicast can have quirks in getting it to work
     properly on a LAN, or even a single host.  These issues are discussed
     in the Section <xref linkend="multicast-setup"/>.</para>
+
+    <para>I THINK WE'RE GOING INTO TOO MUCH DETAIL HERE-- SOME OF THIS
+    SHOULD BE MOVED TO A TROUBLESHOOTING/CONFIGURATION SECTION. IT
+    DOESN'T FEEL LIKE INTRODUCTORY MATERIAL.</para>
 
     <para>Using LCM requires you to pick an IP address to serve as the
     multicast group for all messages.  This IP address is distinct from
@@ -151,7 +157,103 @@
 <refsect1>
     <title>Marshalling System</title>
 
-    <para>Write me.</para>
+    <para>Sending messages from one application to another involves
+    encoding and decoding data into a byte stream. This sort of
+    programming tends to be straight-forward at first glance, but it
+    is tedious, error-prone, and intolerant to mismatches in types. A
+    mismatch in type can occur in two fundamental ways: a message of
+    type "foo_t" was expected but a message of "bar_t" was received,
+    or a message of type "foo_t" was expected but the underlying type
+    specification of "foo_t" did not match on the transmitter and
+    receiver.</para>
+
+    <para>Like other message specification systems, it addresses the
+    tedious and error-prone aspects via automatic-generation of code,
+    but provides first-class support for several languages (currently
+    C, Java, and Python). Unlike other message specification systems,
+    LCM detects both types of faults described above, preventing
+    erratic (and often hard-to-isolate) failures. LCM also enforces
+    safe use of variable-length arrays, helping to prevent illegal
+    pointer operations in languages like C.</para>
+
+    <para>The formal type specification language for LCM follows
+    standard C and Java syntax as much as possible, while providing
+    several additional features. The syntax itself will also be
+    familiar to users of External Data Representation (XDR), used by
+    RPC. Notable deviations include a simplified notation for
+    variable-length arrays, and a consistent naming scheme for
+    primitive types (based on C99's stdint).</para>
+
+    <para>The tutorials illustrate all of the basic syntax and
+    capabilities of the LCM marshalling system.</para>
 </refsect1>
+
+<refsect1>
+  <title>Logging</title>
+
+  <para>LCM includes a logging facility allowing LCM network traffic
+  to be recorded and played back again. LCM's multicast-based network
+  architecture means that adding a logger to the system requires no
+  additional configuration: simply run the logger or log player. The
+  result of a played-back log is indistinguishable from live network,
+  aside from any timestamps that might be embedded in the user-defined
+  LCM types. </para>
+
+  <para>The log file format is very simple: each LCM message is
+  concatentated in the order they are received from the network
+  stack. For each record, a synchronization sequence is written,
+  followed by the time at which the message was received, followed by
+  the packet data. The timestamps allow the log player to closely
+  replicate the inter-message timing that occured when the log was
+  created. The synchronization sequence is used to facilitate seeking
+  in the log file: the Java-based log player, which features a
+  flexible GUI, allows the both seeking and variable-speed
+  playback.</para>
+
+  <para>The log file format itself has both C and Java implementations
+  and can be accessed by users. This is useful for off-line processing
+  of log files: messages can be filtered or otherwise altered. A
+  similar result could be obtained by writing an LCM application and
+  playing the original log while recording a new log, however
+  accessing the log files directly is both faster (since the log file
+  can be processed at the maximum speed your application is capable
+  of) and more accurate (since timestamps in the logfile can be
+  preserved exactly).</para>
+
+  <para>SHOULD WE FACTOR THIS, AND OTHER PRACTICAL ADVICE, INTO A "HOW
+  TO WRITE A WELL-BEHAVED LCM APPLICATION" SECTION? IT COULD
+  INCLUDE NAMING CONVENTIONS.</para>.
+
+  <para>Allowing applications to operate correctly from logged data
+  requires some careful consideration of timestamps. Specifically,
+  timestamps in logged data will not agree with the computer's current
+  time. However, it is relatively easy to write well-behaved LCM
+  applications that are time-agnostic.</para>
+
+  <itemizedlist>
+    <listitem>Every user-defined LCM type should include a timestamp,
+      defined as "int64_t utime": the number of microseconds since the
+      UNIX epoch, UMT. Messages arising from a physically-grounded event
+      (e.g., a GPS reading or laser scan) should have this field
+      initialized with the best estimate of the time at which that
+      physical event occurred. </listitem>
+    
+    <listitem>Events that are not physically-grounded (i.e., the result
+      of filtering a GPS measurement, or command to steer around an
+      obstacle detected by a laser scan) should bear a timestamp that is
+      derived from the physically-grounded event that caused it. In
+      other words, these events should NOT use the computer's time: they
+      should use their best guess of the local time as indicated by the
+      physically-grounded events that are occuring. Adherence to this
+      principle allows modules to operate on logged data, outputing
+      timestamps that agree with the logged data.</listitem>
+
+    <listitem>Supporting seeking in log files can require some
+      additional logic in LCM applications that maintain a significant
+      amount of state (such as an obstacle tracker). These
+      applications should reset their internal state when a seek
+      occurs: this can be detected by a large discontinuity in the
+      timestamps of an physically grounded event stream.</listitem>
+  </itemizedlist>
 
 </refentry>
