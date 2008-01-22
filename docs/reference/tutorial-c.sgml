@@ -16,7 +16,7 @@
     </para>
     <itemizedlist>
         <listitem>Create a type definition.</listitem>
-        <listitem>Initializing LCM in your application.</listitem>
+        <listitem>Initialize LCM in your application.</listitem>
         <listitem>Publish an instance of the data.</listitem>
         <listitem>Subscribe to the data.</listitem>
     </itemizedlist>
