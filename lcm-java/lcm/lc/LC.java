@@ -358,6 +358,7 @@ public class LC
 		    return;
 		*/
 
+		//		System.out.println("creating fragment buffer for "+channel+" size: "+msg_size+" total: "+frag_bufs.size());
 		fbuf = new FragmentBuffer (from, channel, msg_seqno, msg_size, fragments_in_msg);
 
 		add_fragment_buffer (fbuf);

@@ -26,23 +26,24 @@ public class LogPlayer extends JComponent
     }
 
     Log log;
-    JButton playButton = new JButton("Play");
+    JButton playButton = new JButton("Play ");
+    JButton stepButton = new JButton("Step");
+    JButton fasterButton = new JButton(">>");
+    JButton slowerButton = new JButton("<<");
+    JLabel  speedLabel = new JLabel("1.0");
+    double  speed = 1.0;
 
     static final int POS_MAX = 10000;
-    //    JSlider position = new JSlider(0, POS_MAX, 0);
+
     JLabel  posLabel = new JLabel("Event 0");
     JLabel  timeLabel = new JLabel("Time 0.0s");
     JLabel logName = new JLabel("---");
-
-    static final int LOG_MAGIC = 0xEDA1DA01;
 
     PlayerThread player = null;
 
     LC lc;
 
-    double speeds[] = new double[] { 0, 0.01, 0.1, 0.5, 1, 2, 4, 8, 32};
-    JSlider speedSlider = new JSlider(1, speeds.length-1, 4);
-
+    /** The time of the first event in the current log **/
     long timeOffset = 0;
 
     JFileChooser jfc = new JFileChooser();
@@ -67,7 +68,6 @@ public class LogPlayer extends JComponent
 	    while (true) {
 		try {
 		    QueuedEvent qe = events.take();
-		    //		    System.out.printf("%15d : "+qe+"\n", System.currentTimeMillis());
 		    qe.execute(LogPlayer.this);
 		} catch (InterruptedException ex) {
 		}
@@ -78,8 +78,8 @@ public class LogPlayer extends JComponent
     /** We have events coming from all over the place: the UI, UDP
 	events, callbacks from the scrubbers. To keep things sanely
 	thread-safe, all of these things simply queue events which are
-	processed in-order. doStop, doPlay, doStep, doAnything can
-	only be called from these events.
+	processed in-order. doStop, doPlay, doStep, do(Anything) can
+	only be called from the queue thread.
     **/
     class PlayPauseEvent implements QueuedEvent
     {
@@ -173,8 +173,24 @@ public class LogPlayer extends JComponent
 
     boolean show_absolute_time = false;
 
-    JButton stepButton = new JButton("Step");
     JTextField stepChannelField = new JTextField("");
+
+    // faster/slower would be better as semi-log.
+    static final double slowerSpeed(double v)
+    {
+	return v/2;
+    }
+
+    static final double fasterSpeed(double v)
+    {
+	return v*2;
+    }
+
+    void setSpeed(double v)
+    {
+	speedLabel.setText(""+v);
+	speed = v;
+    }
 
     public LogPlayer() throws IOException
     {
@@ -184,44 +200,42 @@ public class LogPlayer extends JComponent
 	Insets insets = new Insets(0,0,0,0);
 	int row = 0;
 
-	//	speedSlider.setMaximumSize(new Dimension(100,50));
-	Dictionary speedSliderDictionary = new Hashtable();
-	for (int i = 0; i < speeds.length; i++) {
-	    JLabel l = new JLabel(speeds[i]+"x");
-	    l.setFont(new Font("SansSerif", Font.PLAIN, 10));
-	    speedSliderDictionary.put(i, l);
-	}
-
 	logName.setText("No log loaded");
 	logName.setFont(new Font("SansSerif", Font.PLAIN, 10));
 
-	speedSlider.setLabelTable(speedSliderDictionary);
-	speedSlider.setMinorTickSpacing(1);
-	speedSlider.setMajorTickSpacing(1);
-	speedSlider.setPaintTicks(true);
-	speedSlider.setPaintLabels(true);
-	speedSlider.setSnapToTicks(true);
-	speedSlider.setMinimumSize(new Dimension(200,40));
-	speedSlider.setMaximumSize(new Dimension(400, 40));
 	timeLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
 	posLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
 
+	Font buttonFont = new Font("SansSerif", Font.PLAIN, 10);
+	fasterButton.setFont(buttonFont);
+	slowerButton.setFont(buttonFont);
+	playButton.setFont(buttonFont);
+	stepButton.setFont(buttonFont);
+
+	JPanel p = new JPanel();
+	p.setLayout(new FlowLayout());
+	p.add(slowerButton);
+	p.add(speedLabel);
+	p.add(fasterButton);
 	//                         x  y    w          h  fillx   filly   anchor     fill        insets,                  ix,   iy
 	add(logName,
 	    new GridBagConstraints(0, row, 3,         1, 0.0,    0.0,    WEST,      NONE,       insets,                  0,    0));
-	add(speedSlider,
-	    new GridBagConstraints(3, row, REMAINDER, 1, 1.0,    0.0,    EAST,      HORIZONTAL, insets,                  0,    0));
-	row++;
 
 	add(playButton,           
-	    new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
+	    new GridBagConstraints(1, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
+	add(stepButton,
+	    new GridBagConstraints(2, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
+
+	add(p,           
+	    new GridBagConstraints(3, row, REMAINDER, 1, 0.0,    0.0,    EAST,      HORIZONTAL, insets,                  0,    0));
+	row++;
 
 	add(js,
-	    new GridBagConstraints(2, row, REMAINDER, 1, 1.0,    0.0,    CENTER,    HORIZONTAL, new Insets(0, 5, 0, 5),  0,    0));
+	    new GridBagConstraints(0, row, REMAINDER, 1, 1.0,    0.0,    CENTER,    HORIZONTAL, new Insets(0, 5, 0, 5),  0,    0));
 	row++;
 
 	add(timeLabel,            
-	    new GridBagConstraints(2, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       new Insets(0, 10, 0, 0), 0,    0));
+	    new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       new Insets(0, 10, 0, 0), 0,    0));
 	add(posLabel,             
 	    new GridBagConstraints(3, row, 1,         1, 0.0,    0.0,    EAST,      NONE,       new Insets(0,0, 0, 10),  0,    0));
 	row++;
@@ -230,8 +244,12 @@ public class LogPlayer extends JComponent
 	    new GridBagConstraints(0, row, REMAINDER, 1, 1.0,    1.0,    CENTER,    BOTH,       new Insets(0,0, 0, 0),   0,    0));
 	row++;
 
+	/// spacers
+
 	add(Box.createHorizontalStrut(90),
 	    new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
+	add(Box.createHorizontalStrut(100),           
+	    new GridBagConstraints(1, 0,   1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
 
 	///////////////////////////
 	row++;
@@ -254,15 +272,22 @@ public class LogPlayer extends JComponent
                     }
 		}});
         add(toggleAllButton,
-            new GridBagConstraints(0, row, 1, 1, 0.0, 0.0, CENTER, NONE,
+            new GridBagConstraints(0, row, 2, 1, 0.0, 0.0, CENTER, NONE,
                                    insets, 0, 0));
 
-	add(stepButton,
-	    new GridBagConstraints(1, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
 	add(stepPanel,
 	    new GridBagConstraints(2, row, REMAINDER, 1, 1.0,    0.0,    CENTER,    HORIZONTAL, new Insets(0, 5, 0, 5),  0,    0));
 	//	position.addChangeListener(new MyChangeListener());
 	setPlaying(false);
+
+	fasterButton.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    setSpeed(fasterSpeed(speed));
+		}});
+	slowerButton.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    setSpeed(slowerSpeed(speed));
+		}});
 
 	playButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -287,16 +312,9 @@ public class LogPlayer extends JComponent
 	timeLabel.addMouseListener(new MouseAdapter() {
 	    public void mouseClicked(MouseEvent e) {
 		show_absolute_time = ! show_absolute_time;
-//		updateDisplay();
 	    }
 	});
 
-	/*	position.addMouseListener(new MouseAdapter() {
-		public void mousePressed(MouseEvent e) {
-		    doStop();
-		}
-	    });
-	*/
 	js.set(0);
 	js.addScrubberListener(new MyScrubberListener());
 
@@ -379,9 +397,9 @@ public class LogPlayer extends JComponent
 			} else if (cmd.equals("STEP")) {
 			    events.offer(new StepEvent());
 			} else if (cmd.equals("FASTER")) {
-			    speedSlider.setValue(Math.min(speedSlider.getValue()+1, speedSlider.getMaximum()));
+			    setSpeed(fasterSpeed(speed));
 			} else if (cmd.equals("SLOWER")) {
-			    speedSlider.setValue(Math.max(speedSlider.getValue()-1, 0));
+			    setSpeed(slowerSpeed(speed));
 			} else if (cmd.startsWith("BACK")) {
 			    double seconds = Double.parseDouble(cmd.substring(4));
 			    double pos = log.getPercent() - seconds/total_seconds;
@@ -534,6 +552,8 @@ public class LogPlayer extends JComponent
     void setPlaying(boolean t)
     {
 	playButton.setText(t ? "Pause" : "Play");
+
+	stepButton.setEnabled(!t);
     }
 
     // the player can stop automatically on error or EOF; we thus have
@@ -643,28 +663,23 @@ public class LogPlayer extends JComponent
 	    long logOffset = 0;
 	    long last_e_utime = 0;
 
-	    int lastspeedidx = -1;
+	    double lastspeed = 0;
 
 	    try {
 		while (!stopflag) 
 		    {
-			Log.Event e;
-			
-			e = log.readNext();
+			Log.Event e = log.readNext();
 
-			int speedidx = speedSlider.getValue();
-
-			if (speedidx!=lastspeedidx) {
+			if (speed != lastspeed) {
 			    logOffset = e.utime;
 			    localOffset = System.nanoTime()/1000;
-			    lastspeedidx = speedidx;
-			    //			    System.out.printf("%15d : Adjusting index\n", System.currentTimeMillis());
+			    lastspeed = speed;
 			}
 
 			long logRelativeTime = (long) (e.utime - logOffset);
 			long clockRelativeTime = System.nanoTime()/1000 - localOffset;
 
-			long speed_scale = (long) (speeds[speedidx]*16.0);
+			long speed_scale = (long) (speed*16.0);
 			long waitTime = logRelativeTime - speed_scale*clockRelativeTime/16;
 
 			long maxWaitTime = 250000;
@@ -673,7 +688,7 @@ public class LogPlayer extends JComponent
 			    System.out.printf("Hole in log from %15d - %15d (%15.3f seconds)\n",
 					      last_e_utime, e.utime, (e.utime - last_e_utime)/1000000.0);
 			    waitTime = maxWaitTime;
-			    lastspeedidx = -1;
+			    lastspeed = 0;
 			}
 			last_e_utime = e.utime;
 

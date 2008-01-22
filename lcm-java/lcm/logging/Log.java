@@ -53,16 +53,18 @@ public class Log
 		
 		channellen    = raf.readInt();
 		datalen       = raf.readInt();
-		
-		if (channellen <= 0 || datalen <= 0)
-		    continue;
 
+		if (channellen <= 0 || datalen <= 0 || channellen >= 256 || datalen >= 16*1024*1024) {
+		    System.out.printf("Bad log event eventnumber = 0x%08x utime = 0x%08x channellen = 0x%08x datalen=0x%08x\n", 
+				      e.eventNumber, e.utime, channellen, datalen);		
+		    continue;
+		}
 		break;
 	    }
 
 	byte bchannel[] = new byte[channellen];
 	e.data = new byte[datalen];
-	
+
 	raf.readFully(bchannel);
 	e.channel = new String(bchannel);
 	raf.readFully(e.data);

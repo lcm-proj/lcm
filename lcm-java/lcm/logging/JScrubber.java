@@ -61,13 +61,21 @@ public class JScrubber extends JComponent
 	popupMenu.add(new PopupAction("Right repeat :]", BOOKMARK_RREPEAT));
 	popupMenu.add(new PopupAction("Left repeat [:", BOOKMARK_LREPEAT));
 	popupMenu.addSeparator();
-	popupMenu.add(new PopupAction("Zoom 10x", 0.1));
-	popupMenu.add(new PopupAction("Zoom 20x", 0.05));
-	popupMenu.add(new PopupAction("Zoom 50x", 0.02));
-	popupMenu.add(new PopupAction("Zoom 100x", 0.01));
-	popupMenu.add(new PopupAction("Zoom 200x", 0.005));
-	popupMenu.add(new PopupAction("Zoom 500x", 0.002));
-	popupMenu.add(new PopupAction("Zoom 1000x", 0.001));
+
+	int zooms[] = new int[] {10, 20, 50, 100, 200, 500, 1000};
+	ButtonGroup group = new ButtonGroup();
+	for (int i = 0; i < zooms.length; i++) {
+	    JRadioButtonMenuItem jmi = new JRadioButtonMenuItem("Zoom "+zooms[i]+"x");
+	    jmi.addActionListener(new ZoomAction("foo", zooms[i]));
+	    group.add(jmi);
+	    popupMenu.add(jmi);
+
+	    if (i==3) {
+		jmi.setSelected(true);
+		zoomfrac = 1.0 / zooms[i];
+	    }
+	}
+
 	popupMenu.addSeparator();
 	popupMenu.add(new ExportAction());
     }
@@ -123,10 +131,25 @@ public class JScrubber extends JComponent
 	}
     }
 
+    class ZoomAction extends AbstractAction
+    {
+	int zoom;
+
+	public ZoomAction(String name, int zoom)
+	{
+	    super(name);
+	    this.zoom = zoom;
+	}
+
+	public void actionPerformed(ActionEvent e)
+	{
+	    setZoomFraction(1.0/zoom);
+	}
+    }
+
     class PopupAction extends AbstractAction
     {
 	int op;
-	double amt = -1;
 
 	public PopupAction(String name, int op)
 	{
@@ -135,21 +158,10 @@ public class JScrubber extends JComponent
 	    this.op = op;
 	}
 
-	public PopupAction(String name, double amt)
-	{
-	    super(name);
-
-	    this.amt = amt;
-	}
-
 	public void actionPerformed(ActionEvent e)
 	{
-	    if (amt > 0) 
-		setZoomFraction(amt);
-	    else {
-		bookmarks.add(new Bookmark(popupPosition, op));
-		repaint();
-	    }
+	    bookmarks.add(new Bookmark(popupPosition, op));
+	    repaint();
 	}
     }
 
