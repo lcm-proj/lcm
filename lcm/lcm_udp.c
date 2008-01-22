@@ -1058,9 +1058,10 @@ lcm_init (lcm_t *lcm, const lcm_params_t *args)
 
             if (args->recv_buf_size > sockbufsize) {
                 g_warning ("LCM UDP receive buffer size (%d) \n"
-                        "       is smaller than reqested! (%d)\n"
-                        "       For more info: http://lcm.googlecode.com\n", 
-                        args->recv_buf_size, sockbufsize);
+                        "       is smaller than reqested (%d). "
+                        "For more info:\n"
+                        "       http://lcm.googlecode.com/svn/www/reference/lcm/multicast-setup.html\n", 
+                        sockbufsize, args->recv_buf_size);
             }
         }
 
