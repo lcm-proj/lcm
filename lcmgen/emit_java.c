@@ -4,6 +4,9 @@
 #include <string.h>
 #include <inttypes.h>
 
+#include <sys/stat.h>
+#include <sys/types.h>
+
 #include "lcmgen.h"
 #include "sprintfalloc.h"
 #include "getopt.h"
@@ -26,9 +29,27 @@ static char *dots_to_slashes(const char *s)
     return p;
 }
 
+static void make_dirs_for_file(const char *path)
+{
+    int len = strlen(path);
+    for (int i = 0; i < len; i++) {
+        if (path[i]=='/') {
+            char *dirpath = malloc(i+1);
+            strncpy(dirpath, path, i);
+            dirpath[i]=0;
+
+            mkdir(dirpath, 0777);
+            free(dirpath);
+
+            i++; // skip the '/'
+        }
+    }
+}
+
 void setup_java_options(getopt_t *gopt)
 {
     getopt_add_string(gopt, 0,   "jpath",     "",         "Java file destination directory");
+    getopt_add_bool(gopt, 0,    "jmkdir",     1,         "Make java source directories automatically");
     getopt_add_string(gopt, 0,   "jdecl",      "implements lcm.lc.LCEncodable", "String added to class declarations");
 }
 
@@ -125,6 +146,9 @@ int emit_java(lcmgen_t *lcm)
         if (!lcm_needs_generation(lcm, le->lcmfile, path))
             continue;
 
+        if (getopt_get_bool(lcm->gopt, "jmkdir"))
+            make_dirs_for_file(path);
+
         FILE *f = fopen(path, "w");
         if (f==NULL)
             return -1;
@@ -220,6 +244,9 @@ int emit_java(lcmgen_t *lcm)
 
         if (!lcm_needs_generation(lcm, lr->lcmfile, path))
             continue;
+
+        if (getopt_get_bool(lcm->gopt, "jmkdir"))
+            make_dirs_for_file(path);
 
         FILE *f = fopen(path, "w");
         if (f==NULL)
