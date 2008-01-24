@@ -423,8 +423,16 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit_start (2, "tmphash = (0x%"PRIx64, ls->hash);
     for (unsigned int m = 0; m < ls->members->len; m++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, m);
+        const char *msn = lm->type->shortname;
         if (! lcm_is_primitive_type (lm->type->typename)) {
-            emit_continue (" + %s._get_hash_recursive(newparents)", sn);
+            const char *ghr = "_get_hash_recursive(newparents)";
+            if (is_same_type (lm->type, ls->structname)) {
+                emit_continue ("+ %s.%s", msn, ghr);
+            } else if (is_same_package (lm->type, ls->structname)) {
+                emit_continue ("+ %s.%s.%s", msn, msn, ghr);
+            } else {
+                emit_continue ("+ %s.%s.%s", lm->type->typename, msn, ghr);
+            }
         }
     }
     emit_end (") & 0xffffffffffffffff");
