@@ -580,8 +580,6 @@ static int lcm_init (lcm_t *lcm, const udpm_params_t *args);
 lcm_t * 
 lcm_create (const char *url)
 {
-    if (!url) return NULL;
-
     if (!g_thread_supported ()) g_thread_init (NULL);
 
     lcm_t *lcm = malloc (sizeof (lcm_t));
