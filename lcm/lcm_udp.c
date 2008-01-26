@@ -606,6 +606,10 @@ lcm_create (const char *url)
     g_static_rec_mutex_init (&lcm->mutex);
     g_static_mutex_init (&lcm->transmit_lock);
 
+    // default to udpm
+    if (! url || (0 == strlen (url)))
+        url = "udpm://";
+
     char **url_parts = g_strsplit (url, "://", 2);
 
     if (0 == strcmp (url_parts[0], "udpm")) {
