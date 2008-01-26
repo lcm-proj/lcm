@@ -53,7 +53,7 @@ public class UDPMulticastProvider implements Provider
 	
 	sock.joinGroup(inetAddr);
 	
-	if (!up.get("readonly", false)) {
+	if (!up.get("transmitonly", false)) {
 	    reader = new ReaderThread();
 	    reader.start();
 	}
