@@ -610,17 +610,24 @@ lcm_create (const char *url)
 
     char **url_parts = g_strsplit (url, "://", 2);
 
-
     if (0 == strcmp (url_parts[0], "udpm")) {
         udpm_params_t params;
         udpm_params_init_defaults (&params);
         if (0 != udpm_parse_args (url_parts[1], &params)) {
             lcm_destroy (lcm);
+            g_strfreev (url_parts);
             return NULL;
         }
         lcm_init (lcm, &params);
+    } else {
+        fprintf (stderr, "%s:%d invalid LCM url [%s]\n", __FILE__, __LINE__, 
+                url);
+        lcm_destroy (lcm);
+        g_strfreev (url_parts);
+        return NULL;
     }
 
+    g_strfreev (url_parts);
     return lcm;
 }
 
