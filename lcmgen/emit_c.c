@@ -696,14 +696,21 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
         
         emit_header_top(lcmgen, f, tn_);
 
+        char *tn_upper = g_ascii_strup (tn_, strlen (tn_));
+
         ///////////////////////////////////////////////////////////////////
         // the enum declaration itself
         emit(0, "enum _%s {", tn_);
         for (unsigned int i = 0; i < g_ptr_array_size(le->values); i++) {
             lcm_enum_value_t *lev = g_ptr_array_index(le->values, i);
-            emit(1," %s = %d%s", lev->valuename, lev->value, i==(g_ptr_array_size(le->values)-1) ? "" : ",");
+            emit(1," %s_%s = %d%s", 
+                    tn_upper,
+                    lev->valuename, 
+                    lev->value, i==(g_ptr_array_size(le->values)-1) ? "" : ",");
         }
     
+        free (tn_upper);
+
         emit(0, "};");
         emit(0, " ");
 
