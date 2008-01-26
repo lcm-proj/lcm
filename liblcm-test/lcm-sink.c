@@ -3,17 +3,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
-#include <fcntl.h>
-#include <netdb.h>
-
-#include <sys/time.h>
-#include <time.h>
-#include <sys/select.h>
-
 #include <lcm/lcm.h>
 
 int catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
@@ -24,26 +13,16 @@ int catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
 
 int main(int argc, char **argv)
 {
-    int status;
-
-    lcm_params_t lcm_args;
-    lcm_params_init_defaults (&lcm_args);
-
-    lcm_t *lcm = lcm_create();
+    lcm_t *lcm = lcm_create("udpm://");
     if (! lcm) {
         fprintf(stderr, "couldn't allocate lcm_t\n");
-        return 1;
-    }
-    status = lcm_init (lcm, &lcm_args);
-    if (0 != status) {
-        fprintf(stderr, "error initializing lcm context\n");
         return 1;
     }
     lcm_subscribe (lcm, ".*", catchall_handler, NULL);
 
     while(1) {
 		lcm_handle (lcm);
-   }
+    }
 
     lcm_destroy (lcm);
     

@@ -41,6 +41,9 @@
 
 #define LCM_SHORT_MESSAGE_MAX_SIZE 1400
 
+#define UDPM_DEFAULT_MC_ADDR "239.255.76.67"
+#define UDPM_DEFAULT_MC_PORT 7667
+
 typedef struct _lcm2_header_short lcm2_header_short_t;
 struct _lcm2_header_short {
     uint32_t magic;
@@ -108,11 +111,35 @@ typedef struct _lcm_buf_queue {
     int count;
 } lcm_buf_queue_t;
 
+/**
+ * udpm_params_t:
+ * @local_iface:    address of the local network interface to use
+ * @mc_addr:        multicast address
+ * @mc_port:        multicast port
+ * @transmit_only:  set to 1 if the lcm_t will never handle incoming data
+ * @mc_ttl:         if 0, then packets never leave local host.
+ *                  if 1, then packets stay on the local network 
+ *                        and never traverse a router
+ *                  don't use > 1.  that's just rude. 
+ * @recv_buf_size:  requested size of the kernel receive buffer, set with
+ *                  SO_RCVBUF.  0 indicates to use the default settings.
+ *
+ */
+typedef struct _udpm_params_t udpm_params_t;
+struct _udpm_params_t {
+    in_addr_t local_iface;
+    in_addr_t mc_addr;
+    uint16_t mc_port;
+    int transmit_only;
+    uint8_t mc_ttl; 
+    int recv_buf_size;
+};
+
 struct _lcm {
     int recvfd;
     int sendfd;
 
-    lcm_params_t params;
+    udpm_params_t params;
     int initialized;
 
     /* Packet structures for available for sending or receiving use are
@@ -310,33 +337,111 @@ _sockaddr_in_equal (const void * a, const void *b)
            a_addr->sin_family      == b_addr->sin_family;
 }
 
-lcm_t * 
-lcm_create ()
+static int
+udpm_parse_args (const char *args, udpm_params_t *params)
 {
-    if (!g_thread_supported ()) g_thread_init (NULL);
+    if (!args || (0 == strlen (args))) {
+        return 0;
+    }
 
-    lcm_t *lcm = malloc (sizeof (lcm_t));
-    if (lcm) memset (lcm, 0, sizeof (lcm_t));
-    lcm->recvfd = -1;
-    lcm->sendfd = -1;
-    lcm->udp_low_watermark = 1.0;
-    lcm->initialized = 0;
+    char *buf = strdup (args);
 
-    lcm->handlers_all = g_ptr_array_new();
-    lcm->handlers_map = g_hash_table_new (g_str_hash, g_str_equal);
+    int start = 0, end = 0;
 
-    lcm->frag_bufs = g_hash_table_new_full (_sockaddr_in_hash, 
-            _sockaddr_in_equal, NULL, (GDestroyNotify) lcm_frag_buf_destroy);
-    lcm->frag_bufs_total_size = 0;
-    lcm->frag_bufs_max_total_size = 1 << 24; // 16 megabytes
-    lcm->max_n_frag_bufs = 1000;
+    // multicast address
+    for (; args[end] && (args[end] != ':') && (args[end] != '?'); end++);
 
-    pipe (lcm->notify_pipe);
-    fcntl (lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
+    if (end > 0) {
+        buf[end] = '\0';
+        printf ("mcaddr: [%s]\n", buf);
+        int status = inet_aton (buf + start, (struct in_addr*)&params->mc_addr);
+        if (status < 0) {
+            fprintf (stderr, "%s:%d bad multicast address [%s]\n", 
+                    __FILE__, __LINE__, buf);
+            perror ("inet_aton");
+            free (buf);
+            return -1;
+        }
+    }
 
-    g_static_rec_mutex_init (&lcm->mutex);
-    g_static_mutex_init (&lcm->transmit_lock);
-    return lcm;
+    if (!args[end]) {
+        free (buf);
+        return 0;
+    }
+
+    if (args[end] == ':') {
+        start = end + 1;
+        for (end = start; args[end] && (args[end] != '?'); end++);
+
+        if (end > start) {
+            buf[end] = '\0';
+            char *endptr = NULL;
+            params->mc_port = strtol (buf + start, &endptr, 10);
+            if (endptr == buf + start) {
+                fprintf (stderr, "%s:%d invalid port number [%s]\n", 
+                        __FILE__, __LINE__, buf + start);
+                free (buf);
+                return -1;
+            }
+            printf ("port: [%d]\n", params->mc_port);
+        }
+    }
+
+    if (!args[end]) {
+        free (buf);
+        return 0;
+    }
+    start = end + 1;
+
+    char **pairs = g_strsplit (buf + end + 1, ",", 0);
+    for (int i=0; pairs[i]; i++) {
+        char **keyval = g_strsplit (pairs[i], "=", 2);
+        int kv_parsed = 0;
+
+        if (0 == strcmp (keyval[0], "transmit_only")) {
+            if (0 == strcmp (keyval[1], "true")) {
+                params->transmit_only = 1;
+                kv_parsed = 1;
+            } else if (0 == strcmp (keyval[1], "false")) {
+                params->transmit_only = 0;
+                kv_parsed = 1;
+            } else {
+                fprintf (stderr, "%s:%d invalid value for transmit_only\n", 
+                        __FILE__, __LINE__);
+            }
+        } else if (0 == strcmp (keyval[0], "recv_buf_size")) {
+            char *endptr = NULL;
+            params->recv_buf_size = strtol (keyval[1], &endptr, 10);
+            if (endptr != keyval[1]) {
+                kv_parsed = 1;
+            } else {
+                fprintf (stderr, "%s:%d invalid value for recv_buf_size\n",
+                        __FILE__, __LINE__);
+            }
+        } else if (0 == strcmp (keyval[0], "ttl")) {
+            char *endptr = NULL;
+            params->mc_ttl = strtol (keyval[1], &endptr, 10);
+            if (endptr != keyval[1]) {
+                kv_parsed = 1;
+            } else {
+                fprintf (stderr, "%s:%d invalid value for ttl\n",
+                        __FILE__, __LINE__);
+            }
+        }
+
+        g_strfreev (keyval);
+
+        if (!kv_parsed) {
+            fprintf (stderr, "%s:%d malformed udpm url\n", __FILE__, __LINE__);
+            g_strfreev (pairs);
+            free (buf);
+            return -1;
+        }
+    }
+    g_strfreev (pairs);
+
+    free (buf);
+    return 0;
 }
 
 static int
@@ -362,7 +467,7 @@ _parse_mc_addr_and_port (const char *str, in_addr_t *addr, uint16_t *port)
             *port = (uint16_t) htons (_port);
         }
     } else {
-        *port = htons (LCM_DEFAULT_MC_PORT);
+        *port = htons (UDPM_DEFAULT_MC_PORT);
     }
     g_strfreev (words);
     return 0;
@@ -377,8 +482,8 @@ fail:
 // mc_addr=239.255.76.79
 // ttl=0
 //
-int 
-lcm_params_init_defaults (lcm_params_t *lp)
+static int 
+udpm_params_init_defaults (udpm_params_t *lp)
 {
     char *env_local_addr = getenv (LCM_IFACE_ENV);
     char *env_mc_addr = getenv (LCM_MCADDR_ENV);
@@ -434,9 +539,9 @@ lcm_params_init_defaults (lcm_params_t *lp)
         }
     } else {
         dbg (DBG_LCM, "Using default LCM multicast address: " 
-                LCM_DEFAULT_MC_ADDR ":%d\n", LCM_DEFAULT_MC_PORT);
-        lp->mc_addr = inet_addr (LCM_DEFAULT_MC_ADDR);
-        lp->mc_port = htons (LCM_DEFAULT_MC_PORT);
+                UDPM_DEFAULT_MC_ADDR ":%d\n", UDPM_DEFAULT_MC_PORT);
+        lp->mc_addr = inet_addr (UDPM_DEFAULT_MC_ADDR);
+        lp->mc_port = htons (UDPM_DEFAULT_MC_PORT);
         mc_addr_set = 1;
     }
 
@@ -470,6 +575,53 @@ lcm_params_init_defaults (lcm_params_t *lp)
     g_key_file_free (keyfile);
 
     return status;
+}
+
+static int lcm_init (lcm_t *lcm, const udpm_params_t *args);
+
+lcm_t * 
+lcm_create (const char *url)
+{
+    if (!url) return NULL;
+
+    if (!g_thread_supported ()) g_thread_init (NULL);
+
+    lcm_t *lcm = malloc (sizeof (lcm_t));
+    if (lcm) memset (lcm, 0, sizeof (lcm_t));
+    lcm->recvfd = -1;
+    lcm->sendfd = -1;
+    lcm->udp_low_watermark = 1.0;
+    lcm->initialized = 0;
+
+    lcm->handlers_all = g_ptr_array_new();
+    lcm->handlers_map = g_hash_table_new (g_str_hash, g_str_equal);
+
+    lcm->frag_bufs = g_hash_table_new_full (_sockaddr_in_hash, 
+            _sockaddr_in_equal, NULL, (GDestroyNotify) lcm_frag_buf_destroy);
+    lcm->frag_bufs_total_size = 0;
+    lcm->frag_bufs_max_total_size = 1 << 24; // 16 megabytes
+    lcm->max_n_frag_bufs = 1000;
+
+    pipe (lcm->notify_pipe);
+    fcntl (lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
+
+    g_static_rec_mutex_init (&lcm->mutex);
+    g_static_mutex_init (&lcm->transmit_lock);
+
+    char **url_parts = g_strsplit (url, "://", 2);
+
+
+    if (0 == strcmp (url_parts[0], "udpm")) {
+        udpm_params_t params;
+        udpm_params_init_defaults (&params);
+        if (0 != udpm_parse_args (url_parts[1], &params)) {
+            lcm_destroy (lcm);
+            return NULL;
+        }
+        lcm_init (lcm, &params);
+    }
+
+    return lcm;
 }
 
 static int
@@ -889,20 +1041,13 @@ recv_thread (void * user)
 */
 }
 
-int
-lcm_init (lcm_t *lcm, const lcm_params_t *args) 
+static int
+lcm_init (lcm_t *lcm, const udpm_params_t *args) 
 {
     int status;
     assert (!lcm->initialized);
 
-    if (NULL == args) {
-        status = lcm_params_init_defaults (&lcm->params);
-        if (status < 0) {
-            return status;
-        }
-    } else {
-        memcpy (&lcm->params, args, sizeof (lcm->params));
-    }
+    memcpy (&lcm->params, args, sizeof (lcm->params));
     args = &lcm->params;
 
     struct in_addr la;
@@ -1548,9 +1693,9 @@ lcm_handle (lcm_t *lcm)
 }
 
 int
-lcm_get_params (const lcm_t *lcm, lcm_params_t *params)
+lcm_get_params (const lcm_t *lcm, udpm_params_t *params)
 {
     if (!lcm->initialized) return -1;
-    memcpy (params, &lcm->params, sizeof (lcm_params_t));
+    memcpy (params, &lcm->params, sizeof (udpm_params_t));
     return 0;
 }

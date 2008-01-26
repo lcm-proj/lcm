@@ -15,8 +15,6 @@ extern "C" {
 #define LCM_MCADDR_ENV "LCM_MCADDR"
 #define LCM_TTL_ENV "LCM_TTL"
 
-#define LCM_DEFAULT_MC_ADDR "239.255.76.67"
-#define LCM_DEFAULT_MC_PORT 7667
 #define LCM_MAX_MESSAGE_SIZE (1 << 28)
 
 #define LCM_MAX_CHANNEL_NAME_LENGTH 63
@@ -25,30 +23,6 @@ extern "C" {
 
 typedef struct _lcm lcm_t;
 typedef struct _lcm_subscription lcm_subscription_t;
-
-/**
- * lcm_params_t:
- * @local_iface:    address of the local network interface to use
- * @mc_addr:        multicast address
- * @mc_port:        multicast port
- * @transmit_only:  set to 1 if the lcm_t will never handle incoming data
- * @mc_ttl:         if 0, then packets never leave local host.
- *                  if 1, then packets stay on the local network 
- *                        and never traverse a router
- *                  don't use > 1.  that's just rude. 
- * @recv_buf_size:  requested size of the kernel receive buffer, set with
- *                  SO_RCVBUF.  0 indicates to use the default settings.
- *
- */
-typedef struct _lcm_params_t lcm_params_t;
-struct _lcm_params_t {
-    in_addr_t local_iface;
-    in_addr_t mc_addr;
-    uint16_t mc_port;
-    int transmit_only;
-    uint8_t mc_ttl; 
-    int recv_buf_size;
-};
 
 /**
  * lcm_recv_buf_t:
@@ -80,31 +54,7 @@ typedef int (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf, void *user_data);
  *
  * constructor
  */
-lcm_t * lcm_create ();
-
-/**
- * lcm_init:
- *
- * if args is NULL, then lcm will be initialized as though args were set by
- * lcm_params_init_defaults
- */
-int lcm_init (lcm_t *lcm, const lcm_params_t *args);
-
-/**
- * lcm_params_init_defaults:
- *
- * initializes the params object to some reasonable defaults.  Default values
- * can come from three places.  First, LCM checks the environment variables
- *      LCM_IFACE, LCM_MCADDR, and LCM_TTL to set the interface, multicast
- * address, and multicast TTL, respectively.
- *
- * If one of these is not set via environment variable, then LCM checks the
- * contents of LCM_CONF_FILE.
- *
- * Finally, if neither an environment variable nor LCM_CONF_FILE specifies the
- * value of a default parameter, then some reasonable defaults are chosen.
- */
-int lcm_params_init_defaults (lcm_params_t *lp);
+lcm_t * lcm_create (const char *url);
 
 /**
  * lcm_destroy:
@@ -172,15 +122,6 @@ int lcm_publish (lcm_t *lcm, const char *channel, const char *data,
  */
 int lcm_handle (lcm_t *lcm);
     
-/**
- * lcm_get_params:
- *
- * Fills %params with the settings used by the specified LCM instance
- *
- * Returns: 0 if the LCM instance has been initialized, -1 if not
- */
-int lcm_get_params (const lcm_t *lcm, lcm_params_t *params);
-
 #ifdef __cplusplus
 }
 #endif

@@ -27,13 +27,8 @@ main (int argc, char ** argv)
 {
     lcm_t * lcm;
 
-    lcm = lcm_create ();
+    lcm = lcm_create ("udpm://?transmit_only=true");
     if (!lcm)
-        return 1;
-    lcm_params_t lp;
-    lcm_params_init_defaults (&lp);
-    lp.transmit_only = 1;
-    if (lcm_init (lcm, &lp) < 0)
         return 1;
 
     send_message (lcm);

@@ -96,14 +96,9 @@ int main (int argc, char **argv)
 //  lcm_args.mc_addr = inet_addr ("225.0.0.3");
 //  lcm_args.mc_port = htons (2006);
 
-    lcm_t *lcm = lcm_create ();
+    lcm_t *lcm = lcm_create ("udpm://");
     if (! lcm) {
         fprintf (stderr, "couldn't allocate lcm_t\n");
-        return 1;
-    }
-    status = lcm_init (lcm, NULL);
-    if (0 != status) {
-        fprintf (stderr, "error initializing lcm context\n");
         return 1;
     }
 
@@ -212,15 +207,8 @@ int main (int argc, char **argv)
 
     // test transmit-only lcm_t
     printf ("LCM: testing transmit-only lcm_t...\n");
-    lcm_t *tlcm = lcm_create ();
-    lcm_params_t tlcm_params;
-    lcm_params_init_defaults (&tlcm_params);
-    tlcm_params.transmit_only = 1;
-    status = lcm_init (tlcm, &tlcm_params);
-    if (0 != status) {
-        printf ("LCM:  ERROR initializing transmit-only lcm_t!\n");
-        return 1;
-    }
+    lcm_t *tlcm = lcm_create ("udpm://?transmit_only=true");
+
     // registering a handler should fail
     h = lcm_subscribe (tlcm, "TEST", test_handler, NULL);
     FAIL_IF_GOOD_HID (h);

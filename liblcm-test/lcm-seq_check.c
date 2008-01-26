@@ -80,15 +80,15 @@ main(int argc, char **argv)
     }
     const char *channel = argv[1];
 
-    lcm_t *lcm = lcm_create ();
+    lcm_t *lcm = lcm_create ("udpm://");
     if (!lcm) return 1;
 
-    lcm_params_t lcmp;
-    lcm_params_init_defaults (&lcmp);
-    if (argc == 3) {
-        lcmp.recv_buf_size = atoi (argv[2]);
-    }
-    lcm_init (lcm, &lcmp);
+//    lcm_params_t lcmp;
+//    lcm_params_init_defaults (&lcmp);
+//    if (argc == 3) {
+//        lcmp.recv_buf_size = atoi (argv[2]);
+//    }
+//    lcm_init (lcm, &lcmp);
 
     lcm_subscribe (lcm, channel, handler, NULL);
 

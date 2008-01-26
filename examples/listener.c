@@ -26,10 +26,8 @@ main (int argc, char ** argv)
 {
     lcm_t * lcm;
 
-    lcm = lcm_create ();
+    lcm = lcm_create ("udpm://");
     if (!lcm)
-        return 1;
-    if (lcm_init (lcm, NULL) < 0)
         return 1;
 
     example_t_subscription_t * sub =

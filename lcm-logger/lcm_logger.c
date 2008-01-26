@@ -214,12 +214,9 @@ int main(int argc, char *argv[])
 
     //////// begin logging
     
-    logger.lcm = lcm_create();
+    logger.lcm = lcm_create ("udpm://");
     assert(logger.lcm);
     
-    res = lcm_init(logger.lcm, NULL);
-    assert (!res);
-
     lcm_subscribe(logger.lcm, ".*", message_handler, &logger);
 
     GMainLoop *mainloop = g_main_loop_new (NULL, FALSE);

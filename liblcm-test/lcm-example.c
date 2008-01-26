@@ -55,21 +55,9 @@ int main (int argc, char **argv)
     char *payload = malloc (datalen);
     strcpy (payload, words[windex]);
     
-    lcm_params_t lcm_args;
-    lcm_params_init_defaults (&lcm_args);
-//    lcm_args.local_iface = inet_addr ("192.168.0.2");
-//  lcm_args.local_iface = INADDR_ANY;
-//  lcm_args.mc_addr = inet_addr ("225.0.0.3");
-//  lcm_args.mc_port = htons (2006);
-
-    lcm_t *lcm = lcm_create ();
+    lcm_t *lcm = lcm_create ("udpm://");
     if (! lcm) {
         fprintf (stderr, "couldn't allocate lcm_t\n");
-        return 1;
-    }
-    status = lcm_init (lcm, &lcm_args);
-    if (0 != status) {
-        fprintf (stderr, "error initializing lcm context\n");
         return 1;
     }
 
