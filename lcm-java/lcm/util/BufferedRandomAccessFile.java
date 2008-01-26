@@ -187,22 +187,6 @@ public class BufferedRandomAccessFile
 	    length -= thiscopy;
 
 	}
-
-	/*	
-         if (length > BUFFER_SIZE)
-	    {
-		raf.seek(bufferOffset + bufferPosition);
-		raf.readFully(b, offset, length);
-
-		// XXX: must update bufferOffset
-		return;
-	    }
-	*/
-
-	/*
-	for (int i = offset; i < offset+length; i++)
-	    b[i] = (byte) read();
-	*/
     }
 
     public void readFully(byte[] b) throws IOException

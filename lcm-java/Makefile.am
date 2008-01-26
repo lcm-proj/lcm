@@ -30,6 +30,9 @@ dist_noinst_JAVA = \
     lcm/lc/LCEncodable.java \
     lcm/lc/LC.java \
     lcm/lc/LCSubscriber.java \
+    lcm/lc/URLParser.java \
+    lcm/lc/Provider.java \
+    lcm/lc/UDPMulticastProvider.java \
     lcm/util/BufferedRandomAccessFile.java \
     lcm/util/ColorMapper.java \
     lcm/util/TableSorter.java \
@@ -45,5 +48,6 @@ dist_noinst_JAVA = \
     lcm/lcspy/LCMHandlerDatabase.java \
     lcm/lcspy/ObjectPanel.java \
     lcm/lcspy/LCSpy.java \
-    lcm/lcspy/ChannelData.java
+    lcm/lcspy/ChannelData.java 
+
 endif

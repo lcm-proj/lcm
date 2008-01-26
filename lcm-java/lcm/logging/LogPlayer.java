@@ -40,6 +40,8 @@ public class LogPlayer extends JComponent
 
     JLabel  posLabel = new JLabel("Event 0");
     JLabel  timeLabel = new JLabel("Time 0.0s");
+    JLabel actualSpeedLabel = new JLabel("1.0x");
+
     JLabel logName = new JLabel("---");
 
     PlayerThread player = null;
@@ -208,6 +210,7 @@ public class LogPlayer extends JComponent
 
 	timeLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
 	posLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
+	actualSpeedLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
 
 	fasterButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, false)));
 	fasterButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.cyan, false)));
@@ -251,6 +254,8 @@ public class LogPlayer extends JComponent
 
 	add(timeLabel,            
 	    new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       new Insets(0, 10, 0, 0), 0,    0));
+	add(actualSpeedLabel,            
+	    new GridBagConstraints(1, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       new Insets(0, 10, 0, 0), 0,    0));
 	add(posLabel,             
 	    new GridBagConstraints(3, row, 1,         1, 0.0,    0.0,    EAST,      NONE,       new Insets(0,0, 0, 10),  0,    0));
 	row++;
@@ -315,8 +320,7 @@ public class LogPlayer extends JComponent
 		}
 	    });
 				     
-	lc = LC.getSingleton();
-	lc.stopReader();
+	lc = new LC("udpm://?readonly=true");
 
 	logName.addMouseListener(new MouseAdapter() {
 		public void mouseClicked(MouseEvent e) {
@@ -638,9 +642,12 @@ public class LogPlayer extends JComponent
 	}
     }
 
+    long lastEventTime;
+    long lastSystemTime;
+
     void updateDisplay(Log.Event e)
     {
-	if(show_absolute_time) {
+	if (show_absolute_time) {
 	    java.text.SimpleDateFormat df = 
 		new java.text.SimpleDateFormat("yyyy.MM.dd HH:mm:ss.S z");
 	    Date timestamp = new Date(e.utime / 1000);
@@ -649,6 +656,16 @@ public class LogPlayer extends JComponent
 	    timeLabel.setText(String.format("%.3f s", (e.utime - timeOffset)/1000000.0));
 	}
 	posLabel.setText(""+e.eventNumber);
+
+	long systemTime = System.currentTimeMillis();
+	double dt = (systemTime - lastSystemTime)/1000.0;
+	if (dt > 0.5) {
+	    double actualSpeed = (e.utime - lastEventTime) / 1000000.0 / dt;
+	    lastEventTime = e.utime;
+	    lastSystemTime = systemTime;
+	    
+	    actualSpeedLabel.setText(String.format("%.2f x", actualSpeed));
+	}
     }
 
     class PlayerThread extends Thread
