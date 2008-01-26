@@ -13,9 +13,7 @@
 PyDoc_STRVAR (pylcm_doc,
 "Lightweight Communications class\n\
 \n\
-LCM (local_iface = \"\", mc_addr = \""LCM_DEFAULT_MC_ADDR"\",\n\
-     mc_port = -1, transmit_only=False, mc_ttl=0,\n\
-     recv_buf_size=0)\n\
+LCM (url)\n\
 ");
 
 PyTypeObject pylcm_type;
@@ -257,58 +255,19 @@ pylcm_dealloc (PyLCMObject *s)
 }
 
 static int
-pylcm_initobj (PyObject *self, PyObject *args, PyObject *kwds)
+pylcm_initobj (PyObject *self, PyObject *args, PyObject *kwargs)
 {
     dbg ("%s %p\n", __FUNCTION__, self);
     PyLCMObject *s = (PyLCMObject *)self;
-    static char *keywords[] = { "local_iface", "mc_addr", 
-        "mc_port", "transmit_only", "mc_ttl", "recv_buf_size", 0};
 
-    lcm_params_t params;
-    lcm_params_init_defaults (&params);
-    char default_local_iface_str[80];
-    char default_mc_addr_str[80];
-    struct in_addr local_iface_sin = { params.local_iface };
-    strcpy (default_local_iface_str, inet_ntoa (local_iface_sin));
-    struct in_addr mc_addr_sin = { params.mc_addr };
-    strcpy (default_mc_addr_str, inet_ntoa (mc_addr_sin));
-    char *local_iface_str = default_local_iface_str;
-    char *mc_addr_str = default_mc_addr_str;
+    char *url = NULL;
 
-    if (!PyArg_ParseTupleAndKeywords (args, kwds, "|ssHiBi", keywords,
-                &local_iface_str, &mc_addr_str, 
-                &params.mc_port, 
-                &params.transmit_only,
-                &params.mc_ttl,
-                &params.recv_buf_size))
+    if (!PyArg_ParseTuple (args, "|s", &url))
         return -1;
 
-    if (local_iface_str != default_local_iface_str) {
-        struct in_addr t;
-        if (0 == inet_aton (local_iface_str, &t)) {
-            PyErr_SetString (PyExc_ValueError, "invalid local_iface");
-            return -1;
-        }
-        params.local_iface = t.s_addr;
-    }
-    if (mc_addr_str != default_mc_addr_str) {
-        struct in_addr t;
-        if (0 == inet_aton (mc_addr_str, &t)) {
-            PyErr_SetString (PyExc_ValueError, "invalid mc_addr");
-            return -1;
-        }
-        params.mc_addr = t.s_addr;
-    }
-
-    lcm_t *lcm = lcm_create ();
+    lcm_t *lcm = lcm_create (url);
     if (! lcm) {
         PyErr_SetString (PyExc_RuntimeError, "Couldn't create LCM");
-        return -1;
-    }
-
-    if (0 != lcm_init (lcm, &params)) {
-        lcm_destroy (lcm);
-        PyErr_SetString (PyExc_RuntimeError, "Error initializing LCM object");
         return -1;
     }
 
