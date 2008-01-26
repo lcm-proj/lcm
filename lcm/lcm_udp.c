@@ -353,7 +353,6 @@ udpm_parse_args (const char *args, udpm_params_t *params)
 
     if (end > 0) {
         buf[end] = '\0';
-        printf ("mcaddr: [%s]\n", buf);
         int status = inet_aton (buf + start, (struct in_addr*)&params->mc_addr);
         if (status < 0) {
             fprintf (stderr, "%s:%d bad multicast address [%s]\n", 
@@ -383,7 +382,6 @@ udpm_parse_args (const char *args, udpm_params_t *params)
                 free (buf);
                 return -1;
             }
-            printf ("port: [%d]\n", params->mc_port);
         }
     }
 
