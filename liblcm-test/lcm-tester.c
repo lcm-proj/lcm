@@ -133,7 +133,7 @@ int main (int argc, char **argv)
     FAIL_IF_BAD_HID (h);
 
     // unregister the same handler twice, expect failure the second time
-    status = lcm_unsubscribe_by_func (lcm, "TEST", test_handler, 0);
+    status = lcm_unsubscribe_by_func (lcm, test_handler, 0);
     FAIL_IFSNE (0);
     status = lcm_unsubscribe (lcm, h);
     //    FAIL_IFSNE (-1);
@@ -212,7 +212,7 @@ int main (int argc, char **argv)
     // registering a handler should fail
     h = lcm_subscribe (tlcm, "TEST", test_handler, NULL);
     FAIL_IF_GOOD_HID (h);
-    status = lcm_unsubscribe_by_func (tlcm, "TEST", test_handler, NULL);
+    status = lcm_unsubscribe_by_func (tlcm, test_handler, NULL);
     //    FAIL_IFSNE (-1);
     // invoking lcm_handle should fail
     status = lcm_handle (tlcm);

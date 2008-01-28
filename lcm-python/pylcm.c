@@ -88,7 +88,7 @@ internal_unsubscribe (PyLCMObject *s, const char *channel, PyObject *handler)
         if (!tup) return NULL;
         PyObject *h = PyTuple_GetItem (tup, 1);
         if (h == handler) {
-            lcm_unsubscribe_by_func (s->lcm, channel, pylcm_msg_handler, handler);
+            lcm_unsubscribe_by_func (s->lcm, pylcm_msg_handler, handler);
             PySequence_DelItem (s->all_handlers, i);
             dbg ("found handler to unregister (%d) remain\n",
                     PySequence_Size (s->all_handlers));

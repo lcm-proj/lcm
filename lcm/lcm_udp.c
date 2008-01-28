@@ -5,15 +5,12 @@
 #include <sys/uio.h>
 #include <math.h>
 
-#include <sys/types.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include <errno.h>
-
-#include <regex.h>
 
 #include <sys/time.h>
 #include <time.h>
@@ -24,13 +21,11 @@
 
 #include <glib.h>
 
-#include "lcm_udp.h"
+#include <lcm/lcm.h>
+
+#include "lcm_internal.h"
 #include "dbg.h"
 #include "ringbuffer.h"
-
-#ifndef g_ptr_array_size
-#define g_ptr_array_size(array) (array->len)
-#endif
 
 #define LCM_RINGBUF_SIZE (1000*1024)
 
@@ -73,15 +68,6 @@ typedef struct _lcm_frag_buf {
     struct timeval last_packet_time;
     int64_t   first_packet_utime;
 } lcm_frag_buf_t;
-
-struct _lcm_subscription {
-    char             *channel;
-    lcm_msg_handler_t  handler;
-    void             *userdata;
-    regex_t preg;
-    int callback_scheduled;
-    int marked_for_deletion;
-};
 
 typedef struct _lcm_buf {
     char  channel_name[LCM_MAX_CHANNEL_NAME_LENGTH+1];
@@ -135,12 +121,14 @@ struct _udpm_params_t {
     int recv_buf_size;
 };
 
-struct _lcm {
+typedef struct _lcm_provider_t lcm_udpm_t;
+struct _lcm_provider_t {
     int recvfd;
     int sendfd;
 
+    lcm_t * lcm;
+
     udpm_params_t params;
-    int initialized;
 
     /* Packet structures for available for sending or receiving use are
      * stored in the *_empty queues. */
@@ -152,16 +140,14 @@ struct _lcm {
      * so we don't have to do any mallocs */
     lcm_ringbuf_t * ringbuf;
 
+    GStaticRecMutex mutex; /* Must be locked when reading/writing to the
+                              above three queues. */
+
     int thread_created;
-    GStaticRecMutex mutex;  // guards data structures
     pthread_t read_thread;
     int notify_pipe[2];
 
     GStaticMutex transmit_lock; // so that only thread at a time can transmit
-
-    GPtrArray   *handlers_all;  // list containing *all* handlers
-    GHashTable  *handlers_map;  // map of channel name (string) to GPtrArray 
-                                // of matching handlers (lcm_subscription_t*)
 
     GHashTable  *frag_bufs;
     uint32_t    frag_bufs_total_size;
@@ -308,16 +294,6 @@ is_buf_queue_empty (lcm_buf_queue_t * q)
     return q->head == NULL ? 1 : 0;
 }
 
-static inline void
-lcm_handler_free (lcm_subscription_t *h) 
-{
-    assert (!h->callback_scheduled);
-    regfree (&h->preg);
-    free (h->channel);
-    memset (h, 0, sizeof (lcm_subscription_t));
-    free (h);
-}
-
 static guint
 _sockaddr_in_hash (const void * key)
 {
@@ -337,135 +313,60 @@ _sockaddr_in_equal (const void * a, const void *b)
            a_addr->sin_family      == b_addr->sin_family;
 }
 
-static int
-udpm_parse_args (const char *args, udpm_params_t *params)
+void
+lcm_udpm_destroy (lcm_udpm_t *lcm) 
 {
-    if (!args || (0 == strlen (args))) {
-        return 0;
+    dbg (DBG_LCM, "closing lcm context\n");
+    if (!lcm->params.transmit_only && lcm->thread_created) {
+        /* Destroy the reading thread */
+        g_static_rec_mutex_lock (&lcm->mutex);
+        pthread_cancel (lcm->read_thread);
+        g_static_rec_mutex_unlock (&lcm->mutex);
+        pthread_join (lcm->read_thread, NULL);
     }
+    if (lcm->recvfd >= 0)
+        close (lcm->recvfd);
+    if (lcm->sendfd >= 0)
+        close (lcm->sendfd);
 
-    char *buf = strdup (args);
-
-    int start = 0, end = 0;
-
-    // multicast address
-    for (; args[end] && (args[end] != ':') && (args[end] != '?'); end++);
-
-    if (end > 0) {
-        buf[end] = '\0';
-        int status = inet_aton (buf + start, (struct in_addr*)&params->mc_addr);
-        if (status < 0) {
-            fprintf (stderr, "%s:%d bad multicast address [%s]\n", 
-                    __FILE__, __LINE__, buf);
-            perror ("inet_aton");
-            free (buf);
-            return -1;
-        }
+    if (lcm->inbufs_empty) {
+        lcm_buf_queue_free (lcm->inbufs_empty);
     }
+    if (lcm->inbufs_filled)
+        lcm_buf_queue_free (lcm->inbufs_filled);
+    if (lcm->ringbuf)
+        lcm_ringbuf_free (lcm->ringbuf);
 
-    if (!args[end]) {
-        free (buf);
-        return 0;
-    }
+    close (lcm->notify_pipe[0]);
+    close (lcm->notify_pipe[1]);
 
-    if (args[end] == ':') {
-        start = end + 1;
-        for (end = start; args[end] && (args[end] != '?'); end++);
+    g_hash_table_destroy (lcm->frag_bufs);
 
-        if (end > start) {
-            buf[end] = '\0';
-            char *endptr = NULL;
-            params->mc_port = strtol (buf + start, &endptr, 10);
-            if (endptr == buf + start) {
-                fprintf (stderr, "%s:%d invalid port number [%s]\n", 
-                        __FILE__, __LINE__, buf + start);
-                free (buf);
-                return -1;
-            }
-        }
-    }
-
-    if (!args[end]) {
-        free (buf);
-        return 0;
-    }
-    start = end + 1;
-
-    char **pairs = g_strsplit (buf + end + 1, ",", 0);
-    for (int i=0; pairs[i]; i++) {
-        char **keyval = g_strsplit (pairs[i], "=", 2);
-        int kv_parsed = 0;
-
-        if (0 == strcmp (keyval[0], "transmit_only")) {
-            if (0 == strcmp (keyval[1], "true")) {
-                params->transmit_only = 1;
-                kv_parsed = 1;
-            } else if (0 == strcmp (keyval[1], "false")) {
-                params->transmit_only = 0;
-                kv_parsed = 1;
-            } else {
-                fprintf (stderr, "%s:%d invalid value for transmit_only\n", 
-                        __FILE__, __LINE__);
-            }
-        } else if (0 == strcmp (keyval[0], "recv_buf_size")) {
-            char *endptr = NULL;
-            params->recv_buf_size = strtol (keyval[1], &endptr, 10);
-            if (endptr != keyval[1]) {
-                kv_parsed = 1;
-            } else {
-                fprintf (stderr, "%s:%d invalid value for recv_buf_size\n",
-                        __FILE__, __LINE__);
-            }
-        } else if (0 == strcmp (keyval[0], "ttl")) {
-            char *endptr = NULL;
-            params->mc_ttl = strtol (keyval[1], &endptr, 10);
-            if (endptr != keyval[1]) {
-                kv_parsed = 1;
-            } else {
-                fprintf (stderr, "%s:%d invalid value for ttl\n",
-                        __FILE__, __LINE__);
-            }
-        }
-
-        g_strfreev (keyval);
-
-        if (!kv_parsed) {
-            fprintf (stderr, "%s:%d malformed udpm url\n", __FILE__, __LINE__);
-            g_strfreev (pairs);
-            free (buf);
-            return -1;
-        }
-    }
-    g_strfreev (pairs);
-
-    free (buf);
-    return 0;
+    g_static_rec_mutex_free (&lcm->mutex);
+    g_static_mutex_free (&lcm->transmit_lock);
+    free (lcm);
 }
 
 static int
-_parse_mc_addr_and_port (const char *str, in_addr_t *addr, uint16_t *port)
+parse_mc_addr_and_port (const char *str, udpm_params_t * params)
 {
-    if (!str || !strlen (str)) return -1;
+    if (!str || !strlen (str))
+        return 0;
+
     char **words = g_strsplit (str, ":", 2);
-    int status = inet_aton (words[0], (struct in_addr*)addr);
-    if (status < 0) {
-        fprintf (stderr, "%s:%d bad interface address [%s]\n", 
-                __FILE__, __LINE__, str);
+    if (inet_aton (words[0], (struct in_addr*) &params->mc_addr) < 0) {
+        fprintf (stderr, "Error: Bad multicast IP address \"%s\"\n", words[0]);
         perror ("inet_aton");
         goto fail;
     }
     if (words[1]) {
         char *st = NULL;
-        int _port = strtol (words[1], &st, 10);
-        if (st == words[1] || _port < 0 || _port > 65535) {
-            fprintf (stderr, "%s:%d bad multicast port [%s]\n", 
-                    __FILE__, __LINE__, words[1]);
+        int port = strtol (words[1], &st, 0);
+        if (st == words[1] || port < 0 || port > 65535) {
+            fprintf (stderr, "Error: Bad multicast port \"%s\"\n", words[1]);
             goto fail;
-        } else {
-            *port = (uint16_t) htons (_port);
         }
-    } else {
-        *port = htons (UDPM_DEFAULT_MC_PORT);
+        params->mc_port = htons (port);
     }
     g_strfreev (words);
     return 0;
@@ -474,230 +375,33 @@ fail:
     return -1;
 }
 
-// example /etc/lcm.conf:
-//
-// [lcm]
-// mc_addr=239.255.76.79
-// ttl=0
-//
-static int 
-udpm_params_init_defaults (udpm_params_t *lp)
+static void
+new_argument (gpointer key, gpointer value, gpointer user)
 {
-    char *env_local_addr = getenv (LCM_IFACE_ENV);
-    char *env_mc_addr = getenv (LCM_MCADDR_ENV);
-    char *env_ttl = getenv (LCM_TTL_ENV);
-    
-    lp->transmit_only = 0;
-    lp->mc_ttl = 0;
-    lp->recv_buf_size = 0; // default is fine
-    lp->local_iface = INADDR_ANY;
-
-    // check for system-wide defaults
-    GKeyFile *keyfile = g_key_file_new ();
-    int have_keyfile = g_key_file_load_from_file (keyfile, 
-            LCM_CONF_FILE, 0, NULL);
-
-    // check if the local interface is specified in an environment variable
-    if (env_local_addr) {
-        dbg (DBG_LCM, "using local iface specified from env: %s\n", 
-                env_local_addr);
-        in_addr_t env_local_iface;
-        int status = inet_aton (env_local_addr, 
-                (struct in_addr*)&env_local_iface);
-        if (status < 0) {
-            fprintf (stderr, "bad interface address [%s] (lcm.c:%d)\n", 
-                    env_local_addr, __LINE__);
-            perror ("inet_aton");
-            return -1;
-        } else {
-            lp->local_iface = env_local_iface;
-        }
+    udpm_params_t * params = user;
+    if (!strcmp (key, "transmit_only")) {
+        if (!strcmp (value, "true"))
+            params->transmit_only = 1;
+        else if (!strcmp (value, "false"))
+            params->transmit_only = 0;
+        else
+            fprintf (stderr, "Warning: Invalid value for transmit_only\n");
     }
-
-    // if multicast addres is not specified in an environment variable, then
-    // use a default MC address
-    int mc_addr_set = 0;
-    if (env_mc_addr) {
-        dbg (DBG_LCM, "using multicast addr specified from env: %s\n", 
-                env_mc_addr);
-        mc_addr_set = (0 == _parse_mc_addr_and_port (env_mc_addr, &lp->mc_addr,
-                &lp->mc_port));
-    } else if (have_keyfile) {
-        char *conf_mc_addr = g_key_file_get_string (keyfile, 
-                "lcm", "mc_addr", NULL);
-        if (!conf_mc_addr) {
-            fprintf (stderr, "Missing multicast address in %s\n", LCM_CONF_FILE);
-        } else {
-            mc_addr_set = (0 == _parse_mc_addr_and_port (conf_mc_addr, 
-                        &lp->mc_addr, &lp->mc_port));
-            if (!mc_addr_set) {
-                fprintf (stderr, "bad multicast address [%s] specified in " 
-                        LCM_CONF_FILE "\n", conf_mc_addr);
-            }
-        }
-    } else {
-        dbg (DBG_LCM, "Using default LCM multicast address: " 
-                UDPM_DEFAULT_MC_ADDR ":%d\n", UDPM_DEFAULT_MC_PORT);
-        lp->mc_addr = inet_addr (UDPM_DEFAULT_MC_ADDR);
-        lp->mc_port = htons (UDPM_DEFAULT_MC_PORT);
-        mc_addr_set = 1;
+    else if (!strcmp (key, "recv_buf_size")) {
+        char *endptr = NULL;
+        params->recv_buf_size = strtol (value, &endptr, 0);
+        if (endptr == value)
+            fprintf (stderr, "Warning: Invalid value for recv_buf_size\n");
     }
-
-    if (!mc_addr_set) {
-        return -1;
+    else if (!strcmp (key, "ttl")) {
+        char *endptr = NULL;
+        params->mc_ttl = strtol (value, &endptr, 0);
+        if (endptr == value)
+            fprintf (stderr, "Warning: Invalid value for ttl\n");
     }
-
-    int status = 0;
-    //  if TTL is not specified in an environment variable, then set TTL to
-    //  zero, so that packets do not leave localhost.
-    if (env_ttl) {
-        lp->mc_ttl = atoi (env_ttl);
-        dbg (DBG_LCM, "using multicast TTL specified from env: %d\n", 
-                lp->mc_ttl);
-    } else if (have_keyfile) {
-        GError *gerr = NULL;
-        lp->mc_ttl = g_key_file_get_integer (keyfile, "lcm", "ttl", &gerr);
-        if (gerr) {
-            fprintf (stderr, "Invalid TTL in %s\n", LCM_CONF_FILE);
-            g_clear_error (&gerr);
-            lp->mc_ttl = 0;
-            status = -1;
-        } else {
-            dbg (DBG_LCM, "using multicast TTL specified from %s: %d\n",
-                    LCM_CONF_FILE, lp->mc_ttl);
-        }
-    } else {
-        lp->mc_ttl = 0;
-    }
-
-    g_key_file_free (keyfile);
-
-    return status;
 }
 
-static int lcm_init (lcm_t *lcm, const udpm_params_t *args);
-
-lcm_t * 
-lcm_create (const char *url)
-{
-    if (!g_thread_supported ()) g_thread_init (NULL);
-
-    lcm_t *lcm = malloc (sizeof (lcm_t));
-    if (lcm) memset (lcm, 0, sizeof (lcm_t));
-    lcm->recvfd = -1;
-    lcm->sendfd = -1;
-    lcm->udp_low_watermark = 1.0;
-    lcm->initialized = 0;
-
-    lcm->handlers_all = g_ptr_array_new();
-    lcm->handlers_map = g_hash_table_new (g_str_hash, g_str_equal);
-
-    lcm->frag_bufs = g_hash_table_new_full (_sockaddr_in_hash, 
-            _sockaddr_in_equal, NULL, (GDestroyNotify) lcm_frag_buf_destroy);
-    lcm->frag_bufs_total_size = 0;
-    lcm->frag_bufs_max_total_size = 1 << 24; // 16 megabytes
-    lcm->max_n_frag_bufs = 1000;
-
-    pipe (lcm->notify_pipe);
-    fcntl (lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
-
-    g_static_rec_mutex_init (&lcm->mutex);
-    g_static_mutex_init (&lcm->transmit_lock);
-
-    // default to udpm
-    if (! url || (0 == strlen (url)))
-        url = "udpm://";
-
-    char **url_parts = g_strsplit (url, "://", 2);
-
-    if (0 == strcmp (url_parts[0], "udpm")) {
-        udpm_params_t params;
-        udpm_params_init_defaults (&params);
-        if (0 != udpm_parse_args (url_parts[1], &params)) {
-            lcm_destroy (lcm);
-            g_strfreev (url_parts);
-            return NULL;
-        }
-        lcm_init (lcm, &params);
-    } else {
-        fprintf (stderr, "%s:%d invalid LCM url [%s]\n", __FILE__, __LINE__, 
-                url);
-        lcm_destroy (lcm);
-        g_strfreev (url_parts);
-        return NULL;
-    }
-
-    g_strfreev (url_parts);
-    return lcm;
-}
-
-static int
-lcm_self_test_handler (const lcm_recv_buf_t *rbuf, void *user)
-{
-    int *result = (int*) user;
-    *result = 1;
-    return 0;
-}
-
-static int 
-lcm_self_test (lcm_t *lcm)
-{
-    int success = 0;
-    int status;
-    // register a handler for the self test message
-    lcm_subscription_t *h = lcm_subscribe (lcm, "LCM_SELF_TEST", 
-                                           lcm_self_test_handler, &success);
-
-    // transmit a message
-    char *msg = "lcm self test";
-    lcm_publish (lcm, "LCM_SELF_TEST", msg, strlen (msg));
-
-    // wait one second for message to be received
-    struct timeval now, endtime;
-    gettimeofday (&now, NULL);
-    endtime.tv_sec = now.tv_sec + 10;
-    endtime.tv_usec = now.tv_usec;
-
-    // periodically retransmit, just in case
-    struct timeval retransmit_interval = { 0, 100000 };
-    struct timeval next_retransmit;
-    _timeval_add (&now, &retransmit_interval, &next_retransmit);
-
-    int recvfd = lcm_get_fileno (lcm);
-
-    do {
-        struct timeval selectto;
-        _timeval_subtract (&next_retransmit, &now, &selectto);
-
-        fd_set readfds;
-        FD_ZERO (&readfds);
-        FD_SET (recvfd,&readfds);
-
-        gettimeofday (&now, NULL);
-        if (_timeval_compare (&now, &next_retransmit) > 0) {
-            status = lcm_publish (lcm, "LCM_SELF_TEST", msg, strlen (msg));
-            _timeval_add (&now, &retransmit_interval, &next_retransmit);
-        }
-
-        status=select (recvfd + 1,&readfds,0,0,&selectto);
-        if (status > 0 && FD_ISSET (recvfd,&readfds)) {
-            lcm_handle (lcm);
-        }
-
-        gettimeofday (&now, NULL);
-
-    } while (! success && _timeval_compare (&now, &endtime) < 0);
-
-    lcm_unsubscribe (lcm, h);
-
-    dbg (DBG_LCM, "LCM: self test complete\n");
-
-    // if the self test message was received, then the handler modified the
-    // value of success to be 1
-    return (success == 1)?0:-1;
-}
-
-static void udp_discard_packet(lcm_t *lcm)
+static void udp_discard_packet(lcm_udpm_t *lcm)
 {
     char             discard[65536];
     struct sockaddr  from;
@@ -710,7 +414,7 @@ static void udp_discard_packet(lcm_t *lcm)
 }
 
 static void
-_destroy_fragment_buffer (lcm_t *lcm, lcm_frag_buf_t *fbuf)
+_destroy_fragment_buffer (lcm_udpm_t *lcm, lcm_frag_buf_t *fbuf)
 {
     lcm->frag_bufs_total_size -= fbuf->data_size;
     g_hash_table_remove (lcm->frag_bufs, &fbuf->from);
@@ -728,7 +432,7 @@ _find_lru_frag_buf (gpointer key, gpointer value, void *user_data)
 }
 
 static void
-_add_fragment_buffer (lcm_t *lcm, lcm_frag_buf_t *fbuf)
+_add_fragment_buffer (lcm_udpm_t *lcm, lcm_frag_buf_t *fbuf)
 {
     while (lcm->frag_bufs_total_size > lcm->frag_bufs_max_total_size ||
             g_hash_table_size (lcm->frag_bufs) > lcm->max_n_frag_bufs) {
@@ -742,7 +446,7 @@ _add_fragment_buffer (lcm_t *lcm, lcm_frag_buf_t *fbuf)
 }
 
 static int 
-_recv_message_fragment (lcm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
+_recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
 {
     lcm2_header_long_t *hdr = (lcm2_header_long_t*) lcmb->buf;
 
@@ -784,12 +488,7 @@ _recv_message_fragment (lcm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
         }
 
         // if the packet has no subscribers, drop the message now.
-        // (note, if handlers==NULL, we don't know whether there are handlers)
-        g_static_rec_mutex_lock (&lcm->mutex);
-        GPtrArray *handlers = g_hash_table_lookup(lcm->handlers_map, channel);
-        int no_handlers = (handlers!=NULL && g_ptr_array_size(handlers) == 0);
-        g_static_rec_mutex_unlock (&lcm->mutex);
-        if (no_handlers)
+        if (!lcm_has_handlers (lcm->lcm, channel))
             return 0;
 
         fbuf = lcm_frag_buf_new (*((struct sockaddr_in*) &lcmb->from),
@@ -817,7 +516,9 @@ _recv_message_fragment (lcm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
 
     if (0 == fbuf->fragments_remaining) {
         // deallocate the ringbuffer-allocated buffer
+        g_static_rec_mutex_lock (&lcm->mutex);
         lcm_ringbuf_dealloc (lcm->ringbuf, lcmb->buf);
+        g_static_rec_mutex_unlock (&lcm->mutex);
         lcmb->buf_from_ringbuf = 0;
 
         // transfer ownership of the message's payload buffer to the lcm_buf_t
@@ -840,7 +541,7 @@ _recv_message_fragment (lcm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
 }
 
 static int
-_recv_short_message (lcm_t *lcm, lcm_buf_t *lcmb, int sz)
+_recv_short_message (lcm_udpm_t *lcm, lcm_buf_t *lcmb, int sz)
 {
     lcm2_header_short_t *hdr2 = (lcm2_header_short_t*) lcmb->buf;
 
@@ -860,13 +561,7 @@ _recv_short_message (lcm_t *lcm, lcm_buf_t *lcmb, int sz)
     lcm->udp_rx++;
 
     // if the packet has no subscribers, drop the message now.
-    // (note, if handlers==NULL, we don't know whether there are handlers)
-    g_static_rec_mutex_lock (&lcm->mutex);
-    GPtrArray *handlers = g_hash_table_lookup(lcm->handlers_map, 
-            pkt_channel_str);
-    int no_handlers = (handlers!=NULL && g_ptr_array_size(handlers) == 0);
-    g_static_rec_mutex_unlock (&lcm->mutex);
-    if (no_handlers)
+    if (!lcm_has_handlers (lcm->lcm, pkt_channel_str))
         return 0;
 
     strcpy (lcmb->channel_name, pkt_channel_str);
@@ -880,7 +575,7 @@ _recv_short_message (lcm_t *lcm, lcm_buf_t *lcmb, int sz)
 
 // read continuously until a complete message arrives
 static lcm_buf_t *
-udp_read_packet(lcm_t *lcm)
+udp_read_packet (lcm_udpm_t *lcm)
 {
     lcm_buf_t *lcmb = NULL;
 
@@ -920,7 +615,9 @@ udp_read_packet(lcm_t *lcm)
 
     int sz;
 
+    g_static_rec_mutex_lock (&lcm->mutex);
     double buf_avail = lcm_ringbuf_available(lcm->ringbuf);
+    g_static_rec_mutex_unlock (&lcm->mutex);
     if (buf_avail < lcm->udp_low_watermark)
         lcm->udp_low_watermark = buf_avail;
 
@@ -971,26 +668,22 @@ udp_read_packet(lcm_t *lcm)
 
         lcm2_header_short_t *hdr2 = (lcm2_header_short_t*) lcmb->buf;
         uint32_t rcvd_magic = ntohl(hdr2->magic);
-        if (rcvd_magic == LCM2_MAGIC_SHORT) {
-            g_static_rec_mutex_lock (&lcm->mutex);
+        if (rcvd_magic == LCM2_MAGIC_SHORT)
             got_complete_message = _recv_short_message (lcm, lcmb, sz);
-            g_static_rec_mutex_unlock (&lcm->mutex);
-        } else if (rcvd_magic == LCM2_MAGIC_LONG) {
-            g_static_rec_mutex_lock (&lcm->mutex);
+        else if (rcvd_magic == LCM2_MAGIC_LONG)
             got_complete_message = _recv_message_fragment (lcm, lcmb, sz);
-            g_static_rec_mutex_unlock (&lcm->mutex);
-        } else {
+        else {
             dbg (DBG_LCM, "LCM: bad magic\n");
             lcm->udp_discarded_bad++;
             continue;
         }
     }
 
-    g_static_rec_mutex_lock (&lcm->mutex);
     if (lcmb->buf_from_ringbuf) {
+        g_static_rec_mutex_lock (&lcm->mutex);
         lcm_ringbuf_shrink_last(lcm->ringbuf, lcmb->buf, sz);
+        g_static_rec_mutex_unlock (&lcm->mutex);
     }
-    g_static_rec_mutex_unlock (&lcm->mutex);
 
     return lcmb;
 }
@@ -1000,8 +693,7 @@ udp_read_packet(lcm_t *lcm)
 static void *
 recv_thread (void * user)
 {
-    lcm_t * lcm = (lcm_t *) user;
-//    int had_error[4] = { 0, 0, 0, 0};
+    lcm_udpm_t * lcm = (lcm_udpm_t *) user;
 
     while (1) {
 
@@ -1024,450 +716,20 @@ recv_thread (void * user)
         
         g_static_rec_mutex_unlock (&lcm->mutex);
     }
-/*
-        if (lcm->ringbuf->used > lcm->ringbuf->size / 2) {
-            if (!had_error[2])
-                fprintf (stderr, "Warning: LCM has filled %d of %d bytes "
-                        "of buffer space\n",
-                        lcm->ringbuf->used, lcm->ringbuf->size);
-            had_error[2] = 1;
-        }
-        else
-            had_error[2] = 0;
-        if (lcm->inbufs_empty->count < LCM_DEFAULT_RECV_BUFS / 2) {
-            if (!had_error[3])
-                fprintf (stderr, "Warning: LCM has filled %d of %d "
-                        "receive buffers\n",
-                        LCM_DEFAULT_RECV_BUFS - lcm->inbufs_empty->count,
-                        LCM_DEFAULT_RECV_BUFS);
-            had_error[3] = 1;
-        }
-        else
-            had_error[3] = 0;
-    }
-*/
 }
 
-static int
-lcm_init (lcm_t *lcm, const udpm_params_t *args) 
-{
-    int status;
-    assert (!lcm->initialized);
 
-    memcpy (&lcm->params, args, sizeof (lcm->params));
-    args = &lcm->params;
-
-    struct in_addr la;
-    la.s_addr = args->local_iface;
-
-    // make sure we're not using loopback iface (multicast doesn't work)
-    struct in_addr lo_iface;
-    lo_iface.s_addr = inet_addr ("127.0.0.1");
-    if (lo_iface.s_addr == la.s_addr) {
-        fprintf (stderr, 
-                "WARNING!! LCM does not work with loopback interface!\n");
-    }
-
-    // debugging
-    struct in_addr ga;
-    ga.s_addr = args->mc_addr;
-    dbg (DBG_LCM, "initializing lcm context.  local %s ", inet_ntoa (la));
-    dbg (DBG_LCM, "MC %s:%d\n", inet_ntoa (ga), ntohs (args->mc_port));
-
-    // create a transmit socket
-    //
-    // XXX need to create a separate transmit socket because I couldn't get a
-    // single multicast socket to work properly with the connect system call,
-    // which is needed when using writev.  If someone figures out how to get
-    // connect to work properly, then sendfd is redundant
-    lcm->sendfd = socket (AF_INET, SOCK_DGRAM, 0);
-    struct sockaddr_in dest_addr;
-    memset (&dest_addr, 0, sizeof (dest_addr));
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_addr.s_addr = args->mc_addr;
-    dest_addr.sin_port = args->mc_port;
-    status = connect (lcm->sendfd, (struct sockaddr*) &dest_addr, 
-            sizeof (dest_addr));
-    if (status < 0) {
-        perror ("connect");
-        return -1;
-    }
-
-    // set multicast transmit interface
-    status = setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_IF,
-            &la, sizeof (la));
-    if (status < 0) {
-        fprintf (stderr, "lcm.c:%d - ", __LINE__);
-        perror ("setting multicast interface");
-        return -1;
-    }
-
-    // set multicast TTL
-    if (0 == args->mc_ttl) {
-        dbg (DBG_LCM, "LCM multicast TTL set to 0.  Packets will not "
-                "leave localhost\n");
-    }
-    dbg (DBG_LCM, "LCM: setting multicast packet TTL to %d\n", args->mc_ttl);
-    status = setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_TTL,
-            &args->mc_ttl, sizeof (args->mc_ttl));
-    if (status < 0) {
-        fprintf (stderr, "lcm.c:%d - ", __LINE__);
-        perror ("setting multicast TTL");
-        return -1;
-    }
-
-    // set loopback option on the send socket
-    unsigned char send_lo_opt = 1;
-    dbg (DBG_LCM, "LCM: setting multicast loopback option\n");
-    status = setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_LOOP, 
-            &send_lo_opt, sizeof (send_lo_opt));
-    if (status < 0) {
-        perror ("setting multicast loopback");
-        return -1;
-    }
-
-    lcm->msg_seqno = 0;
-
-    if (args->transmit_only) {
-        lcm->recvfd = -1;
-        lcm->inbufs_empty = NULL;
-        lcm->inbufs_filled = NULL;
-        lcm->ringbuf = NULL;
-        lcm->initialized = 1;
-
-        // TODO add a self-test for transmit-only lcm_t
-        dbg (DBG_LCM, "LCM: transmit-only lcm_t self test NOT YET IMPLEMENTED\n");
-    } else {
-        // allocate multicast socket
-        lcm->recvfd = socket (AF_INET, SOCK_DGRAM, 0);
-        if (lcm->recvfd < 0) {
-            fprintf (stderr, "lcm.c:%d - ", __LINE__);
-            perror ("allocating LCM socket");
-            return -1;
-        }
-
-        // 
-        struct sockaddr_in addr;
-        memset (&addr, 0, sizeof (addr));
-        addr.sin_family = AF_INET;
-        addr.sin_addr.s_addr = args->local_iface;
-        addr.sin_port = args->mc_port;
-
-        // allow other applications on the local machine to also bind to this
-        // multicast address and port
-        int opt=1;
-        dbg (DBG_LCM, "LCM: setting SO_REUSEADDR\n");
-        status = setsockopt (lcm->recvfd, SOL_SOCKET, SO_REUSEADDR, 
-                (char*)&opt, sizeof (opt));
-        if (status < 0) {
-            perror ("reuse addr");
-            return -1;
-        }
-
-#ifdef __APPLE__
-        /* Strangely, Mac OS requires the REUSEPORT option in addition
-         * to REUSEADDR or it won't let multiple processes bind to the
-         * same port, even if they are using multicast. */
-        dbg (DBG_LCM, "LCM: setting SO_REUSEPORT\n");
-        status = setsockopt (lcm->recvfd, SOL_SOCKET, SO_REUSEPORT, 
-                (char*)&opt, sizeof (opt));
-        if (status < 0) {
-            perror ("reuse port");
-            return -1;
-        }
-#endif
-
-        // set loopback option so that packets sent out on the multicast socket
-        // are also delivered to it
-        unsigned char lo_opt = 1;
-        dbg (DBG_LCM, "LCM: setting multicast loopback option\n");
-        status = setsockopt (lcm->recvfd, IPPROTO_IP, IP_MULTICAST_LOOP, 
-                &lo_opt, sizeof (lo_opt));
-        if (status < 0) {
-            perror ("setting multicast loopback");
-            return -1;
-        }
-
-        // debugging... how big is the receive buffer?
-        int sockbufsize = 0;
-        unsigned int retsize = sizeof (int);
-        status = getsockopt (lcm->sendfd, SOL_SOCKET, SO_SNDBUF, 
-                (char*)&sockbufsize, &retsize);
-        dbg (DBG_LCM, "LCM: send buffer is %d bytes\n", sockbufsize);
-        status = getsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF, 
-                (char*)&sockbufsize, &retsize);
-        dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", sockbufsize);
-        if (args->recv_buf_size) {
-            status = setsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF,
-                    &args->recv_buf_size, sizeof (args->recv_buf_size));
-            if (0 != status) {
-                perror ("setsockopt SO_RCVBUF");
-                dbg (DBG_LCM, "unable to set receive buffer size\n");
-            }
-            status = getsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF, 
-                    (char*)&sockbufsize, &retsize);
-            dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", sockbufsize);
-
-            if (args->recv_buf_size > sockbufsize) {
-                g_warning ("LCM UDP receive buffer size (%d) \n"
-                        "       is smaller than reqested (%d). "
-                        "For more info:\n"
-                        "       http://lcm.googlecode.com/svn/www/reference/lcm/multicast-setup.html\n", 
-                        sockbufsize, args->recv_buf_size);
-            }
-        }
-
-        // bind
-        status = bind (lcm->recvfd, (struct sockaddr*)&addr, sizeof (addr));
-        if (status < 0) {
-            perror ("bind");
-            return -1;
-        }
-
-        struct ip_mreq mreq;
-        mreq.imr_multiaddr.s_addr = args->mc_addr;
-        mreq.imr_interface.s_addr = args->local_iface;
-        // join the multicast group
-        dbg (DBG_LCM, "LCM: joining multicast group\n");
-        status = setsockopt (lcm->recvfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-                (char*)&mreq, sizeof (mreq));
-        if (status < 0) {
-            perror ("joining multicast group");
-            return -1;
-        }
-
-        lcm->inbufs_empty = lcm_buf_queue_new ();
-        lcm->inbufs_filled = lcm_buf_queue_new ();
-        lcm->ringbuf = lcm_ringbuf_new (LCM_RINGBUF_SIZE);
-
-        int i;
-        for (i = 0; i < LCM_DEFAULT_RECV_BUFS; i++) {
-            /* We don't set the receive buffer's data pointer yet because it
-             * will be taken from the ringbuffer at receive time. */
-            lcm_buf_t * lcmb = calloc (1, sizeof (lcm_buf_t));
-            lcm_buf_enqueue (lcm->inbufs_empty, lcmb);
-        }
-
-        /* Start the reader thread */
-        if (pthread_create (&lcm->read_thread, NULL, recv_thread, lcm) < 0) {
-            fprintf (stderr, "Error: LCM failed to start reader thread\n");
-            return -1;
-        }
-        lcm->thread_created = 1;
-
-        lcm->initialized = 1;
-        dbg (DBG_LCM, "LCM: conducting self test\n");
-        status = lcm_self_test (lcm);
-        if (0 == status) {
-            dbg (DBG_LCM, "LCM: self test successful\n");
-        } else {
-            fprintf (stderr, "LCM self test failed!!\n"
-                    "Check your routing tables and firewall settings\n");
-            lcm->initialized = 0;
-            return -1;
-        }
-    }
-
-    return 0;
-}
-
-// free the array that we associate for each channel, and the key. Don't free
-// the lcm_subscription_t*s.
-static void 
-map_free_handlers_callback(gpointer _key, gpointer _value, gpointer _data)
-{
-    GPtrArray *handlers = (GPtrArray*) _value;
-    g_ptr_array_free(handlers, TRUE);
-    free(_key);
-}
-
-void
-lcm_destroy (lcm_t *lcm) 
-{
-    dbg (DBG_LCM, "closing lcm context\n");
-    if (!lcm->params.transmit_only && lcm->thread_created) {
-        /* Destroy the reading thread */
-        g_static_rec_mutex_lock (&lcm->mutex);
-        pthread_cancel (lcm->read_thread);
-        g_static_rec_mutex_unlock (&lcm->mutex);
-        pthread_join (lcm->read_thread, NULL);
-    }
-    if (lcm->recvfd >= 0) {
-        close (lcm->recvfd);
-    }
-    if (lcm->sendfd >= 0) {
-        close (lcm->sendfd);
-    }
-
-    g_hash_table_foreach (lcm->handlers_map, map_free_handlers_callback, NULL);
-    g_hash_table_destroy (lcm->handlers_map);
-    g_hash_table_destroy (lcm->frag_bufs);
-
-    for (int i = 0; i < g_ptr_array_size(lcm->handlers_all); i++) {
-        lcm_subscription_t *h = g_ptr_array_index(lcm->handlers_all, i);
-        h->callback_scheduled = 0; // XXX hack...
-        lcm_handler_free(h);
-    }
-    g_ptr_array_free(lcm->handlers_all, TRUE);
-
-    if (lcm->inbufs_empty) {
-        lcm_buf_queue_free (lcm->inbufs_empty);
-    }
-    if (lcm->inbufs_filled)
-        lcm_buf_queue_free (lcm->inbufs_filled);
-    if (lcm->ringbuf)
-        lcm_ringbuf_free (lcm->ringbuf);
-
-    close (lcm->notify_pipe[0]);
-    close (lcm->notify_pipe[1]);
-
-    g_static_rec_mutex_free (&lcm->mutex);
-    g_static_mutex_free (&lcm->transmit_lock);
-    free (lcm);
-    return;
-}
-
-int 
-lcm_get_fileno (const lcm_t *lcm)
+static int 
+lcm_udpm_get_fileno (lcm_udpm_t *lcm)
 {
     return lcm->notify_pipe[0];
 }
 
-struct map_callback_data
-{
-    lcm_t *lcm;
-    lcm_subscription_t *h;
-};
 
 static int 
-is_handler_subscriber(lcm_subscription_t *h, char *channel_name)
-{
-    int match = 0;
-
-    if (!regexec(&h->preg, channel_name, 0, NULL, 0))
-        match = 1;
-
-    return match;
-}
-
-// add the handler to any channel's handler list if its subscription matches
-static void 
-map_add_handler_callback(gpointer _key, gpointer _value, gpointer _data)
-{
-    lcm_subscription_t *h = (lcm_subscription_t*) _data;
-    char *channel_name = (char*) _key;
-    GPtrArray *handlers = (GPtrArray*) _value;
-
-    if (!is_handler_subscriber(h, channel_name))
-        return;
-    
-    g_ptr_array_add(handlers, h);
-}
-
-// remove from a channel's handler list
-static void 
-map_remove_handler_callback(gpointer _key, gpointer _value, 
-        gpointer _data)
-{
-    lcm_subscription_t *h = (lcm_subscription_t*) _data;
-    GPtrArray *handlers = (GPtrArray*) _value;
-    g_ptr_array_remove_fast(handlers, h);
-}
-
-lcm_subscription_t
-*lcm_subscribe (lcm_t *lcm, const char *channel, 
-                     lcm_msg_handler_t handler, void *userdata)
-{
-    if (lcm->params.transmit_only) {
-        dbg (DBG_LCM, "can't register a handler for a transmit only lcm_t!\n");
-        return NULL;
-    }
-
-    dbg (DBG_LCM, "registering %s handler %p\n", channel, handler);
-
-    // create and populate a new message handler struct
-    lcm_subscription_t *h = (lcm_subscription_t*)calloc (1, sizeof (lcm_subscription_t));
-    h->channel = strdup(channel);
-    h->handler = handler;
-    h->userdata = userdata;
-    h->callback_scheduled = 0;
-    h->marked_for_deletion = 0;
-
-    char regexbuf[strlen(channel)+3];
-    /* We don't allow substring matches */
-    sprintf (regexbuf, "^%s$", channel);
-    int rstatus = regcomp (&h->preg, regexbuf, REG_NOSUB | REG_EXTENDED);
-    if (rstatus != 0) {
-        dbg (DBG_LCM, "bad regex in channel name!\n");
-        free (h);
-        return NULL;
-    }
-
-    g_static_rec_mutex_lock (&lcm->mutex);
-    g_ptr_array_add(lcm->handlers_all, h);
-    g_hash_table_foreach(lcm->handlers_map, map_add_handler_callback, h);
-    g_static_rec_mutex_unlock (&lcm->mutex);
-
-    return h;
-}
-
-int 
-lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *h)
-{
-    g_static_rec_mutex_lock (&lcm->mutex);
-
-    // remove the handler from the master list
-    int foundit = g_ptr_array_remove(lcm->handlers_all, h);
-
-    if (foundit) {
-        // remove the handler from all the lists in the hash table
-        g_hash_table_foreach(lcm->handlers_map, map_remove_handler_callback, h);
-        if (!h->callback_scheduled) {
-            lcm_handler_free (h);
-        } else {
-            h->marked_for_deletion = 1;
-        }
-    }
-
-    g_static_rec_mutex_unlock (&lcm->mutex);
-
-    return foundit ? 0 : -1;
-}
-
-// remove any handler that has the given callback/userdata
-int 
-lcm_unsubscribe_by_func (lcm_t *lcm, const char *channel,
-        lcm_msg_handler_t handler, void *userdata) 
-{
-    assert (lcm->initialized);
-    g_static_rec_mutex_lock (&lcm->mutex);
-
-    for (int i = 0; i < g_ptr_array_size(lcm->handlers_all); i++) {
-        lcm_subscription_t *h = g_ptr_array_index(lcm->handlers_all, i);
-        if (h->handler == handler && h->userdata == userdata) {
-            g_hash_table_foreach(lcm->handlers_map, map_remove_handler_callback, 
-                    h);
-            g_ptr_array_remove_index_fast(lcm->handlers_all, i);
-            if (!h->callback_scheduled) {
-                lcm_handler_free (h);
-            } else {
-                h->marked_for_deletion = 1;
-            }
-            i--;
-        }
-    }
-    
-    g_static_rec_mutex_unlock (&lcm->mutex);
-    
-    return 0;
-}
-
-int 
-lcm_publish (lcm_t *lcm, const char *channel, const char *data,
+lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const char *data,
         unsigned int datalen)
 {
-    assert (lcm->initialized);
-
     int channel_size = strlen (channel);
     if (channel_size > LCM_MAX_CHANNEL_NAME_LENGTH) {
         fprintf (stderr, "LCM Error: channel name too long [%s]\n",
@@ -1577,12 +839,11 @@ lcm_publish (lcm_t *lcm, const char *channel, const char *data,
     return 0;
 }
 
-int 
-lcm_handle (lcm_t *lcm)
+static int 
+lcm_udpm_handle (lcm_udpm_t *lcm)
 {
     int status;
     char ch;
-    assert (lcm->initialized);
 
     if (lcm->params.transmit_only) {
         dbg (DBG_LCM, "can't call lcm_handle on a transmit-only lcm_t!\n");
@@ -1617,39 +878,7 @@ lcm_handle (lcm_t *lcm)
     if (!is_buf_queue_empty (lcm->inbufs_filled))
         if (write (lcm->notify_pipe[1], "+", 1) < 0)
             perror ("write to notify");
-
-    // XXX release mutex here?
-    // Nah: we'll block when we read next: that will give other threads
-    // a chance.
-
-    GPtrArray *handlers = g_hash_table_lookup(lcm->handlers_map, 
-            lcmb->channel_name);
-    // if we haven't seen this channel name before, create a new list
-    // of subscribed handlers.
-    if (handlers == NULL) {
-        handlers = g_ptr_array_new();
-        // alloc 0-terminated channel name
-        g_hash_table_insert(lcm->handlers_map, strdup(lcmb->channel_name), 
-                handlers);
-
-        // find all the matching handlers
-        for (int i = 0; i < g_ptr_array_size(lcm->handlers_all); i++) {
-            lcm_subscription_t *h = g_ptr_array_index(lcm->handlers_all, i);
-            if (is_handler_subscriber(h, lcmb->channel_name))
-                g_ptr_array_add(handlers, h);
-        }
-    }
-
-    // ref the handlers to prevent them from being destroyed by an
-    // lcm_unsubscribe.  This guarantees that handlers 0-(nhandlers-1) will not
-    // be destroyed during the callbacks.  Store nhandlers in a local variable
-    // so that we don't iterate over handlers that are added during the
-    // callbacks.
-    int nhandlers = g_ptr_array_size (handlers);
-    for (int i = 0; i < nhandlers; i++) {
-        lcm_subscription_t *h = g_ptr_array_index(handlers, i);
-        h->callback_scheduled = 1;
-    }
+    g_static_rec_mutex_unlock (&lcm->mutex);
 
     lcm_recv_buf_t rbuf = {
         .channel = lcmb->channel_name,
@@ -1658,39 +887,13 @@ lcm_handle (lcm_t *lcm)
         .recv_utime = lcmb->recv_utime
     };
 
-    // now, call the handlers.
-    for (int i = 0; i < nhandlers; i++) {
-        lcm_subscription_t *h = g_ptr_array_index(handlers, i);
-        int invoke = ! h->marked_for_deletion;
-        g_static_rec_mutex_unlock (&lcm->mutex);
-        if (invoke) {
-            h->handler(&rbuf, h->userdata);
-        }
-        g_static_rec_mutex_lock (&lcm->mutex);
-    }
+    lcm_dispatch_handlers (lcm->lcm, &rbuf);
 
-    // unref the handlers and check if any should be deleted
-    GList *to_remove = NULL;
-    for (int i = 0; i < nhandlers; i++) {
-        lcm_subscription_t *h = g_ptr_array_index(handlers, i);
-        h->callback_scheduled = 0;
-        if (h->marked_for_deletion) {
-            to_remove = g_list_prepend (to_remove, h);
-        }
-    }
-    // actually delete handlers marked for deletion
-    for (;to_remove; to_remove = g_list_delete_link (to_remove, to_remove)) {
-        lcm_subscription_t *h = to_remove->data;
-        g_ptr_array_remove (lcm->handlers_all, h);
-        g_hash_table_foreach (lcm->handlers_map, map_remove_handler_callback, h);
-        lcm_handler_free (h);
-    }
-
-    if (lcmb->buf_from_ringbuf) {
+    g_static_rec_mutex_lock (&lcm->mutex);
+    if (lcmb->buf_from_ringbuf)
         lcm_ringbuf_dealloc (lcm->ringbuf, lcmb->buf);
-    } else {
+    else
         free (lcmb->buf);
-    }
     lcmb->buf = NULL;
     lcmb->buf_size = 0;
     lcm_buf_enqueue (lcm->inbufs_empty, lcmb);
@@ -1699,10 +902,327 @@ lcm_handle (lcm_t *lcm)
     return 0;
 }
 
-int
-lcm_get_params (const lcm_t *lcm, udpm_params_t *params)
+static int
+self_test_handler (const lcm_recv_buf_t *rbuf, void *user)
 {
-    if (!lcm->initialized) return -1;
-    memcpy (params, &lcm->params, sizeof (udpm_params_t));
+    int *result = (int*) user;
+    *result = 1;
     return 0;
 }
+
+static int 
+udpm_self_test (lcm_udpm_t *lcm)
+{
+    int success = 0;
+    int status;
+    // register a handler for the self test message
+    lcm_subscription_t *h = lcm_subscribe (lcm->lcm, "LCM_SELF_TEST", 
+                                           self_test_handler, &success);
+
+    // transmit a message
+    char *msg = "lcm self test";
+    lcm_udpm_publish (lcm, "LCM_SELF_TEST", msg, strlen (msg));
+
+    // wait one second for message to be received
+    struct timeval now, endtime;
+    gettimeofday (&now, NULL);
+    endtime.tv_sec = now.tv_sec + 10;
+    endtime.tv_usec = now.tv_usec;
+
+    // periodically retransmit, just in case
+    struct timeval retransmit_interval = { 0, 100000 };
+    struct timeval next_retransmit;
+    _timeval_add (&now, &retransmit_interval, &next_retransmit);
+
+    int recvfd = lcm_udpm_get_fileno (lcm);
+
+    do {
+        struct timeval selectto;
+        _timeval_subtract (&next_retransmit, &now, &selectto);
+
+        fd_set readfds;
+        FD_ZERO (&readfds);
+        FD_SET (recvfd,&readfds);
+
+        gettimeofday (&now, NULL);
+        if (_timeval_compare (&now, &next_retransmit) > 0) {
+            status = lcm_udpm_publish (lcm, "LCM_SELF_TEST", msg, strlen (msg));
+            _timeval_add (&now, &retransmit_interval, &next_retransmit);
+        }
+
+        status=select (recvfd + 1,&readfds,0,0,&selectto);
+        if (status > 0 && FD_ISSET (recvfd,&readfds)) {
+            lcm_udpm_handle (lcm);
+        }
+
+        gettimeofday (&now, NULL);
+
+    } while (! success && _timeval_compare (&now, &endtime) < 0);
+
+    lcm_unsubscribe (lcm->lcm, h);
+
+    dbg (DBG_LCM, "LCM: self test complete\n");
+
+    // if the self test message was received, then the handler modified the
+    // value of success to be 1
+    return (success == 1)?0:-1;
+}
+
+lcm_provider_t * 
+lcm_udpm_create (lcm_t * parent, const char *url)
+{
+    char * target = NULL;
+    GHashTable * args = g_hash_table_new_full (g_str_hash, g_str_equal,
+            free, free);
+    if (lcm_parse_url (url, NULL, &target, args) < 0) {
+        fprintf (stderr, "Error: Bad URL \"%s\"\n", url);
+        g_hash_table_destroy (args);
+        return NULL;
+    }
+
+    udpm_params_t params;
+    memset (&params, 0, sizeof (udpm_params_t));
+    params.local_iface = INADDR_ANY;
+    params.mc_addr = inet_addr (UDPM_DEFAULT_MC_ADDR);
+    params.mc_port = htons (UDPM_DEFAULT_MC_PORT);
+    params.mc_ttl = 0;
+
+    g_hash_table_foreach (args, new_argument, &params);
+    g_hash_table_destroy (args);
+
+    if (parse_mc_addr_and_port (target, &params) < 0) {
+        free (target);
+        return NULL;
+    }
+    free (target);
+
+    lcm_udpm_t * lcm = calloc (1, sizeof (lcm_udpm_t));
+
+    lcm->lcm = parent;
+    lcm->params = params;
+    lcm->recvfd = -1;
+    lcm->sendfd = -1;
+    lcm->udp_low_watermark = 1.0;
+
+    lcm->frag_bufs = g_hash_table_new_full (_sockaddr_in_hash, 
+            _sockaddr_in_equal, NULL, (GDestroyNotify) lcm_frag_buf_destroy);
+    lcm->frag_bufs_total_size = 0;
+    lcm->frag_bufs_max_total_size = 1 << 24; // 16 megabytes
+    lcm->max_n_frag_bufs = 1000;
+
+    pipe (lcm->notify_pipe);
+    fcntl (lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
+
+    g_static_rec_mutex_init (&lcm->mutex);
+    g_static_mutex_init (&lcm->transmit_lock);
+
+    dbg (DBG_LCM, "Initializing LCM UDPM context...\n");
+    struct in_addr ia;
+    ia.s_addr = params.local_iface;
+    dbg (DBG_LCM, "Local %s\n", inet_ntoa (ia));
+    ia.s_addr = params.mc_addr;
+    dbg (DBG_LCM, "Multicast %s:%d\n", inet_ntoa (ia), ntohs (params.mc_port));
+
+    // create a transmit socket
+    //
+    // XXX need to create a separate transmit socket because I couldn't get a
+    // single multicast socket to work properly with the connect system call,
+    // which is needed when using writev.  If someone figures out how to get
+    // connect to work properly, then sendfd is redundant
+    lcm->sendfd = socket (AF_INET, SOCK_DGRAM, 0);
+    struct sockaddr_in dest_addr;
+    memset (&dest_addr, 0, sizeof (dest_addr));
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_addr.s_addr = params.mc_addr;
+    dest_addr.sin_port = params.mc_port;
+    if (connect (lcm->sendfd, (struct sockaddr*) &dest_addr, 
+                sizeof (dest_addr)) < 0) {
+        perror ("connect");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+
+    // set multicast transmit interface
+    if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_IF,
+                &params.local_iface, sizeof (params.local_iface)) < 0) {
+        perror ("setsockopt(IPPROTO_IP, IP_MULTICAST_IF)");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+
+    // set multicast TTL
+    if (params.mc_ttl == 0) {
+        dbg (DBG_LCM, "LCM multicast TTL set to 0.  Packets will not "
+                "leave localhost\n");
+    }
+    dbg (DBG_LCM, "LCM: setting multicast packet TTL to %d\n", params.mc_ttl);
+    if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_TTL,
+                &params.mc_ttl, sizeof (params.mc_ttl)) < 0) {
+        perror ("setsockopt(IPPROTO_IP, IP_MULTICAST_TTL)");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+
+    // set loopback option on the send socket
+    unsigned int send_lo_opt = 1;
+    if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_LOOP, 
+                &send_lo_opt, sizeof (send_lo_opt)) < 0) {
+        perror ("setsockopt (IPPROTO_IP, IP_MULTICAST_LOOP)");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+
+    /* If using transmit-only, we are done now */
+    if (params.transmit_only)
+        return lcm;
+
+    // allocate multicast socket
+    lcm->recvfd = socket (AF_INET, SOCK_DGRAM, 0);
+    if (lcm->recvfd < 0) {
+        perror ("allocating LCM recv socket");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+
+    struct sockaddr_in addr;
+    memset (&addr, 0, sizeof (addr));
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = params.local_iface;
+    addr.sin_port = params.mc_port;
+
+    // allow other applications on the local machine to also bind to this
+    // multicast address and port
+    int opt=1;
+    dbg (DBG_LCM, "LCM: setting SO_REUSEADDR\n");
+    if (setsockopt (lcm->recvfd, SOL_SOCKET, SO_REUSEADDR, 
+            (char*)&opt, sizeof (opt)) < 0) {
+        perror ("setsockopt (SOL_SOCKET, SO_REUSEADDR)");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+
+#ifdef __APPLE__
+    /* Strangely, Mac OS requires the REUSEPORT option in addition
+     * to REUSEADDR or it won't let multiple processes bind to the
+     * same port, even if they are using multicast. */
+    dbg (DBG_LCM, "LCM: setting SO_REUSEPORT\n");
+    if (setsockopt (lcm->recvfd, SOL_SOCKET, SO_REUSEPORT, 
+            (char*)&opt, sizeof (opt)) < 0) {
+        perror ("setsockopt (SOL_SOCKET, SO_REUSEPORT)");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+#endif
+
+#if 0
+    // set loopback option so that packets sent out on the multicast socket
+    // are also delivered to it
+    unsigned char lo_opt = 1;
+    dbg (DBG_LCM, "LCM: setting multicast loopback option\n");
+    status = setsockopt (lcm->recvfd, IPPROTO_IP, IP_MULTICAST_LOOP, 
+            &lo_opt, sizeof (lo_opt));
+    if (status < 0) {
+        perror ("setting multicast loopback");
+        return -1;
+    }
+#endif
+
+    // debugging... how big is the receive buffer?
+    int sockbufsize = 0;
+    unsigned int retsize = sizeof (int);
+    getsockopt (lcm->sendfd, SOL_SOCKET, SO_SNDBUF, 
+            (char*)&sockbufsize, &retsize);
+    dbg (DBG_LCM, "LCM: send buffer is %d bytes\n", sockbufsize);
+    getsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF, 
+            (char*)&sockbufsize, &retsize);
+    dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", sockbufsize);
+    if (params.recv_buf_size) {
+        if (setsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF,
+                &params.recv_buf_size, sizeof (params.recv_buf_size)) < 0) {
+            perror ("setsockopt(SOL_SOCKET, SO_RCVBUF)");
+            fprintf (stderr, "Warning: Unable to set recv buffer size\n");
+        }
+        getsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF, 
+                (char*)&sockbufsize, &retsize);
+        dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", sockbufsize);
+
+        if (params.recv_buf_size > sockbufsize) {
+            g_warning ("LCM UDP receive buffer size (%d) \n"
+                    "       is smaller than reqested (%d). "
+                    "For more info:\n"
+                    "       http://lcm.googlecode.com/svn/www/reference/lcm/multicast-setup.html\n", 
+                    sockbufsize, params.recv_buf_size);
+        }
+    }
+
+    if (bind (lcm->recvfd, (struct sockaddr*)&addr, sizeof (addr)) < 0) {
+        perror ("bind");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+
+    struct ip_mreq mreq;
+    mreq.imr_multiaddr.s_addr = params.mc_addr;
+    mreq.imr_interface.s_addr = params.local_iface;
+    // join the multicast group
+    dbg (DBG_LCM, "LCM: joining multicast group\n");
+    if (setsockopt (lcm->recvfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+            (char*)&mreq, sizeof (mreq)) < 0) {
+        perror ("setsockopt (IPPROTO_IP, IP_ADD_MEMBERSHIP)");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+
+    lcm->inbufs_empty = lcm_buf_queue_new ();
+    lcm->inbufs_filled = lcm_buf_queue_new ();
+    lcm->ringbuf = lcm_ringbuf_new (LCM_RINGBUF_SIZE);
+
+    int i;
+    for (i = 0; i < LCM_DEFAULT_RECV_BUFS; i++) {
+        /* We don't set the receive buffer's data pointer yet because it
+         * will be taken from the ringbuffer at receive time. */
+        lcm_buf_t * lcmb = calloc (1, sizeof (lcm_buf_t));
+        lcm_buf_enqueue (lcm->inbufs_empty, lcmb);
+    }
+
+    /* Start the reader thread */
+    if (pthread_create (&lcm->read_thread, NULL, recv_thread, lcm) < 0) {
+        fprintf (stderr, "Error: LCM failed to start reader thread\n");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+    lcm->thread_created = 1;
+
+    dbg (DBG_LCM, "LCM: conducting self test\n");
+    if (udpm_self_test (lcm) < 0) {
+        fprintf (stderr, "LCM self test failed!!\n"
+                "Check your routing tables and firewall settings\n");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+    dbg (DBG_LCM, "LCM: self test successful\n");
+
+
+    return lcm;
+}
+
+
+static lcm_provider_vtable_t udpm_vtable = {
+    .create     = lcm_udpm_create,
+    .destroy    = lcm_udpm_destroy,
+    .publish    = lcm_udpm_publish,
+    .handle     = lcm_udpm_handle,
+    .get_fileno = lcm_udpm_get_fileno,
+};
+
+static lcm_provider_info_t udpm_info = {
+    .name = "udpm",
+    .vtable = &udpm_vtable,
+};
+
+void
+lcm_udpm_provider_init (GPtrArray * providers)
+{
+    g_ptr_array_add (providers, &udpm_info);
+}
+
