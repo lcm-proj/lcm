@@ -55,38 +55,37 @@ lcm_create (const char *url)
         return NULL;
     }
 
-    lcm_provider_info_t * info = NULL;
-
     if (!url || !strlen (url)) {
-        /* If URL is blank, use the first provider by default. */
-        info = g_ptr_array_index (providers, 0);
+        /* If URL is blank, default to udpm */
+        url = "udpm://";
     }
-    else {
-        char * provider_str = NULL;
-        /* Get the desired provider name from the URL */
-        if (lcm_parse_url (url, &provider_str, NULL, NULL) < 0) {
-            fprintf (stderr, "Error: invalid LCM URL \"%s\"\n", url);
-            g_ptr_array_free (providers, TRUE);
-            return NULL;
-        }
 
-        /* Find a matching provider */
-        for (int i = 0; i < providers->len; i++) {
-            lcm_provider_info_t * pinfo = g_ptr_array_index (providers, i);
-            if (!strcmp (pinfo->name, provider_str)) {
-                info = pinfo;
-                break;
-            }
-        }
-        if (!info) {
-            fprintf (stderr, "Error: LCM provider \"%s\" not found\n",
-                    provider_str);
-            g_ptr_array_free (providers, TRUE);
-            free (provider_str);
-            return NULL;
-        }
-        free (provider_str);
+    char * provider_str = NULL;
+    /* Get the desired provider name from the URL */
+    if (lcm_parse_url (url, &provider_str, NULL, NULL) < 0) {
+        fprintf (stderr, "Error: invalid LCM URL \"%s\"\n", url);
+        g_ptr_array_free (providers, TRUE);
+        return NULL;
     }
+
+    lcm_provider_info_t * info = NULL;
+    /* Find a matching provider */
+    for (int i = 0; i < providers->len; i++) {
+        lcm_provider_info_t * pinfo = g_ptr_array_index (providers, i);
+        if (!strcmp (pinfo->name, provider_str)) {
+            info = pinfo;
+            break;
+        }
+    }
+    if (!info) {
+        fprintf (stderr, "Error: LCM provider \"%s\" not found\n",
+                provider_str);
+        g_ptr_array_free (providers, TRUE);
+        free (provider_str);
+        return NULL;
+    }
+    free (provider_str);
+
     g_ptr_array_free (providers, TRUE);
 
     lcm_t * lcm = calloc (1, sizeof (lcm_t));
