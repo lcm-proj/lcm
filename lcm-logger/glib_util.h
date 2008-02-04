@@ -7,7 +7,7 @@
 extern "C" {
 #endif
 
-typedef void (*signal_pipe_glib_handler_t) (int signal, void *user_data);
+typedef void (*signal_pipe_glib_handler_t) (int sig, void *user_data);
 
 // initializes signal_pipe.  call this once per process.
 int signal_pipe_init();
@@ -17,7 +17,7 @@ int signal_pipe_cleanup();
 
 // specifies that signal should be caught by signal_pipe and converted to a 
 // glib event
-void signal_pipe_add_signal (int signal);
+void signal_pipe_add_signal (int sig);
 
 // sets a handler function that is called when a signal is caught by
 // signal_pipe.  The first argument to the user_func function is the number of

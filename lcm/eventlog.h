@@ -32,13 +32,13 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l);
 void lcm_eventlog_free_event(lcm_eventlog_event_t *le);
 
 // seek (approximately) to particular timestamp
-int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *log, int64_t time);
+int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *l, int64_t ts);
 
 // eventnum will be filled in for you
-int lcm_eventlog_write_event(lcm_eventlog_t *log, lcm_eventlog_event_t *le);
+int lcm_eventlog_write_event(lcm_eventlog_t *l, lcm_eventlog_event_t *le);
 
 // when you're done with the log, clean up after yourself!
-void lcm_eventlog_destroy(lcm_eventlog_t *log);
+void lcm_eventlog_destroy(lcm_eventlog_t *l);
 
 #ifdef __cplusplus
 }

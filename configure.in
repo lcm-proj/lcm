@@ -109,7 +109,7 @@ else
     PYTHON_STR="Disabled"
 fi
 
-echo -n "
+echo "
 
 Configuration (LCM):
 
