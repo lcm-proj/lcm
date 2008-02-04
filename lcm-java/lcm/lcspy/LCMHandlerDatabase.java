@@ -59,7 +59,7 @@ class LCMHandlerDatabase
 				    if (n.contains("$"))
 					continue;
 
-				    if (n.contains("lcmtypes") && n.endsWith(".class")) {
+				    if (n.endsWith(".class")) {
 					String cn = n.substring(0, n.length()-6);
 					cn = cn.replace('/', '.');
 					
