@@ -493,7 +493,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
 
         fbuf = lcm_frag_buf_new (*((struct sockaddr_in*) &lcmb->from),
                 channel, msg_seqno, data_size, fragments_in_msg,
-                _timestamp_now ());
+                lcmb->recv_utime);
         _add_fragment_buffer (lcm, fbuf);
         data_start += channel_sz + 1;
         frag_size -= (channel_sz + 1);
@@ -550,7 +550,6 @@ _recv_short_message (lcm_udpm_t *lcm, lcm_buf_t *lcmb, int sz)
     const char *pkt_channel_str = (char*) (hdr2 + 1);
 
     lcmb->channel_size = strlen (pkt_channel_str);
-    lcmb->recv_utime = _timestamp_now ();
 
     if (lcmb->channel_size > LCM_MAX_CHANNEL_NAME_LENGTH) {
         dbg (DBG_LCM, "bad channel name length\n");
@@ -650,9 +649,21 @@ udp_read_packet (lcm_udpm_t *lcm)
     int got_complete_message = 0;
 
     while (!got_complete_message) {
-        lcmb->fromlen = sizeof (struct sockaddr);
-        sz  = recvfrom (lcm->recvfd, lcmb->buf, 65535, 0, 
-                (struct sockaddr*)&lcmb->from, &lcmb->fromlen);
+        struct iovec vec = {
+            .iov_base = lcmb->buf,
+            .iov_len = 65535,
+        };
+        char controlbuf[64];
+        struct msghdr msg = {
+            .msg_name = &lcmb->from,
+            .msg_namelen = sizeof (struct sockaddr),
+            .msg_iov = &vec,
+            .msg_iovlen = 1,
+            .msg_control = controlbuf,
+            .msg_controllen = sizeof (controlbuf),
+            .msg_flags = 0,
+        };
+        sz = recvmsg (lcm->recvfd, &msg, 0);
 
         if (sz < 0) {
             perror ("udp_read_packet");
@@ -665,6 +676,24 @@ udp_read_packet (lcm_udpm_t *lcm)
             lcm->udp_discarded_bad++;
             continue;
         }
+
+        lcmb->fromlen = msg.msg_namelen;
+
+        int got_utime = 0;
+        struct cmsghdr * cmsg = CMSG_FIRSTHDR (&msg);
+        /* Get the receive timestamp out of the packet headers if possible */
+        while (cmsg) {
+            if (cmsg->cmsg_level == SOL_SOCKET &&
+                    cmsg->cmsg_type == SO_TIMESTAMP) {
+                struct timeval * t = (struct timeval *) CMSG_DATA (cmsg);
+                lcmb->recv_utime = (int64_t) t->tv_sec * 1000000 + t->tv_usec;
+                got_utime = 1;
+                break;
+            }
+            cmsg = CMSG_NXTHDR (&msg, cmsg);
+        }
+        if (!got_utime)
+            lcmb->recv_utime = _timestamp_now ();
 
         lcm2_header_short_t *hdr2 = (lcm2_header_short_t*) lcmb->buf;
         uint32_t rcvd_magic = ntohl(hdr2->magic);
@@ -1154,6 +1183,10 @@ lcm_udpm_create (lcm_t * parent, const char *url)
                     sockbufsize, params.recv_buf_size);
         }
     }
+
+    /* Enable per-packet timestamping by the kernel, if available */
+    opt = 1;
+    setsockopt (lcm->recvfd, SOL_SOCKET, SO_TIMESTAMP, &opt, sizeof (opt));
 
     if (bind (lcm->recvfd, (struct sockaddr*)&addr, sizeof (addr)) < 0) {
         perror ("bind");
