@@ -81,15 +81,6 @@ lcm_subscription_t *lcm_subscribe (lcm_t *lcm, const char *channel,
 				   lcm_msg_handler_t handler, void *userdata);
 
 /**
- * lcm_unsubscribe_by_func:
- *
- * unregisters a message handler so that it will no longer be invoked when the
- * specified message type is received.
- */
-int lcm_unsubscribe_by_func (lcm_t *lcm,
-				   lcm_msg_handler_t handler, void *userdata);
-
-/**
  * lcm_unsubscribe:
  *
  * unregisters a message handler so that it will no longer be invoked when the

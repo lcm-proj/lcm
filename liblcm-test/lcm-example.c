@@ -61,9 +61,9 @@ int main (int argc, char **argv)
         return 1;
     }
 
-    lcm_subscribe (lcm, "TEST", test_handler, 0);
+    lcm_subscription_t * s = lcm_subscribe (lcm, "TEST", test_handler, 0);
     lcm_subscribe (lcm, "TEST", test_handler2, 0);
-    lcm_unsubscribe_by_func ( lcm, test_handler, 0);
+    lcm_unsubscribe ( lcm, s);
 //    lcm_subscribe (lcm, ".*", catchall_handler, 0);
 
     int fd = lcm_get_fileno (lcm);

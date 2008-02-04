@@ -51,7 +51,6 @@ usage()
 
 int main(int argc, char **argv)
 {
-    int status;
     int verbose = 0;
     int random_channel = 1;
     char channel[80];

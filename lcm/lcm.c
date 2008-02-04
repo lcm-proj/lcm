@@ -264,27 +264,6 @@ lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *h)
     return foundit ? 0 : -1;
 }
 
-// remove any handler that has the given callback/userdata
-int 
-lcm_unsubscribe_by_func (lcm_t *lcm,
-        lcm_msg_handler_t handler, void *userdata) 
-{
-    g_static_rec_mutex_lock (&lcm->mutex);
-
-    for (int i = 0; i < lcm->handlers_all->len; i++) {
-        lcm_subscription_t *h = g_ptr_array_index(lcm->handlers_all, i);
-        if (h->handler == handler && h->userdata == userdata) {
-            lcm_unsubscribe (lcm, h);
-            i--;
-        }
-    }
-    
-    g_static_rec_mutex_unlock (&lcm->mutex);
-    
-    return 0;
-}
-
-
 /* ==== Internal API for Providers ==== */
 
 GPtrArray *
