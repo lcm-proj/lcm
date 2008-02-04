@@ -195,11 +195,16 @@ lcm_logread_handle (lcm_logread_t * lr)
         return -1;
     }
 
+    int64_t now = timestamp_now ();
+    /* Initialize the wall clock if this is the first time through */
+    if (lr->next_clock_time < 0)
+        lr->next_clock_time = now;
+
     lcm_recv_buf_t rbuf = {
         .channel = lr->event->channel,
         .data = (uint8_t*) lr->event->data,
         .data_size = lr->event->datalen,
-        .recv_utime = lr->event->timestamp,
+        .recv_utime = lr->next_clock_time,
     };
     lcm_dispatch_handlers (lr->lcm, &rbuf);
 
@@ -207,10 +212,7 @@ lcm_logread_handle (lcm_logread_t * lr)
     if (load_next_event (lr) < 0)
         return 0; /* end-of-file */
 
-    int64_t now = timestamp_now ();
-    if (lr->next_clock_time < 0)
-        lr->next_clock_time = now;
-
+    /* Compute the wall time for the next event */
     if (lr->speed > 0)
         lr->next_clock_time +=
             (lr->event->timestamp - prev_log_time) / lr->speed;
