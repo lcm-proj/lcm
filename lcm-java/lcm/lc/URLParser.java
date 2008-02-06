@@ -76,7 +76,7 @@ public class URLParser
 	String v = params.get(key);
 	if (v==null)
 	    return def;
-	return Boolean.parseBoolean(v);
+	return Boolean.parseBoolean(v) || v.equals("1");
     }
 
     public double get(String key, double def)
