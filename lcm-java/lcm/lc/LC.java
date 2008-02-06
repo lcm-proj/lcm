@@ -25,9 +25,14 @@ public class LC
 
     public LC(Object... urls) throws IOException
     {
-	if (urls.length==0)
-	    urls = new String[] {"udpm://"};
-
+	if (urls.length==0) {
+	    String env = System.getenv("LC_URL");
+	    if (env == null)
+		urls = new String[] {"udpm://"};
+	    else
+		urls = new String[] { env };
+	}
+	
 	for (Object o : urls) {
 	    String url = (String) o;
 
@@ -36,6 +41,8 @@ public class LC
 	    
 	    if (protocol.equals("udpm"))
 		providers.add(new UDPMulticastProvider(this, url));
+	    else if (protocol.equals("file"))
+		providers.add(new LogFileProvider(this, url));
 	    else
 		System.out.println("LC: Unknown URL protocol: "+protocol);
 	}
@@ -45,7 +52,7 @@ public class LC
     {
 	if (singleton == null) {
 	    try {
-		singleton = new LC("udpm://");
+		singleton = new LC();
 	    } catch (Exception ex) {
 		System.out.println("LC singleton fail: "+ex);
 		System.exit(0);
@@ -54,6 +61,11 @@ public class LC
 	}
 
 	return singleton;
+    }
+
+    public int getNumSubscriptions()
+    {
+	return subscriptions.size();
     }
 
     public void publish(String channel, String s) throws IOException

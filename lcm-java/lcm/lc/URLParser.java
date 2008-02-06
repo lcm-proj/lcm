@@ -13,10 +13,10 @@ public class URLParser
     
     public URLParser(String url)
     {
-	Matcher m = Pattern.compile("([^\\:]+)://([a-zA-Z0-9\\.]+)?(:([0-9]+))?(\\?(.*))?").matcher(url);
+	Matcher m = Pattern.compile("([^\\:]+)://([a-zA-Z0-9/\\.]+)?(:([0-9]+))?(\\?(.*))?").matcher(url);
 
 	if (!m.matches()) {
-	    System.out.println("Invalid url: "+url);
+	    System.out.println("URLParser: Invalid url: "+url);
 	    return;
 	}
 
@@ -77,6 +77,14 @@ public class URLParser
 	if (v==null)
 	    return def;
 	return Boolean.parseBoolean(v);
+    }
+
+    public double get(String key, double def)
+    {
+	String v = params.get(key);
+	if (v==null)
+	    return def;
+	return Double.parseDouble(v);
     }
 
     public static void main(String args[])
