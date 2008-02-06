@@ -15,6 +15,7 @@ public class LogFileProvider implements Provider
 
     double speed; // how fast do we play? <=0 for "as fast as possible"
     double delay; // how many seconds to delay before starting to play? (crude race-condition hack)
+    boolean verbose; // report actual speed periodically
 
     public LogFileProvider(LC lc, String url) throws IOException
     {
@@ -27,6 +28,7 @@ public class LogFileProvider implements Provider
 
 	speed = up.get("speed", 1.0);
 	delay = up.get("delay", 0.5);
+	verbose = up.get("verbose", false);
 
 	new ReaderThread().start();
     }
@@ -70,6 +72,9 @@ public class LogFileProvider implements Provider
 	    long lastEventUtime = -1;
 	    double delayAccumulator = 0; // how long do we need to delay in real time?
 
+	    double verboseAccumulator = 0;
+	    long   verboseLastEventUtime = -1;
+
 	    while (true) {
 		Log.Event ev = log.readNext();
 
@@ -84,8 +89,18 @@ public class LogFileProvider implements Provider
 
 		// subtract any clock time that has elapsed.
 		long localUtime = System.nanoTime()/1000;
-		delayAccumulator -= (localUtime - lastLocalUtime)/1000000.0;
+		double dt = (localUtime - lastLocalUtime)/1000000.0;
 		lastLocalUtime = localUtime;
+		delayAccumulator -= dt;
+		verboseAccumulator += dt;
+
+		// spit out some info at 1Hz
+		if (verboseAccumulator > 1.0 && verbose) {
+		    double eventDt = (lastEventUtime - verboseLastEventUtime)/1000000.0;
+		    verboseLastEventUtime = lastEventUtime;
+		    System.out.printf("LogFile: rate = %8.3f\n", eventDt/verboseAccumulator);
+		    verboseAccumulator = 0;
+		}
 
 		// sleep if necessary.
 		if (delayAccumulator > 0.001) {
