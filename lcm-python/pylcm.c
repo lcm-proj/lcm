@@ -9,8 +9,8 @@
 #define Py_RETURN_NONE  do { Py_INCREF( Py_None ); return Py_None; } while(0)
 #endif
 
-#define dbg(...) fprintf (stderr, __VA_ARGS__)
-//#define dbg(...) 
+//#define dbg(...) fprintf (stderr, __VA_ARGS__)
+#define dbg(...) 
 
 PyDoc_STRVAR (pylcm_doc,
 "Lightweight Communications class\n\

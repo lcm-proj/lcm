@@ -5,8 +5,8 @@ _dealloc (PyLCMSubscriptionObject *s)
 {
     if (s->handler) {
         Py_DECREF (s->handler);
+        s->handler = NULL;
     }
-    printf ("dealloc!\n");
     // ignore s->subscription and s->lcm_obj
     s->ob_type->tp_free ((PyObject*)s);
 }
