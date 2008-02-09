@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <lcm/lcm.h>
 
-#include "types/example_t.h"
+#include "example_t.h"
 
 static void
 send_message (lcm_t * lcm)

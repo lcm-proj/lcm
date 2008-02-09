@@ -1,6 +1,6 @@
 
 JAVAROOT = .
-JARFILE = lcm.jar
+JARFILE = lcm$(apiversion).jar
 
 $(JARFILE): classdist_noinst.stamp
 	rm -f $(JARFILE)
@@ -25,6 +25,12 @@ lcm-lcspy:
 	@echo > $@ "#!/bin/sh"
 	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.lcspy.LCSpy \$$*"
 	chmod 755 $@
+
+install-data-hook:
+# install versionless jar symlink
+	cd $(DESTDIR)$(jardir) && \
+		mv -f $(JARFILE) lcm$(apiversion)-$(VERSION).jar && \
+		$(LN_S) lcm$(apiversion)-$(VERSION).jar $(JARFILE)
 
 dist_noinst_JAVA = \
     lcm/lc/LCEncodable.java \
@@ -52,3 +58,7 @@ dist_noinst_JAVA = \
     lcm/lcspy/ChannelData.java 
 
 endif
+
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = lcm-java.pc
+EXTRA_DIST = lcm-java.pc.in

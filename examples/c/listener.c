@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include <lcm/lcm.h>
-#include "types/example_t.h"
+#include "example_t.h"
 
 static int
 my_handler (const char * channel, const example_t * msg, void * user)

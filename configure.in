@@ -9,14 +9,6 @@ AM_PATH_GLIB_2_0(,,,gthread)
 AC_PATH_PROGS(JAR, [jar])
 AC_PATH_PROGS(JAVAC, [javac])
 
-if test "x$JAR" = x -o "x$JAVAC" = x; then
-    AC_MSG_WARN([Java support disabled])
-else
-    JAVA_FOUND="yes"
-fi
-
-AM_CONDITIONAL(HAVE_JAVA, test "x$JAVA_FOUND" = "xyes")
-
 dnl ---------------------------------------------------------------------------
 dnl When making a release:
 dnl  1. If the library source code has changed at all since the last release,
@@ -48,8 +40,22 @@ AM_CONDITIONAL([HAVE_PYTHON], [test "$pythonexists" = "yes"])
 pylcmexecdir="$pyexecdir/$PACKAGE"
 AC_SUBST(pylcmexecdir)
 
+dnl ------------------
+dnl Java support
+dnl ------------------
+if test "x$JAR" = x -o "x$JAVAC" = x; then
+    AC_MSG_WARN([Java support disabled])
+else
+    JAVA_FOUND="yes"
+fi
+
+AM_CONDITIONAL(HAVE_JAVA, test "x$JAVA_FOUND" = "xyes")
+java_apiversion="1.0"
 jardir="$datadir/java"
 AC_SUBST(jardir)
+INSTALLED_CLASSPATH=\${jardir}/lcm${apiversion}-${VERSION}.jar
+AC_SUBST(INSTALLED_CLASSPATH)
+AC_SUBST(java_apiversion)
 
 dnl ---------------------------------------------------------------------------
 dnl i18n support
@@ -85,8 +91,11 @@ AC_OUTPUT([
   lcm-logger/Makefile
   lcmgen/Makefile
   lcm-java/Makefile
+  lcm-java/lcm-java.pc
   lcm-python/Makefile
   examples/Makefile
+  examples/c/Makefile
+  examples/python/Makefile
   examples/types/Makefile
   docs/Makefile
   docs/reference/Makefile

@@ -219,11 +219,11 @@ lcm_frag_buf_new (struct sockaddr_in from, const char *channel,
         uint32_t msg_seqno, uint32_t data_size, uint16_t nfragments,
         int64_t first_packet_utime)
 {
-    lcm_frag_buf_t *fbuf = malloc (sizeof (lcm_frag_buf_t) + data_size);
+    lcm_frag_buf_t *fbuf = (lcm_frag_buf_t*) malloc (sizeof (lcm_frag_buf_t));
     strncpy (fbuf->channel, channel, sizeof (fbuf->channel));
     fbuf->from = from;
     fbuf->msg_seqno = msg_seqno;
-    fbuf->data = (char*)(fbuf + 1);
+    fbuf->data = (char*)malloc (data_size);
     fbuf->data_size = data_size;
     fbuf->fragments_remaining = nfragments;
     fbuf->first_packet_utime = first_packet_utime;
@@ -233,6 +233,7 @@ lcm_frag_buf_new (struct sockaddr_in from, const char *channel,
 static void
 lcm_frag_buf_destroy (lcm_frag_buf_t *fbuf)
 {
+    free (fbuf->data);
     free (fbuf);
 }
 

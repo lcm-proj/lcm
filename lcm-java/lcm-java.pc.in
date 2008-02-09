@@ -1,0 +1,10 @@
+prefix=@prefix@
+datarootdir=@datarootdir@
+jardir=@jardir@
+
+Name: lcm-java
+Description: Java implementation Lightweight Communications and Marshalling
+Requires:
+Version: @VERSION@
+api_version=@java_apiversion@
+classpath=@INSTALLED_CLASSPATH@
