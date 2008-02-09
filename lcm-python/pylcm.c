@@ -1,14 +1,16 @@
-#include "pylcm.h"
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+
+#include "pylcm.h"
+#include "pylcm_subscription.h"
 
 #ifndef Py_RETURN_NONE
 #define Py_RETURN_NONE  do { Py_INCREF( Py_None ); return Py_None; } while(0)
 #endif
 
-//#define dbg(...) fprintf (stderr, __VA_ARGS__)
-#define dbg(...) 
+#define dbg(...) fprintf (stderr, __VA_ARGS__)
+//#define dbg(...) 
 
 PyDoc_STRVAR (pylcm_doc,
 "Lightweight Communications class\n\
@@ -24,20 +26,18 @@ static int
 pylcm_msg_handler (const lcm_recv_buf_t *rbuf, void *userdata)
 {
     // if an exception has occurred, then abort.
-    if (PyErr_Occurred ()) return -1;
+    if (PyErr_Occurred ()) return 0;
 
-    PyObject *tup = userdata;
-    PyLCMObject *s = (PyLCMObject*) PyTuple_GET_ITEM (tup, 0);
-    PyObject *handler = PyTuple_GET_ITEM (tup, 1);
+    PyLCMSubscriptionObject *subs_obj = userdata;
 
     PyObject *arglist = Py_BuildValue ("ss#", rbuf->channel, 
             rbuf->data, rbuf->data_size);
-    PyObject *result  = PyEval_CallObject (handler, arglist);
+
+    PyObject *result  = PyEval_CallObject (subs_obj->handler, arglist);
     Py_DECREF (arglist);
 
     if (! result) {
-        s->exception_raised = 1;
-        printf ("exception raised!\n");
+        subs_obj->lcm_obj->exception_raised = 1;
     } else {
         Py_DECREF (result);
     }
@@ -47,86 +47,101 @@ pylcm_msg_handler (const lcm_recv_buf_t *rbuf, void *userdata)
 // =============== LCM class methods ==============
 
 static PyObject *
-internal_subscribe (PyLCMObject *s, const char *channel, PyObject *handler)
-{
-    dbg ("pylcm.c: internal_subscribe [%s] %p (%p)\n", channel, handler, s);
-    if (!channel || ! strlen (channel)) {
-        PyErr_SetString (PyExc_ValueError, "invalid channel");
-        return NULL;
-    }
-    if (!PyCallable_Check (handler))  {
-        PyErr_SetString (PyExc_ValueError, "handler is not callable");
-        return NULL;
-    }
-
-    PyObject *tup = PyTuple_Pack (2, (PyObject*)s, handler);
-    PyList_Append (s->all_handlers, tup);
-    Py_DECREF (tup);
-
-    lcm_subscribe (s->lcm, channel, pylcm_msg_handler, tup);
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-internal_unsubscribe (PyLCMObject *s, const char *channel, PyObject *handler)
-{
-    dbg ("pylcm.c: internal_unsubscribe [%s] %p (%p\n", channel, handler, s);
-    if (!channel || ! strlen (channel)) {
-        PyErr_SetString (PyExc_ValueError, "invalid channel");
-        return NULL;
-    }
-    if (!PyCallable_Check (handler))  {
-        PyErr_SetString (PyExc_ValueError, "handler is not callable");
-        return NULL;
-    }
-
-    int nhandlers = PyList_Size (s->all_handlers);
-    int i;
-    for (i=0; i<nhandlers; i++) {
-        PyObject *tup = PyList_GetItem (s->all_handlers, i);
-        if (!tup) return NULL;
-        PyObject *h = PyTuple_GetItem (tup, 1);
-        if (h == handler) {
-            lcm_unsubscribe_by_func (s->lcm, pylcm_msg_handler, handler);
-            PySequence_DelItem (s->all_handlers, i);
-            dbg ("found handler to unregister (%d) remain\n",
-                    PySequence_Size (s->all_handlers));
-            break;
-        }
-    }
-
-    Py_RETURN_NONE;
-}
-
-static PyObject *
-pylcm_subscribe (PyLCMObject *s, PyObject *args)
+pylcm_subscribe (PyLCMObject *lcm_obj, PyObject *args)
 {
     char *channel = NULL;
+    int chan_len = 0;
     PyObject *handler = NULL;
-    if (!PyArg_ParseTuple (args, "sO", &channel, &handler)) { return NULL; }
-    return internal_subscribe (s, channel, handler);
+    if (!PyArg_ParseTuple (args, "s#O", &channel, &chan_len, &handler)) 
+        return NULL;
+
+    if (!channel || ! chan_len) {
+        PyErr_SetString (PyExc_ValueError, "invalid channel");
+        return NULL;
+    }
+    if (!PyCallable_Check (handler))  {
+        PyErr_SetString (PyExc_ValueError, "handler is not callable");
+        return NULL;
+    }
+
+    PyLCMSubscriptionObject * subs_obj = 
+        (PyLCMSubscriptionObject*) PyType_GenericNew (&pylcm_subscription_type, 
+                NULL, NULL);
+
+    lcm_subscription_t *subscription = 
+        lcm_subscribe (lcm_obj->lcm, channel, pylcm_msg_handler, subs_obj);
+    if (!subscription) {
+        Py_DECREF (subs_obj);
+        Py_RETURN_NONE;
+    }
+
+    subs_obj->subscription = subscription;
+    subs_obj->handler = handler;
+    Py_INCREF (handler);
+    subs_obj->lcm_obj = lcm_obj;
+
+    PyList_Append (lcm_obj->all_handlers, (PyObject*)subs_obj);
+
+    return (PyObject*)subs_obj;
 }
+
 PyDoc_STRVAR (pylcm_subscribe_doc, 
-"registers a callback function to handle all messages on a certain channel.\n\
-Multiple handlers can be registered for a given channel\n\
+"subscribe(channel, callback) -> subscription_object\n\
+\n\
+registers a callback function to messages received on a certain channel.\n\
+Multiple handlers can be registered for the same channel\n\
+\n\
+channel can also be a POSIX regular expression. It is implicitly treated as\n\
+\"^channel$\" \n\
 ");
 
 static PyObject *
-pylcm_unsubscribe (PyLCMObject *s, PyObject *args)
+pylcm_unsubscribe (PyLCMObject *lcm_obj, PyObject *args)
 {
-    char *channel = NULL;
-    PyObject *handler = NULL;
-    if (!PyArg_ParseTuple (args, "sO", &channel, &handler)) { return NULL; }
-    return internal_unsubscribe (s, channel, handler);
+    dbg ("%s %p\n", __FUNCTION__, lcm_obj);
+    PyObject *_subs_obj = NULL;
+    if (!PyArg_ParseTuple (args, "O!", &pylcm_subscription_type, 
+                &_subs_obj))
+        return NULL;
+
+    PyLCMSubscriptionObject *subs_obj = (PyLCMSubscriptionObject*) _subs_obj;
+    if (!subs_obj->subscription || subs_obj->lcm_obj != lcm_obj) {
+        PyErr_SetString (PyExc_ValueError, "Invalid Subscription object");
+        return NULL;
+    }
+    int subs_index = 0;
+    int nhandlers = PyList_Size (lcm_obj->all_handlers);
+    for (subs_index=0; subs_index<nhandlers; subs_index++) {
+        PyObject *so = PyList_GetItem (lcm_obj->all_handlers, subs_index);
+        if (so == (PyObject*) subs_obj) {
+            PySequence_DelItem (lcm_obj->all_handlers, subs_index);
+            break;
+        }
+    }
+    if (subs_index == nhandlers) {
+        PyErr_SetString (PyExc_ValueError, "Invalid Subscription object");
+        return NULL;
+    }
+
+    lcm_unsubscribe (lcm_obj->lcm, subs_obj->subscription);
+    subs_obj->subscription = NULL;
+    Py_DECREF (subs_obj->handler);
+    subs_obj->handler = NULL;
+    subs_obj->lcm_obj = NULL;
+
+    printf ("OK!\n");
+
+    Py_RETURN_NONE;
 }
 PyDoc_STRVAR (pylcm_unsubscribe_doc, 
-"unregisters a message handler so that it will no longer be invoked when\n\
+"unsubscribe(subscription_object) -> None\n\
+\n\
+unregisters a message handler so that it will no longer be invoked when\n\
 a message on the specified channel is received\n\
 ");
 
 static PyObject *
-pylcm_publish (PyLCMObject *s, PyObject *args)
+pylcm_publish (PyLCMObject *lcm_obj, PyObject *args)
 {
     char *data = NULL;
     int datalen = 0;
@@ -142,7 +157,7 @@ pylcm_publish (PyLCMObject *s, PyObject *args)
     int status;
 
     Py_BEGIN_ALLOW_THREADS
-    status = lcm_publish (s->lcm, channel, data, datalen);
+    status = lcm_publish (lcm_obj->lcm, channel, data, datalen);
     Py_END_ALLOW_THREADS
 
     if (0 != status) {
@@ -158,19 +173,19 @@ PyDoc_STRVAR (pylcm_publish_doc,
 Publishes a message to a multicast group");
 
 static PyObject *
-pylcm_fileno (PyLCMObject *s)
+pylcm_fileno (PyLCMObject *lcm_obj)
 {
-    dbg ("%s %p\n", __FUNCTION__, s);
-    return PyInt_FromLong (lcm_get_fileno (s->lcm));
+    dbg ("%s %p\n", __FUNCTION__, lcm_obj);
+    return PyInt_FromLong (lcm_get_fileno (lcm_obj->lcm));
 }
 PyDoc_STRVAR (pylcm_fileno_doc,
 "for use with select, poll, etc.");
 
 static PyObject *
-pylcm_handle (PyLCMObject *s)
+pylcm_handle (PyLCMObject *lcm_obj)
 {
-    dbg ("%s %p\n", __FUNCTION__, s);
-    int fd = lcm_get_fileno (s->lcm);
+    dbg ("%s %p\n", __FUNCTION__, lcm_obj);
+    int fd = lcm_get_fileno (lcm_obj->lcm);
     fd_set fds;
     FD_ZERO (&fds);
     FD_SET (fd, &fds);
@@ -186,9 +201,9 @@ pylcm_handle (PyLCMObject *s)
     }
 
     // XXX how to properly use Py_{BEGIN,END}_ALLOW_THREADS here????
-    s->exception_raised = 0;
-    lcm_handle (s->lcm);
-    if (s->exception_raised) return NULL;
+    lcm_obj->exception_raised = 0;
+    lcm_handle (lcm_obj->lcm);
+    if (lcm_obj->exception_raised) return NULL;
     Py_RETURN_NONE;
 }
 PyDoc_STRVAR (pylcm_handle_doc,
@@ -214,44 +229,30 @@ static PyMethodDef pylcm_methods[] = {
 
 // ==================== class administrative methods ====================
 
-PyMODINIT_FUNC
-init_lcmobject (PyLCMObject *s, lcm_t *lcm)
-{
-    s->lcm = lcm;
-}
-
-static PyObject *
-pylcm_repr (PyLCMObject *s)
-{
-    char buf[512];
-    PyOS_snprintf (buf, sizeof (buf),
-                "<LCM object ... TODO>");
-    return PyString_FromString (buf);
-}
-
 static PyObject *
 pylcm_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-	PyObject *new;
-
-	new = type->tp_alloc (type, 0);
-	if (new != NULL) {
-		 ((PyLCMObject*)new)->lcm = NULL;
-         ((PyLCMObject*)new)->all_handlers = PyList_New (0);
-	}
-	return new;
+	PyObject *obj = type->tp_alloc (type, 0);
+    if (!obj) return NULL;
+    PyLCMObject *lcm_obj = (PyLCMObject*) obj;
+    lcm_obj->all_handlers = PyList_New (0);
+    if (!lcm_obj->all_handlers) {
+        Py_DECREF (obj);
+        return NULL;
+    }
+	return obj;
 }
 
 static void
-pylcm_dealloc (PyLCMObject *s)
+pylcm_dealloc (PyLCMObject *lcm_obj)
 {
     dbg ("pylcm_dealloc\n");
-    if (s->lcm) {
-        lcm_destroy (s->lcm);
-        s->lcm = NULL;
+    if (lcm_obj->lcm) {
+        lcm_destroy (lcm_obj->lcm);
+        lcm_obj->lcm = NULL;
     }
-    Py_DECREF (s->all_handlers);
-    s->ob_type->tp_free ((PyObject*)s);
+    Py_DECREF (lcm_obj->all_handlers);
+    lcm_obj->ob_type->tp_free ((PyObject*)lcm_obj);
 }
 
 static int
@@ -265,13 +266,11 @@ pylcm_initobj (PyObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTuple (args, "|s", &url))
         return -1;
 
-    lcm_t *lcm = lcm_create (url);
-    if (! lcm) {
+    s->lcm = lcm_create (url);
+    if (! s->lcm) {
         PyErr_SetString (PyExc_RuntimeError, "Couldn't create LCM");
         return -1;
     }
-
-    init_lcmobject (s, lcm);
 
     return 0;
 }
@@ -288,7 +287,7 @@ PyTypeObject pylcm_type = {
     0,                  /* tp_getattr */
     0,                  /* tp_setattr */
     0,                  /* tp_compare */
-    (reprfunc)pylcm_repr,          /* tp_repr */
+    0,                  /* tp_repr */
     0,                  /* tp_as_number */
     0,                  /* tp_as_sequence */
     0,                  /* tp_as_mapping */

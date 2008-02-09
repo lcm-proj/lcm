@@ -12,9 +12,9 @@ typedef struct {
 
     lcm_t *lcm;
 
-    PyObject *all_handlers;
-
     int exception_raised;
+
+    PyObject *all_handlers;
 } PyLCMObject;
 
 #ifdef __cplusplus
