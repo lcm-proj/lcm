@@ -221,7 +221,7 @@ int64_t lcm_enum_hash(lcm_enum_t *le)
 {
     int64_t v = 0x87654321;
 
-    v = hash_string_update(v, le->enumname->typename);
+    v = hash_string_update(v, le->enumname->shortname);
     return v;
 }
 

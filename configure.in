@@ -72,9 +72,7 @@ dnl Warnings
 dnl ---------------------------------------------------------------------------
 if test "x$GCC" = "xyes"; then
     CFLAGS="$CFLAGS -g -Wall -std=gnu99 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_REENTRANT -Wno-unused-parameter -Wno-format-zero-length -pthread -Wshadow"
-    LDFLAGS="$LDFLAGS -lm"
     AC_SUBST(CFLAGS)
-    AC_SUBST(LDFLAGS)
 fi
 LIBTOOL="$LIBTOOL --silent"
 AC_SUBST(LIBTOOL)
