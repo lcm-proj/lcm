@@ -849,8 +849,6 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *lr)
     char *header_name = sprintfalloc("%s/%s.h", getopt_get_string(lcmgen->gopt, "c-hpath"), tn_);
     char *c_name      = sprintfalloc("%s/%s.c", getopt_get_string(lcmgen->gopt, "c-cpath"), tn_);
 
-    printf("%s\n%s\n", header_name, c_name);
-
     if (lcm_needs_generation(lcmgen, lr->lcmfile, header_name)) {
         FILE *f = fopen(header_name, "w");
         if (f == NULL)

@@ -508,8 +508,6 @@ static void _package_contents_free (_package_contents_t *pc)
 static int
 emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 {
-    printf ("emitting package %s\n", pc->name);
-
     // create the package directory, if necessary
     char **dirs = g_strsplit (pc->name, ".", 0);
     char *pdname = g_build_filenamev (dirs);
@@ -584,7 +582,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                 "import struct\n");
 
         // enums always encoded as int32
-        emit (0, "class %s:", le->enumname->typename);
+        emit (0, "class %s:", le->enumname->shortname);
         for (unsigned int v = 0; v < le->values->len; v++) {
             lcm_enum_value_t *lev = g_ptr_array_index(le->values, v);
             emit(1, "%s = %i", lev->valuename, lev->value);
