@@ -590,10 +590,10 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 
         emit (1, "_hash = 0x%"PRIx64, le->hash);
         emit (1, "def _get_hash_recursive(parents):");
-        emit (2,     "return %s._hash", le->enumname->typename);
+        emit (2,     "return %s._hash", le->enumname->shortname);
         emit (1, "_get_hash_recursive=staticmethod(_get_hash_recursive)");
         emit (1, "def _get_packed_fingerprint():");
-        emit (2,     "return struct.pack(\">Q\", %s._hash)", le->enumname->typename);
+        emit (2,     "return struct.pack(\">Q\", %s._hash)", le->enumname->shortname);
         emit (1, "_get_packed_fingerprint = staticmethod(_get_packed_fingerprint)");
         fprintf (f, "\n");
         fclose (f);
