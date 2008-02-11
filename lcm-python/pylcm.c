@@ -22,11 +22,11 @@ PyTypeObject pylcm_type;
 
 // all LCM messages subscribed to by all LCM objects pass through this
 // handler first.
-static int
+static void
 pylcm_msg_handler (const lcm_recv_buf_t *rbuf, void *userdata)
 {
     // if an exception has occurred, then abort.
-    if (PyErr_Occurred ()) return 0;
+    if (PyErr_Occurred ()) return;
 
     PyLCMSubscriptionObject *subs_obj = userdata;
 
@@ -41,7 +41,6 @@ pylcm_msg_handler (const lcm_recv_buf_t *rbuf, void *userdata)
     } else {
         Py_DECREF (result);
     }
-    return 0;
 }
 
 // =============== LCM class methods ==============

@@ -5,10 +5,9 @@
 
 #include <lcm/lcm.h>
 
-int catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
+void catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     printf("catchall handler [%s] (content: %s)\n", rbuf->channel, rbuf->data);
-    return 0;
 }
 
 int main(int argc, char **argv)

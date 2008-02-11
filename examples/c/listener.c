@@ -3,7 +3,7 @@
 #include <lcm/lcm.h>
 #include "example_t.h"
 
-static int
+static void
 my_handler (const char * channel, const example_t * msg, void * user)
 {
     int i;
@@ -18,7 +18,6 @@ my_handler (const char * channel, const example_t * msg, void * user)
     for (i = 0; i < msg->num_ranges; i++)
         printf (" %d", msg->ranges[i]);
     printf ("\n");
-    return 0;
 }
 
 int

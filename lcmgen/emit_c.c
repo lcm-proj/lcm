@@ -176,7 +176,7 @@ static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
 //        if (getopt_get_bool(lcmgen->gopt, "clcfuncs")) {
     emit(0,"typedef struct _%s_subscription_t %s_subscription_t;", tn_, tn_);
-    emit(0,"typedef int (*%s_handler_t)(const char *channel, const %s *msg, void *user);", tn_, tn_);
+    emit(0,"typedef void (*%s_handler_t)(const char *channel, const %s *msg, void *user);", tn_, tn_);
     emit(0,"");
     emit(0,"int %s_publish(lcm_t *lcm, const char *channel, const %s *p);", tn_, tn_);
     emit(0,"%s_subscription_t* %s_subscribe (lcm_t *lcm, const char *channel, %s_handler_t f, void *userdata);", tn_, tn_, tn_);
@@ -617,14 +617,14 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 
     fprintf(f,
             "struct _%s_subscription_t {\n"
-            "    void *user_handler;\n"
+            "    %s_handler_t user_handler;\n"
             "    void *userdata;\n"
             "    char *channel;\n"
             "    lcm_subscription_t *lc_h;\n"
-            "};\n", tn_);
+            "};\n", tn_, tn_);
     fprintf(f,
             "static\n"
-            "int %s_handler_stub (const lcm_recv_buf_t *rbuf, void *userdata)\n"
+            "void %s_handler_stub (const lcm_recv_buf_t *rbuf, void *userdata)\n"
             "{\n"
             "    int status;\n"
             "    %s p;\n"
@@ -632,16 +632,14 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "    status = %s_decode (rbuf->data, 0, rbuf->data_size, &p);\n"
             "    if (status < 0) {\n"
             "        fprintf (stderr, \"error %%d decoding %s!!!\\n\", status);\n"
-            "        return status;\n"
+            "        return;\n"
             "    }\n"
             "\n"
             "    %s_subscription_t *h = (%s_subscription_t*) userdata;\n"
-            "    %s_handler_t callback = (%s_handler_t)h->user_handler;\n"
-            "    status = callback (rbuf->channel, &p, h->userdata);\n"
+            "    h->user_handler (rbuf->channel, &p, h->userdata);\n"
             "\n"
-            "    %s_decode_cleanup( &p );\n"
-            "    return status;\n"
-            "}\n\n", tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_
+            "    %s_decode_cleanup (&p);\n"
+            "}\n\n", tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_
         );
 
     fprintf(f,

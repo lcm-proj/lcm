@@ -39,7 +39,7 @@ struct _lcm_recv_buf_t
  *
  * callback function prototype 
  */
-typedef int (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf, void *user_data);
+typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf, void *user_data);
 
 /**
  * lcm_create:

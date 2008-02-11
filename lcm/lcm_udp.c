@@ -931,12 +931,11 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
     return 0;
 }
 
-static int
+static void
 self_test_handler (const lcm_recv_buf_t *rbuf, void *user)
 {
     int *result = (int*) user;
     *result = 1;
-    return 0;
 }
 
 static int 

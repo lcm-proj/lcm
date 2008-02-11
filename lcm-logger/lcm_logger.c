@@ -47,7 +47,7 @@ struct logger
     lcm_t    *lcm;
 };
 
-int message_handler (const lcm_recv_buf_t *rbuf, void *u)
+void message_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     logger_t *l = (logger_t*) u;
     lcm_eventlog_event_t  le;
@@ -86,8 +86,6 @@ int message_handler (const lcm_recv_buf_t *rbuf, void *u)
         l->events_since_last_report = 0;
         l->last_report_logsize = l->logsize;
     }
-
-    return 0;
 }
 
 static void usage (const char *progname)

@@ -49,32 +49,28 @@ int test_count2 = 0;
 int default_count = 0;
 int catchall_count = 0;
 
-static int 
+static void
 test_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     test_count++;
-    return 0;
 }
 
-static int 
+static void 
 test_handler2 (const lcm_recv_buf_t *rbuf, void *u)
 {
     test_count2++;
-    return 0;
 }
 
-static int 
+static void 
 catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     catchall_count++;
-    return 0;
 }
 
-static int
+static void
 regex_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     printf ("regex handler\n");
-    return 0;
 }
 
 int main (int argc, char **argv)

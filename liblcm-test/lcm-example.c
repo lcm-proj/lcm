@@ -20,24 +20,21 @@ int test_count = 0;
 int test_count2 = 0;
 int catchall_count = 0;
 
-int test_handler (const lcm_recv_buf_t *rbuf, void *u)
+void test_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     printf ("handling [%s] msg (content: %s)\n", rbuf->channel, rbuf->data);
     test_count++;
-    return 0;
 }
 
-int test_handler2 (const lcm_recv_buf_t *rbuf, void *u)
+void test_handler2 (const lcm_recv_buf_t *rbuf, void *u)
 {
     printf ("handling [%s] msg (content: %s)\n", rbuf->channel, rbuf->data);
     test_count2++;
-    return 0;
 }
 
-int catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
+void catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     catchall_count++;
-    return 0;
 }
 
 int main (int argc, char **argv)

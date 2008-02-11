@@ -27,7 +27,7 @@ static double data_rate = 0;
 static double data_rate_alpha = 0.7;
 static int64_t rate_accum = 0;
 
-static int 
+static void 
 handler (const lcm_recv_buf_t *rbuf, void *u)
 {
     uint32_t seqno = *((uint32_t*)rbuf->data);
@@ -66,8 +66,6 @@ handler (const lcm_recv_buf_t *rbuf, void *u)
     }
 
     last_msg_time = now;
-
-    return 0;
 }
 
 int 
