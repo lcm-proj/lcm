@@ -5,14 +5,14 @@
 
 #include <lcm/lcm.h>
 
-void catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
+void catchall_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
-    printf("catchall handler [%s] (content: %s)\n", rbuf->channel, rbuf->data);
+    printf("catchall handler [%s] (content: %s)\n", channel, rbuf->data);
 }
 
 int main(int argc, char **argv)
 {
-    lcm_t *lcm = lcm_create("udpm://");
+    lcm_t *lcm = lcm_create (NULL);
     if (! lcm) {
         fprintf(stderr, "couldn't allocate lcm_t\n");
         return 1;

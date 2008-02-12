@@ -28,7 +28,7 @@ static double data_rate_alpha = 0.7;
 static int64_t rate_accum = 0;
 
 static void 
-handler (const lcm_recv_buf_t *rbuf, void *u)
+handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
     uint32_t seqno = *((uint32_t*)rbuf->data);
     if (expected_seqno != seqno && seqno > expected_seqno) {

@@ -305,11 +305,11 @@ lcm_has_handlers (lcm_t * lcm, const char * channel)
 }
 
 int
-lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf)
+lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf, const char *channel)
 {
     g_static_rec_mutex_lock (&lcm->mutex);
 
-    GPtrArray * handlers = lcm_get_handlers (lcm, buf->channel);
+    GPtrArray * handlers = lcm_get_handlers (lcm, channel);
 
     // ref the handlers to prevent them from being destroyed by an
     // lcm_unsubscribe.  This guarantees that handlers 0-(nhandlers-1) will not
@@ -327,7 +327,7 @@ lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf)
         lcm_subscription_t *h = g_ptr_array_index(handlers, i);
         if (!h->marked_for_deletion) {
             int depth = g_static_rec_mutex_unlock_full (&lcm->mutex);
-            h->handler(buf, h->userdata);
+            h->handler (buf, channel, h->userdata);
             g_static_rec_mutex_lock_full (&lcm->mutex, depth);
         }
     }
@@ -344,7 +344,8 @@ lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf)
     for (;to_remove; to_remove = g_list_delete_link (to_remove, to_remove)) {
         lcm_subscription_t *h = to_remove->data;
         g_ptr_array_remove (lcm->handlers_all, h);
-        g_hash_table_foreach (lcm->handlers_map, map_remove_handler_callback, h);
+        g_hash_table_foreach (lcm->handlers_map, 
+                map_remove_handler_callback, h);
         lcm_handler_free (h);
     }
     g_static_rec_mutex_unlock (&lcm->mutex);

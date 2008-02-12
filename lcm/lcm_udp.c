@@ -910,13 +910,13 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
     g_static_rec_mutex_unlock (&lcm->mutex);
 
     lcm_recv_buf_t rbuf = {
-        .channel = lcmb->channel_name,
         .data = (uint8_t*) lcmb->buf + lcmb->data_offset,
         .data_size = lcmb->data_size,
-        .recv_utime = lcmb->recv_utime
+        .recv_utime = lcmb->recv_utime,
+        .lcm = lcm->lcm
     };
 
-    lcm_dispatch_handlers (lcm->lcm, &rbuf);
+    lcm_dispatch_handlers (lcm->lcm, &rbuf, lcmb->channel_name);
 
     g_static_rec_mutex_lock (&lcm->mutex);
     if (lcmb->buf_from_ringbuf)
@@ -932,7 +932,7 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
 }
 
 static void
-self_test_handler (const lcm_recv_buf_t *rbuf, void *user)
+self_test_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *user)
 {
     int *result = (int*) user;
     *result = 1;

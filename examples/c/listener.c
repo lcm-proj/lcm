@@ -4,7 +4,8 @@
 #include "example_t.h"
 
 static void
-my_handler (const char * channel, const example_t * msg, void * user)
+my_handler (const lcm_recv_buf_t *rbuf, const char * channel, 
+        const example_t * msg, void * user)
 {
     int i;
     printf ("Received message on channel \"%s\":\n", channel);

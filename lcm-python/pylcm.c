@@ -23,14 +23,15 @@ PyTypeObject pylcm_type;
 // all LCM messages subscribed to by all LCM objects pass through this
 // handler first.
 static void
-pylcm_msg_handler (const lcm_recv_buf_t *rbuf, void *userdata)
+pylcm_msg_handler (const lcm_recv_buf_t *rbuf, const char *channel, 
+        void *userdata)
 {
     // if an exception has occurred, then abort.
     if (PyErr_Occurred ()) return;
 
     PyLCMSubscriptionObject *subs_obj = userdata;
 
-    PyObject *arglist = Py_BuildValue ("ss#", rbuf->channel, 
+    PyObject *arglist = Py_BuildValue ("ss#", channel, 
             rbuf->data, rbuf->data_size);
 
     PyObject *result  = PyEval_CallObject (subs_obj->handler, arglist);

@@ -27,6 +27,6 @@ lcm_parse_url (const char * url, char ** provider, char ** target,
 int
 lcm_has_handlers (lcm_t * lcm, const char * channel);
 int
-lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf);
+lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf, const char *channel);
 
 #endif

@@ -201,12 +201,13 @@ lcm_logread_handle (lcm_logread_t * lr)
         lr->next_clock_time = now;
 
     lcm_recv_buf_t rbuf = {
-        .channel = lr->event->channel,
+//        .channel = lr->event->channel,
         .data = (uint8_t*) lr->event->data,
         .data_size = lr->event->datalen,
         .recv_utime = lr->next_clock_time,
+        .lcm = lr->lcm,
     };
-    lcm_dispatch_handlers (lr->lcm, &rbuf);
+    lcm_dispatch_handlers (lr->lcm, &rbuf, lr->event->channel);
 
     int64_t prev_log_time = lr->event->timestamp;
     if (load_next_event (lr) < 0)

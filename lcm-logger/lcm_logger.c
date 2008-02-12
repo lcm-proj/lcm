@@ -47,13 +47,13 @@ struct logger
     lcm_t    *lcm;
 };
 
-void message_handler (const lcm_recv_buf_t *rbuf, void *u)
+void message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
     logger_t *l = (logger_t*) u;
     lcm_eventlog_event_t  le;
 
     int64_t offset_utime = rbuf->recv_utime - l->time0;
-    int channellen = strlen(rbuf->channel);
+    int channellen = strlen(channel);
 
     // log_write_event will handle le.eventnum.
 //    le.eventnum = l->nevents;
@@ -61,7 +61,7 @@ void message_handler (const lcm_recv_buf_t *rbuf, void *u)
     le.channellen = channellen;
     le.datalen = rbuf->data_size;
 
-    le.channel = (char*)  rbuf->channel;
+    le.channel = (char*)  channel;
     le.data = (char*) rbuf->data;
 
     lcm_eventlog_write_event(l->log, &le);

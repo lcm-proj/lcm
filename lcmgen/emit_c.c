@@ -176,7 +176,9 @@ static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
 //        if (getopt_get_bool(lcmgen->gopt, "clcfuncs")) {
     emit(0,"typedef struct _%s_subscription_t %s_subscription_t;", tn_, tn_);
-    emit(0,"typedef void (*%s_handler_t)(const char *channel, const %s *msg, void *user);", tn_, tn_);
+    emit(0,"typedef void (*%s_handler_t)(const lcm_recv_buf_t *rbuf, \n"
+           "             const char *channel, const %s *msg, void *user);", 
+           tn_, tn_);
     emit(0,"");
     emit(0,"int %s_publish(lcm_t *lcm, const char *channel, const %s *p);", tn_, tn_);
     emit(0,"%s_subscription_t* %s_subscribe (lcm_t *lcm, const char *channel, %s_handler_t f, void *userdata);", tn_, tn_, tn_);
@@ -624,7 +626,8 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "};\n", tn_, tn_);
     fprintf(f,
             "static\n"
-            "void %s_handler_stub (const lcm_recv_buf_t *rbuf, void *userdata)\n"
+            "void %s_handler_stub (const lcm_recv_buf_t *rbuf, \n"
+            "                            const char *channel, void *userdata)\n"
             "{\n"
             "    int status;\n"
             "    %s p;\n"
@@ -636,7 +639,7 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "    }\n"
             "\n"
             "    %s_subscription_t *h = (%s_subscription_t*) userdata;\n"
-            "    h->user_handler (rbuf->channel, &p, h->userdata);\n"
+            "    h->user_handler (rbuf, channel, &p, h->userdata);\n"
             "\n"
             "    %s_decode_cleanup (&p);\n"
             "}\n\n", tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_

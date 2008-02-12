@@ -18,19 +18,19 @@ typedef struct _lcm_subscription_t lcm_subscription_t;
 
 /**
  * lcm_recv_buf_t:
- * @channel:   the LCM channel on which the message was received
  * @data:      the data received (raw bytes)
  * @data_size: the length of the data received (in bytes)
  * @recv_utime: timestamp (micrseconds since the epoch) at which the first data
  *             bytes of the messages were were received.
+ * @lcm:       pointer to the lcm_t struct that owns this buffer
  */
 typedef struct _lcm_recv_buf_t lcm_recv_buf_t;
 struct _lcm_recv_buf_t
 {
-    char *channel;
     uint8_t *data;
     uint32_t data_size;
     int64_t recv_utime;
+    lcm_t *lcm;
 };
 
 /**
@@ -39,12 +39,56 @@ struct _lcm_recv_buf_t
  *
  * callback function prototype 
  */
-typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf, void *user_data);
+typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf, 
+        const char *channel, void *user_data);
 
 /**
  * lcm_create:
+ * @url: Initializationg string, may be NULL for default settings
  *
- * constructor
+ * Constructor.  Allocates and initializes a lcm_t.  %url must be a string of
+ * the form "provider://name?option1=value1,option2=value2,optionN=valueN"
+ *
+ * The currently supported providers are:
+ *
+ * udpm://
+ *     UDP Multicast provider
+ *     name can be of the form "multicast_address:port".  Either the multicast
+ *     address or the port may be ommitted for the default.
+ *
+ *     options:
+ *
+ *     transmit_only = { true | false }
+ *         If true, then receiving messages is disabled and fewer system
+ *         resources are used.  Default false
+ *
+ *     recv_buf_size = N
+ *         size of the kernel UDP receive buffer to request.  Defaults to
+ *         operating system defaults
+ *
+ *     ttl = N
+ *         time to live of transmitted packets.  Default 0
+ *
+ *     examples:
+ *
+ *         udpm://239.255.76.67:7667
+ *             Default initialization string
+ *
+ *         udpm://:9876?transmit_only=true
+ *             Uses the default multicast address, changes the port to 9876,
+ *             and specifies that the lcm_t will never receive messages.
+ *
+ *         udpm://?ttl=1
+ *             Uses default address/port, but sets the multicast TTL to 1 so
+ *             that packets published will enter the local network.
+ *
+ * file://
+ *     LCM Log file-based provider
+ *     name should be the path to the log file
+ *
+ *     examples:
+ *         
+ *         file:///home/albert/path/to/logfile
  */
 lcm_t * lcm_create (const char *url);
 

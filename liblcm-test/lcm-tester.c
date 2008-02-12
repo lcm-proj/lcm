@@ -50,25 +50,25 @@ int default_count = 0;
 int catchall_count = 0;
 
 static void
-test_handler (const lcm_recv_buf_t *rbuf, void *u)
+test_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
     test_count++;
 }
 
 static void 
-test_handler2 (const lcm_recv_buf_t *rbuf, void *u)
+test_handler2 (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
     test_count2++;
 }
 
 static void 
-catchall_handler (const lcm_recv_buf_t *rbuf, void *u)
+catchall_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
     catchall_count++;
 }
 
 static void
-regex_handler (const lcm_recv_buf_t *rbuf, void *u)
+regex_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
     printf ("regex handler\n");
 }
