@@ -2,7 +2,7 @@
 #define _LCM_EVENTLOG_H_
 
 #include <stdio.h>
-#include <stdint.h>
+#include <inttypes.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -21,7 +21,7 @@ struct _lcm_eventlog_event_t {
     int32_t channellen, datalen;
 
     char     *channel;
-    char     *data;
+    uint8_t     *data;
 };
 
 // mode must be "r" or "w"

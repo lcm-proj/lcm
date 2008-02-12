@@ -62,7 +62,7 @@ void message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
     le.datalen = rbuf->data_size;
 
     le.channel = (char*)  channel;
-    le.data = (char*) rbuf->data;
+    le.data = rbuf->data;
 
     lcm_eventlog_write_event(l->log, &le);
 

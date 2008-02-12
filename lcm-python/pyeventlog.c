@@ -115,7 +115,7 @@ pylog_write_next_event (PyLogObject *self, PyObject *args)
     int channellen = 0;
 
     // TODO use a buffer object instead of a string
-    char *data = NULL;
+    uint8_t *data = NULL;
     int datalen = 0;
 
     if (!PyArg_ParseTuple(args, "Ls#s#", 
