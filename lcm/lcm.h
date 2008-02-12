@@ -137,7 +137,7 @@ int lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *handler);
  *
  * transmits a message to a multicast group
  */
-int lcm_publish (lcm_t *lcm, const char *channel, const char *data,
+int lcm_publish (lcm_t *lcm, const char *channel, const uint8_t *data,
         unsigned int datalen);
 
 /**

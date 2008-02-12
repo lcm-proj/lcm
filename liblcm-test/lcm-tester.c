@@ -84,8 +84,8 @@ int main (int argc, char **argv)
     int windex = (int) (nwords * (rand () / (RAND_MAX+1.0)));
     
     int datalen = strlen (words[windex]) + 1;
-    char *payload = malloc (datalen);
-    strcpy (payload, words[windex]);
+    uint8_t *payload = malloc (datalen);
+    strcpy ((char*)payload, words[windex]);
     
 //  lcm_params_t lcm_args;
 //  lcm_args.local_iface = INADDR_ANY;

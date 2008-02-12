@@ -29,8 +29,9 @@ struct ___lcm_hash_ptr
     void *v;
 };
 
-////////////////////////////////////////////////////////////////////////////////////////
-// BOOLEAN
+/**
+ * BOOLEAN
+ */
 #define __boolean_hash_recursive __int8_t_hash_recursive
 #define __boolean_decode_array_cleanup __int8_t_decode_array_cleanup
 #define __boolean_encoded_array_size __int8_t_encoded_array_size
@@ -39,9 +40,9 @@ struct ___lcm_hash_ptr
 #define __boolean_clone_array __int8_t_clone_array
 #define boolean_encoded_size int8_t_encoded_size
 
-////////////////////////////////////////////////////////////////////////////////////////
-// BYTE
-
+/**
+ * BYTE
+ */
 #define __byte_hash_recursive(p) 0
 #define __byte_decode_array_cleanup(p, sz) {}
 #define byte_encoded_size(p) ( sizeof(int64_t) + sizeof(uint8_t) )
@@ -78,9 +79,9 @@ static inline int __byte_clone_array(const uint8_t *p, uint8_t *q, int elements)
     memcpy(q, p, elements * sizeof(uint8_t));
     return 0;
 }
-////////////////////////////////////////////////////////////////////////////////////////
-// INT8_T
-
+/**
+ * INT8_T
+ */
 #define __int8_t_hash_recursive(p) 0
 #define __int8_t_decode_array_cleanup(p, sz) {}
 #define int8_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int8_t) )
@@ -118,9 +119,9 @@ static inline int __int8_t_clone_array(const int8_t *p, int8_t *q, int elements)
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-// INT16_T
-
+/**
+ * INT16_T
+ */
 #define __int16_t_hash_recursive(p) 0
 #define __int16_t_decode_array_cleanup(p, sz) {}
 #define int16_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int16_t) )
@@ -173,9 +174,9 @@ static inline int __int16_t_clone_array(const int16_t *p, int16_t *q, int elemen
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-// INT32_T
-
+/**
+ * INT32_T
+ */
 #define __int32_t_hash_recursive(p) 0
 #define __int32_t_decode_array_cleanup(p, sz) {}
 #define int32_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int32_t) )
@@ -230,9 +231,9 @@ static inline int __int32_t_clone_array(const int32_t *p, int32_t *q, int elemen
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-// INT64_T
-
+/**
+ * INT64_T
+ */
 #define __int64_t_hash_recursive(p) 0
 #define __int64_t_decode_array_cleanup(p, sz) {}
 #define int64_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int64_t) )
@@ -294,9 +295,9 @@ static inline int __int64_t_clone_array(const int64_t *p, int64_t *q, int elemen
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-// FLOAT
-
+/**
+ * FLOAT
+ */
 #define __float_hash_recursive(p) 0
 #define __float_decode_array_cleanup(p, sz) {}
 #define float_encoded_size(p) ( sizeof(int64_t) + sizeof(float) )
@@ -322,9 +323,9 @@ static inline int __float_clone_array(const float *p, float *q, int elements)
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-// DOUBLE
-
+/**
+ * DOUBLE
+ */
 #define __double_hash_recursive(p) 0
 #define __double_decode_array_cleanup(p, sz) {}
 #define double_encoded_size(p) ( sizeof(int64_t) + sizeof(double) )
@@ -350,9 +351,9 @@ static inline int __double_clone_array(const double *p, double *q, int elements)
     return 0;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////
-// STRING
-
+/**
+ * STRING
+ */
 #define __string_hash_recursive(p) 0
 
 static inline int __string_decode_array_cleanup(char **s, int elements)
@@ -419,8 +420,12 @@ static inline int __string_decode_array(const void *_buf, int offset, int maxlen
 static inline int __string_clone_array(char * const *p, char **q, int elements)
 {
     int element;
-    for (element = 0; element < elements; element++)
-        q[element] = strdup(p[element]);
+    for (element = 0; element < elements; element++) {
+        // because strdup is not C99
+        size_t len = strlen(p[element]) + 1;
+        q[element] = (char*) malloc (len);
+        memcpy (q[element], p[element], len);
+    }
     return 0;
 }
 

@@ -54,7 +54,7 @@ int main(int argc, char **argv)
     int verbose = 0;
     int random_channel = 1;
     char channel[80];
-    char data[65536];
+    uint8_t data[65536];
     int transmit_interval_usec = DEFAULT_TRANSMIT_INTERVAL_USEC;
     int packet_sz = 0;
     memset (data, 0, sizeof(data));

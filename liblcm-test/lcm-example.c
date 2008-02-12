@@ -49,8 +49,8 @@ int main (int argc, char **argv)
     
     printf ("windex: %d\n", windex);
     int datalen = strlen (words[windex]) + 1;
-    char *payload = malloc (datalen);
-    strcpy (payload, words[windex]);
+    uint8_t *payload = malloc (datalen);
+    strcpy ((char*)payload, words[windex]);
     
     lcm_t *lcm = lcm_create ("udpm://");
     if (! lcm) {

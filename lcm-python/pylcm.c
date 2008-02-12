@@ -157,7 +157,7 @@ pylcm_publish (PyLCMObject *lcm_obj, PyObject *args)
     int status;
 
     Py_BEGIN_ALLOW_THREADS
-    status = lcm_publish (lcm_obj->lcm, channel, data, datalen);
+    status = lcm_publish (lcm_obj->lcm, channel, (uint8_t*)data, datalen);
     Py_END_ALLOW_THREADS
 
     if (0 != status) {

@@ -756,7 +756,7 @@ lcm_udpm_get_fileno (lcm_udpm_t *lcm)
 
 
 static int 
-lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const char *data,
+lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const uint8_t *data,
         unsigned int datalen)
 {
     int channel_size = strlen (channel);
@@ -949,7 +949,7 @@ udpm_self_test (lcm_udpm_t *lcm)
 
     // transmit a message
     char *msg = "lcm self test";
-    lcm_udpm_publish (lcm, "LCM_SELF_TEST", msg, strlen (msg));
+    lcm_udpm_publish (lcm, "LCM_SELF_TEST", (uint8_t*)msg, strlen (msg));
 
     // wait one second for message to be received
     struct timeval now, endtime;
@@ -974,7 +974,8 @@ udpm_self_test (lcm_udpm_t *lcm)
 
         gettimeofday (&now, NULL);
         if (_timeval_compare (&now, &next_retransmit) > 0) {
-            status = lcm_udpm_publish (lcm, "LCM_SELF_TEST", msg, strlen (msg));
+            status = lcm_udpm_publish (lcm, "LCM_SELF_TEST", (uint8_t*)msg, 
+                    strlen (msg));
             _timeval_add (&now, &retransmit_interval, &next_retransmit);
         }
 
