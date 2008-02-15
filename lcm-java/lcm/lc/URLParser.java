@@ -13,7 +13,7 @@ public class URLParser
     
     public URLParser(String url)
     {
-	Matcher m = Pattern.compile("([^\\:]+)://([a-zA-Z0-9/\\.]+)?(:([0-9]+))?(\\?(.*))?").matcher(url);
+	Matcher m = Pattern.compile("([^\\:]+)://([^\\?]+)?(:([0-9]+))?(\\?(.*))?").matcher(url);
 
 	if (!m.matches()) {
 	    System.out.println("URLParser: Invalid url: "+url);
