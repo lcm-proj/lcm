@@ -50,7 +50,7 @@ void setup_java_options(getopt_t *gopt)
 {
     getopt_add_string(gopt, 0,   "jpath",     "",         "Java file destination directory");
     getopt_add_bool(gopt, 0,    "jmkdir",     1,         "Make java source directories automatically");
-    getopt_add_string(gopt, 0,   "jdecl",      "implements lcm.lc.LCEncodable", "String added to class declarations");
+    getopt_add_string(gopt, 0,   "jdecl",      "implements lcm.lcm.LCMEncodable", "String added to class declarations");
 }
 
 typedef struct
