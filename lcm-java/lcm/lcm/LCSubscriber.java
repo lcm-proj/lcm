@@ -1,9 +1,9 @@
-package lcm.lc;
+package lcm.lcm;
 
 import java.io.*;
 
 /** A class which listens for messages on a particular channel. **/
-public interface LCSubscriber
+public interface LCMSubscriber
 {
-    public void messageReceived(String channel, DataInputStream ins);
+    public void messageReceived(LCM lcm, String channel, DataInputStream ins);
 }

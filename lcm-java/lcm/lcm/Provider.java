@@ -1,4 +1,4 @@
-package lcm.lc;
+package lcm.lcm;
 
 /** A provider implements a communications modality for LC.
     

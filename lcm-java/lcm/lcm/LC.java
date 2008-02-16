@@ -1,4 +1,4 @@
-package lcm.lc;
+package lcm.lcm;
 
 import java.net.*;
 import java.io.*;
@@ -7,7 +7,7 @@ import java.util.regex.*;
 import java.nio.*;
 
 /** Lightweight Communications implementation **/
-public class LC
+public class LCM
 {
     static class SubscriptionRecord
     {
@@ -21,9 +21,9 @@ public class LC
 
     HashMap<String,ArrayList<SubscriptionRecord>> subscriptionsMap = new HashMap<String,ArrayList<SubscriptionRecord>>();
 
-    static LC singleton;
+    static LCM singleton;
 
-    public LC(Object... urls) throws IOException
+    public LCM(Object... urls) throws IOException
     {
 	if (urls.length==0) {
 	    String env = System.getenv("LC_URL");
@@ -48,7 +48,7 @@ public class LC
 	}
     }
 
-    public static LC getSingleton()
+    public static LCM getSingleton()
     {
 	if (singleton == null) {
 	    try {
@@ -75,7 +75,7 @@ public class LC
 	publish(channel, b, 0, b.length);
     }
 
-    public void publish(String channel, LCEncodable e)
+    public void publish(String channel, LCMEncodable e)
     {
 	try {
 	    ByteArrayOutputStream bouts = new ByteArrayOutputStream(256);
@@ -134,7 +134,8 @@ public class LC
 	    }
 	    
 	    for (SubscriptionRecord srec : srecs) {
-		srec.lcsub.messageReceived(channel, 
+		srec.lcsub.messageReceived(this,
+					   channel, 
 					   new DataInputStream(new ByteArrayInputStream(data, 
 											offset, 
 											length)));
