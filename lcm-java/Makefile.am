@@ -13,17 +13,17 @@ clean-local:
 if HAVE_JAVA
 jar_DATA = $(JARFILE)
 
-bin_SCRIPTS = lcm-jlogplayer lcm-lcspy
+bin_SCRIPTS = lcm-jlogplayer lcm-spy
 CLEANFILES = $(bin_SCRIPTS)
 
 lcm-jlogplayer:
 	@echo > $@ "#!/bin/sh"
-	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.logging.LogPlayer \$$*"
+	@echo >> $@ "exec java -server -Xincgc -Xmx32m -Xms16m -ea -cp ${jardir}/lcm.jar lcm.logging.LogPlayer \$$*"
 	chmod 755 $@
 
-lcm-lcmspy:
+lcm-spy:
 	@echo > $@ "#!/bin/sh"
-	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.lcspy.LCMSpy \$$*"
+	@echo >> $@ "exec java -server -Xincgc -Xmx128m -Xms64m -ea -cp ${jardir}/lcm.jar lcm.spy.Spy \$$*"
 	chmod 755 $@
 
 install-data-hook:
@@ -51,11 +51,11 @@ dist_noinst_JAVA = \
     lcm/logging/Log.java \
     lcm/logging/LogDiagnostic.java \
     lcm/logging/LogPlayer.java \
-    lcm/lcspy/LCMSpyPlugin.java \
-    lcm/lcspy/LCMHandlerDatabase.java \
-    lcm/lcspy/ObjectPanel.java \
-    lcm/lcspy/LCMSpy.java \
-    lcm/lcspy/ChannelData.java 
+    lcm/spy/Spy.java \
+    lcm/spy/SpyPlugin.java \
+    lcm/spy/LCMHandlerDatabase.java \
+    lcm/spy/ObjectPanel.java \
+    lcm/spy/ChannelData.java 
 
 endif
 
