@@ -13,7 +13,7 @@ public class LCM
     {
 	String  regex;
 	Pattern pat;
-	LCSubscriber lcsub;
+	LCMSubscriber lcsub;
     }
 
     ArrayList<SubscriptionRecord> subscriptions = new ArrayList<SubscriptionRecord>();
@@ -52,7 +52,7 @@ public class LCM
     {
 	if (singleton == null) {
 	    try {
-		singleton = new LC();
+		singleton = new LCM();
 	    } catch (Exception ex) {
 		System.out.println("LC singleton fail: "+ex);
 		System.exit(0);
@@ -98,7 +98,7 @@ public class LCM
 	    p.publish(channel, data, offset, length);
     }
 
-    public void subscribe(String regex, LCSubscriber sub)
+    public void subscribe(String regex, LCMSubscriber sub)
     {
 	SubscriptionRecord srec = new SubscriptionRecord();
 	srec.regex = regex;
@@ -143,7 +143,7 @@ public class LCM
 	}
     }
     
-    public synchronized void subscribeAll(LCSubscriber sub)
+    public synchronized void subscribeAll(LCMSubscriber sub)
     {
 	subscribe(".*", sub);
     }
@@ -152,30 +152,30 @@ public class LCM
 
     public static void main(String args[])
     {
-	LC lc;
+	LCM lcm;
 
 	try {
-	    lc = new LC();
+	    lcm = new LCM();
 	} catch (IOException ex) {
 	    System.out.println("ex: "+ex);
 	    return;
 	}
 
-	lc.subscribeAll(new SimpleSubscriber());
+	lcm.subscribeAll(new SimpleSubscriber());
 
 	while (true) {				
 	    try {
 		Thread.sleep(1000);
-		lc.publish("TEST", "foobar");
+		lcm.publish("TEST", "foobar");
 	    } catch (Exception ex) {
 		System.out.println("ex: "+ex);
 	    }
 	}
     }
 
-    static class SimpleSubscriber implements LCSubscriber
+    static class SimpleSubscriber implements LCMSubscriber
     {
-	public void messageReceived(String channel, DataInputStream dins)
+	public void messageReceived(LCM lcm, String channel, DataInputStream dins)
 	{
 	    System.out.println("RECV: "+channel);
 	}

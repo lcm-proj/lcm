@@ -1,4 +1,4 @@
-package lcm.lc;
+package lcm.lcm;
 
 import java.net.*;
 import java.io.*;
@@ -13,7 +13,6 @@ public class UDPMulticastProvider implements Provider
     static final String DEFAULT_ADDRESS = "239.255.76.67";
     static final int    DEFAULT_PORT    = 7667;
     static final int    DEFAULT_TTL     = 0;
-    static final String LC_CONF_FILE    = "/etc/lc.conf";
 
     static final int    MAGIC_SHORT = 0x4c433032; // ascii of "LC02"
     static final int    MAGIC_LONG  = 0x4c433033; // ascii of "LC03"
@@ -25,7 +24,7 @@ public class UDPMulticastProvider implements Provider
 
     HashMap<SocketAddress, FragmentBuffer> fragBufs = new HashMap<SocketAddress, FragmentBuffer>();
 
-    LC lc;
+    LCM lcm;
 
     InetAddress inetAddr;
     int         inetPort;
@@ -36,9 +35,9 @@ public class UDPMulticastProvider implements Provider
 	System.out.println("LC: Disabling IPV6 support");
     }
 
-    public UDPMulticastProvider(LC lc, String url) throws IOException
+    public UDPMulticastProvider(LCM lcm, String url) throws IOException
     {
-	this.lc = lc;
+	this.lcm = lcm;
 
 	URLParser up = new URLParser(url);
 
@@ -217,7 +216,7 @@ public class UDPMulticastProvider implements Provider
 		System.out.println("Unread data! "+ins.available());
 	    }
 
-	    lc.receiveMessage(channel, channel_and_data, data_offset, data_length);
+	    lcm.receiveMessage(channel, channel_and_data, data_offset, data_length);
 	}
 
 	void handleFragment (DatagramPacket packet, DataInputStream ins) throws IOException
@@ -281,7 +280,7 @@ public class UDPMulticastProvider implements Provider
 	    fbuf.fragments_remaining --;
 
 	    if (0 == fbuf.fragments_remaining) {
-		lc.receiveMessage(fbuf.channel, fbuf.data, 0, fbuf.data_size);
+		lcm.receiveMessage(fbuf.channel, fbuf.data, 0, fbuf.data_size);
 		fragBufs.remove (fbuf.from);
 	    }
 	}

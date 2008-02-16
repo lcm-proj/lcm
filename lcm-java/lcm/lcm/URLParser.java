@@ -1,4 +1,4 @@
-package lcm.lc;
+package lcm.lcm;
 
 import java.util.*;
 import java.util.regex.*;

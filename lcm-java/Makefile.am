@@ -33,13 +33,13 @@ install-data-hook:
 		$(LN_S) lcm$(apiversion)-$(VERSION).jar $(JARFILE)
 
 dist_noinst_JAVA = \
-    lcm/lc/LCEncodable.java \
-    lcm/lc/LC.java \
-    lcm/lc/LCSubscriber.java \
-    lcm/lc/URLParser.java \
-    lcm/lc/Provider.java \
-    lcm/lc/UDPMulticastProvider.java \
-    lcm/lc/LogFileProvider.java \
+    lcm/lcm/LCMEncodable.java \
+    lcm/lcm/LCM.java \
+    lcm/lcm/LCMSubscriber.java \
+    lcm/lcm/URLParser.java \
+    lcm/lcm/Provider.java \
+    lcm/lcm/UDPMulticastProvider.java \
+    lcm/lcm/LogFileProvider.java \
     lcm/util/BufferedRandomAccessFile.java \
     lcm/util/ColorMapper.java \
     lcm/util/TableSorter.java \

@@ -1,4 +1,4 @@
-package lcm.lc;
+package lcm.lcm;
 
 import java.net.*;
 import java.io.*;
@@ -10,16 +10,16 @@ import lcm.logging.*;
 
 public class LogFileProvider implements Provider
 {
-    LC lc;
+    LCM lcm;
     Log log;
 
     double speed; // how fast do we play? <=0 for "as fast as possible"
     double delay; // how many seconds to delay before starting to play? (crude race-condition hack)
     boolean verbose; // report actual speed periodically
 
-    public LogFileProvider(LC lc, String url) throws IOException
+    public LogFileProvider(LCM lcm, String url) throws IOException
     {
-	this.lc = lc;
+	this.lcm = lcm;
 
 	URLParser up = new URLParser(url);
 
@@ -63,7 +63,7 @@ public class LogFileProvider implements Provider
 
 	void runEx() throws IOException, InterruptedException
 	{
-	    while (lc.getNumSubscriptions()==0)
+	    while (lcm.getNumSubscriptions()==0)
 		Thread.sleep(10);
 
 	    Thread.sleep((int) (delay*1000));
@@ -109,7 +109,7 @@ public class LogFileProvider implements Provider
 		}
 
 		// dispatch the message
-		lc.receiveMessage(ev.channel, ev.data, 0, ev.data.length);
+		lcm.receiveMessage(ev.channel, ev.data, 0, ev.data.length);
 	    }
 	}
     }
