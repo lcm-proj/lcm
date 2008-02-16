@@ -16,7 +16,7 @@ public class BufferedRandomAccessFile
 
     int     bufferPosition = -1; // current file position in the buffer [0, BUFFER_SIZE-1]
 
-    long    length; // length of the file
+    long    fileLength; // length of the file
 
     /** Invariant: the current file position = bufferOffset +
 	bufferPosition.  This position is always stored inside the
@@ -25,14 +25,14 @@ public class BufferedRandomAccessFile
     public BufferedRandomAccessFile(File file, String mode) throws IOException
     {
 	raf = new RandomAccessFile(file, mode);
-	length = raf.length();
+	fileLength = raf.length();
 	bufferSeek(0);
     }
 
     public BufferedRandomAccessFile(String path, String mode) throws IOException
     {
 	raf = new RandomAccessFile(path, mode);
-	length = raf.length();
+	fileLength = raf.length();
 	bufferSeek(0);
     }
 
@@ -49,7 +49,7 @@ public class BufferedRandomAccessFile
 
     public long length() throws IOException
     {
-	return length;
+	return fileLength;
     }
 
     int max(int a, int b)
@@ -96,7 +96,7 @@ public class BufferedRandomAccessFile
 	}
 
 	bufferOffset = newOffset;
-	bufferLength = (int) min(BUFFER_SIZE, length - bufferOffset);
+	bufferLength = (int) min(BUFFER_SIZE, fileLength - bufferOffset);
 	if (bufferLength < 0)
 	    bufferLength = 0;
 	bufferPosition = (int) (seekOffset - bufferOffset);
@@ -110,7 +110,7 @@ public class BufferedRandomAccessFile
 
     public final int read() throws IOException
     {
-	if (bufferOffset + bufferPosition >= length)
+	if (bufferOffset + bufferPosition >= fileLength)
 	    throw new EOFException("EOF");
 
 	if (bufferPosition >= bufferLength)
@@ -121,7 +121,7 @@ public class BufferedRandomAccessFile
 
     public boolean hasMore() throws IOException
     {
-	return bufferPosition+bufferOffset < length;
+	return bufferPosition+bufferOffset < fileLength;
     }
 
     public byte peek() throws IOException
@@ -177,6 +177,10 @@ public class BufferedRandomAccessFile
 	    int thiscopy = Math.min(bufferAvailable, length);
 	    if (thiscopy == 0) {
 		flushBuffer();
+
+		if (bufferOffset + bufferPosition >= fileLength)
+		    throw new EOFException("EOF");
+
 		bufferSeek(bufferOffset + bufferLength);
 		continue;
 	    }
@@ -335,7 +339,7 @@ public class BufferedRandomAccessFile
 	    {
 		buffer[bufferPosition++] = v;
 		bufferLength++;
-		length++;
+		fileLength++;
 		return;
 	    }
 
@@ -387,7 +391,7 @@ public class BufferedRandomAccessFile
 			    piece = new String(buffer, buffstart, bufferPosition - buffstart - 1);
 
 			    // this logic is untested.
-			    if (false && bufferPosition + bufferPosition < length) {
+			    if (false && bufferPosition + bufferPosition < fileLength) {
 				// consume \r\n if it appears
 				if (peek()=='\n') 
 				    read();
@@ -414,7 +418,7 @@ public class BufferedRandomAccessFile
 		sb.append(piece);
 
 		// EOF?
-		if (bufferOffset + bufferPosition == length) 
+		if (bufferOffset + bufferPosition >= fileLength) 
 		    {
 			// return the string so far...
 			if (sb.length() > 0) {
