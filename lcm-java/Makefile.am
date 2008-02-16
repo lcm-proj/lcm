@@ -21,9 +21,9 @@ lcm-jlogplayer:
 	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.logging.LogPlayer \$$*"
 	chmod 755 $@
 
-lcm-lcspy:
+lcm-lcmspy:
 	@echo > $@ "#!/bin/sh"
-	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.lcspy.LCSpy \$$*"
+	@echo >> $@ "exec java -server -Xincgc -Xmx512m -Xms256m -ea -cp ${jardir}/lcm.jar lcm.lcspy.LCMSpy \$$*"
 	chmod 755 $@
 
 install-data-hook:
@@ -51,10 +51,10 @@ dist_noinst_JAVA = \
     lcm/logging/Log.java \
     lcm/logging/LogDiagnostic.java \
     lcm/logging/LogPlayer.java \
-    lcm/lcspy/LCSpyPlugin.java \
+    lcm/lcspy/LCMSpyPlugin.java \
     lcm/lcspy/LCMHandlerDatabase.java \
     lcm/lcspy/ObjectPanel.java \
-    lcm/lcspy/LCSpy.java \
+    lcm/lcspy/LCMSpy.java \
     lcm/lcspy/ChannelData.java 
 
 endif

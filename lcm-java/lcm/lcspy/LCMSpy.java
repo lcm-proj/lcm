@@ -15,13 +15,13 @@ import java.util.zip.*;
 import lcm.util.*;
 import java.lang.reflect.*;
 
-import lcm.lc.*;
+import lcm.lcm.*;
 
-/** LCSpy main class. **/
-public class LCSpy
+/** LCMSpy main class. **/
+public class LCMSpy
 {
     JFrame       jf;
-    LC           lc;
+    LCM          lcm;
     JDesktopPane jdp;
 
     LCMHandlerDatabase handlers;
@@ -33,11 +33,11 @@ public class LCSpy
     TableSorter  channelTableModel = new TableSorter(_channelTableModel);
     JTable channelTable = new JTable(channelTableModel);
 
-    ArrayList<LCSpyPlugin> plugins = new ArrayList<LCSpyPlugin>();
+    ArrayList<LCMSpyPlugin> plugins = new ArrayList<LCMSpyPlugin>();
 
     JButton clearButton = new JButton("Clear");
 
-    public LCSpy() throws IOException
+    public LCMSpy() throws IOException
     {
 	jf = new JFrame("LC Spy");
 	jdp = new JDesktopPane();
@@ -74,8 +74,8 @@ public class LCSpy
 	jif.setVisible(true);
 	jdp.add(jif);
 
-	lc = new LC();
-	lc.subscribeAll(new MySubscriber());
+	lcm = new LCM();
+	lcm.subscribeAll(new MySubscriber());
 
 	new HzThread().start();
 
@@ -106,7 +106,7 @@ public class LCSpy
 
 			    ChannelData cd = channelList.get(row);
 			    boolean got_one = false;
-			    for (LCSpyPlugin plugin : plugins)
+			    for (LCMSpyPlugin plugin : plugins)
 				{
 				    if (!got_one && plugin.canHandle(cd.cls)) {
 					plugin.getAction(jdp, cd).actionPerformed(null);
@@ -124,7 +124,7 @@ public class LCSpy
 	    {
 		public void windowClosing(WindowEvent e)
 		{
-		    System.out.println("LCSpy quitting");
+		    System.out.println("LCMSpy quitting");
 		    System.exit(0);
 		}
 	    });
@@ -286,16 +286,16 @@ public class LCSpy
 		cd.nerrors++;
 	    } catch (IOException ex) {
 		cd.nerrors++;
-		System.out.println("LCSpy.messageReceived ex: "+ex);
+		System.out.println("LCMSpy.messageReceived ex: "+ex);
 	    } catch (NoSuchMethodException ex) {
 		cd.nerrors++;
-		System.out.println("LCSpy.messageReceived ex: "+ex);
+		System.out.println("LCMSpy.messageReceived ex: "+ex);
 	    } catch (InstantiationException ex) {
 		cd.nerrors++;
-		System.out.println("LCSpy.messageReceived ex: "+ex);
+		System.out.println("LCMSpy.messageReceived ex: "+ex);
 	    } catch (IllegalAccessException ex) {
 		cd.nerrors++;
-		System.out.println("LCSpy.messageReceived ex: "+ex);
+		System.out.println("LCMSpy.messageReceived ex: "+ex);
 	    } catch (InvocationTargetException ex) {
 		cd.nerrors++;
 		// these are almost always spurious
@@ -387,7 +387,7 @@ public class LCSpy
 
 	if (cd.cls != null)
 	    {
-		for (LCSpyPlugin plugin : plugins)
+		for (LCMSpyPlugin plugin : plugins)
 		    {
 			if (plugin.canHandle(cd.cls))
 			    jm.add(plugin.getAction(jdp, cd));
@@ -400,7 +400,7 @@ public class LCSpy
     public static void main(String args[])
     {
 	try {
-	    new LCSpy();
+	    new LCMSpy();
 	} catch (IOException ex) {
 	    System.out.println(ex);
 	}
