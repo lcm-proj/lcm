@@ -11,7 +11,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
-import lcm.lc.*;
+import lcm.lcm.*;
 import lcm.util.*;
 
 public class LogDiagnostic

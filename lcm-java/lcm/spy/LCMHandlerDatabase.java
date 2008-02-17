@@ -18,7 +18,7 @@ import lcm.util.*;
 
 import java.lang.reflect.*;
 
-import lcm.lc.*;
+import lcm.lcm.*;
 
 /** Searches classpath for objects that implement LCSpyPlugin using reflection. **/
 class LCMHandlerDatabase

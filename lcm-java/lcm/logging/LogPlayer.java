@@ -13,7 +13,7 @@ import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.*;
 
-import lcm.lc.*;
+import lcm.lcm.*;
 import lcm.util.*;
 
 import static java.awt.GridBagConstraints.*;
@@ -46,7 +46,7 @@ public class LogPlayer extends JComponent
 
     PlayerThread player = null;
 
-    LC lc;
+    LCM lcm;
 
     /** The time of the first event in the current log **/
     long timeOffset = 0;
@@ -320,7 +320,7 @@ public class LogPlayer extends JComponent
 		}
 	    });
 				     
-	lc = new LC("udpm://?transmitonly=true");
+	lcm = new LCM("udpm://?transmitonly=true");
 
 	logName.addMouseListener(new MouseAdapter() {
 		public void mouseClicked(MouseEvent e) {
@@ -756,7 +756,7 @@ public class LogPlayer extends JComponent
 			}
 
 			if (f.enabled && f.outchannel.length() > 0)
-			    lc.publish(f.outchannel, e.data, 0, e.data.length);
+			    lcm.publish(f.outchannel, e.data, 0, e.data.length);
 
 			js.set(log.getPercent());
 
