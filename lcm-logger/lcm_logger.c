@@ -94,9 +94,10 @@ static void usage (const char *progname)
             "\n"
             "Options:\n"
             "\n"
-            "    -n, --name SFX    string appended to filename of new logs\n"
+            "    -s, --sfx  SFX    string appended to filename of new logs\n"
             "    -p, --path PTH    Directory where new log files are created.\n"
-            "                      Formatted with strftime\n"
+            "                      PTH Formatted with strftime\n"
+            "    -u, --url URL     LCM URL [Default: \"udpm://\"]\n"
             "    -h, --help        Shows this help text and exits\n"
             , progname);
 }
@@ -109,13 +110,16 @@ int main(int argc, char *argv[])
     memset (logpath, 0, sizeof (logpath));
     char logsfx[PATH_MAX];
     memset (logsfx, 0, sizeof (logsfx));
+    char lcmurl[4096];
+    strcpy (lcmurl, "udpm://");
 
-    char *optstring = "hm:p:s:v";
+    char *optstring = "hp:s:u:";
     char c;
     struct option long_opts[] = { 
         { "help", no_argument, 0, 'h' },
         { "path", required_argument, 0, 'p' },
-        { "n", required_argument, 0, 'n' },
+        { "sfx", required_argument, 0, 's' },
+        { "url", required_argument, 0, 'u' },
         { 0, 0, 0, 0 }
     };
 
@@ -128,8 +132,11 @@ int main(int argc, char *argv[])
             case 'p':
                 strncpy (logpath, optarg, sizeof (logpath) - 1);
                 break;
-            case 'n':
+            case 's':
                 strncpy (logsfx, optarg, sizeof (logsfx) - 1);
+                break;
+            case 'u':
+                strncpy (lcmurl, optarg, sizeof (lcmurl));
                 break;
             default:
                 usage(argv[0]);
@@ -212,8 +219,11 @@ int main(int argc, char *argv[])
 
     //////// begin logging
     
-    logger.lcm = lcm_create ("udpm://");
-    assert(logger.lcm);
+    logger.lcm = lcm_create (lcmurl);
+    if (!logger.lcm) {
+        fprintf (stderr, "Couldn't initialize LCM!");
+        return -1;
+    }
     
     lcm_subscribe(logger.lcm, ".*", message_handler, &logger);
 

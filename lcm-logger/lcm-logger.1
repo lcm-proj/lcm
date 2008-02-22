@@ -1,0 +1,39 @@
+.TH lcm-logger 1 2007-12-13 "LCM" "Lightweight Communications and Marshalling (LCM)"
+.SH NAME
+lcm-logger
+.SH SYNOPSIS
+.TP 5
+\fBlcm-logger \fI[options]\fR \fI[output_file_pattern]\fR
+
+.SH DESCRIPTION
+.PP
+\fBlcm-logger\fR is the Lightweight Communications and Marshalling message logging
+utility.  It subscribes to all LCM messages and records received messages to disk.
+
+\fIoutput_file_pattern\fR is used along with other options to generate the
+actual filename used for logging.  \fBTODO\fR
+
+.SH OPTIONS
+The following options are provided by \fBlcm-logger\fR:
+.TP
+.B \-s \fISFX\fR, \-\-sfx \fISFX\fR 
+string appended to filename of new logs
+.TP
+.B \-p \fIPATH\fR, \-\-path \fIPATH\fR
+Directory where new log files are created.  \fIPATH\fR is formatted with strftime
+.TP
+.B \-u \fIURL\fR, \-\-url \fIURL\fR
+LCM URL [Default: "udpm://"]
+.TP
+.B \-h, \-\-help
+Shows some help text and exits
+
+.SH AUTHORS
+
+This manual page was written by Albert Huang <ashuang@alum.mit.edu>.
+Permission is granted to copy, distribute 
+and/or modify this document under the terms of the GNU 
+Free Documentation License, Version 1.1 or any later 
+version published by the Free Software Foundation; with no 
+Invariant Sections, no Front-Cover Texts and no Back-Cover 
+Texts. 
