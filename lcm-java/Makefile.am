@@ -20,7 +20,7 @@ CLEANFILES = $(bin_SCRIPTS)
 
 lcm-jlogplayer:
 	@echo > $@ "#!/bin/sh"
-	@echo >> $@ "exec java -server -Xincgc -Xmx32m -Xms16m -ea -cp ${jardir}/lcm.jar lcm.logging.LogPlayer \$$*"
+	@echo >> $@ "exec java -server -Xincgc -Xmx64m -Xms32m -ea -cp ${jardir}/lcm.jar lcm.logging.LogPlayer \$$*"
 	chmod 755 $@
 
 lcm-spy:
