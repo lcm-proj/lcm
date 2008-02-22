@@ -36,7 +36,7 @@ class LCMHandlerDatabase
 	public void classFound(String jar, Class cls)
 	{
 	    Field[] fields = cls.getFields();
-	    
+
 	    try {
 		for (Field f : fields) {
 		    if (f.getName().equals("LCM_FINGERPRINT")) {
@@ -45,11 +45,11 @@ class LCMHandlerDatabase
 			classes.put(fingerprint, cls);
 			// System.out.printf("%016x : %s\n", fingerprint, cls);
 
-			continue;
+			break;
 		    }
 		}	
 	    } catch (IllegalAccessException ex) {
-		System.out.println(ex);
+		System.out.println("Bad LCM Type? "+ex);
 	    }
 	}
     }
