@@ -1,8 +1,8 @@
 INCLUDES = $(GLIB_CFLAGS)
 
-bin_PROGRAMS = lcmgen
+bin_PROGRAMS = lcm-gen
 
-lcmgen_SOURCES = main.c \
+lcm_gen_SOURCES = main.c \
 				 sprintfalloc.c \
 				 sprintfalloc.h \
 				 lcmgen.c \
@@ -15,8 +15,8 @@ lcmgen_SOURCES = main.c \
 				 emit_java.c \
 				 emit_python.c 
 
-lcmgen_LDADD = $(GLIB_LIBS)
+lcm_gen_LDADD = $(GLIB_LIBS)
 
-man_MANS = lcmgen.1
+man_MANS = lcm-gen.1
 
-EXTRA_DIST = lcmgen.1
+EXTRA_DIST = lcm-gen.1
