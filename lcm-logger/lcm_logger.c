@@ -42,8 +42,7 @@ struct logger
     int64_t last_report_time;
     int64_t last_report_logsize;
     int64_t time0;
-    char    *fname;
-    int     filenum;
+    char    fname[PATH_MAX];
     lcm_t    *lcm;
 };
 
@@ -55,11 +54,10 @@ void message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
     int64_t offset_utime = rbuf->recv_utime - l->time0;
     int channellen = strlen(channel);
 
-    // log_write_event will handle le.eventnum.
-//    le.eventnum = l->nevents;
     le.timestamp = rbuf->recv_utime;
     le.channellen = channellen;
     le.datalen = rbuf->data_size;
+    // log_write_event will handle le.eventnum.
 
     le.channel = (char*)  channel;
     le.data = rbuf->data;
@@ -90,16 +88,26 @@ void message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 
 static void usage (const char *progname)
 {
-    fprintf (stderr, "usage: %s [options] [output file]\n"
+    char *bname = g_path_get_basename (progname);
+    fprintf (stderr, "usage: %s [options] [FILE]\n"
+            "\n"
+            "    LCM message logging utility.  Subscribes to all channels on an LCM\n"
+            "    network, and records all messages received on that network to\n"
+            "    FILE.  If FILE is not specified, then a filename is automatically\n"
+            "    chosen.\n"
             "\n"
             "Options:\n"
             "\n"
-            "    -s, --sfx  SFX    string appended to filename of new logs\n"
-            "    -p, --path PTH    Directory where new log files are created.\n"
-            "                      PTH Formatted with strftime\n"
+            "    -f, --force       Overwrite existing files\n"
+            "    -i, --increment   Automatically append a suffix to FILE\n"
+            "                      such that the resulting filename does not\n"
+            "                      already exist.\n"
+            "                      This option precludes -f\n"
+            "    -s, --strftime    Format FILE with strftime.\n" 
             "    -u, --url URL     LCM URL [Default: \"udpm://\"]\n"
             "    -h, --help        Shows this help text and exits\n"
-            , progname);
+            "\n", bname);
+    g_free (bname);
 }
 
 int main(int argc, char *argv[])
@@ -108,17 +116,20 @@ int main(int argc, char *argv[])
 
     char logpath[PATH_MAX];
     memset (logpath, 0, sizeof (logpath));
-    char logsfx[PATH_MAX];
-    memset (logsfx, 0, sizeof (logsfx));
+
+    // set some defaults
     char lcmurl[4096];
     strcpy (lcmurl, "udpm://");
+    int force = 0;
+    int auto_increment = 0;
+    int use_strftime = 0;
 
-    char *optstring = "hp:s:u:";
+    char *optstring = "fisu:h";
     char c;
     struct option long_opts[] = { 
-        { "help", no_argument, 0, 'h' },
-        { "path", required_argument, 0, 'p' },
-        { "sfx", required_argument, 0, 's' },
+        { "force", no_argument, 0, 'f' },
+        { "increment", required_argument, 0, 'i' },
+        { "strftime", required_argument, 0, 's' },
         { "url", required_argument, 0, 'u' },
         { 0, 0, 0, 0 }
     };
@@ -126,99 +137,93 @@ int main(int argc, char *argv[])
     while ((c = getopt_long (argc, argv, optstring, long_opts, 0)) >= 0)
     {
         switch (c) {
-            case 'h':
-                usage(argv[0]);
-                return 1;
-            case 'p':
-                strncpy (logpath, optarg, sizeof (logpath) - 1);
+            case 'f':
+                force = 1;
+                break;
+            case 'i':
+                auto_increment = 1;
                 break;
             case 's':
-                strncpy (logsfx, optarg, sizeof (logsfx) - 1);
+                use_strftime = 1;
                 break;
             case 'u':
                 strncpy (lcmurl, optarg, sizeof (lcmurl));
                 break;
+            case 'h':
             default:
                 usage(argv[0]);
                 return 1;
         };
     }
 
-    if (optind < argc-2) {
+    if (optind == argc) {
+        strcpy (logpath, "lcmlog-%Y-%m-%d");
+        auto_increment = 1;
+        use_strftime = 1;
+    } else if (optind == argc - 1) {
+        strncpy (logpath, argv[optind], sizeof (logpath));
+    } else if (optind < argc-1) {
         usage (argv[0]);
         return 1;
     }
 
     logger_t logger;
-    logger.nevents = 0;
-    logger.logsize = 0;
-    logger.last_report_time = 0;
-    logger.events_since_last_report = 0;
-    logger.last_report_logsize = 0;
-    logger.fname=0;
-    logger.time0= timestamp_now();
+    memset (&logger, 0, sizeof (logger));
+    logger.time0 = timestamp_now();
 
-    char file[256];
-
-    if (optind == argc) {
-        /* Construct the default file name using the date */
-        char path[4096];
+    // maybe run the filename through strftime
+    if (use_strftime) {
         time_t now = time (NULL);
-        strftime (path, sizeof (path), logpath, localtime (&now));
-        if (!g_file_test (path, G_FILE_TEST_EXISTS)) {
-            g_mkdir_with_parents (path, 0755);
+        strftime (logger.fname, sizeof (logger.fname), logpath, 
+                localtime (&now));
+    } else {
+        strcpy (logger.fname, logpath);
+    }
+
+    if (auto_increment) {
+        /* Loop through possible file names until we find one that doesn't
+         * already exist.  This way, we never overwrite an existing file. */
+        char tmpname[PATH_MAX];
+        int filenum = -1;
+        struct stat sbuf;
+        do {
+            filenum++;
+            snprintf (tmpname, sizeof (tmpname), "%s.%02d", logger.fname, 
+                    filenum);
+        } while (0 == stat (tmpname, &sbuf));
+
+        if (errno != ENOENT) {
+            perror ("Error: checking for previous logs");
+            return -1;
         }
-        time_t t = time (NULL);
-        struct tm ti;
-        localtime_r (&t, &ti);
-        char basename[256];
 
-        if (strlen (logsfx))
-            snprintf (basename, sizeof (basename), "%d-%02d-%02d-log-%s",
-                      ti.tm_year+1900, ti.tm_mon+1, ti.tm_mday, logsfx);
-        else
-            snprintf (basename, sizeof (basename), "%d-%02d-%02d-log",
-                      ti.tm_year+1900, ti.tm_mon+1, ti.tm_mday);
-
-        if (strlen (path))
-            snprintf (file, sizeof (file), "%s/%s", path, basename);
-        else
-            strcpy (file, basename);
-    }
-    else {
-        /* User specified a file name */
-        strncpy (file, argv[optind], sizeof (file));
+        strcpy (logger.fname, tmpname);
+    } else if (! force) {
+        struct stat sbuf;
+        if (0 == stat (logger.fname, &sbuf)) {
+            fprintf (stderr, "Refusing to overwrite existing file \"%s\"\n",
+                    logger.fname);
+            return 1;
+        }
     }
 
-    /* Loop through possible file names until we find one that doesn't already
-     * exist.  This way, we never overwrite an existing file. */
-    char filename[PATH_MAX];
-    int res;
-    logger.filenum = -1;
-    do {
-        logger.filenum++;
-        struct stat statbuf;
-        snprintf (filename, sizeof (filename), "%s.%02d", file, logger.filenum);
-        res = stat (filename, &statbuf);
-    } while (res == 0);
-
-    if (errno != ENOENT) {
-        perror ("Error: checking for previous logs");
-        return -1;
+    // create directories if needed
+    char *dirpart = g_path_get_dirname (logger.fname);
+    if (! g_file_test (dirpart, G_FILE_TEST_IS_DIR)) {
+        g_mkdir_with_parents (dirpart, 0755);
     }
+    free (dirpart);
 
-    fprintf (stderr, "Opening log file : \"%s\"...\n", filename);
+    fprintf (stderr, "Opening log file \"%s\"\n", logger.fname);
 
-    //////// open output file
-    logger.fname = strdup(filename);
-    logger.log = lcm_eventlog_create(filename, "w");
+    // open output file
+    logger.log = lcm_eventlog_create(logger.fname, "w");
     if (logger.log == NULL) {
         perror ("Error: fopen failed");
         return -1;
     }
 
-    //////// begin logging
-    
+    // begin logging
     logger.lcm = lcm_create (lcmurl);
     if (!logger.lcm) {
         fprintf (stderr, "Couldn't initialize LCM!");
@@ -238,6 +243,4 @@ int main(int argc, char *argv[])
     glib_mainloop_detach_lcm (logger.lcm);
     lcm_destroy (logger.lcm);
     lcm_eventlog_destroy (logger.log);
-    if (logger.fname)
-        free(logger.fname);
 }
