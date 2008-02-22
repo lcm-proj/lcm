@@ -62,6 +62,8 @@ dist_noinst_JAVA = \
 
 endif
 
+man_MANS = lcm-spy.1
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = lcm-java.pc
-EXTRA_DIST = lcm-java.pc.in
+EXTRA_DIST = lcm-java.pc.in lcm-spy.1

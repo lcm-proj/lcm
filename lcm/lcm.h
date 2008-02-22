@@ -44,10 +44,11 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
 
 /**
  * lcm_create:
- * @url: Initializationg string, may be NULL for default settings
+ * @provider:  Initializationg string specifying the LCM network provider.
+ * This can be NULL or the empty string for the default settings.
  *
- * Constructor.  Allocates and initializes a lcm_t.  %url must be a string of
- * the form "provider://name?option1=value1,option2=value2,optionN=valueN"
+ * Constructor.  Allocates and initializes a lcm_t.  %provider must be a string
+ * of the form "provider://name?option1=value1,option2=value2,optionN=valueN"
  *
  * The currently supported providers are:
  *
@@ -90,7 +91,7 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  *         
  *         file:///home/albert/path/to/logfile
  */
-lcm_t * lcm_create (const char *url);
+lcm_t * lcm_create (const char *provider);
 
 /**
  * lcm_destroy:

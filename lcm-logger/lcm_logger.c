@@ -86,10 +86,9 @@ void message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
     }
 }
 
-static void usage (const char *progname)
+static void usage ()
 {
-    char *bname = g_path_get_basename (progname);
-    fprintf (stderr, "usage: %s [options] [FILE]\n"
+    fprintf (stderr, "usage: lcm-logger [options] [FILE]\n"
             "\n"
             "    LCM message logging utility.  Subscribes to all channels on an LCM\n"
             "    network, and records all messages received on that network to\n"
@@ -98,16 +97,14 @@ static void usage (const char *progname)
             "\n"
             "Options:\n"
             "\n"
-            "    -f, --force       Overwrite existing files\n"
-            "    -i, --increment   Automatically append a suffix to FILE\n"
-            "                      such that the resulting filename does not\n"
-            "                      already exist.\n"
-            "                      This option precludes -f\n"
-            "    -s, --strftime    Format FILE with strftime.\n" 
-            "    -u, --url URL     LCM URL [Default: \"udpm://\"]\n"
-            "    -h, --help        Shows this help text and exits\n"
-            "\n", bname);
-    g_free (bname);
+            "    -f, --force              Overwrite existing files\n"
+            "    -i, --increment          Automatically append a suffix to FILE\n"
+            "                             such that the resulting filename does not\n"
+            "                             already exist.  This option precludes -f\n"
+            "    -s, --strftime           Format FILE with strftime.\n" 
+            "    -p PRV, --provider PRV   LCM network provider.\n"
+            "    -h, --help               Shows this help text and exits\n"
+            "\n");
 }
 
 int main(int argc, char *argv[])
@@ -118,19 +115,20 @@ int main(int argc, char *argv[])
     memset (logpath, 0, sizeof (logpath));
 
     // set some defaults
-    char lcmurl[4096];
-    strcpy (lcmurl, "udpm://");
+    char provider[4096];
+    memset (provider, 0, sizeof (provider));
+
     int force = 0;
     int auto_increment = 0;
     int use_strftime = 0;
 
-    char *optstring = "fisu:h";
+    char *optstring = "fisp:h";
     char c;
     struct option long_opts[] = { 
         { "force", no_argument, 0, 'f' },
         { "increment", required_argument, 0, 'i' },
         { "strftime", required_argument, 0, 's' },
-        { "url", required_argument, 0, 'u' },
+        { "provider", required_argument, 0, 'p' },
         { 0, 0, 0, 0 }
     };
 
@@ -146,12 +144,12 @@ int main(int argc, char *argv[])
             case 's':
                 use_strftime = 1;
                 break;
-            case 'u':
-                strncpy (lcmurl, optarg, sizeof (lcmurl));
+            case 'p':
+                strncpy (provider, optarg, sizeof (provider));
                 break;
             case 'h':
             default:
-                usage(argv[0]);
+                usage();
                 return 1;
         };
     }
@@ -163,7 +161,7 @@ int main(int argc, char *argv[])
     } else if (optind == argc - 1) {
         strncpy (logpath, argv[optind], sizeof (logpath));
     } else if (optind < argc-1) {
-        usage (argv[0]);
+        usage ();
         return 1;
     }
 
@@ -224,7 +222,7 @@ int main(int argc, char *argv[])
     }
 
     // begin logging
-    logger.lcm = lcm_create (lcmurl);
+    logger.lcm = lcm_create (provider);
     if (!logger.lcm) {
         fprintf (stderr, "Couldn't initialize LCM!");
         return -1;
