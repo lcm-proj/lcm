@@ -1,13 +1,15 @@
 
 JAVAROOT = .
 JARFILE = lcm$(apiversion).jar
+BUILDROOT = build
+JAVACFLAGS = -d $(BUILDROOT)
 
 $(JARFILE): classdist_noinst.stamp
 	rm -f $(JARFILE)
-	$(JAR) cf $(JARFILE) -C $(JAVAROOT) `find $(JAVAROOT) -name "*.class"`
+	$(JAR) cf $(JARFILE) -C $(BUILDROOT) .
 
 clean-local:
-	rm -f `find $(JAVAROOT) -name "*.class"`
+	rm -f `find $(BUIDLROOT) -name "*.class"`
 	rm -f $(JARFILE)
 
 if HAVE_JAVA
