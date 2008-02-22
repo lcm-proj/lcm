@@ -108,7 +108,7 @@ public class Spy
 			    boolean got_one = false;
 			    for (SpyPlugin plugin : plugins)
 				{
-				    if (!got_one && plugin.canHandle(cd.cls)) {
+				    if (!got_one && plugin.canHandle(cd.fingerprint)) {
 					plugin.getAction(jdp, cd).actionPerformed(null);
 					got_one = true;
 				    }
@@ -129,10 +129,33 @@ public class Spy
 		}
 	    });
 
-	//plugins.add(new LaserPlugin());
-	//plugins.add(new VideoPlugin());
- 	//plugins.add(new RadarPluginRaw());
- }
+	ClassDiscoverer.findClasses(new PluginClassVisitor());
+	System.out.println("Found "+plugins.size()+" plugins");
+	for (SpyPlugin plugin : plugins) {
+	    System.out.println(" "+plugin);
+	}
+    }
+    
+    class PluginClassVisitor implements ClassDiscoverer.ClassVisitor
+    {
+	public void classFound(String jar, Class cls)
+	{
+	    Class interfaces[] = cls.getInterfaces();
+	    for (Class iface : interfaces) {
+ 		if (iface.equals(SpyPlugin.class)) {
+		    try {
+			Constructor c = cls.getConstructor(new Class[0]);
+			SpyPlugin plugin = (SpyPlugin) c.newInstance(new Object[0]);
+			plugins.add(plugin);
+		    } catch (Exception ex) {
+			System.out.println("ex: "+ex);
+		    }
+		}
+
+	    }
+
+	}
+    }
 
     void createViewer(ChannelData cd)
     {
@@ -188,7 +211,7 @@ public class Spy
 		    return cd.name;
 		case 1:
 		    if (cd.cls == null)
-			return "??";
+			return String.format("?? %016x", cd.fingerprint);
 
 		    String s = cd.cls.getName();
 		    return s.substring(s.lastIndexOf('.')+1);
@@ -254,7 +277,9 @@ public class Spy
 		    cd = new ChannelData();
 		    cd.name = channel;
 		    cd.cls = cls;
+		    cd.fingerprint = fingerprint;
 		    cd.row = channelList.size();
+
 		    synchronized(channelList) {
 			channelMap.put(channel, cd);
 			channelList.add(cd);
@@ -371,7 +396,9 @@ public class Spy
     int rowAtPoint(Point p)
     {
 	int physicalRow = channelTable.rowAtPoint(p);
-	return channelTableModel.modelIndex(physicalRow);
+
+	return physicalRow;
+	//	return channelTableModel.modelIndex(physicalRow);
     }
 
     public void showPopupMenu(MouseEvent e)
@@ -389,7 +416,7 @@ public class Spy
 	    {
 		for (SpyPlugin plugin : plugins)
 		    {
-			if (plugin.canHandle(cd.cls))
+			if (plugin.canHandle(cd.fingerprint))
 			    jm.add(plugin.getAction(jdp, cd));
 		    }
 	    }

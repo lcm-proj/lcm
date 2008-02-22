@@ -46,6 +46,7 @@ dist_noinst_JAVA = \
     lcm/util/ParameterListener.java \
     lcm/util/ParameterGUI.java \
     lcm/util/JImage.java \
+    lcm/util/ClassDiscoverer.java \
     lcm/logging/JScrubber.java \
     lcm/logging/JScrubberListener.java \
     lcm/logging/Log.java \
