@@ -397,8 +397,7 @@ public class Spy
     {
 	int physicalRow = channelTable.rowAtPoint(p);
 
-	return physicalRow;
-	//	return channelTableModel.modelIndex(physicalRow);
+	return channelTableModel.modelIndex(physicalRow);
     }
 
     public void showPopupMenu(MouseEvent e)
@@ -408,7 +407,8 @@ public class Spy
 	ChannelData cd = channelList.get(row);
 	JPopupMenu jm = new JPopupMenu("Viewers");
 
-	channelTable.setRowSelectionInterval(row, row);
+	int prow = channelTable.rowAtPoint(p);
+	channelTable.setRowSelectionInterval(prow, prow);
 
 	jm.add(new DefaultViewer(cd));
 
