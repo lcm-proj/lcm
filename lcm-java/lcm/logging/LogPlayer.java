@@ -369,8 +369,8 @@ public class LogPlayer extends JComponent
 		Log inlog = new Log(log.getPath(), "r");
 		Log outlog = new Log(outpath, "rw");
 
-		inlog.seekPercent(p0);
-		while (inlog.getPercent() < p1) {
+		inlog.seekPositionFraction(p0);
+		while (inlog.getPositionFraction() < p1) {
 		    Log.Event e = inlog.readNext();
                     Filter f = filterMap.get(e.channel);
                     if (f != null && f.enabled)
@@ -421,11 +421,11 @@ public class LogPlayer extends JComponent
 			    setSpeed(slowerSpeed(speed));
 			} else if (cmd.startsWith("BACK")) {
 			    double seconds = Double.parseDouble(cmd.substring(4));
-			    double pos = log.getPercent() - seconds/total_seconds;
+			    double pos = log.getPositionFraction() - seconds/total_seconds;
 			    events.offer(new SeekEvent(pos));
 			} else if (cmd.startsWith("FORWARD")) {
 			    double seconds = Double.parseDouble(cmd.substring(7));
-			    double pos = log.getPercent() + seconds/total_seconds;
+			    double pos = log.getPositionFraction() + seconds/total_seconds;
 			    events.offer(new SeekEvent(pos));
 			} else {
 			    System.out.println("Unknown remote command: "+cmd);
@@ -549,16 +549,16 @@ public class LogPlayer extends JComponent
 	    timeOffset = e.utime;
 	    playButton.setEnabled(true);
 
-	    log.seekPercent(.10);
+	    log.seekPositionFraction(.10);
 	    Log.Event e10 = log.readNext();
 
-	    log.seekPercent(.90);
+	    log.seekPositionFraction(.90);
 	    Log.Event e90 = log.readNext();
 
 	    total_seconds = (e90.utime - e10.utime)/1000000.0 / 0.8;
 	    System.out.printf("Total seconds: %f\n", total_seconds);
 
-	    log.seekPercent(0);
+	    log.seekPositionFraction(0);
 
 	} catch (IOException ex) {
 	    System.out.println("exception: "+ex);
@@ -631,10 +631,10 @@ public class LogPlayer extends JComponent
 	    ratio = 1;
 
 	try {
-	    log.seekPercent(ratio);
+	    log.seekPositionFraction(ratio);
 	    Log.Event e = log.readNext();
-	    log.seekPercent(ratio);
-	    js.set(log.getPercent());
+	    log.seekPositionFraction(ratio);
+	    js.set(log.getPositionFraction());
 
 	    updateDisplay(e);
 	} catch (IOException ex) {
@@ -758,7 +758,7 @@ public class LogPlayer extends JComponent
 			if (f.enabled && f.outchannel.length() > 0)
 			    lcm.publish(f.outchannel, e.data, 0, e.data.length);
 
-			js.set(log.getPercent());
+			js.set(log.getPositionFraction());
 
 			// redraw labels no faster than 10 Hz
 			long curTime = System.currentTimeMillis();

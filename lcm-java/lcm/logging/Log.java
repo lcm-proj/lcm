@@ -75,12 +75,12 @@ public class Log
 	return e;
     }
 
-    public synchronized double getPercent() throws IOException
+    public synchronized double getPositionFraction() throws IOException
     {
 	return raf.getFilePointer()/((double) raf.length());
     }
 
-    public synchronized void seekPercent(double percent) throws IOException
+    public synchronized void seekPositionFraction(double percent) throws IOException
     {
 	raf.seek((long) (raf.length()*percent));
     }

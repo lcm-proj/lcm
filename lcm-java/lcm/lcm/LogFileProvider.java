@@ -98,7 +98,9 @@ public class LogFileProvider implements Provider
 		if (verboseAccumulator > 1.0 && verbose) {
 		    double eventDt = (lastEventUtime - verboseLastEventUtime)/1000000.0;
 		    verboseLastEventUtime = lastEventUtime;
-		    System.out.printf("LogFile: rate = %8.3f\n", eventDt/verboseAccumulator);
+		    System.out.printf("LogFile: rate = %8.3f, position = %8.3f %%\n", 
+				      eventDt/verboseAccumulator,
+				      log.getPositionFraction()*100.0);
 		    verboseAccumulator = 0;
 		}
 
