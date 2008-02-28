@@ -13,7 +13,7 @@
 #define dbg(...) 
 
 PyDoc_STRVAR (pylcm_doc,
-"Lightweight Communications class\n\
+"The LCM class provides a connection to an LCM network.\n\
 \n\
 LCM (url)\n\
 ");
@@ -86,13 +86,19 @@ pylcm_subscribe (PyLCMObject *lcm_obj, PyObject *args)
 }
 
 PyDoc_STRVAR (pylcm_subscribe_doc, 
-"subscribe(channel, callback) -> subscription_object\n\
+"subscribe(channel, callback) -> LCMSubscription\n\
 \n\
-registers a callback function to messages received on a certain channel.\n\
+@param channel: LCM channel to subscribe to.  Can also be a POSIX regular\n\
+expression.  Implicitly treated as the regex \"^channel$\"\n\
+@param callback:  Message handler, must accept two arguments.\n\
+When a message is received, callback is invoked with two arguments\n\
+corresponding to the actual channel on which the message was received, and \n\
+a binary string containing the raw message bytes.\n\
+\n\
+Registers a callback function to handle messages received on the specified\n\
+channel.\n\
+\n\
 Multiple handlers can be registered for the same channel\n\
-\n\
-channel can also be a POSIX regular expression. It is implicitly treated as\n\
-\"^channel$\" \n\
 ");
 
 static PyObject *
@@ -135,6 +141,8 @@ pylcm_unsubscribe (PyLCMObject *lcm_obj, PyObject *args)
 }
 PyDoc_STRVAR (pylcm_unsubscribe_doc, 
 "unsubscribe(subscription_object) -> None\n\
+@param subscription_object: An LCMSubscription object, as returned by a\n\
+call to subscribe()\n\
 \n\
 unregisters a message handler so that it will no longer be invoked when\n\
 a message on the specified channel is received\n\
@@ -168,9 +176,12 @@ pylcm_publish (PyLCMObject *lcm_obj, PyObject *args)
     Py_RETURN_NONE;
 }
 PyDoc_STRVAR (pylcm_publish_doc,
-"publish (channel, data)\n\
+"publish(channel, data) -> None\n\
 \n\
-Publishes a message to a multicast group");
+@param channel: specifies the channel to which the message should be published.\n\
+@param data: binary string containing the message to publish\n\
+\n\
+Publishes a message to an LCM network\n");
 
 static PyObject *
 pylcm_fileno (PyLCMObject *lcm_obj)
@@ -179,7 +190,10 @@ pylcm_fileno (PyLCMObject *lcm_obj)
     return PyInt_FromLong (lcm_get_fileno (lcm_obj->lcm));
 }
 PyDoc_STRVAR (pylcm_fileno_doc,
-"for use with select, poll, etc.");
+"fileno() -> int\n\
+\n\
+Returns a file descriptor suitable for use with select, poll, etc.\n\
+");
 
 static PyObject *
 pylcm_handle (PyLCMObject *lcm_obj)
@@ -207,12 +221,8 @@ pylcm_handle (PyLCMObject *lcm_obj)
     Py_RETURN_NONE;
 }
 PyDoc_STRVAR (pylcm_handle_doc,
-"\n\
+"handle() -> None\n\
 waits for and dispatches the next incoming message\n\
-\n\
-Message handlers are invoked in this order:\n\
-1.  type specific handlers are invoked in the order registered.  Then,\n\
-2.  catchall handlers are invoked in the order registered\n\
 ");
 
 static PyMethodDef pylcm_methods[] = {
@@ -279,7 +289,7 @@ pylcm_initobj (PyObject *self, PyObject *args, PyObject *kwargs)
 PyTypeObject pylcm_type = {
     PyObject_HEAD_INIT (0)   /* Must fill in type value later */
     0,                  /* ob_size */
-    "LCM.LCM",            /* tp_name */
+    "LCM",            /* tp_name */
     sizeof (PyLCMObject),     /* tp_basicsize */
     0,                  /* tp_itemsize */
     (destructor)pylcm_dealloc,     /* tp_dealloc */
@@ -294,7 +304,7 @@ PyTypeObject pylcm_type = {
     0,                  /* tp_hash */
     0,                  /* tp_call */
     0,                  /* tp_str */
-    PyObject_GenericGetAttr,        /* tp_getattro */
+    0,                  /* tp_getattro */
     0,                  /* tp_setattro */
     0,                  /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */

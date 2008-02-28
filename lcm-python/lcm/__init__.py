@@ -1,7 +1,7 @@
 import os
 
 import _lcm
-from _lcm import LCM
+from _lcm import LCM, LCMSubscription
 
 class Event:
     def __init__ (self, eventnum, timestamp, channel, data):

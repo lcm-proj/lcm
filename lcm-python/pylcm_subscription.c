@@ -1,5 +1,10 @@
 #include "pylcm_subscription.h"
 
+PyDoc_STRVAR (_class_doc,
+"The LCMSubscription class is an opaque data structure used to represent\n\
+a single subscription of a message handler to an LCM channel.\n\
+");
+
 static void
 _dealloc (PyLCMSubscriptionObject *s)
 {
@@ -33,7 +38,7 @@ _init (PyObject *self, PyObject *args, PyObject *kwargs)
 PyTypeObject pylcm_subscription_type = {
     PyObject_HEAD_INIT (0)   /* Must fill in type value later */
     0,                  /* ob_size */
-    "LCM.LCMSubscription",            /* tp_name */
+    "LCMSubscription",            /* tp_name */
     sizeof (PyLCMSubscriptionObject),     /* tp_basicsize */
     0,                  /* tp_itemsize */
     (destructor)_dealloc,     /* tp_dealloc */
@@ -52,7 +57,7 @@ PyTypeObject pylcm_subscription_type = {
     0,                  /* tp_setattro */
     0,                  /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-    0,                  /* tp_doc */
+    _class_doc,                  /* tp_doc */
     0,                  /* tp_traverse */
     0,                  /* tp_clear */
     0,                  /* tp_richcompare */

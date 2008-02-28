@@ -42,4 +42,3 @@ init_lcm (void)
         return;
     }
 }
-
