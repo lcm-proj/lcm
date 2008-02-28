@@ -4,14 +4,39 @@ import _lcm
 from _lcm import LCM, LCMSubscription
 
 class Event:
+    """Data structure representing a single event in an LCM EventLog
+    """
+
     def __init__ (self, eventnum, timestamp, channel, data):
-        self.eventnum = eventnum
-        self.timestamp = timestamp
+        self.eventnum = eventnum 
+        """Event number"""
+
+        self.timestamp = timestamp 
+        """Microseconds since the epoch marking the time at which the message
+        was originally received
+        """
         self.channel = channel
+        """Channel on which message was received"""
+
         self.data = data
+        """Binary string containing raw message data"""
 
 class EventLog:
+    """EventLog is a class for reading and writing LCM log files in Python.
+
+An EventLog opened for reading supports the iterator protocol, with each call
+to next() returning the next Event in the log.
+    """
     def __init__ (self, path, mode = "r", overwrite = False):
+        """EventLog(path, mode = "r", overwrite = False) --> EventLog
+
+        @param path:  Path to the logfile to open
+        @param mode:  Open the log for reading ('r') or writing ('w')
+        @param overwrite:  If mode is 'w', and the filename at path already 
+        exists, then EventLog will truncate and overwrite the file if this
+        parameter is set to True.  Otherwise, EventLog refuses to overwrite
+        existing files and raises a ValueError.
+        """
         if mode not in [ "r", "w" ]:
             raise ValueError ("invalid event log mode")
 

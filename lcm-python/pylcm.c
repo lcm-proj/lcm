@@ -15,7 +15,26 @@
 PyDoc_STRVAR (pylcm_doc,
 "The LCM class provides a connection to an LCM network.\n\
 \n\
-LCM (url)\n\
+usage:\n\
+\n\
+   lcm = LCM ([provider])\n\
+\n\
+provider is a string specifying the LCM network to join.  Since the Python \n\
+LCM bindings are a wrapper around the C implementation, consult the C API\n\
+documentation on how provider should be formatted.  provider may be None or \n\
+the empty string, in which case a default network is chosen.\n\
+\n\
+To subscribe to a channel:\n\
+\n\
+   def msg_handler(channel, data):\n\
+      # message handling code here.  For example:\n\
+      print \"received %d byte message on channel %s\" % (len(data, channel)\n\
+\n\
+   lcm.subscribe(channel, msg_handler)\n\
+\n\
+To transmit a raw binary string:\n\
+\n\
+   lcm.publish(\"CHANNEL_NAME\", data)\n\
 ");
 
 PyTypeObject pylcm_type;

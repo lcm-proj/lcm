@@ -3,6 +3,8 @@
 PyDoc_STRVAR (_class_doc,
 "The LCMSubscription class is an opaque data structure used to represent\n\
 a single subscription of a message handler to an LCM channel.\n\
+\n\
+This class should never be instantiated by the programmer.\n\
 ");
 
 static void
@@ -20,7 +22,6 @@ static PyObject *
 _new (PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
 	PyObject *obj = type->tp_alloc (type, 0);
-    printf ("new!!!\n");
 	return obj;
 }
 
