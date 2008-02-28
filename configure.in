@@ -2,7 +2,7 @@ AC_PREREQ(2.50)
 AC_INIT(lcm/lcm.h)
 AM_CONFIG_HEADER(config.h)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(lcm, 0.0.1)
+AM_INIT_AUTOMAKE(lcm, 0.0.2)
 
 AC_PROG_CC
 AM_PATH_GLIB_2_0(,,,gthread)
@@ -20,7 +20,7 @@ dnl  4. If the interface has removed or changed elements, set AGE to 0.
 dnl ---------------------------------------------------------------------------
 LIBLCM_AGE=0
 LIBLCM_REVISION=0
-LIBLCM_CURRENT=0
+LIBLCM_CURRENT=1
 AC_SUBST(LIBLCM_AGE)
 AC_SUBST(LIBLCM_REVISION)
 AC_SUBST(LIBLCM_CURRENT)
@@ -96,6 +96,7 @@ AC_OUTPUT([
   examples/Makefile
   examples/c/Makefile
   examples/python/Makefile
+  examples/java/Makefile
   examples/types/Makefile
   docs/Makefile
   docs/reference/Makefile

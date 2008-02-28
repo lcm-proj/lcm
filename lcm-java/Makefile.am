@@ -1,23 +1,20 @@
 
 JAVAROOT = .
 JARFILE = lcm$(apiversion).jar
-BUILDROOT = build
-JAVACFLAGS = -d $(BUILDROOT)
+#BUILDROOT = build
+#JAVACFLAGS = -d $(BUILDROOT)
 
-$(JARFILE): $(BUILDROOT) classdist_noinst.stamp
+$(JARFILE): classdist_noinst.stamp
 	rm -f $(JARFILE)
-	$(JAR) cf $(JARFILE) -C $(BUILDROOT) .
+#	$(JAR) cf $(JARFILE) -C $(BUILDROOT) .
+	$(JAR) cf $(JARFILE) .
 
-$(BUILDROOT):
-	mkdir $@
+if HAVE_JAVA
+jar_DATA = $(JARFILE)
 
 clean-local:
 	rm -f `find $(JAVAROOT) -name "*.class"`
 	rm -f $(JARFILE)
-	rm -rf $(BUILDROOT)
-
-if HAVE_JAVA
-jar_DATA = $(JARFILE)
 
 bin_SCRIPTS = lcm-jlogplayer lcm-spy
 CLEANFILES = $(bin_SCRIPTS)
@@ -64,10 +61,10 @@ dist_noinst_JAVA = \
     lcm/spy/ObjectPanel.java \
     lcm/spy/ChannelData.java 
 
-endif
-
 man_MANS = lcm-spy.1
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = lcm-java.pc
 EXTRA_DIST = lcm-java.pc.in lcm-spy.1
+
+endif

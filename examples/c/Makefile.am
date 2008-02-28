@@ -9,7 +9,7 @@ listener_LDADD = ../../lcm/liblcm.la libtypes.a
 
 noinst_LIBRARIES = libtypes.a
 
-LCMGEN = ../../lcmgen/lcmgen
+LCMGEN = ../../lcmgen/lcm-gen
 
 nodist_libtypes_a_SOURCES = \
 	example_t.c \

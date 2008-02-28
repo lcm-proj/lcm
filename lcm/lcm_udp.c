@@ -21,8 +21,7 @@
 
 #include <glib.h>
 
-#include <lcm/lcm.h>
-
+#include "lcm.h"
 #include "lcm_internal.h"
 #include "dbg.h"
 #include "ringbuffer.h"

@@ -15,7 +15,8 @@ liblcm_la_SOURCES = \
 	ringbuffer.h \
 	eventlog.c \
 	eventlog.h \
-	ioutils.h
+	ioutils.h \
+	lcm_internal.h
 
 liblcm_la_LIBADD = $(GLIB_LIBS)
 

@@ -1,6 +1,6 @@
 if HAVE_PYTHON
 
-LCMGEN = ../../lcmgen/lcmgen
+LCMGEN = ../../lcmgen/lcm-gen
 
 CLEANFILES = \
 	example_t.py

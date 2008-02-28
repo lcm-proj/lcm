@@ -1,3 +1,13 @@
+// file: listener.c
+//
+// LCM example program.
+//
+// compile with:
+//  $ gcc -o listener listener.c -llcm
+//
+// If using GNU/Linux, you can also use pkg-config:
+//  $ gcc -o listener listener.c `pkg-config --cflags --libs lcm`
+
 #include <stdio.h>
 #include <inttypes.h>
 #include <lcm/lcm.h>

@@ -1,1 +1,1 @@
-SUBDIRS = c python types
+SUBDIRS = c python java types
