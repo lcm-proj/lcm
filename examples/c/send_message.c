@@ -1,12 +1,12 @@
-// file: listener.c
+// file: send_message.c
 //
 // LCM example program.
 //
 // compile with:
-//  $ gcc -o send_message listener.c -llcm
+//  $ gcc -o send_message send_message.c -llcm
 //
 // If using GNU/Linux, you can also use pkg-config:
-//  $ gcc -o send_message listener.c `pkg-config --cflags --libs lcm`
+//  $ gcc -o send_message send_message.c `pkg-config --cflags --libs lcm`
 
 #include <stdio.h>
 #include <lcm/lcm.h>
