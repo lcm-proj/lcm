@@ -17,7 +17,7 @@ PyDoc_STRVAR (pylcm_doc,
 \n\
 usage:\n\
 \n\
-   lcm = LCM ([provider])\n\
+   m = LCM ([provider])\n\
 \n\
 provider is a string specifying the LCM network to join.  Since the Python \n\
 LCM bindings are a wrapper around the C implementation, consult the C API\n\
@@ -28,13 +28,27 @@ To subscribe to a channel:\n\
 \n\
    def msg_handler(channel, data):\n\
       # message handling code here.  For example:\n\
-      print \"received %d byte message on channel %s\" % (len(data, channel)\n\
+      print(\"received %d byte message on %s\" % (len(data), channel))\n\
 \n\
-   lcm.subscribe(channel, msg_handler)\n\
+   m.subscribe(channel, msg_handler)\n\
 \n\
 To transmit a raw binary string:\n\
 \n\
-   lcm.publish(\"CHANNEL_NAME\", data)\n\
+   m.publish(\"CHANNEL_NAME\", data)\n\
+\n\
+In general, LCM is used with python modules compiled by lcm-gen, each of \n\
+which provides the instance method encode() and the static method decode().\n\
+Thus, if one had a compiled type named example_t, the following message\n\
+handler would decode the message:\n\
+\n\
+   def msg_handler(channel, data):\n\
+      msg = example_t.decode(data)\n\
+\n\
+and the following usage would publish a message:\n\
+\n\
+    msg = example_t()\n\
+    # ... set member variables of msg\n\
+    m.publish(\"CHANNEL_NAME\", msg.encode())\n\
 ");
 
 PyTypeObject pylcm_type;
