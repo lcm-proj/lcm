@@ -9,8 +9,8 @@
 #define Py_RETURN_NONE  do { Py_INCREF( Py_None ); return Py_None; } while(0)
 #endif
 
-//#define dbg(...) fprintf (stderr, __VA_ARGS__)
-#define dbg(...) 
+#define dbg(...) fprintf (stderr, __VA_ARGS__)
+//#define dbg(...) 
 
 PyDoc_STRVAR (pylcm_doc,
 "The LCM class provides a connection to an LCM network.\n\
@@ -337,7 +337,7 @@ PyTypeObject pylcm_type = {
     0,                  /* tp_hash */
     0,                  /* tp_call */
     0,                  /* tp_str */
-    0,                  /* tp_getattro */
+    PyObject_GenericGetAttr,                  /* tp_getattro */
     0,                  /* tp_setattro */
     0,                  /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
