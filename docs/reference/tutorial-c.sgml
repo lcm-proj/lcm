@@ -44,7 +44,7 @@
     in a file called <filename>example_t.lcm</filename>.  (In general, the
     file name should match the type name, with the "lcm" extension added).
     This file can live in your primary source code directory.  .h and .c files
-    will be automatically generated using the <command>lcmgen</command> tool.
+    will be automatically generated using the <command>lcm-gen</command> tool.
     </para>
 
     <para>Here are the contents of <filename>example_t.lcm</filename>:</para>
@@ -79,7 +79,7 @@ struct example_t
 
     <para>
     To generate the .h and .c files from the type definition, run
-    <command>lcmgen -c example_t.lcm</command>.  The -c argument could
+    <command>lcm-gen -c example_t.lcm</command>.  The -c argument could
     be replaced with -j or -p to generate Java or Python, respectively.
     </para>
 
@@ -99,12 +99,9 @@ struct example_t
 
 int main (int argc, char ** argv)
 {
-    lcm_t * lcm;
+    lcm_t * lcm = lcm_create (NULL);
 
-    lcm = lcm_create ();
     if (!lcm)
-        return 1;
-    if (lcm_init (lcm, NULL) &lt; 0)
         return 1;
 
     /* Your application goes here */
@@ -115,42 +112,61 @@ int main (int argc, char ** argv)
 </programlisting>
 
     <para>
-    <function><link linkend="lcm-create">lcm_create</link>()</function> is
-    responsible for allocating memory and preparing the library.
-    <function><link linkend="lcm-init">lcm_init</link>()</function> establishes
-    the necessary network connections to start sending and receiving data
-    using LCM.  The NULL second argument means to use the default parameters.
-    The default multicast IP address and port are taken from the environment
-    variable LCM_MCADDR if present.  If not, they are taken from a system-wide
-    config file /etc/lcm.conf.  If that file is not present, the default
-    values are 239.255.76.67:7667.  Likewise, the multicast time-to-live
-    (TTL) is first taken from LCM_TTL, then /etc/lcm.conf, and the final
-    default is 0.
+    The function <function><link
+    linkend="lcm-create">lcm_create</link>()</function> allocates and
+    initializes an instance of <structname><link
+    linkend="lcm-t">lcm_t</link></structname>, which represents a
+    connection to an LCM network.  The single
+    argument to <function><link
+    linkend="lcm-create">lcm_create</link></function> can be 
+    <literal>NULL</literal> as shown above, to initialize a LCM context with
+    default settings.  It can also be a string specifying a specific LCM
+    <emphasis>provider</emphasis> and options for that provider.
     </para>
 
     <para>
-    These defaults can be programmatically overridden by specifying values
-    for <structname><link linkend="lcm-params-t">lcm_params_t</link></structname>
-    supplied to <function><link linkend="lcm-init">lcm_init</link>()</function>.
-    This example shows choosing a new TTL of 1:
+    There are currently two types of LCM providers: a UDP Multicast provider
+    and a file-based provider, both of which have different settings.  The
+    former is the default, and transmits and receives messages via UDP
+    Multicast.  The second, file-based provider, reads messages from an LCM
+    log file to simulate live traffic, and is often useful for data analysis.
     </para>
 
-    <programlisting>
-lcm_t * lcm;
-lcm = lcm_create ();
+    <para>
+    When specified, the argument to <function><link
+    linkend="lcm-create">lcm_create</link></function> should be a string of
+    the form 
+    "<literal>provider://network?option1=value1,option2=value2,...</literal>"  
+    The reference manual for <function><link
+    linkend="lcm-create">lcm_create</link></function> provides a list of the
+    exact values that can be specified.  One common usage is to initialize a
+    transmit-only LCM context, for modules that will transmit messages but
+    will never receive any:
 
-lcm_params_t lp;
-lcm_params_init_defaults (&amp;lp);
-lp.mc_ttl = 1;
-lcm_init (lcm, &amp;lp);
+    <programlisting>
+lcm_t * lcm = lcm_create ("udpm://?transmit_only=true");
 </programlisting>
+
+    Another usage might be to allocate a large receive buffer, for
+    high-bandwidth modules (on the order of megabytes / second):
+
+    <programlisting>
+lcm_t * lcm = lcm_create ("udpm://?recv_buf_size=2000000");
+</programlisting>
+
+    These are a few examples of how different to configure an LCM context with
+    the argument string.  For a complete listing of the available providers,
+    networks, and options, see the API reference for <function><link
+    linkend="lcm-create">lcm_create</link></function>.
+    </para>
+
 </refsect1>
 
 <refsect1>
     <title>Publishing LCM data</title>
 
     <para>When you create an LCM data type and generate C code with
-    <command>lcmgen</command>, that data type will then be available as
+    <command>lcm-gen</command>, that data type will then be available as
     a C struct with the same name.  For <type>example_t</type>, the C
     struct that gets generated looks like this:
     </para>
@@ -247,27 +263,28 @@ send_message (lcm_t * lcm)
     subscriptions.</para>
 
     <programlisting>
-#include &lt;stdio.h&gt;
-#include &lt;inttypes.h&gt;
-#include &lt;lcm/lcm.h&gt;
+<![CDATA[
+#include <stdio.h>
+#include <inttypes.h>
+#include <lcm/lcm.h>
 #include "example_t.h"
 
-static int
-my_handler (const char * channel, const example_t * msg, void * user)
+static void
+my_handler (const lcm_recv_buf_t *rbuf, const char * channel, 
+        const example_t * msg, void * user)
 {
     int i;
     printf ("Received message on channel \"%s\":\n", channel);
     printf ("  timestamp   = %"PRId64"\n", msg->timestamp);
     printf ("  position    = (%f, %f, %f)\n",
-            msg-&gt;position[0], msg-&gt;position[1], msg-&gt;position[2]);
+            msg->position[0], msg->position[1], msg->position[2]);
     printf ("  orientaiton = (%f, %f, %f, %f)\n",
-            msg-&gt;orientation[0], msg-&gt;orientation[1], msg-&gt;orientation[2],
-            msg-&gt;orientation[3]);
+            msg->orientation[0], msg->orientation[1], msg->orientation[2],
+            msg->orientation[3]);
     printf ("  ranges:");
-    for (i = 0; i &lt; msg->num_ranges; i++)
+    for (i = 0; i < msg->num_ranges; i++)
         printf (" %d", msg->ranges[i]);
     printf ("\n");
-    return 0;
 }
 
 int
@@ -275,14 +292,12 @@ main (int argc, char ** argv)
 {
     lcm_t * lcm;
 
-    lcm = lcm_create ();
+    lcm = lcm_create (NULL);
     if (!lcm)
-        return 1;
-    if (lcm_init (lcm, NULL) &lt; 0)
         return 1;
 
     example_t_subscription_t * sub =
-        example_t_subscribe (lcm, "EXAMPLE", &amp;my_handler, NULL);
+        example_t_subscribe (lcm, "EXAMPLE", &my_handler, NULL);
 
     while (1)
         lcm_handle (lcm);
@@ -291,6 +306,7 @@ main (int argc, char ** argv)
     lcm_destroy (lcm);
     return 0;
 }
+]]>
 </programlisting>
 
     <para>A key design principal for this subscription code is that it is

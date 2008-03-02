@@ -168,12 +168,11 @@
 
     <para>An LCM application that expects to receive large amounts of data
     very quickly (e.g. greater than 1-2 MB/s) should request a larger receive
-    buffer.  This is done by calling <function><link
-    linkend="lcm-init">lcm_init</link>()</function>, and passing it a
-    <classname><link linkend="lcm-params-t">lcm_params_t</link></classname>
-    struct with a non-zero <literal>recv_buf_size</literal> field.  In our
-    initial projects, which involved typical data rates of 10 MB/s, a 2 MB
-    receive buffer was generally sufficient.</para>
+    buffer.  This is done by setting the <literal>recv_buf_size</literal>
+    option with the <literal>udpm</literal> provider in <function><link
+    linkend="lcm-create">lcm_create</link></function>.  In our initial
+    projects, which involved typical data rates of 10 MB/s, a 2 MB receive
+    buffer was generally sufficient.</para>
 
 </refsect1>
 

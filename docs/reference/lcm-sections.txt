@@ -76,30 +76,19 @@ lcm_ringbuf_dealloc
 
 <SECTION>
 <FILE>lcm</FILE>
-LCM_IFACE_ENV
-LCM_MCADDR_ENV
-LCM_TTL_ENV
-LCM_DEFAULT_MC_ADDR
-LCM_DEFAULT_MC_PORT
 LCM_MAX_MESSAGE_SIZE
 LCM_MAX_CHANNEL_NAME_LENGTH
-LCM_CONF_FILE
 lcm_t
-lcm_params_t
 lcm_recv_buf_t
 lcm_subscription_t
 lcm_msg_handler_t
 lcm_create
-lcm_init
-lcm_params_init_defaults
 lcm_destroy
 lcm_get_fileno
 lcm_subscribe
-lcm_unsubscribe_by_func
 lcm_unsubscribe
 lcm_publish
 lcm_handle
-lcm_get_params
 </SECTION>
 
 <SECTION>
