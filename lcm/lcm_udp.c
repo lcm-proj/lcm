@@ -144,7 +144,8 @@ struct _lcm_provider_t {
 
     int thread_created;
     pthread_t read_thread;
-    int notify_pipe[2];
+    int notify_pipe[2];         // pipe to notify application when messages arrive
+    int thread_msg_pipe[2];     // pipe to notify read thread when to quit
 
     GStaticMutex transmit_lock; // so that only thread at a time can transmit
 
@@ -317,11 +318,12 @@ lcm_udpm_destroy (lcm_udpm_t *lcm)
 {
     dbg (DBG_LCM, "closing lcm context\n");
     if (!lcm->params.transmit_only && lcm->thread_created) {
-        /* Destroy the reading thread */
-        g_static_rec_mutex_lock (&lcm->mutex);
-        pthread_cancel (lcm->read_thread);
-        g_static_rec_mutex_unlock (&lcm->mutex);
+        // send the read thread an exit command
+        write (lcm->thread_msg_pipe[1], "\0", 1);
         pthread_join (lcm->read_thread, NULL);
+
+        close (lcm->thread_msg_pipe[0]);
+        close (lcm->thread_msg_pipe[1]);
     }
     if (lcm->recvfd >= 0)
         close (lcm->recvfd);
@@ -590,10 +592,11 @@ udp_read_packet (lcm_udpm_t *lcm)
         break;
     }
 
+    // allocate space on the ringbuffer for a new packet.
     lcmb->buf = NULL;
     while (1) {
         g_static_rec_mutex_lock (&lcm->mutex);
-        // maximum possible size
+        // give it the maximum possible size for an unfragmented packet
         lcmb->buf = lcm_ringbuf_alloc(lcm->ringbuf, 65536); 
         lcmb->buf_from_ringbuf = 1;
         g_static_rec_mutex_unlock (&lcm->mutex);
@@ -648,6 +651,35 @@ udp_read_packet (lcm_udpm_t *lcm)
     int got_complete_message = 0;
 
     while (!got_complete_message) {
+        // wait for either incoming UDP data, or for an abort message
+        fd_set fds;
+        FD_ZERO (&fds);
+        FD_SET (lcm->recvfd, &fds);
+        FD_SET (lcm->thread_msg_pipe[0], &fds);
+        int maxfd = MAX(lcm->recvfd, lcm->thread_msg_pipe[0]);
+
+        int select_status = select (maxfd + 1, &fds, NULL, NULL, NULL);
+
+        if (select_status < 0) { 
+            perror ("udp_read_packet -- select:");
+            continue;
+        } else if (0 == select_status) {
+            continue;
+        }
+
+        if (FD_ISSET (lcm->thread_msg_pipe[0], &fds)) {
+            // received an exit command.
+            // Can just free the lcm_buf_t here.  Its data buffer is managed
+            // either by the ring buffer or the fragment buffer, so we can
+            // ignore it.
+            dbg (DBG_LCM, "read thread received exit command\n");
+            free (lcmb);
+            return NULL;
+        }
+
+        // there is incoming UDP data ready.  Grab and process it.
+        assert (FD_ISSET (lcm->recvfd, &fds));
+
         struct iovec vec = {
             .iov_base = lcmb->buf,
             .iov_len = 65535,
@@ -707,6 +739,10 @@ udp_read_packet (lcm_udpm_t *lcm)
         }
     }
 
+    // if the newly received packet is a short packet, then resize the space
+    // allocated to it on the ringbuffer to exactly match the amount of space
+    // required.  That way, we do not use 64k of the ringbuffer for every
+    // incoming message.
     if (lcmb->buf_from_ringbuf) {
         g_static_rec_mutex_lock (&lcm->mutex);
         lcm_ringbuf_shrink_last(lcm->ringbuf, lcmb->buf, sz);
@@ -726,8 +762,7 @@ recv_thread (void * user)
     while (1) {
 
         lcm_buf_t *lcmb = udp_read_packet(lcm);
-        if (!lcmb) 
-            continue;
+        if (!lcmb) break;
 
         /* If necessary, notify the reading thread by writing to a pipe.  We
          * only want one character in the pipe at a time to avoid blocking
@@ -744,8 +779,9 @@ recv_thread (void * user)
         
         g_static_rec_mutex_unlock (&lcm->mutex);
     }
+    dbg (DBG_LCM, "read thread exiting\n");
+    return NULL;
 }
-
 
 static int 
 lcm_udpm_get_fileno (lcm_udpm_t *lcm)
@@ -1216,6 +1252,10 @@ lcm_udpm_create (lcm_t * parent, const char *url)
         lcm_buf_t * lcmb = calloc (1, sizeof (lcm_buf_t));
         lcm_buf_enqueue (lcm->inbufs_empty, lcmb);
     }
+
+    // setup a pipe for notifying the reader thread when to quit
+    pipe (lcm->thread_msg_pipe);
+    fcntl (lcm->thread_msg_pipe[1], F_SETFL, O_NONBLOCK);
 
     /* Start the reader thread */
     if (pthread_create (&lcm->read_thread, NULL, recv_thread, lcm) < 0) {
