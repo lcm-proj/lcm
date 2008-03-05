@@ -690,9 +690,11 @@ udp_read_packet (lcm_udpm_t *lcm)
             .msg_namelen = sizeof (struct sockaddr),
             .msg_iov = &vec,
             .msg_iovlen = 1,
+#ifdef __linux__
             .msg_control = controlbuf,
             .msg_controllen = sizeof (controlbuf),
             .msg_flags = 0,
+#endif
         };
         sz = recvmsg (lcm->recvfd, &msg, 0);
 
