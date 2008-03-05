@@ -20,6 +20,9 @@ public class ClassDiscoverer
      **/
     public static void findClasses(String cp, ClassVisitor visitor)
     {
+	if (cp == null)
+	    return;
+
 	String[] items = cp.split(":");
 	for (int i = 0; i < items.length; i++) {
 	    
