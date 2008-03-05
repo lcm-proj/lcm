@@ -5,7 +5,7 @@ AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(lcm, 0.0.3)
 
 AC_PROG_CC
-AM_PATH_GLIB_2_0(,,,gthread)
+AM_PATH_GLIB_2_0(,,[AC_MSG_ERROR([LCM requires GLib >= 2.0])],)
 AC_PATH_PROGS(JAR, [jar])
 AC_PATH_PROGS(JAVAC, [javac])
 
@@ -34,7 +34,7 @@ dnl ------------------
 dnl Python support
 dnl ------------------
 AC_PYTHON_DEVEL
-AM_PATH_PYTHON([2.4],, [:])
+AM_PATH_PYTHON([2.3],, [:])
 AM_CONDITIONAL([HAVE_PYTHON], [test "$pythonexists" = "yes"])
 
 pylcmexecdir="$pyexecdir/$PACKAGE"

@@ -710,6 +710,7 @@ udp_read_packet (lcm_udpm_t *lcm)
 
         lcmb->fromlen = msg.msg_namelen;
 
+#ifdef __linux__
         int got_utime = 0;
         struct cmsghdr * cmsg = CMSG_FIRSTHDR (&msg);
         /* Get the receive timestamp out of the packet headers if possible */
@@ -725,6 +726,9 @@ udp_read_packet (lcm_udpm_t *lcm)
         }
         if (!got_utime)
             lcmb->recv_utime = _timestamp_now ();
+#else
+        lcmb->recv_utime = _timestamp_now ();
+#endif
 
         lcm2_header_short_t *hdr2 = (lcm2_header_short_t*) lcmb->buf;
         uint32_t rcvd_magic = ntohl(hdr2->magic);
@@ -1220,8 +1224,10 @@ lcm_udpm_create (lcm_t * parent, const char *url)
     }
 
     /* Enable per-packet timestamping by the kernel, if available */
+#ifdef __linux__
     opt = 1;
     setsockopt (lcm->recvfd, SOL_SOCKET, SO_TIMESTAMP, &opt, sizeof (opt));
+#endif
 
     if (bind (lcm->recvfd, (struct sockaddr*)&addr, sizeof (addr)) < 0) {
         perror ("bind");
