@@ -490,7 +490,7 @@ typedef struct {
 
 static _package_contents_t * _package_contents_new (const char *name)
 {
-    _package_contents_t *pc = g_slice_new (_package_contents_t);
+    _package_contents_t *pc = malloc (sizeof(_package_contents_t));
     pc->enums = g_ptr_array_new ();
     pc->structs = g_ptr_array_new ();
     pc->name = strdup (name);
@@ -502,7 +502,7 @@ static void _package_contents_free (_package_contents_t *pc)
     g_ptr_array_free (pc->enums, TRUE);
     g_ptr_array_free (pc->structs, TRUE);
     free (pc->name);
-    g_slice_free (_package_contents_t, pc);
+    free (pc);
 }
 
 static int

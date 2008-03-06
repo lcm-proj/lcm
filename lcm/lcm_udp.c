@@ -37,6 +37,10 @@
 #define UDPM_DEFAULT_MC_ADDR "239.255.76.67"
 #define UDPM_DEFAULT_MC_PORT 7667
 
+#ifdef __linux__
+#define USE_SO_TIMESTAMP
+#endif
+
 typedef struct _lcm2_header_short lcm2_header_short_t;
 struct _lcm2_header_short {
     uint32_t magic;
@@ -613,7 +617,7 @@ udp_read_packet (lcm_udpm_t *lcm)
 
     assert (lcmb->buf_from_ringbuf);
 
-    int sz;
+    int sz = 0;
 
     g_static_rec_mutex_lock (&lcm->mutex);
     double buf_avail = lcm_ringbuf_available(lcm->ringbuf);
@@ -683,13 +687,15 @@ udp_read_packet (lcm_udpm_t *lcm)
             .iov_base = lcmb->buf,
             .iov_len = 65535,
         };
+#ifdef USE_SO_TIMESTAMP
         char controlbuf[64];
+#endif
         struct msghdr msg = {
             .msg_name = &lcmb->from,
             .msg_namelen = sizeof (struct sockaddr),
             .msg_iov = &vec,
             .msg_iovlen = 1,
-#ifdef __linux__
+#ifdef USE_SO_TIMESTAMP
             .msg_control = controlbuf,
             .msg_controllen = sizeof (controlbuf),
             .msg_flags = 0,
@@ -711,7 +717,7 @@ udp_read_packet (lcm_udpm_t *lcm)
 
         lcmb->fromlen = msg.msg_namelen;
 
-#ifdef __linux__
+#ifdef USE_SO_TIMESTAMP
         int got_utime = 0;
         struct cmsghdr * cmsg = CMSG_FIRSTHDR (&msg);
         /* Get the receive timestamp out of the packet headers if possible */
@@ -1225,7 +1231,7 @@ lcm_udpm_create (lcm_t * parent, const char *url)
     }
 
     /* Enable per-packet timestamping by the kernel, if available */
-#ifdef __linux__
+#ifdef USE_SO_TIMESTAMP
     opt = 1;
     setsockopt (lcm->recvfd, SOL_SOCKET, SO_TIMESTAMP, &opt, sizeof (opt));
 #endif

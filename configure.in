@@ -4,8 +4,9 @@ AM_CONFIG_HEADER(config.h)
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(lcm, 0.0.3)
 
+# g_build_filenamev and g_mkdir_with_parents are new in glib 2.8
 AC_PROG_CC
-AM_PATH_GLIB_2_0(,,[AC_MSG_ERROR([LCM requires GLib >= 2.0])],)
+AM_PATH_GLIB_2_0(2.8,,[AC_MSG_ERROR([LCM requires GLib >= 2.8])],gthread)
 AC_PATH_PROGS(JAR, [jar])
 AC_PATH_PROGS(JAVAC, [javac])
 
@@ -29,6 +30,15 @@ AC_SUBST(LIBLCM_VERSION_INFO)
 
 AM_DISABLE_STATIC
 AM_PROG_LIBTOOL
+
+# link against the socket and nsl libraries if needed
+LIB_SOCKET_NSL
+
+# nanosleep might need special linkage
+AC_SEARCH_LIBS([nanosleep], [rt])
+
+# inet_aton might need special linkage
+AC_SEARCH_LIBS([inet_aton],[resolv])
 
 dnl ------------------
 dnl Python support
@@ -77,7 +87,7 @@ dnl ---------------------------------------------------------------------------
 dnl Warnings
 dnl ---------------------------------------------------------------------------
 if test "x$GCC" = "xyes"; then
-    CFLAGS="$CFLAGS -g -Wall -std=gnu99 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_REENTRANT -Wno-unused-parameter -Wno-format-zero-length -pthread -Wshadow"
+    CFLAGS="$CFLAGS -g -Wall -std=gnu99 -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_REENTRANT -Wno-unused-parameter -Wno-format-zero-length -Wshadow"
     AC_SUBST(CFLAGS)
 fi
 LIBTOOL="$LIBTOOL --silent"
