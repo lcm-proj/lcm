@@ -118,21 +118,21 @@ static int64_t get_event_time(lcm_eventlog_t *l)
     } while( magic != MAGIC );
 
     int64_t event_num;
-    int64_t time;
+    int64_t timestamp;
     if (0 != fread64(l->f, &event_num)) return -1;
-    if (0 != fread64(l->f, &time)) return -1;
+    if (0 != fread64(l->f, &timestamp)) return -1;
     fseeko (l->f, -20, SEEK_CUR);
 
     l->eventcount = event_num;
 
-    return time;
+    return timestamp;
 
 eof:
     return -1;
 }
 
 
-int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *l, int64_t time)
+int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *l, int64_t timestamp)
 {
     fseeko (l->f, 0, SEEK_END);
     off_t file_len = ftello(l->f);
@@ -161,10 +161,10 @@ int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *l, int64_t time)
         if (df < 1e-12)
             break;
 
-        if (cur_time == time)
+        if (cur_time == timestamp)
             break;
 
-        if (cur_time < time)
+        if (cur_time < timestamp)
             frac1 = frac;
         else
             frac2 = frac;

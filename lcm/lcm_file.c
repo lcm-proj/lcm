@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <pthread.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <errno.h>
@@ -22,7 +21,7 @@ struct _lcm_provider_t {
     int64_t next_clock_time;
 
     int thread_created;
-    pthread_t timer_thread;
+    GThread *timer_thread;
     int notify_pipe[2];
     int timer_pipe[2];
 };
@@ -33,8 +32,9 @@ lcm_logread_destroy (lcm_logread_t *lr)
     dbg (DBG_LCM, "closing lcm log read context\n");
     if (lr->thread_created) {
         /* Destroy the timer thread */
-        pthread_cancel (lr->timer_thread);
-        pthread_join (lr->timer_thread, NULL);
+        int64_t abort_command = -1;
+        write (lr->timer_pipe[1], &abort_command, sizeof (abort_command));
+        g_thread_join (lr->timer_thread);
     }
 
     close (lr->notify_pipe[0]);
@@ -66,19 +66,30 @@ timer_thread (void * user)
     int64_t abstime;
 
     while (read (lr->timer_pipe[0], &abstime, 8) == 8) {
-        int64_t now = timestamp_now ();
+        if (abstime < 0) return NULL;
+
+        int64_t now = timestamp_now();
+
         if (abstime > now) {
-            int res;
-            struct timespec req, rem;
-            abstime -= now;
-            req.tv_sec = abstime / 1000000;
-            req.tv_nsec = (abstime % 1000000) * 1000;
-            while ((res = nanosleep (&req, &rem)) == -1 && errno == EINTR)
-                req = rem;
-            if (res < 0)
-                perror ("timer_thread nanosleep");
+            int64_t sleep_utime = abstime - now;
+            struct timeval sleep_tv = {
+                .tv_sec = sleep_utime / 1000000,
+                .tv_usec = sleep_utime % 1000000
+            };
+
+            // sleep until the next timed message, or until an abort message
+            fd_set fds;
+            FD_ZERO (&fds);
+            FD_SET (lr->timer_pipe[0], &fds);
+
+            int status = select (lr->timer_pipe[0] + 1, &fds, NULL, NULL, 
+                    &sleep_tv);
+
+            if (0 == status) {  
+                // select timed out
+                write (lr->notify_pipe[1], "+", 1);
+            }
         }
-        write (lr->notify_pipe[1], "+", 1);
     }
     perror ("timer_thread read failed");
     return NULL;
@@ -160,7 +171,8 @@ lcm_logread_create (lcm_t * parent, const char *url)
     }
 
     /* Start the reader thread */
-    if (pthread_create (&lr->timer_thread, NULL, timer_thread, lr) < 0) {
+    lr->timer_thread = g_thread_create (timer_thread, lr, TRUE, NULL);
+    if (!lr->timer_thread) {
         fprintf (stderr, "Error: LCM failed to start timer thread\n");
         lcm_logread_destroy (lr);
         return NULL;

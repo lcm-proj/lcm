@@ -16,7 +16,6 @@
 #include <time.h>
 
 #include <assert.h>
-#include <pthread.h>
 #include <sys/poll.h>
 
 #include <glib.h>
@@ -143,7 +142,7 @@ struct _lcm_provider_t {
                               above three queues. */
 
     int thread_created;
-    pthread_t read_thread;
+    GThread *read_thread;
     int notify_pipe[2];         // pipe to notify application when messages arrive
     int thread_msg_pipe[2];     // pipe to notify read thread when to quit
 
@@ -320,7 +319,7 @@ lcm_udpm_destroy (lcm_udpm_t *lcm)
     if (!lcm->params.transmit_only && lcm->thread_created) {
         // send the read thread an exit command
         write (lcm->thread_msg_pipe[1], "\0", 1);
-        pthread_join (lcm->read_thread, NULL);
+        g_thread_join (lcm->read_thread);
 
         close (lcm->thread_msg_pipe[0]);
         close (lcm->thread_msg_pipe[1]);
@@ -1266,7 +1265,8 @@ lcm_udpm_create (lcm_t * parent, const char *url)
     fcntl (lcm->thread_msg_pipe[1], F_SETFL, O_NONBLOCK);
 
     /* Start the reader thread */
-    if (pthread_create (&lcm->read_thread, NULL, recv_thread, lcm) < 0) {
+    lcm->read_thread = g_thread_create (recv_thread, lcm, TRUE, NULL);
+    if (!lcm->read_thread) {
         fprintf (stderr, "Error: LCM failed to start reader thread\n");
         lcm_udpm_destroy (lcm);
         return NULL;
