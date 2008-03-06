@@ -37,6 +37,11 @@
 #define UDPM_DEFAULT_MC_ADDR "239.255.76.67"
 #define UDPM_DEFAULT_MC_PORT 7667
 
+// HUGE is not defined on cygwin as of 2008-03-05
+#ifndef HUGE
+#define HUGE 3.40282347e+38F
+#endif
+
 #ifdef __linux__
 #define USE_SO_TIMESTAMP
 #endif
