@@ -42,10 +42,6 @@
 #define HUGE 3.40282347e+38F
 #endif
 
-#ifdef __linux__
-#define USE_SO_TIMESTAMP
-#endif
-
 typedef struct _lcm2_header_short lcm2_header_short_t;
 struct _lcm2_header_short {
     uint32_t magic;
@@ -692,7 +688,7 @@ udp_read_packet (lcm_udpm_t *lcm)
             .iov_base = lcmb->buf,
             .iov_len = 65535,
         };
-#ifdef USE_SO_TIMESTAMP
+#ifdef SO_TIMESTAMP
         char controlbuf[64];
 #endif
         struct msghdr msg = {
@@ -700,7 +696,7 @@ udp_read_packet (lcm_udpm_t *lcm)
             .msg_namelen = sizeof (struct sockaddr),
             .msg_iov = &vec,
             .msg_iovlen = 1,
-#ifdef USE_SO_TIMESTAMP
+#ifdef SO_TIMESTAMP
             .msg_control = controlbuf,
             .msg_controllen = sizeof (controlbuf),
             .msg_flags = 0,
@@ -722,8 +718,8 @@ udp_read_packet (lcm_udpm_t *lcm)
 
         lcmb->fromlen = msg.msg_namelen;
 
-#ifdef USE_SO_TIMESTAMP
         int got_utime = 0;
+#ifdef SO_TIMESTAMP
         struct cmsghdr * cmsg = CMSG_FIRSTHDR (&msg);
         /* Get the receive timestamp out of the packet headers if possible */
         while (cmsg) {
@@ -736,11 +732,9 @@ udp_read_packet (lcm_udpm_t *lcm)
             }
             cmsg = CMSG_NXTHDR (&msg, cmsg);
         }
+#endif
         if (!got_utime)
             lcmb->recv_utime = _timestamp_now ();
-#else
-        lcmb->recv_utime = _timestamp_now ();
-#endif
 
         lcm2_header_short_t *hdr2 = (lcm2_header_short_t*) lcmb->buf;
         uint32_t rcvd_magic = ntohl(hdr2->magic);
@@ -1236,7 +1230,7 @@ lcm_udpm_create (lcm_t * parent, const char *url)
     }
 
     /* Enable per-packet timestamping by the kernel, if available */
-#ifdef USE_SO_TIMESTAMP
+#ifdef SO_TIMESTAMP
     opt = 1;
     setsockopt (lcm->recvfd, SOL_SOCKET, SO_TIMESTAMP, &opt, sizeof (opt));
 #endif
