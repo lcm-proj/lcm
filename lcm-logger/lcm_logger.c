@@ -30,6 +30,24 @@ static inline int64_t timestamp_now()
     return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
+static void
+mkdir_with_parents (const char *path, mode_t mode)
+{
+    int len = strlen(path);
+    for (int i = 0; i < len; i++) {
+        if (path[i]=='/') {
+            char *dirpath = malloc(i+1);
+            strncpy(dirpath, path, i);
+            dirpath[i]=0;
+
+            mkdir(dirpath, mode);
+            free(dirpath);
+
+            i++; // skip the '/'
+        }
+    }
+}
+
 typedef struct logger logger_t;
 struct logger
 {
@@ -208,7 +226,7 @@ int main(int argc, char *argv[])
     // create directories if needed
     char *dirpart = g_path_get_dirname (logger.fname);
     if (! g_file_test (dirpart, G_FILE_TEST_IS_DIR)) {
-        g_mkdir_with_parents (dirpart, 0755);
+        mkdir_with_parents (dirpart, 0755);
     }
     free (dirpart);
 

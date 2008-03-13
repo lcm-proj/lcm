@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <inttypes.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include <glib.h>
 
@@ -18,6 +20,44 @@
 #define emit(n, ...) do { fprintf(f, "%*s", INDENT(n), ""); fprintf(f, __VA_ARGS__); fprintf(f, "\n"); } while (0)
 
 #define err(...) fprintf (stderr, __VA_ARGS__)
+
+static void 
+mkdir_with_parents (const char *path, mode_t mode)
+{
+    int len = strlen(path);
+    for (int i = 0; i < len; i++) {
+        if (path[i]=='/') {
+            char *dirpath = malloc(i+1);
+            strncpy(dirpath, path, i);
+            dirpath[i]=0;
+
+            mkdir(dirpath, mode);
+            free(dirpath);
+
+            i++; // skip the '/'
+        }
+    }
+}
+
+static char * 
+build_filenamev (char **parts)
+{
+    char **p = parts;
+    int total_len = 0;
+    for (p = parts; *p; p++) {
+        total_len += strlen (*p) + strlen(G_DIR_SEPARATOR_S);
+    }
+    total_len ++;
+    char *result = malloc(total_len);
+    memset(result, 0, total_len);
+    for (p = parts; *p; p++) {
+        if (! strlen(*p)) continue;
+        strncat(result, *p, total_len);
+        if (*(p+1)) 
+            strncat(result, G_DIR_SEPARATOR_S, total_len);
+    }
+    return result;
+}
 
 static void
 get_all_vals_helper (gpointer key, gpointer value, gpointer user_data)
@@ -510,7 +550,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 {
     // create the package directory, if necessary
     char **dirs = g_strsplit (pc->name, ".", 0);
-    char *pdname = g_build_filenamev (dirs);
+    char *pdname = build_filenamev (dirs);
     char package_dir[PATH_MAX];
     char package_dir_prefix[PATH_MAX];
     int have_package = dirs[0] != NULL;
@@ -523,7 +563,8 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
     free (pdname);
     if (strlen (package_dir)) {
         if (! g_file_test (package_dir, G_FILE_TEST_EXISTS)) {
-            g_mkdir_with_parents (package_dir, 0755);
+//            g_mkdir_with_parents (package_dir, 0755);
+            mkdir_with_parents (package_dir, 0755);
         }
         if (!g_file_test (package_dir, G_FILE_TEST_IS_DIR)) {
             err ("Could not create directory %s\n", package_dir);
@@ -545,10 +586,11 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
             initpy_fname_parts[i+2] = "__init__.py";
             initpy_fname_parts[i+3] = NULL;
 
-            char *initpy_fname = g_build_filenamev (initpy_fname_parts);
+            char *initpy_fname = build_filenamev (initpy_fname_parts);
             if (! g_file_test (initpy_fname, G_FILE_TEST_EXISTS)) {
                 FILE *initpy_fp = fopen (initpy_fname, "w");
                 if (!initpy_fp) {
+                    perror ("fopen");
                     free (initpy_fname);
                     return -1;
                 }

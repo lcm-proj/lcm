@@ -38,7 +38,7 @@ static void make_dirs_for_file(const char *path)
             strncpy(dirpath, path, i);
             dirpath[i]=0;
 
-            mkdir(dirpath, 0777);
+            mkdir(dirpath, 0755);
             free(dirpath);
 
             i++; // skip the '/'

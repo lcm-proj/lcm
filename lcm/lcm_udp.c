@@ -1138,7 +1138,11 @@ lcm_udpm_create (lcm_t * parent, const char *url)
     }
 
     // set loopback option on the send socket
+#ifdef __sun__
+    unsigned char send_lo_opt = 1;
+#else
     unsigned int send_lo_opt = 1;
+#endif
     if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_LOOP, 
                 &send_lo_opt, sizeof (send_lo_opt)) < 0) {
         perror ("setsockopt (IPPROTO_IP, IP_MULTICAST_LOOP)");
