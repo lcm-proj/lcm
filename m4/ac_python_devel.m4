@@ -134,6 +134,9 @@ variable to configure. See ``configure --help'' for reference.
 ])
 			PYTHON_VERSION=""
 		fi
+    else
+        PYTHON_VERSION=`${PYTHON} -c 'from distutils import sysconfig; \
+                  print sysconfig.get_config_var("VERSION")'`
 	fi
 
 	#
@@ -169,27 +172,42 @@ $ac_distutils_result])
 	#
 	# Check for Python library path
 	#
-	AC_MSG_CHECKING([for Python library path])
+	AC_MSG_CHECKING([for Python library path and flags])
 	if test -z "$PYTHON_LDFLAGS"; then
-		# (makes two attempts to ensure we've got a version number
-		# from the interpreter)
-		py_version=`$PYTHON -c "from distutils.sysconfig import *; \
-			from string import join; \
-			print join(get_config_vars('VERSION'))"`
-		if test "$py_version" == "[None]"; then
-			if test -n "$PYTHON_VERSION"; then
-				py_version=$PYTHON_VERSION
-			else
-				py_version=`$PYTHON -c "import sys; \
-					print sys.version[[:3]]"`
-			fi
-		fi
+        PYTHONFRAMEWORKDIR=`${PYTHON} -c 'from distutils import sysconfig; \
+            print sysconfig.get_config_var("PYTHONFRAMEWORKDIR")'`
+        PYTHONFRAMEWORK=`${PYTHON} -c 'from distutils import sysconfig; \
+            print sysconfig.get_config_var("PYTHONFRAMEWORK")'`
 
-		PYTHON_LDFLAGS=`$PYTHON -c "from distutils.sysconfig import *; \
-			from string import join; \
-			print '-L' + get_python_lib(0,1), \
-		      	'-lpython';"`$py_version
+        if test "${PYTHONFRAMEWORKDIR}" = "no-framework"; then
+            PYTHON_LDFLAGS=`${PYTHON} -c 'import distutils.sysconfig; \
+                print "-L" + distutils.sysconfig.get_python_lib(plat_specific=1, \
+                standard_lib=1) +"/config"'`
+
+            LDLIBS1="-lpython${PYTHON_VERSION}"
+            LDLIBS2=`${PYTHON} -c 'from distutils import sysconfig; \
+                print sysconfig.get_config_var("LIBS")'`
+            LDLIBS3=`${PYTHON} -c 'import distutils.sysconfig; \
+                     print "-L" + distutils.sysconfig.get_config_var("LIBDIR") + \
+                     " " + distutils.sysconfig.get_config_var("LDFLAGS")'`
+
+            PYTHON_LDFLAGS="${PYTHON_LDFLGAS} ${LDLIBS1} ${LDLIBS2} ${LDLIBS3}"
+        else
+            LDFLAGS1="-framework ${PYTHONFRAMEWORK}"
+
+            VERSION="${PYTHON_VERSION}"
+            STRING="${PYTHONFRAMEWORKDIR}/Versions/${VERSION}/${PYTHONFRAMEWORK}"
+            LDFLAGS2=`${PYTHON} -c "from distutils import sysconfig; \
+                print sysconfig.get_config_var(\"LINKFORSHARED\").replace( \
+                \"${STRING}\", '')"`
+
+            LDLIBS=`${PYTHON} -c 'from distutils import sysconfig; \
+                print sysconfig.get_config_var("LIBS")'`
+
+            PYTHON_LDFLAGS="${LDFLAGS1} ${LDFLAGS2} ${LDLIBS}"
+        fi
 	fi
+
 	AC_MSG_RESULT([$PYTHON_LDFLAGS])
 	AC_SUBST([PYTHON_LDFLAGS])
 

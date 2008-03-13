@@ -9,7 +9,7 @@ dist_noinst_JAVA = Listener.java SendMessage.java example_t.java
 CLEANFILES = example_t.java
 
 example_t.java: ../types/example_t.lcm
-	$(LCMGEN) -j $<
+	$(LCMGEN) -j ../types/example_t.lcm
 
 JAVACFLAGS = -cp ../../lcm-java/lcm.jar:.
 

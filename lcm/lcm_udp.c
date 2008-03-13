@@ -42,6 +42,14 @@
 #define HUGE 3.40282347e+38F
 #endif
 
+#ifdef __APPLE__
+#define USE_REUSEPORT
+#else
+#ifdef __FreeBSD__
+#define USE_REUSEPORT
+#endif
+#endif
+
 typedef struct _lcm2_header_short lcm2_header_short_t;
 struct _lcm2_header_short {
     uint32_t magic;
@@ -1179,8 +1187,8 @@ lcm_udpm_create (lcm_t * parent, const char *url)
         return NULL;
     }
 
-#ifdef __APPLE__
-    /* Strangely, Mac OS requires the REUSEPORT option in addition
+#ifdef USE_REUSEPORT
+    /* Mac OS and FreeBSD require the REUSEPORT option in addition
      * to REUSEADDR or it won't let multiple processes bind to the
      * same port, even if they are using multicast. */
     dbg (DBG_LCM, "LCM: setting SO_REUSEPORT\n");
