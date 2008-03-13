@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <sys/types.h>
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
