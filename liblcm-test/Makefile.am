@@ -1,7 +1,6 @@
 INCLUDES = -I$(top_srcdir)
 
-bin_PROGRAMS = lcm-sink lcm-source lcm-tester
-noinst_PROGRAMS = lcm-example 
+noinst_PROGRAMS = lcm-sink lcm-source lcm-tester lcm-example
 
 lcm_example_SOURCES = lcm-example.c 
 lcm_example_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la
