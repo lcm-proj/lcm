@@ -21,7 +21,7 @@ handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
     logplayer_t * l = u;
 
     if (l->verbose)
-        printf ("%.3f Channel %-20s %d bytes\n", rbuf->recv_utime / 1000000.0,
+        printf ("%.3f Channel %-20s size %d\n", rbuf->recv_utime / 1000000.0,
                 channel, rbuf->data_size);
 
     lcm_publish (l->lcm_out, channel, rbuf->data, rbuf->data_size);
@@ -35,12 +35,12 @@ Usage: %s [OPTION...] FILE\n\
   Reads packets from an LCM log file and publishes them to LCM.\n\
 \n\
 Options:\n\
-  -v, --verbose           Print information about each packet.\n\
-  -s, --speed=NUM         Playback speed.  Defaults is 1.0.\n\
-  -p, --provider=URL      LCM URL where packets should be published.\n\
-                          Default is \"udpm://?transmit_only=true\"\n\
-  -e, --regexp=EXPRESSION Regular expression of packet channels to accept.\n",
-            cmd);
+  -v, --verbose       Print information about each packet.\n\
+  -s, --speed=NUM     Playback speed multiplier.  Default is 1.0.\n\
+  -p, --provider=PRV  LCM network provider where packets should be published.\n\
+                      Default is \"udpm://?transmit_only=true\"\n\
+  -e, --regexp=EXPR   POSIX regular expression of channels to play.\n\
+  \n", cmd);
 }
 
 int
