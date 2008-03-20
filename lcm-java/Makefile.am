@@ -16,10 +16,10 @@ clean-local:
 	rm -f `find $(JAVAROOT) -name "*.class"`
 	rm -f $(JARFILE)
 
-bin_SCRIPTS = lcm-jlogplayer lcm-spy
+bin_SCRIPTS = lcm-logplayer-gui lcm-spy
 CLEANFILES = $(bin_SCRIPTS)
 
-lcm-jlogplayer:
+lcm-logplayer-gui:
 	@echo > $@ "#!/bin/sh"
 	@echo >> $@ "exec java -server -Xincgc -Xmx64m -Xms32m -ea -cp ${jardir}/lcm.jar lcm.logging.LogPlayer \$$*"
 	chmod 755 $@
