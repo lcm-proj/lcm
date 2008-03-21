@@ -19,8 +19,10 @@ CLEANFILES = \
 	example_t.c \
 	example_t.h
 
-example_t.c: ../types/example_t.lcm
-	$(LCMGEN) -c ../types/example_t.lcm
+EXAMPLE_T = $(srcdir)/../types/example_t.lcm
 
-example_t.h: ../types/example_t.lcm
-	$(LCMGEN) -c ../types/example_t.lcm
+example_t.c: $(EXAMPLE_T)
+	$(LCMGEN) -c $(EXAMPLE_T)
+
+example_t.h: $(EXAMPLE_T)
+	$(LCMGEN) -c $(EXAMPLE_T)
