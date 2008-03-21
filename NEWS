@@ -1,14 +1,24 @@
+Mar 21, 2008
+============
+
+    Release 0.0.4:
+
+    * Portability improvements.  Core functionality is now tested on FreeBSD,
+      Mac OS X, Linux, Solaris 10, and cygwin.
+    * Added command line tool lcm-logplayer
+    * Renamed GUI lcm-jlogplayer to lcm-logplayer-gui
+
 Mar 5, 2008
 ===========
 
-* Release 0.0.3
+    Release 0.0.3
 
 Mar 2, 2008
 ===========
 
-* Release 0.0.2
+    Release 0.0.2
 
 Jan 21, 2008
 ============
 
-* Initial release 0.0.1
+    Initial release 0.0.1
