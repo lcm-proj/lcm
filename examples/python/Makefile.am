@@ -6,6 +6,7 @@ CLEANFILES = \
 	example_t.py
 
 noinst_SCRIPTS = listener.py send-message.py
+EXTRA_DIST = listener.py send-message.py
 
 listener.py send-message.py: example_t.py
 
