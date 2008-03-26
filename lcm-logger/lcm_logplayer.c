@@ -40,6 +40,7 @@ Options:\n\
   -p, --provider=PRV  LCM network provider where packets should be published.\n\
                       Default is \"udpm://?transmit_only=true\"\n\
   -e, --regexp=EXPR   POSIX regular expression of channels to play.\n\
+  -h, --help          Shows some help text and exits.\n\
   \n", cmd);
 }
 

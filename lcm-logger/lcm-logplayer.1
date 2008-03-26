@@ -1,0 +1,49 @@
+.TH lcm-logplayer 1 2007-12-13 "LCM" "LCM"
+.SH NAME
+lcm-logplayer
+.SH SYNOPSIS
+.TP 5
+\fBlcm-logplayer \fI[options]\fR \fI[FILE]\fR
+
+.SH DESCRIPTION
+.PP
+\fBlcm-logplayer\fR is a minimalist Lightweight Communications and Marshalling
+logfile playback tool.  It provides a small set of options for controlling
+logfile playback, and is primarily intended for situations where a command line
+program is either desired or the only option.
+In situations where both Java and a
+graphical interface are available, \fBlcm-logplayer-gui\fR provides a more
+featureful logplayer with a graphical user interface.
+
+.SH OPTIONS
+The following options are provided by \fBlcm-logplayer\fR
+.TP
+.B \-v, \-\-verbose
+Print information about each packet.
+.TP
+.B \-s, \-\-speed=\fINUM\fR
+Playback speed multipler.  Default is 1.0
+.TP
+.B \-p \fIPRV\fR, \-\-provider \fIPRV\fR
+LCM network provider where packets should be published.  Default is
+"udpm://?transmit_only=true"
+.TP
+.B \-e, \-\-regexp=\fIEXPR\fR
+POSIX regular expression of channels to play.
+.TP
+.B \-h, \-\-help
+Shows some help text and exits
+
+.SH SEE ALSO
+.BR lcm-logplayer-gui (1)
+.BR regex (7)
+
+.SH AUTHORS
+
+This manual page was written by Albert Huang <ashuang@alum.mit.edu>.
+Permission is granted to copy, distribute 
+and/or modify this document under the terms of the GNU 
+Free Documentation License, Version 1.1 or any later 
+version published by the Free Software Foundation; with no 
+Invariant Sections, no Front-Cover Texts and no Back-Cover 
+Texts. 

@@ -8,6 +8,6 @@ lcm_logger_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la
 lcm_logplayer_SOURCES = lcm_logplayer.c
 lcm_logplayer_LDADD = ../lcm/liblcm.la
 
-man_MANS = lcm-logger.1
+man_MANS = lcm-logger.1 lcm-logplayer.1
 
-EXTRA_DIST = lcm-logger.1
+EXTRA_DIST = lcm-logger.1 lcm-logplayer.1

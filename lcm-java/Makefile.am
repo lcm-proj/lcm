@@ -61,10 +61,10 @@ dist_noinst_JAVA = \
     lcm/spy/ObjectPanel.java \
     lcm/spy/ChannelData.java 
 
-man_MANS = lcm-spy.1
+man_MANS = lcm-spy.1 lcm-logplayer-gui.1
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = lcm-java.pc
-EXTRA_DIST = lcm-java.pc.in lcm-spy.1
+EXTRA_DIST = lcm-java.pc.in lcm-spy.1 lcm-logplayer-gui.1
 
 endif

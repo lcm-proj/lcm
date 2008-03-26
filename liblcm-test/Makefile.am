@@ -14,6 +14,6 @@ lcm_source_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la
 lcm_tester_SOURCES = lcm-tester.c 
 lcm_tester_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la
 
-man_MANS = lcm-example.1 lcm-sink.1 lcm-source.1 lcm-tester.1
+#man_MANS = lcm-example.1 lcm-sink.1 lcm-source.1 lcm-tester.1
 
 EXTRA_DIST = lcm-example.1 lcm-sink.1 lcm-source.1 lcm-tester.1
