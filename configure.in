@@ -4,9 +4,8 @@ AM_CONFIG_HEADER(config.h)
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(lcm, 0.0.4)
 
-# g_build_filenamev and g_mkdir_with_parents are new in glib 2.8
 AC_PROG_CC
-AM_PATH_GLIB_2_0(,,[AC_MSG_ERROR([LCM requires GLib >= 2.8])],gthread)
+AM_PATH_GLIB_2_0(,,[AC_MSG_ERROR([LCM requires GLib >= 2.0])],gthread)
 AC_PATH_PROGS(JAR, [jar])
 AC_PATH_PROGS(JAVAC, [javac])
 
