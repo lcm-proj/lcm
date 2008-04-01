@@ -195,8 +195,7 @@ $ac_distutils_result])
         else
             LDFLAGS1="-framework ${PYTHONFRAMEWORK}"
 
-            VERSION="${PYTHON_VERSION}"
-            STRING="${PYTHONFRAMEWORKDIR}/Versions/${VERSION}/${PYTHONFRAMEWORK}"
+            STRING="${PYTHONFRAMEWORKDIR}/Versions/${PYTHON_VERSION}/${PYTHONFRAMEWORK}"
             LDFLAGS2=`${PYTHON} -c "from distutils import sysconfig; \
                 print sysconfig.get_config_var(\"LINKFORSHARED\").replace( \
                 \"${STRING}\", '')"`
