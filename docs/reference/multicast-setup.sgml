@@ -126,10 +126,9 @@
     discarded.</para>
     
     <para>When LCM is used in a high-bandwidth application, it may become
-    necessary to increase the maximum kernel receive buffer size to avoid
-    dropped packets.  There are two steps to this process.  First, the kernel
-    must be configured to allow larger receive buffers.  Second, the
-    application must request a larger receive buffer.</para>
+    necessary to increase both the default and the maximum kernel receive
+    buffer size to avoid dropped packets.
+    </para>
    
     <para>Configuring the kernel can be done without rebooting, but requires
     superuser privileges.  <xref linkend="table:kernel-udp-buffer-resizing"/>
@@ -137,39 +136,50 @@
     </para>
 
 <table id="table:kernel-udp-buffer-resizing">
-    <title>Setting Kernel UDP Receive Buffer Maximum Size</title>
+    <title>Setting Kernel UDP Receive Buffer Parameters</title>
 
-    <tgroup cols="2">
+    <tgroup cols="3">
+    <thead>
+    <row>
+    <entry>OS</entry>
+    <entry>Maximum</entry>
+    <entry>Default</entry>
+    </row>
+    </thead>
         <tbody>
             <row>
                 <entry><para>Linux</para></entry>
                 <entry><literal>sysctl -w net.core.rmem_max=2097152</literal></entry>
+                <entry><literal>sysctl -w net.core.rmem_default=2097152</literal></entry>
             </row>
             <row>
                 <entry><para>Solaris</para></entry>
                 <entry><literal>ndd -set /dev/udp udp_max_buf 2097152</literal></entry>
+                <entry>unknown.</entry>
             </row>
             <row>
-                <entry><para>FreeBSD, Darwin</para></entry>
+                <entry><para>FreeBSD, Darwin (OS X)</para></entry>
                 <entry><literal>sysctl -w kern.ipc.maxsockbuf=2097152</literal>
                 </entry>
+                <entry>unknown.</entry>
             </row>
         </tbody>
     </tgroup>
 </table>
 
-    <para>Most GNU/Linux distributions also allow setting this permanently
-    using the file <filename>/etc/sysctl.conf</filename>.  To do this, insert
-    the following line into the file somewhere:
+    <para>Most GNU/Linux distributions also allow setting these permanently
+    using the file <filename>/etc/sysctl.conf</filename>.  To do this, add
+    the following lines into the file somewhere:
     <screen>
     net.core.rmem_max=2097152
+    net.core.rmem_default=2097152
     </screen>
     </para>
 
-    <para>An LCM application that expects to receive large amounts of data
-    very quickly (e.g. greater than 1-2 MB/s) should request a larger receive
-    buffer.  This is done by setting the <literal>recv_buf_size</literal>
-    option with the <literal>udpm</literal> provider in <function><link
+    <para>An LCM application can also explicitly request a larger receive
+    buffer, which is useful on Solaris and FreeBSD/OS X.  This is done by
+    setting the <literal>recv_buf_size</literal> option with the
+    <literal>udpm</literal> provider in <function><link
     linkend="lcm-create">lcm_create</link></function>.  In our initial
     projects, which involved typical data rates of 10 MB/s, a 2 MB receive
     buffer was generally sufficient.</para>

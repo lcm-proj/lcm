@@ -188,7 +188,7 @@ struct _example_t
     on that below.</para>
     
     <para>
-    We can instatiate and then publish some sample data as follows:
+    We can instantiate and then publish some sample data as follows:
     </para>
 
     <programlisting>
