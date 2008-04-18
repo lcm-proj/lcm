@@ -714,22 +714,20 @@ public class LogPlayer extends JComponent
 			long speed_scale = (long) (speed*16.0);
 			long waitTime = logRelativeTime - speed_scale*clockRelativeTime/16;
 
-			long maxWaitTime = 250000;
-
-			if (waitTime > maxWaitTime) {
-			    System.out.printf("Hole in log from %15d - %15d (%15.3f seconds)\n",
-					      last_e_utime, e.utime, (e.utime - last_e_utime)/1000000.0);
-			    waitTime = maxWaitTime;
-			    lastspeed = 0;
-			}
 			last_e_utime = e.utime;
 
 			try {
-			    if (waitTime > 0) {
-				long sleepns = (long) (waitTime*1000);
-				int sleepms = (int) (sleepns/1000000);
-				sleepns -= sleepms*1000000;
-				Thread.sleep(sleepms, (int) sleepns);
+			    long waitms = waitTime / 1000;
+
+			    // We might have a very long wait, but
+			    // only sleep for relatively short amounts
+			    // of time so that we remain responsive to
+			    // seek/speed changes.
+			    while (waitms > 0 && !stopflag) {
+				long thiswaitms = Math.min(50, waitms);
+
+				Thread.sleep(thiswaitms);
+				waitms -= thiswaitms;
 			    }
 			} catch (InterruptedException ex) {
 			    System.out.println("Interrupted");

@@ -16,6 +16,7 @@ public class LogFileProvider implements Provider
     double speed; // how fast do we play? <=0 for "as fast as possible"
     double delay; // how many seconds to delay before starting to play? (crude race-condition hack)
     boolean verbose; // report actual speed periodically
+    double skip; // skip a fraction of the log file [0, 1.0]
 
     public LogFileProvider(LCM lcm, String url) throws IOException
     {
@@ -29,6 +30,7 @@ public class LogFileProvider implements Provider
 	speed = up.get("speed", 1.0);
 	delay = up.get("delay", 0.5);
 	verbose = up.get("verbose", false);
+	skip = up.get("skip", 0.0); // skip this fraction of the log file.
 
 	new ReaderThread().start();
     }
@@ -63,6 +65,8 @@ public class LogFileProvider implements Provider
 
 	void runEx() throws IOException, InterruptedException
 	{
+	    log.seekPositionFraction(skip);
+
 	    while (lcm.getNumSubscriptions()==0)
 		Thread.sleep(10);
 

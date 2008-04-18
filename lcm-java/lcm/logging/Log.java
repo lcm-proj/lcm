@@ -80,9 +80,9 @@ public class Log
 	return raf.getFilePointer()/((double) raf.length());
     }
 
-    public synchronized void seekPositionFraction(double percent) throws IOException
+    public synchronized void seekPositionFraction(double frac) throws IOException
     {
-	raf.seek((long) (raf.length()*percent));
+	raf.seek((long) (raf.length()*frac));
     }
 
     public synchronized void write(Event e) throws IOException
