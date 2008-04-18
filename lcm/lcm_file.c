@@ -89,7 +89,9 @@ timer_thread (void * user)
                 // select timed out
                 write (lr->notify_pipe[1], "+", 1);
             }
-        }
+        } else {
+            write (lr->notify_pipe[1], "+", 1);
+       }
     }
     perror ("timer_thread read failed");
     return NULL;
