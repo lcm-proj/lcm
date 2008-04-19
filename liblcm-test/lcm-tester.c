@@ -206,6 +206,7 @@ int main (int argc, char **argv)
     lcm_t *tlcm = lcm_create ("udpm://?transmit_only=true");
 
     // registering a handler should fail
+    printf("Expecting an ERROR in handler registration...\n");
     h = lcm_subscribe (tlcm, "TEST", test_handler, NULL);
     FAIL_IF_GOOD_HID (h);
     // invoking lcm_handle should fail
