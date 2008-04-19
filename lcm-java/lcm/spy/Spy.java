@@ -308,21 +308,29 @@ public class Spy
 		    cd.viewer.setObject(o);
 
 	    } catch (NullPointerException ex) {
-		cd.nerrors++;
+		// cd can be null if we received a non-LCM
+		// auto-generated type.
+		if (cd != null)
+		    cd.nerrors++;
 	    } catch (IOException ex) {
-		cd.nerrors++;
+		if (cd != null)
+		    cd.nerrors++;
 		System.out.println("Spy.messageReceived ex: "+ex);
 	    } catch (NoSuchMethodException ex) {
-		cd.nerrors++;
+		if (cd != null)
+		    cd.nerrors++;
 		System.out.println("Spy.messageReceived ex: "+ex);
 	    } catch (InstantiationException ex) {
-		cd.nerrors++;
+		if (cd != null)
+		    cd.nerrors++;
 		System.out.println("Spy.messageReceived ex: "+ex);
 	    } catch (IllegalAccessException ex) {
-		cd.nerrors++;
+		if (cd != null)
+		    cd.nerrors++;
 		System.out.println("Spy.messageReceived ex: "+ex);
 	    } catch (InvocationTargetException ex) {
-		cd.nerrors++;
+		if (cd != null)
+		    cd.nerrors++;
 		// these are almost always spurious
 		//System.out.println("ex: "+ex+"..."+ex.getTargetException());
 	    }
