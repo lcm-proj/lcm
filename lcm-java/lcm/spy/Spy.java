@@ -268,7 +268,7 @@ public class Spy
 
 	    try {
 		msg_size = dins.available();
-		long fingerprint = dins.readLong();
+		long fingerprint = (msg_size >=8) ? dins.readLong() : -1;
 		dins.reset();
 
 		Class cls = handlers.getClassByFingerprint(fingerprint);
@@ -308,33 +308,24 @@ public class Spy
 		    cd.viewer.setObject(o);
 
 	    } catch (NullPointerException ex) {
-		// cd can be null if we received a non-LCM
-		// auto-generated type.
-		if (cd != null)
-		    cd.nerrors++;
+		cd.nerrors++;
 	    } catch (IOException ex) {
-		if (cd != null)
-		    cd.nerrors++;
+		cd.nerrors++;
 		System.out.println("Spy.messageReceived ex: "+ex);
 	    } catch (NoSuchMethodException ex) {
-		if (cd != null)
-		    cd.nerrors++;
+		cd.nerrors++;
 		System.out.println("Spy.messageReceived ex: "+ex);
 	    } catch (InstantiationException ex) {
-		if (cd != null)
-		    cd.nerrors++;
+		cd.nerrors++;
 		System.out.println("Spy.messageReceived ex: "+ex);
 	    } catch (IllegalAccessException ex) {
-		if (cd != null)
-		    cd.nerrors++;
+		cd.nerrors++;
 		System.out.println("Spy.messageReceived ex: "+ex);
 	    } catch (InvocationTargetException ex) {
-		if (cd != null)
-		    cd.nerrors++;
+		cd.nerrors++;
 		// these are almost always spurious
 		//System.out.println("ex: "+ex+"..."+ex.getTargetException());
 	    }
-	    
 	}
     }
 
