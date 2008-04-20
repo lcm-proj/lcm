@@ -1,13 +1,10 @@
 
-JAVAROOT = .
+JAVAROOT = build
 JARFILE = lcm$(apiversion).jar
-#BUILDROOT = build
-#JAVACFLAGS = -d $(BUILDROOT)
 
 $(JARFILE): classdist_noinst.stamp
 	rm -f $(JARFILE)
-#	$(JAR) cf $(JARFILE) -C $(BUILDROOT) .
-	$(JAR) cf $(JARFILE) .
+	$(JAR) cf $(JARFILE) -C $(JAVAROOT) .
 
 if HAVE_JAVA
 jar_DATA = $(JARFILE)
@@ -18,6 +15,11 @@ clean-local:
 
 bin_SCRIPTS = lcm-logplayer-gui lcm-spy
 CLEANFILES = $(bin_SCRIPTS)
+
+lcm/lcm/LCM.java: build
+
+build:
+	mkdir build
 
 lcm-logplayer-gui:
 	@echo > $@ "#!/bin/sh"
