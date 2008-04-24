@@ -14,19 +14,15 @@ struct tokenize
 	// position where last token started
 	int line, column;
 
-	// position where next token starts
-	int nextline, nextcolumn;
-
 	// used to track accurate positions wrt ungetc
 	int save_line, save_column;
 	int unget_char; // the char that was unget'd, or -1
 
 	// current position of parser (end of last token, usually)
-	int in_line, in_column;
+	int in_line, in_column, in_line_len;
 
 	// the current line
 	char *line_buffer;
-	int  line_pos, line_len;
 	
 	char *path;
 	FILE *f;

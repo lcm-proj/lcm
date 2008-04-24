@@ -42,15 +42,18 @@ tokenize_t *tokenize_create(const char *path)
 	t->token = (char*) calloc(1, MAX_TOKEN_LEN);
 	t->line_buffer = (char*) calloc(1, MAX_LINE_LEN);
 
+    // Line and column indices for the internal next_char
 	t->in_line = 0;
 	t->in_column = 0;
+	t->in_line_len = 0;
+
+    // Line and column indices for the last returned token
 	t->line = -1;
 	t->column = -1;
+
 	t->hasnext = 0;
 
-	t->line_pos = 0;
-	t->line_len = 0;
-
+    // used to save state for ungetc()
 	t->save_line = 0;
 	t->save_column = 0;
 	t->unget_char = -1; // no currently saved char.
@@ -84,18 +87,16 @@ int tokenize_next_char(tokenize_t *t)
 		// otherwise, get a character from the input stream
 
 		// read the next line if we're out of data
-		if (t->line_pos == t->line_len) {
+		if (t->in_column == t->in_line_len) {
 			// reminder: fgets will store the newline in the buffer.
 			if (fgets(t->line_buffer, MAX_LINE_LEN, t->f)==NULL)
 				return EOF;
-			t->line_len = strlen(t->line_buffer);
-			t->line_pos = 0;
+			t->in_line_len = strlen(t->line_buffer);
+			t->in_column = 0;
             t->in_line++;
-            t->in_column = 0;
 		}
 		
-		c = t->line_buffer[t->line_pos++];
-        t->in_column++;
+		c = t->line_buffer[t->in_column++];
 	}
 
 	return c;
