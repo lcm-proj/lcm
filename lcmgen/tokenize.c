@@ -42,7 +42,7 @@ tokenize_t *tokenize_create(const char *path)
 	t->token = (char*) calloc(1, MAX_TOKEN_LEN);
 	t->line_buffer = (char*) calloc(1, MAX_LINE_LEN);
 
-	t->in_line = 1;
+	t->in_line = 0;
 	t->in_column = 0;
 	t->line = -1;
 	t->column = -1;
@@ -90,17 +90,12 @@ int tokenize_next_char(tokenize_t *t)
 				return EOF;
 			t->line_len = strlen(t->line_buffer);
 			t->line_pos = 0;
+            t->in_line++;
+            t->in_column = 0;
 		}
 		
 		c = t->line_buffer[t->line_pos++];
-	}
-
-	// count lines
-	if (c=='\n') {
-		t->in_line++;
-		t->in_column = 0;
-	} else {
-		t->in_column++;
+        t->in_column++;
 	}
 
 	return c;
@@ -131,8 +126,10 @@ int tokenize_next_internal(tokenize_t *t)
 
 skip_white:
 	c = tokenize_next_char(t);
-	if (c == EOF)
-		return EOF;
+
+	if (c == EOF) 
+        return EOF;
+
 	if (isspace(c))
 		goto skip_white;
 
@@ -220,7 +217,7 @@ in_tok:
 		goto end_tok;
 	}
 	
-	if (!isspace(c))
+	if (!isspace(c) && c != EOF)
 		goto in_tok;
 
 end_tok:
