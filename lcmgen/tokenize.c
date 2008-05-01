@@ -40,22 +40,14 @@ tokenize_t *tokenize_create(const char *path)
 	}
 
 	t->token = (char*) calloc(1, MAX_TOKEN_LEN);
-	t->line_buffer = (char*) calloc(1, MAX_LINE_LEN);
-
-    // Line and column indices for the internal next_char
-	t->in_line = 0;
-	t->in_column = 0;
-	t->in_line_len = 0;
+	t->buffer = (char*) calloc(1, MAX_LINE_LEN);
 
     // Line and column indices for the last returned token
-	t->line = -1;
-	t->column = -1;
+	t->token_line = -1;
+	t->token_column = -1;
 
 	t->hasnext = 0;
 
-    // used to save state for ungetc()
-	t->save_line = 0;
-	t->save_column = 0;
 	t->unget_char = -1; // no currently saved char.
 
 	return t;
@@ -63,7 +55,7 @@ tokenize_t *tokenize_create(const char *path)
 
 void tokenize_destroy(tokenize_t *t)
 {
-	free(t->line_buffer);
+	free(t->buffer);
 	free(t->token);
 
 	fclose(t->f);
@@ -74,39 +66,43 @@ void tokenize_destroy(tokenize_t *t)
 /** get the next character, counting line numbers, and columns. **/ 
 int tokenize_next_char(tokenize_t *t)
 {
-	t->save_line = t->in_line;
-	t->save_column = t->in_column;
-
-	int c;
-
 	// return an unget() char if one is stored
 	if (t->unget_char >= 0) {
-		c = t->unget_char;
-		t->unget_char = -1;
-	} else {
-		// otherwise, get a character from the input stream
 
-		// read the next line if we're out of data
-		if (t->in_column == t->in_line_len) {
-			// reminder: fgets will store the newline in the buffer.
-			if (fgets(t->line_buffer, MAX_LINE_LEN, t->f)==NULL)
-				return EOF;
-			t->in_line_len = strlen(t->line_buffer);
-			t->in_column = 0;
-            t->in_line++;
-		}
-		
-		c = t->line_buffer[t->in_column++];
-	}
+		t->current_char = t->unget_char;
+        t->current_line = t->unget_line;
+        t->current_column = t->unget_column;
+        t->unget_char = -1; // mark the unget as consumed.
 
-	return c;
+        return t->current_char;
+    }
+    
+    // otherwise, get a character from the input stream
+    
+    // read the next line if we're out of data
+    if (t->buffer_column == t->buffer_len) {
+        // reminder: fgets will store the newline in the buffer.
+        if (fgets(t->buffer, MAX_LINE_LEN, t->f)==NULL)
+            return EOF;
+        t->buffer_len = strlen(t->buffer);
+        t->buffer_line++;
+        t->buffer_column = 0;
+    }
+    
+    t->current_char = t->buffer[t->buffer_column];
+    t->current_line = t->buffer_line;
+    t->current_column = t->buffer_column;
+
+    t->buffer_column++;
+
+	return t->current_char;
 }
 
 int tokenize_ungetc(tokenize_t *t, int c)
 {
-	t->in_line = t->save_line;
-	t->in_column = t->save_column;
-	t->unget_char = c;
+    t->unget_char = t->current_char;
+    t->unget_column = t->current_column;
+    t->unget_line = t->current_line;
 
 	return 0;
 }
@@ -135,8 +131,8 @@ skip_white:
 		goto skip_white;
 
 	// a token is starting. mark its position.
-	t->line = t->in_line;
-	t->column = t->in_column;
+	t->token_line = t->current_line;
+	t->token_column = t->current_column;
 
 	// is a character literal?
 	if (c=='\'') {

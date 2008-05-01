@@ -10,20 +10,24 @@ struct tokenize
 {
 	// current token
 	char *token;
+	int token_line, token_column;
 
-	// position where last token started
-	int line, column;
+    // info about the last returned character from next_char.
+    int current_char;
+    int current_line, current_column;
 
-	// used to track accurate positions wrt ungetc
-	int save_line, save_column;
-	int unget_char; // the char that was unget'd, or -1
+    // If there is an ungetc() pending, unget_char >0 and contains the
+    // char. unget_line and unget_column are the line and column of
+    // the unget'd char.
+    int unget_char;
+    int unget_line, unget_column;
 
-	// current position of parser (end of last token, usually)
-	int in_line, in_column, in_line_len;
+	// the current line, and our position in the input stream.
+    // (ignoring the occurence of ungets.)
+	char *buffer;
+    int buffer_line, buffer_column;
+    int buffer_len;
 
-	// the current line
-	char *line_buffer;
-	
 	char *path;
 	FILE *f;
 

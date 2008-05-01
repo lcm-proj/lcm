@@ -236,8 +236,8 @@ void semantic_error(tokenize_t *t, const char *fmt, ...)
     vprintf(fmt, ap);
     printf("\n");
 
-    printf("%s : %i\n", t->path, t->line);
-    printf("%s", t->line_buffer);
+    printf("%s : %i\n", t->path, t->token_line);
+    printf("%s", t->buffer);
 
     va_end(ap);
     _exit(0);
@@ -253,8 +253,8 @@ void semantic_warning(tokenize_t *t, const char *fmt, ...)
     vprintf(fmt, ap);
     printf("\n");
 
-    printf("%s : %i\n", t->path, t->line);
-    printf("%s", t->line_buffer);
+    printf("%s : %i\n", t->path, t->token_line);
+    printf("%s", t->buffer);
 
     va_end(ap);
 }
@@ -269,11 +269,11 @@ void parse_error(tokenize_t *t, const char *fmt, ...)
     vprintf(fmt, ap);
     printf("\n");
 
-    printf("%s : %i\n", t->path, t->line);
-    printf("%s", t->line_buffer);
-    for (int i = 0; i < t->column; i++) {
-        if (isspace(t->line_buffer[i]))
-            printf("%c", t->line_buffer[i]);
+    printf("%s : %i\n", t->path, t->token_line);
+    printf("%s", t->buffer);
+    for (int i = 0; i < t->token_column; i++) {
+        if (isspace(t->buffer[i]))
+            printf("%c", t->buffer[i]);
         else
             printf(" ");
     }
@@ -556,7 +556,7 @@ int lcmgen_handle_file(lcmgen_t *lcmgen, const char *path)
         printf("%6s %6s %6s: %s\n", "tok#", "line", "col", "token");
 
         while (tokenize_next(t)!=EOF)
-            printf("%6i %6i %6i: %s\n", ntok++, t->line, t->column, t->token);
+            printf("%6i %6i %6i: %s\n", ntok++, t->token_line, t->token_column, t->token);
         return 0;
     }
 
