@@ -81,16 +81,6 @@ void setup_python_options(getopt_t *gopt)
 }
 
 static int
-is_type_enum (const char *name, GPtrArray *enums)
-{
-    for (unsigned int en = 0; en < enums->len; en++) {
-        lcm_enum_t *le = g_ptr_array_index(enums, en);
-        if (! strcmp(le->enumname->typename, name)) return 1;
-    }
-    return 0;
-}
-
-static int
 is_same_type (const lcm_typename_t *tn1, const lcm_typename_t *tn2) {
     return ! strcmp (tn1->typename, tn2->typename);
 }
@@ -127,7 +117,6 @@ _struct_format (const lcmgen_t *lcm, lcm_member_t *lm)
     if (!strcmp ("int64_t", tn)) return 'q';
     if (!strcmp ("float", tn)) return 'f';
     if (!strcmp ("double", tn)) return 'd';
-    if (is_type_enum (tn, lcm->enums)) return 'i';
     return 0;
 }
 
@@ -142,7 +131,6 @@ _primitive_type_size (const lcmgen_t *lcm, const char *tn)
     if (!strcmp ("int64_t", tn)) return 8;
     if (!strcmp ("float", tn)) return 4;
     if (!strcmp ("double", tn)) return 8;
-    if (is_type_enum (tn, lcm->enums)) return 4;
     assert (0);
 }
 
@@ -163,8 +151,7 @@ _emit_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
         emit (indent, "%sstruct.unpack('b', buf.read(1))[0]%s", accessor, sfx);
     } else if (!strcmp ("int16_t", tn)) {
         emit (indent, "%sstruct.unpack('>h', buf.read(2))[0]%s", accessor, sfx);
-    } else if (!strcmp ("int32_t", tn) || 
-            is_type_enum (lm->type->typename, lcm->enums)) {
+    } else if (!strcmp ("int32_t", tn)) {
         emit (indent, "%sstruct.unpack('>i', buf.read(4))[0]%s", accessor, sfx);
     } else if (!strcmp ("int64_t", tn)) {
         emit (indent, "%sstruct.unpack('>q', buf.read(8))[0]%s", accessor, sfx);
@@ -318,8 +305,7 @@ _emit_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
         emit (indent, "buf.write(struct.pack('b', %s))", accessor);
     } else if (!strcmp ("int16_t", tn)) {
         emit (indent, "buf.write(struct.pack('>h', %s))", accessor);
-    } else if (!strcmp ("int32_t", tn) || 
-            is_type_enum (lm->type->typename, lcm->enums)) {
+    } else if (!strcmp ("int32_t", tn)) {
         emit (indent, "buf.write(struct.pack('>i', %s))", accessor);
     } else if (!strcmp ("int64_t", tn)) {
         emit (indent, "buf.write(struct.pack('>q', %s))", accessor);
@@ -438,11 +424,7 @@ emit_python_init (const lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
         fprintf(f, "        self.%s = ", lm->membername);
 
         if( 0 == lm->dimensions->len ) {
-            if (is_type_enum(lm->type->typename, lcm->enums) ) {
-                fprintf(f, "0\n");
-            } else {
-                fprintf(f, "%s\n", nil_initializer_string(lm->type));
-            }
+            fprintf(f, "%s\n", nil_initializer_string(lm->type));
         } else {
             fprintf(f, "[]\n");
         }
@@ -621,22 +603,58 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                 "DO NOT MODIFY BY HAND!!!!\n"
                 "\"\"\"\n"
                 "\n"
+                "import cStringIO as StringIO\n"
                 "import struct\n");
 
         // enums always encoded as int32
         emit (0, "class %s:", le->enumname->shortname);
+        emit (1, "__slots__ = ( \"value\" )");
         for (unsigned int v = 0; v < le->values->len; v++) {
             lcm_enum_value_t *lev = g_ptr_array_index(le->values, v);
             emit(1, "%s = %i", lev->valuename, lev->value);
         }
 
-        emit (1, "_hash = 0x%"PRIx64, le->hash);
+        emit (1, "_packed_fingerprint = struct.pack(\">Q\", 0x%"PRIx64")",
+                le->hash);
+        fprintf (f, "\n");
+
+        emit (1, "def __init__ (self, value):");
+        emit (2,     "self.value = value");
+        fprintf (f, "\n");
+
         emit (1, "def _get_hash_recursive(parents):");
-        emit (2,     "return %s._hash", le->enumname->shortname);
+        emit (2,     "return 0x%"PRIx64, le->hash);
         emit (1, "_get_hash_recursive=staticmethod(_get_hash_recursive)");
         emit (1, "def _get_packed_fingerprint():");
-        emit (2,     "return struct.pack(\">Q\", %s._hash)", le->enumname->shortname);
+        emit (2,     "return _%s._packed_fingerprint", le->enumname->shortname);
         emit (1, "_get_packed_fingerprint = staticmethod(_get_packed_fingerprint)");
+        fprintf (f, "\n");
+
+        emit (1, "def encode(self):");
+        emit (2,     "return struct.pack(\">Qi\", 0x%"PRIx64", self.value)",
+                le->hash);
+
+        emit (1, "def _encode_one(self, buf):");
+        emit (2,     "buf.write (struct.pack(\">i\", self.value))");
+        fprintf (f, "\n");
+
+        emit (1, "def decode(data):");
+        emit (2,     "if hasattr (data, 'read'):");
+        emit (3,         "buf = data");
+        emit (2,     "else:");
+        emit (3,         "buf = StringIO.StringIO(data)");
+        emit (2,     "if buf.read(8) != %s._packed_fingerprint:", 
+                le->enumname->shortname);
+        emit (3,         "raise ValueError(\"Decode error\")");
+        emit (2,     "return %s(struct.unpack(\">i\", buf.read(4))[0])",
+                le->enumname->shortname);
+        emit (1, "decode = staticmethod(decode)");
+
+        emit (1, "def _decode_one(buf):");
+        emit (2,     "return %s(struct.unpack(\">i\", buf.read(4))[0])",
+                le->enumname->shortname);
+        emit (1, "_decode_one = staticmethod(_decode_one)");
+
         fprintf (f, "\n");
         fclose (f);
     }
