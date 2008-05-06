@@ -220,7 +220,7 @@ static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(2,         "if (fp->v == __%s_get_hash)", tn_);
     emit(3,              "return 0;");
     emit(0, " ");
-    emit(1, "const __lcm_hash_ptr cp = { .parent = p, .v = __%s_get_hash };", tn_);
+    emit(1, "const __lcm_hash_ptr cp = { p, (void*)__%s_get_hash };", tn_);
     emit(1, "(void) cp;");
     emit(0, " ");
     emit(1, "int64_t hash = 0x%016"PRIx64"LL", ls->hash);
