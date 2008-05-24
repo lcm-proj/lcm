@@ -721,6 +721,9 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
         emit(0, "typedef enum _%s %s;", tn_, tn_);
         emit(0, " ");
 
+        emit(0, "const char * %s_name(%s val);", tn_, tn_);
+        emit(0, " ");
+
         ///////////////////////////////////////////////////////////////////
 
         emit(0, "static inline int64_t __%s_hash_recursive(const __lcm_hash_ptr *p)", tn_);
@@ -834,13 +837,31 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
     
     // ENUM C file
     if (lcm_needs_generation(lcmgen, le->lcmfile, c_name)) {
+        char *tn_upper = g_ascii_strup (tn_, strlen (tn_));
+
         FILE *f = fopen(c_name, "w");
-        fprintf(f, "/** This is the .c file for an enum type. All of the declarations\n");
-        fprintf(f, "  * are in the corresponding header file. This file is intentionally\n");
-        fprintf(f, "  * empty, in order to allow Makefiles that expect all lcm types (even\n");
-        fprintf(f, "  * enums) to have a .c file.\n");
-        fprintf(f, "**/\n");
+        emit_auto_generated_warning(f);
+
+        fprintf(f, "#include \"%s%s%s.h\"\n",
+                getopt_get_string(lcmgen->gopt, "cinclude"),
+                strlen(getopt_get_string(lcmgen->gopt, "cinclude"))>0 ? "/" : "",
+                tn_);
+
+        emit(0, "const char * %s_name(%s val)", tn_, tn_);
+        emit(0, "{");
+        emit(1,     "switch (val) {");
+        for (unsigned int i = 0; i < g_ptr_array_size(le->values); i++) {
+            lcm_enum_value_t *lev = g_ptr_array_index(le->values, i);
+            emit(2, "case %s_%s:", tn_upper, lev->valuename);
+            emit(3,     "return \"%s\";", lev->valuename);
+        }
+        emit(2,         "default:");
+        emit(3,             "return NULL;");
+        emit(1,     "}");
+        emit(0, "}");
         fclose(f);
+
+        free (tn_upper);
     }
 
     return 0;
