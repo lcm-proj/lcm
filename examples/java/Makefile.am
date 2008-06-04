@@ -11,7 +11,7 @@ CLEANFILES = example_t.java
 example_t.java: ../types/example_t.lcm
 	$(LCMGEN) -j ../types/example_t.lcm
 
-JAVACFLAGS = -cp ../../lcm-java/lcm.jar:.
+JAVACFLAGS = -cp ../../lcm-java/lcm.jar:. -source 5
 
 endif
 
