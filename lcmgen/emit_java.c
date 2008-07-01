@@ -163,12 +163,13 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "public class %s %s", le->enumname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
 
         emit(0, "{");
-        emit(1, "public int value;");
+        emit(1, "private int value;");
         emit(0, " ");
 
         for (unsigned int v = 0; v < g_ptr_array_size(le->values); v++) {
             lcm_enum_value_t *lev = g_ptr_array_index(le->values, v);
-            emit(1, "static final %s %-16s = new %s(%i);", le->enumname->typename, lev->valuename, le->enumname->typename, lev->value);
+            emit(1, "public static final %s %-16s = new %s(%i);", 
+                    le->enumname->typename, lev->valuename, le->enumname->typename, lev->value);
             emit(0," ");            
         }
 
