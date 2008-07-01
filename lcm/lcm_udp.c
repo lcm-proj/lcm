@@ -424,6 +424,8 @@ static void udp_discard_packet(lcm_udpm_t *lcm)
                        (struct sockaddr*) &from, &fromlen);
     if (sz < 0) 
         perror("udp_discard_packet");
+ 
+    lcm->udp_discarded_buf++;
 }
 
 static void
@@ -591,41 +593,6 @@ udp_read_packet (lcm_udpm_t *lcm)
 {
     lcm_buf_t *lcmb = NULL;
 
-    while (1) {
-        g_static_rec_mutex_lock (&lcm->mutex);
-        lcmb = lcm_buf_dequeue (lcm->inbufs_empty);
-        g_static_rec_mutex_unlock (&lcm->mutex);
-
-        if (!lcmb) {
-            lcm->udp_discarded_lcmb++;
-            udp_discard_packet(lcm);            
-            continue;
-        }
-        break;
-    }
-
-    // allocate space on the ringbuffer for a new packet.
-    lcmb->buf = NULL;
-    while (1) {
-        g_static_rec_mutex_lock (&lcm->mutex);
-        // give it the maximum possible size for an unfragmented packet
-        lcmb->buf = lcm_ringbuf_alloc(lcm->ringbuf, 65536); 
-        lcmb->buf_from_ringbuf = 1;
-        g_static_rec_mutex_unlock (&lcm->mutex);
-        if (!lcmb->buf) {
-            lcm->udp_discarded_buf++;
-            udp_discard_packet(lcm);
-            continue;
-        }
-
-        // zero the last byte so that strlen never segfaults
-        lcmb->buf[65535] = 0; 
-
-        break;
-    }
-
-    assert (lcmb->buf_from_ringbuf);
-
     int sz = 0;
 
     g_static_rec_mutex_lock (&lcm->mutex);
@@ -670,33 +637,71 @@ udp_read_packet (lcm_udpm_t *lcm)
         FD_SET (lcm->thread_msg_pipe[0], &fds);
         int maxfd = MAX(lcm->recvfd, lcm->thread_msg_pipe[0]);
 
-        int select_status = select (maxfd + 1, &fds, NULL, NULL, NULL);
-
-        if (select_status < 0) { 
+        if (select (maxfd + 1, &fds, NULL, NULL, NULL) <= 0) { 
             perror ("udp_read_packet -- select:");
-            continue;
-        } else if (0 == select_status) {
             continue;
         }
 
         if (FD_ISSET (lcm->thread_msg_pipe[0], &fds)) {
             // received an exit command.
-            // Can just free the lcm_buf_t here.  Its data buffer is managed
-            // either by the ring buffer or the fragment buffer, so we can
-            // ignore it.
             dbg (DBG_LCM, "read thread received exit command\n");
-            free (lcmb);
+            if (lcmb) {
+                // lcmb is not on one of the memory managed buffer queues.  We could
+                // either put it back on one of the queues, or just free it here.  Do the
+                // latter.
+                //
+                // Can also just free its lcm_buf_t here.  Its data buffer is
+                // managed either by the ring buffer or the fragment buffer, so
+                // we can ignore it.
+                free (lcmb);
+            }
             return NULL;
         }
 
-        // there is incoming UDP data ready.  Grab and process it.
+        // there is incoming UDP data ready.
         assert (FD_ISSET (lcm->recvfd, &fds));
+
+        if (!lcmb) {
+            // try to allocate space on the ringbuffer for the new data
+
+            // first allocate a buffer struct
+            g_static_rec_mutex_lock (&lcm->mutex);
+            lcmb = lcm_buf_dequeue (lcm->inbufs_empty);
+
+            if (!lcmb) {
+                g_static_rec_mutex_unlock (&lcm->mutex);
+                udp_discard_packet (lcm);
+                continue;
+            }
+            lcmb->buf_from_ringbuf = 1;
+
+            // next allocate space on the ringbuffer.
+            // give it the maximum possible size for an unfragmented packet
+            lcmb->buf = lcm_ringbuf_alloc(lcm->ringbuf, 65536); 
+            g_static_rec_mutex_unlock (&lcm->mutex);
+
+            if (!lcmb->buf) {
+                // ringbuffer is full.  discard the packet, put lcmb back on the 
+                // empty queue, and start waiting again
+                udp_discard_packet (lcm);
+                lcm_buf_enqueue (lcm->inbufs_empty, lcmb);
+                lcmb = NULL;
+                continue;
+            }
+
+            // zero the last byte so that strlen never segfaults
+            lcmb->buf[65535] = 0; 
+        }
 
         struct iovec vec = {
             .iov_base = lcmb->buf,
             .iov_len = 65535,
         };
+
 #ifdef SO_TIMESTAMP
+        // operating systems that provide SO_TIMESTAMP allow us to obtain more
+        // accurate timestamps by having the kernel produce timestamps as soon
+        // as packets are received.
         char controlbuf[64];
 #endif
         struct msghdr msg = {
@@ -713,7 +718,7 @@ udp_read_packet (lcm_udpm_t *lcm)
         sz = recvmsg (lcm->recvfd, &msg, 0);
 
         if (sz < 0) {
-            perror ("udp_read_packet");
+            perror ("udp_read_packet -- recvmsg");
             lcm->udp_discarded_bad++;
             continue;
         }
@@ -730,7 +735,7 @@ udp_read_packet (lcm_udpm_t *lcm)
 #ifdef SO_TIMESTAMP
         struct cmsghdr * cmsg = CMSG_FIRSTHDR (&msg);
         /* Get the receive timestamp out of the packet headers if possible */
-        while (cmsg) {
+        while (!lcmb->recv_utime && cmsg) {
             if (cmsg->cmsg_level == SOL_SOCKET &&
                     cmsg->cmsg_type == SCM_TIMESTAMP) {
                 struct timeval * t = (struct timeval *) CMSG_DATA (cmsg);
