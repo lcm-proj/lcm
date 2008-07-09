@@ -227,7 +227,7 @@ lcm_subscription_t
 
     if (lcm->provider && lcm->vtable->subscribe) {
         if (0 != lcm->vtable->subscribe (lcm->provider, channel)) {
-            return -1;
+            return NULL;
         }
     }
 
