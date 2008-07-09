@@ -225,6 +225,12 @@ lcm_subscription_t
 {
     dbg (DBG_LCM, "registering %s handler %p\n", channel, handler);
 
+    if (lcm->provider && lcm->vtable->subscribe) {
+        if (0 != lcm->vtable->subscribe (lcm->provider, channel)) {
+            return -1;
+        }
+    }
+
     // create and populate a new message handler struct
     lcm_subscription_t *h = (lcm_subscription_t*)calloc (1, sizeof (lcm_subscription_t));
     h->channel = strdup(channel);

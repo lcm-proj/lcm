@@ -233,6 +233,7 @@ lcm_logread_handle (lcm_logread_t * lr)
 static lcm_provider_vtable_t logread_vtable = {
     .create     = lcm_logread_create,
     .destroy    = lcm_logread_destroy,
+    .subscribe  = NULL,
     .publish    = NULL,
     .handle     = lcm_logread_handle,
     .get_fileno = lcm_logread_get_fileno,

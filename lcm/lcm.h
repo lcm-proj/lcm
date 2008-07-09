@@ -63,10 +63,6 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  *
  *     options:
  *
- *         transmit_only = { true | false }
- *             If true, then receiving messages is disabled and fewer system
- *             resources are used.  Default false
- *
  *         recv_buf_size = N
  *             size of the kernel UDP receive buffer to request.  Defaults to
  *             operating system defaults
@@ -78,10 +74,6 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  *
  *         "udpm://239.255.76.67:7667"
  *             Default initialization string
- *
- *         "udpm://:9876?transmit_only=true"
- *             Uses the default multicast address, changes the port to 9876,
- *             and specifies that the lcm_t will never receive messages.
  *
  *         "udpm://?ttl=1"
  *             Uses default address/port, but sets the multicast TTL to 1 so

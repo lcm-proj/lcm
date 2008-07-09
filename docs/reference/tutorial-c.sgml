@@ -139,16 +139,9 @@ int main (int argc, char ** argv)
     "<literal>provider://network?option1=value1,option2=value2,...</literal>"  
     The reference manual for <function><link
     linkend="lcm-create">lcm_create</link></function> provides a list of the
-    exact values that can be specified.  One common usage is to initialize a
-    transmit-only LCM context, for modules that will transmit messages but
-    will never receive any:
-
-    <programlisting>
-lcm_t * lcm = lcm_create ("udpm://?transmit_only=true");
-</programlisting>
-
-    Another usage might be to allocate a large receive buffer, for
-    high-bandwidth modules (on the order of megabytes / second):
+    exact values that can be specified.  One usage might be to allocate a large
+    receive buffer, for high-bandwidth modules (on the order of megabytes /
+    second):
 
     <programlisting>
 lcm_t * lcm = lcm_create ("udpm://?recv_buf_size=2000000");

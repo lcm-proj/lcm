@@ -17,6 +17,7 @@ struct _lcm_provider_vtable_t {
     lcm_provider_t * (*create)(lcm_t *, const char *target,
             const GHashTable *args);
     void (*destroy)(lcm_provider_t *);
+    int (*subscribe)(lcm_provider_t *, const char *channel);
     int (*publish)(lcm_provider_t *, const char *, const uint8_t *, 
             unsigned int);
     int (*handle)(lcm_provider_t *);
