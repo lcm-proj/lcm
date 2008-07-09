@@ -360,45 +360,42 @@ lcm_parse_url (const char * url, char ** provider, char ** target,
     if (!url || !strlen (url))
         return -1;
 
-    char ** strs = g_strsplit (url, "://", 2);
-    if (!strs[0] || !strs[1]) {
-        g_strfreev (strs);
+    char ** provtarget_args = g_strsplit (url, "?", 2);
+    char ** prov_target = g_strsplit (provtarget_args[0], "://", 2);
+
+    int url_has_args = (provtarget_args[1] && strlen (provtarget_args[1]));
+    int url_has_provtarget = (prov_target[1] != NULL);
+
+    if (! url_has_provtarget && strlen (provtarget_args[0])) {
+        g_strfreev (provtarget_args);
+        g_strfreev (prov_target);
         return -1;
     }
 
-    if (provider)
-        *provider = strdup (strs[0]);
-    if (target)
-        *target = NULL;
+    if (url_has_provtarget) {
+        if (provider) *provider = strdup (prov_target[0]);
+        if (target)   *target   = strdup (prov_target[1]);
+    } else {
+        if (provider) *provider = NULL;
+        if (target)   *target   = NULL;
+    }
+    g_strfreev (prov_target);
 
-    char ** strs2 = g_strsplit (strs[1], "?", 2);
-    g_strfreev (strs);
-    if (!strs2[0]) {
-        g_strfreev (strs2);
-        return 0;
+    if (url_has_args && args) {
+        // parse the args
+        char ** split_args = g_strsplit_set (provtarget_args[1], ",&", -1);
+
+        for (int i = 0; split_args[i]; i++) {
+            char ** key_value = g_strsplit (split_args[i], "=", 2);
+            if (key_value[0] && strlen (key_value[0])) {
+                g_hash_table_insert (args, strdup (key_value[0]),
+                        key_value[1] ? strdup (key_value[1]) : strdup (""));
+            }
+            g_strfreev (key_value);
+        }
+        g_strfreev (split_args);
     }
 
-    if (strlen (strs2[0]) && target)
-        *target = strdup (strs2[0]);
-
-    if (!strs2[1] || !strlen (strs2[1]) || !args) {
-        g_strfreev (strs2);
-        return 0;
-    }
-
-    strs = g_strsplit_set (strs2[1], ",&", -1);
-    g_strfreev (strs2);
-
-    for (int i = 0; strs[i]; i++) {
-        strs2 = g_strsplit (strs[i], "=", 2);
-        if (!strs2[0] || !strlen (strs2[0]))
-            goto cont;
-        g_hash_table_insert (args, strdup (strs2[0]),
-                strs2[1] ? strdup (strs2[1]) : strdup (""));
-cont:
-        g_strfreev (strs2);
-    }
-    g_strfreev (strs);
-
+    g_strfreev (provtarget_args);
     return 0;
 }
