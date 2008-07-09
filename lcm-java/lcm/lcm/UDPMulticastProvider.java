@@ -51,11 +51,6 @@ public class UDPMulticastProvider implements Provider
 	sock.setTimeToLive(up.get("ttl", DEFAULT_TTL));
 	
 	sock.joinGroup(inetAddr);
-	
-	if (!up.get("transmitonly", false)) {
-	    reader = new ReaderThread();
-	    reader.start();
-	}
     }
 
     public synchronized void publish(String channel, byte data[], int offset, int length) 
@@ -64,6 +59,14 @@ public class UDPMulticastProvider implements Provider
 	    publishEx(channel, data, offset, length);
 	} catch (Exception ex) {
 	    System.out.println("ex: "+ex);
+	}
+    }
+
+    public synchronized void subscribe(String channel)
+    {
+	if (null == reader) {
+	    reader = new ReaderThread();
+	    reader.start();
 	}
     }
 

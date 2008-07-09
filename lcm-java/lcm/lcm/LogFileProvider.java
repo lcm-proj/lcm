@@ -45,6 +45,8 @@ public class LogFileProvider implements Provider
 	publishWarned = true;
     }
 
+    public synchronized void subscribe(String channel) { }
+
     class ReaderThread extends Thread
     {
 	ReaderThread()
