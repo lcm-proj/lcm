@@ -44,7 +44,7 @@ extern void
 lcm_logread_provider_init (GPtrArray * providers);
 
 lcm_t * 
-lcm_create (const char *provider)
+lcm_create (const char *url)
 {
     if (!g_thread_supported ()) g_thread_init (NULL);
 
@@ -58,16 +58,21 @@ lcm_create (const char *provider)
         return NULL;
     }
 
-    if (!provider || !strlen (provider)) {
+    if (!url || !strlen (url)) {
         /* If URL is blank, default to udpm */
-        provider = "udpm://";
+        url = "udpm://";
     }
 
     char * provider_str = NULL;
-    /* Get the desired provider name from the URL */
-    if (lcm_parse_url (provider, &provider_str, NULL, NULL) < 0) {
-        fprintf (stderr, "Error: invalid LCM URL \"%s\"\n", provider);
+    char * target = NULL;
+    GHashTable * args = g_hash_table_new_full (g_str_hash, g_str_equal,
+            free, free);
+
+    /* Parse the LCM URL */
+    if (lcm_parse_url (url, &provider_str, &target, args) < 0) {
+        fprintf (stderr, "Error: invalid LCM URL \"%s\"\n", url);
         g_ptr_array_free (providers, TRUE);
+        g_hash_table_destroy (args);
         return NULL;
     }
 
@@ -85,9 +90,10 @@ lcm_create (const char *provider)
                 provider_str);
         g_ptr_array_free (providers, TRUE);
         free (provider_str);
+        free (target);
+        g_hash_table_destroy (args);
         return NULL;
     }
-    free (provider_str);
 
     g_ptr_array_free (providers, TRUE);
 
@@ -99,7 +105,10 @@ lcm_create (const char *provider)
 
     g_static_rec_mutex_init (&lcm->mutex);
 
-    lcm->provider = info->vtable->create (lcm, provider);
+    lcm->provider = info->vtable->create (lcm, target, args);
+    free (provider_str);
+    free (target);
+    g_hash_table_destroy (args);
     if (!lcm->provider) {
         lcm_destroy (lcm);
         return NULL;

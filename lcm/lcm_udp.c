@@ -1056,17 +1056,8 @@ udpm_self_test (lcm_udpm_t *lcm)
 }
 
 lcm_provider_t * 
-lcm_udpm_create (lcm_t * parent, const char *url)
+lcm_udpm_create (lcm_t * parent, const char *target, const GHashTable *args)
 {
-    char * target = NULL;
-    GHashTable * args = g_hash_table_new_full (g_str_hash, g_str_equal,
-            free, free);
-    if (lcm_parse_url (url, NULL, &target, args) < 0) {
-        fprintf (stderr, "Error: Bad URL \"%s\"\n", url);
-        g_hash_table_destroy (args);
-        return NULL;
-    }
-
     udpm_params_t params;
     memset (&params, 0, sizeof (udpm_params_t));
     params.local_iface = INADDR_ANY;
@@ -1074,14 +1065,12 @@ lcm_udpm_create (lcm_t * parent, const char *url)
     params.mc_port = htons (UDPM_DEFAULT_MC_PORT);
     params.mc_ttl = 0;
 
-    g_hash_table_foreach (args, new_argument, &params);
-    g_hash_table_destroy (args);
+    g_hash_table_foreach ((GHashTable*) args, new_argument, &params);
+//    g_hash_table_destroy (args);
 
     if (parse_mc_addr_and_port (target, &params) < 0) {
-        free (target);
         return NULL;
     }
-    free (target);
 
     lcm_udpm_t * lcm = calloc (1, sizeof (lcm_udpm_t));
 

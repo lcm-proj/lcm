@@ -124,32 +124,20 @@ load_next_event (lcm_logread_t * lr)
 
 
 static lcm_provider_t * 
-lcm_logread_create (lcm_t * parent, const char *url)
+lcm_logread_create (lcm_t * parent, const char *target, const GHashTable *args)
 {
-    char * target = NULL;
-    GHashTable * args = g_hash_table_new_full (g_str_hash, g_str_equal,
-            free, free);
-    if (lcm_parse_url (url, NULL, &target, args) < 0) {
-        fprintf (stderr, "Error: Bad URL \"%s\"\n", url);
-        g_hash_table_destroy (args);
-        return NULL;
-    }
     if (!target || !strlen (target)) {
         fprintf (stderr, "Error: Missing filename\n");
-        g_hash_table_destroy (args);
-        free (target);
         return NULL;
     }
-
 
     lcm_logread_t * lr = calloc (1, sizeof (lcm_logread_t));
     lr->lcm = parent;
-    lr->filename = target;
+    lr->filename = strdup(target);
     lr->speed = 1;
     lr->next_clock_time = -1;
 
-    g_hash_table_foreach (args, new_argument, lr);
-    g_hash_table_destroy (args);
+    g_hash_table_foreach ((GHashTable*) args, new_argument, lr);
 
     dbg (DBG_LCM, "Initializing LCM log read context...\n");
     dbg (DBG_LCM, "Filename %s\n", lr->filename);
