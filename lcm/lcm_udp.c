@@ -34,9 +34,6 @@
 
 #define LCM_SHORT_MESSAGE_MAX_SIZE 1400
 
-#define UDPM_DEFAULT_MC_ADDR "239.255.76.67"
-#define UDPM_DEFAULT_MC_PORT 7667
-
 // HUGE is not defined on cygwin as of 2008-03-05
 #ifndef HUGE
 #define HUGE 3.40282347e+38F
@@ -387,7 +384,7 @@ static int
 parse_mc_addr_and_port (const char *str, udpm_params_t * params)
 {
     if (!str || !strlen (str))
-        return 0;
+        return -1;
 
     char **words = g_strsplit (str, ":", 2);
     if (inet_aton (words[0], (struct in_addr*) &params->mc_addr) < 0) {
@@ -1225,18 +1222,18 @@ _setup_recv_thread (lcm_udpm_t *lcm)
 }
 
 lcm_provider_t * 
-lcm_udpm_create (lcm_t * parent, const char *target, const GHashTable *args)
+lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 {
     udpm_params_t params;
     memset (&params, 0, sizeof (udpm_params_t));
     params.local_iface = INADDR_ANY;
-    params.mc_addr = inet_addr (UDPM_DEFAULT_MC_ADDR);
-    params.mc_port = htons (UDPM_DEFAULT_MC_PORT);
+    params.mc_addr = inet_addr ("0.0.0.0");
+    params.mc_port = 0;
     params.mc_ttl = 0;
 
     g_hash_table_foreach ((GHashTable*) args, new_argument, &params);
 
-    if (parse_mc_addr_and_port (target, &params) < 0) {
+    if (parse_mc_addr_and_port (network, &params) < 0) {
         return NULL;
     }
 

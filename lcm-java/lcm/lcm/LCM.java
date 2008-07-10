@@ -26,9 +26,9 @@ public class LCM
     public LCM(Object... urls) throws IOException
     {
 	if (urls.length==0) {
-	    String env = System.getenv("LC_URL");
+	    String env = System.getenv("LCM_DEFAULT_URL");
 	    if (env == null)
-		urls = new String[] {"udpm://"};
+		urls = new String[] {"udpm://239.255.76.67:7667"};
 	    else
 		urls = new String[] { env };
 	}
@@ -40,11 +40,11 @@ public class LCM
 	    String protocol = up.get("protocol");
 	    
 	    if (protocol.equals("udpm"))
-		providers.add(new UDPMulticastProvider(this, url));
+		providers.add(new UDPMulticastProvider(this, up));
 	    else if (protocol.equals("file"))
-		providers.add(new LogFileProvider(this, url));
+		providers.add(new LogFileProvider(this, up));
 	    else
-		System.out.println("LC: Unknown URL protocol: "+protocol);
+		System.out.println("LCM: Unknown URL protocol: "+protocol);
 	}
     }
 

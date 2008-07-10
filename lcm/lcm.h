@@ -51,7 +51,7 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  * Constructor.  Allocates and initializes a lcm_t.  %provider must be a string
  * of the form 
  * 
- * "provider://network?option1=value1,option2=value2,...,optionN=valueN"
+ * "provider://network?option1=value1&option2=value2&...&optionN=valueN"
  *
  * The currently supported providers are:
  *

@@ -78,7 +78,7 @@ main(int argc, char **argv)
     }
     const char *channel = argv[1];
 
-    lcm_t *lcm = lcm_create ("udpm://");
+    lcm_t *lcm = lcm_create (NULL);
     if (!lcm) return 1;
 
 //    lcm_params_t lcmp;

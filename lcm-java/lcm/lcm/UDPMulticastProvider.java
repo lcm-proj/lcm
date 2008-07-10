@@ -10,8 +10,7 @@ public class UDPMulticastProvider implements Provider
 {
     MulticastSocket sock;
 
-    static final String DEFAULT_ADDRESS = "239.255.76.67";
-    static final int    DEFAULT_PORT    = 7667;
+    static final String DEFAULT_NETWORK = "239.255.76.67:7667";
     static final int    DEFAULT_TTL     = 0;
 
     static final int    MAGIC_SHORT = 0x4c433032; // ascii of "LC02"
@@ -35,14 +34,14 @@ public class UDPMulticastProvider implements Provider
 	System.out.println("LC: Disabling IPV6 support");
     }
 
-    public UDPMulticastProvider(LCM lcm, String url) throws IOException
+    public UDPMulticastProvider(LCM lcm, URLParser up) throws IOException
     {
 	this.lcm = lcm;
 
-	URLParser up = new URLParser(url);
+	String addrport[] = up.get("network", DEFAULT_NETWORK).split(":");
 
-	inetAddr = InetAddress.getByName(up.get("host", DEFAULT_ADDRESS));
-	inetPort = up.get("port", DEFAULT_PORT);
+	inetAddr = InetAddress.getByName(addrport[0]);
+	inetPort = Integer.valueOf(addrport[1]);
 
  	sock = new MulticastSocket(inetPort);
 	

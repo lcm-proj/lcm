@@ -136,7 +136,7 @@ int main (int argc, char ** argv)
     When specified, the argument to <function><link
     linkend="lcm-create">lcm_create</link></function> should be a string of
     the form 
-    "<literal>provider://network?option1=value1,option2=value2,...</literal>"  
+    "<literal>provider://network?option1=value1&option2=value2&...</literal>"  
     The reference manual for <function><link
     linkend="lcm-create">lcm_create</link></function> provides a list of the
     exact values that can be specified.  One usage might be to allocate a large

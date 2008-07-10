@@ -92,7 +92,7 @@ int main (int argc, char **argv)
 //  lcm_args.mc_addr = inet_addr ("225.0.0.3");
 //  lcm_args.mc_port = htons (2006);
 
-    lcm_t *lcm = lcm_create ("udpm://");
+    lcm_t *lcm = lcm_create (NULL);
     if (! lcm) {
         fprintf (stderr, "couldn't allocate lcm_t\n");
         return 1;
@@ -201,28 +201,6 @@ int main (int argc, char **argv)
         lcm_handle (lcm);
     }
 
-    // test transmit-only lcm_t
-    printf ("LCM: testing transmit-only lcm_t...\n");
-    lcm_t *tlcm = lcm_create ("udpm://?transmit_only=true");
-
-    // registering a handler should fail
-    printf("Expecting an ERROR in handler registration...\n");
-    h = lcm_subscribe (tlcm, "TEST", test_handler, NULL);
-    FAIL_IF_GOOD_HID (h);
-    // invoking lcm_handle should fail
-    status = lcm_handle (tlcm);
-    FAIL_IFSNE (-1);
-    status = lcm_publish (tlcm, "TEST", payload, datalen);
-    FAIL_IFSNE (0);
-
-    FD_ZERO (&readfds);
-    FD_SET (fd,&readfds);
-    timeout.tv_sec = 0; timeout.tv_usec = 100000;
-    select (fd + 1,&readfds,0,0,&timeout);
-    if (FD_ISSET (fd,&readfds)) {
-        lcm_handle (lcm);
-    }
-    lcm_destroy (tlcm);
 #undef FAIL_IFSNE
 
     lcm_destroy (lcm);

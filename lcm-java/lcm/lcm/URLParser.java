@@ -5,29 +5,23 @@ import java.util.regex.*;
 
 public class URLParser
 {
-    String protocol;
-    String host;
-    String port;
-
     HashMap<String,String> params = new HashMap<String,String>();
     
     public URLParser(String url)
     {
-	Matcher m = Pattern.compile("([^\\:]+)://([^\\?]+)?(:([0-9]+))?(\\?(.*))?").matcher(url);
+	String prov_networkargs[] = url.split("://", 2);
+	if (prov_networkargs.length < 2)
+	    throw new IllegalArgumentException ("URLParser: Invalid URL: "+url);
+	String network_args[] = prov_networkargs[1].split("[?]");
 
-	if (!m.matches()) {
-	    System.out.println("URLParser: Invalid url: "+url);
-	    return;
+	params.put("protocol", prov_networkargs[0]);
+
+	if (network_args[0].length() > 0) {
+	    params.put("network", network_args[0]);
 	}
 
-	params.put("protocol", m.group(1));
-	params.put("host", m.group(2));
-	params.put("port", m.group(4));
-
-	String paramString = m.group(6);
-
-	if (paramString != null) {
-	    String keyvalues[] = paramString.split("&");
+	if (network_args.length > 1) {
+	    String keyvalues[] = network_args[1].split("&");
 	    for (int i = 0; i < keyvalues.length; i++) {
 		String toks[] = keyvalues[i].split("=");
 		if (toks.length != 2) 
@@ -36,18 +30,6 @@ public class URLParser
 		    params.put(toks[0], toks[1]);
 	    }
 	}
-
-	/*
-	System.out.println(paramString);
-
-	System.out.println("protocol: "+protocol);
-	System.out.println("host:     "+host);
-	System.out.println("port:     "+port);
-
-	for (String key : params.keySet()) {
-	    System.out.printf("param %15s: %s\n", key, params.get(key));
-	}
-	*/
     }
 
     public String get(String key)
@@ -89,6 +71,21 @@ public class URLParser
 
     public static void main(String args[])
     {
-	new URLParser(args[0]);
+	URLParser u = null;
+	if (args.length < 1) {
+	    String env = System.getenv("LCM_DEFAULT_URL");
+	    if (null != env)
+		u = new URLParser(env);
+	    else  {
+		System.err.println("Must specify URL");
+		System.exit(1);
+	    }
+	} else {
+	    u = new URLParser(args[0]);
+	}
+
+	for (String key : u.params.keySet()) {
+	    System.out.printf("param %15s: %s\n", key, u.params.get(key));
+	}
     }
 }

@@ -120,7 +120,6 @@ static void usage ()
             "                             such that the resulting filename does not\n"
             "                             already exist.  This option precludes -f\n"
             "    -s, --strftime           Format FILE with strftime.\n" 
-            "    -p PRV, --provider PRV   LCM network provider.\n"
             "    -h, --help               Shows this help text and exits\n"
             "\n");
 }
@@ -133,9 +132,6 @@ int main(int argc, char *argv[])
     memset (logpath, 0, sizeof (logpath));
 
     // set some defaults
-    char provider[4096];
-    memset (provider, 0, sizeof (provider));
-
     int force = 0;
     int auto_increment = 0;
     int use_strftime = 0;
@@ -146,7 +142,6 @@ int main(int argc, char *argv[])
         { "force", no_argument, 0, 'f' },
         { "increment", required_argument, 0, 'i' },
         { "strftime", required_argument, 0, 's' },
-        { "provider", required_argument, 0, 'p' },
         { 0, 0, 0, 0 }
     };
 
@@ -161,9 +156,6 @@ int main(int argc, char *argv[])
                 break;
             case 's':
                 use_strftime = 1;
-                break;
-            case 'p':
-                strncpy (provider, optarg, sizeof (provider));
                 break;
             case 'h':
             default:
@@ -240,7 +232,7 @@ int main(int argc, char *argv[])
     }
 
     // begin logging
-    logger.lcm = lcm_create (provider);
+    logger.lcm = lcm_create (NULL);
     if (!logger.lcm) {
         fprintf (stderr, "Couldn't initialize LCM!");
         return -1;

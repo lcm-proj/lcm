@@ -18,13 +18,11 @@ public class LogFileProvider implements Provider
     boolean verbose; // report actual speed periodically
     double skip; // skip a fraction of the log file [0, 1.0]
 
-    public LogFileProvider(LCM lcm, String url) throws IOException
+    public LogFileProvider(LCM lcm, URLParser up) throws IOException
     {
 	this.lcm = lcm;
 
-	URLParser up = new URLParser(url);
-
-	String logPath = up.get("host","");
+	String logPath = up.get("network","");
 	log = new Log(logPath, "r");
 
 	speed = up.get("speed", 1.0);

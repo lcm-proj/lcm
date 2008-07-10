@@ -37,8 +37,6 @@ Usage: %s [OPTION...] FILE\n\
 Options:\n\
   -v, --verbose       Print information about each packet.\n\
   -s, --speed=NUM     Playback speed multiplier.  Default is 1.0.\n\
-  -p, --provider=PRV  LCM network provider where packets should be published.\n\
-                      Default is \"udpm://?transmit_only=true\"\n\
   -e, --regexp=EXPR   POSIX regular expression of channels to play.\n\
   -h, --help          Shows some help text and exits.\n\
   \n", cmd);
@@ -50,11 +48,9 @@ main(int argc, char ** argv)
     logplayer_t l;
     double speed = 1.0;
     char c;
-    char * provider = NULL;
     char * expression = NULL;
     struct option long_opts[] = { 
         { "help", no_argument, 0, 'h' },
-        { "provider", required_argument, 0, 'p' },
         { "speed", required_argument, 0, 's' },
         { "verbose", no_argument, 0, 'v' },
         { "regexp", required_argument, 0, 'e' },
@@ -67,9 +63,6 @@ main(int argc, char ** argv)
         switch (c) {
             case 's':
                 speed = strtod (optarg, NULL);
-                break;
-            case 'p':
-                provider = strdup (optarg);
                 break;
             case 'v':
                 l.verbose = 1;
@@ -91,8 +84,6 @@ main(int argc, char ** argv)
 
     char * file = argv[optind];
     printf ("Using playback speed %f\n", speed);
-    if (!provider)
-        provider = strdup ("udpm://?transmit_only=true");
     if (!expression)
         expression = strdup (".*");
 
@@ -104,9 +95,9 @@ main(int argc, char ** argv)
         return 1;
     }
 
-    l.lcm_out = lcm_create (provider);
+    l.lcm_out = lcm_create (NULL);
     if (!l.lcm_out) {
-        fprintf (stderr, "Error: Failed to create %s\n", provider);
+        fprintf (stderr, "Error: Failed to create LCM\n");
         return 1;
     }
 
@@ -116,6 +107,5 @@ main(int argc, char ** argv)
 
     lcm_destroy (l.lcm_in);
     lcm_destroy (l.lcm_out);
-    free (provider);
     free (expression);
 }

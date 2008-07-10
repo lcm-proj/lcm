@@ -52,7 +52,7 @@ int main (int argc, char **argv)
     uint8_t *payload = malloc (datalen);
     strcpy ((char*)payload, words[windex]);
     
-    lcm_t *lcm = lcm_create ("udpm://");
+    lcm_t *lcm = lcm_create (NULL);
     if (! lcm) {
         fprintf (stderr, "couldn't allocate lcm_t\n");
         return 1;

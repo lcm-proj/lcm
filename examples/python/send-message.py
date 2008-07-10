@@ -2,7 +2,7 @@ import lcm
 
 from example_t import example_t
 
-lc = lcm.LCM ("udpm://?transmit_only=true")
+lc = lcm.LCM ()
 
 msg = example_t ()
 msg.timestamp = 0

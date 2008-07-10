@@ -12,6 +12,8 @@
 #include "lcm_internal.h"
 #include "dbg.h"
 
+#define LCM_DEFAULT_URL "udpm://239.255.76.76:7667?ttl=0"
+
 struct _lcm_t {
     GStaticRecMutex mutex;  // guards data structures
 
@@ -48,32 +50,30 @@ lcm_create (const char *url)
 {
     if (!g_thread_supported ()) g_thread_init (NULL);
 
-    GPtrArray * providers = g_ptr_array_new ();
-    lcm_udpm_provider_init (providers);
-    lcm_logread_provider_init (providers);
-
-    if (providers->len == 0) {
-        fprintf (stderr, "Error: no LCM providers found\n");
-        g_ptr_array_free (providers, TRUE);
-        return NULL;
-    }
-
-    if (!url || !strlen (url)) {
-        /* If URL is blank, default to udpm */
-        url = "udpm://";
-    }
-
     char * provider_str = NULL;
-    char * target = NULL;
+    char * network = NULL;
     GHashTable * args = g_hash_table_new_full (g_str_hash, g_str_equal,
             free, free);
+    GPtrArray * providers = g_ptr_array_new ();
+    lcm_t *lcm = NULL;
 
-    /* Parse the LCM URL */
-    if (lcm_parse_url (url, &provider_str, &target, args) < 0) {
-        fprintf (stderr, "Error: invalid LCM URL \"%s\"\n", url);
-        g_ptr_array_free (providers, TRUE);
-        g_hash_table_destroy (args);
-        return NULL;
+    // initialize the list of providers
+    lcm_udpm_provider_init (providers);
+    lcm_logread_provider_init (providers);
+    if (providers->len == 0) {
+        fprintf (stderr, "Error: no LCM providers found\n");
+        goto fail;
+    }
+
+    if (!url || !strlen(url)) 
+        url = getenv ("LCM_DEFAULT_URL");
+    if (!url || !strlen(url))
+        url = LCM_DEFAULT_URL;
+
+    if (0 != lcm_parse_url (url, &provider_str, &network, args)) {
+        fprintf (stderr, "%s:%d -- invalid URL [%s]\n",
+                __FILE__, __LINE__, url);
+        goto fail;
     }
 
     lcm_provider_info_t * info = NULL;
@@ -90,14 +90,12 @@ lcm_create (const char *url)
                 provider_str);
         g_ptr_array_free (providers, TRUE);
         free (provider_str);
-        free (target);
+        free (network);
         g_hash_table_destroy (args);
         return NULL;
     }
 
-    g_ptr_array_free (providers, TRUE);
-
-    lcm_t * lcm = calloc (1, sizeof (lcm_t));
+    lcm = calloc (1, sizeof (lcm_t));
 
     lcm->vtable = info->vtable;
     lcm->handlers_all = g_ptr_array_new();
@@ -105,16 +103,29 @@ lcm_create (const char *url)
 
     g_static_rec_mutex_init (&lcm->mutex);
 
-    lcm->provider = info->vtable->create (lcm, target, args);
+    lcm->provider = info->vtable->create (lcm, network, args);
+
     free (provider_str);
-    free (target);
+    free (network);
+    g_ptr_array_free (providers, TRUE);
     g_hash_table_destroy (args);
+
     if (!lcm->provider) {
         lcm_destroy (lcm);
         return NULL;
     }
-
     return lcm;
+
+fail:
+    free (provider_str);
+    free (network);
+    if (args)
+        g_hash_table_destroy (args);
+    if (providers)
+        g_ptr_array_free (providers, TRUE);
+//    if (lcm)
+//        lcm_destroy (lcm);
+    return NULL;
 }
 
 // free the array that we associate for each channel, and the key. Don't free
@@ -369,41 +380,37 @@ lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf, const char *channel)
 }
 
 int
-lcm_parse_url (const char * url, char ** provider, char ** target,
+lcm_parse_url (const char * url, char ** provider, char ** network,
         GHashTable * args)
 {
     if (!url || !strlen (url))
         return -1;
+    assert (provider && network && args);
 
-    char ** provtarget_args = g_strsplit (url, "?", 2);
-    char ** prov_target = g_strsplit (provtarget_args[0], "://", 2);
-
-    int url_has_args = (provtarget_args[1] && strlen (provtarget_args[1]));
-    int url_has_provtarget = (prov_target[1] != NULL);
-
-    if (! url_has_provtarget && strlen (provtarget_args[0])) {
-        g_strfreev (provtarget_args);
-        g_strfreev (prov_target);
+    char ** provider_networkargs = g_strsplit (url, "://", 2);
+    if (!provider_networkargs[1]) {
+        g_strfreev (provider_networkargs);
         return -1;
     }
+    
+    *provider = strdup (provider_networkargs[0]);
 
-    if (url_has_provtarget) {
-        if (provider) *provider = strdup (prov_target[0]);
-        if (target)   *target   = strdup (prov_target[1]);
+    char **network_args = g_strsplit (provider_networkargs[1], "?", 2);
+
+    if (network_args[0]) {
+        *network = strdup (network_args[0]);
     } else {
-        if (provider) *provider = NULL;
-        if (target)   *target   = NULL;
+        *network = NULL;
     }
-    g_strfreev (prov_target);
 
-    if (url_has_args && args) {
+    if (network_args[0] && network_args[1]) {
         // parse the args
-        char ** split_args = g_strsplit_set (provtarget_args[1], ",&", -1);
+        char ** split_args = g_strsplit (network_args[1], "&", -1);
 
         for (int i = 0; split_args[i]; i++) {
             char ** key_value = g_strsplit (split_args[i], "=", 2);
             if (key_value[0] && strlen (key_value[0])) {
-                g_hash_table_insert (args, strdup (key_value[0]),
+                g_hash_table_replace (args, strdup (key_value[0]),
                         key_value[1] ? strdup (key_value[1]) : strdup (""));
             }
             g_strfreev (key_value);
@@ -411,6 +418,7 @@ lcm_parse_url (const char * url, char ** provider, char ** target,
         g_strfreev (split_args);
     }
 
-    g_strfreev (provtarget_args);
+    g_strfreev (provider_networkargs);
+    g_strfreev (network_args);
     return 0;
 }

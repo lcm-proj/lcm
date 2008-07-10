@@ -320,7 +320,7 @@ public class LogPlayer extends JComponent
 		}
 	    });
 				     
-	lcm = new LCM("udpm://?transmitonly=true");
+	lcm = new LCM();
 
 	logName.addMouseListener(new MouseAdapter() {
 		public void mouseClicked(MouseEvent e) {

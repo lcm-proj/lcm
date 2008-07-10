@@ -91,7 +91,7 @@ int main(int argc, char **argv)
         };
     }
 
-    lcm_t *lcm = lcm_create("udpm://?transmit_only=true");
+    lcm_t *lcm = lcm_create(NULL);
     if (! lcm) {
         fprintf(stderr, "couldn't allocate lcm_t\n");
         return 1;
