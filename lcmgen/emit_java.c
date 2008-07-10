@@ -168,12 +168,13 @@ int emit_java(lcmgen_t *lcm)
 
         for (unsigned int v = 0; v < g_ptr_array_size(le->values); v++) {
             lcm_enum_value_t *lev = g_ptr_array_index(le->values, v);
-            emit(1, "public static final %s %-16s = new %s(%i);", 
-                    le->enumname->typename, lev->valuename, le->enumname->typename, lev->value);
-            emit(0," ");            
+            emit(1, "public static final int %-16s = %i;", 
+                    lev->valuename, lev->value);
         }
+        emit(0," ");
 
-        emit(1,"protected %s(int value) { this.value = value; }", le->enumname->shortname);
+        emit(1,"public %s(int value) { this.value = value; }", 
+                le->enumname->shortname);
         emit(0," ");
 
         emit(1,"public int getValue() { return value; }");
