@@ -12,7 +12,7 @@
 #include "lcm_internal.h"
 #include "dbg.h"
 
-#define LCM_DEFAULT_URL "udpm://239.255.76.76:7667?ttl=0"
+#define LCM_DEFAULT_URL "udpm://239.255.76.67:7667?ttl=0"
 
 struct _lcm_t {
     GStaticRecMutex mutex;  // guards data structures

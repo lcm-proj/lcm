@@ -105,6 +105,11 @@ public class LCM
 	srec.pat = Pattern.compile(regex);
 	srec.lcsub = sub;
 
+	synchronized(this) {
+	    for (Provider p : providers)
+		p.subscribe (regex);
+	}
+
 	synchronized(subscriptions) {
 	    subscriptions.add(srec);
 	    
