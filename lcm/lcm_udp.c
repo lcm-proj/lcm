@@ -621,7 +621,8 @@ udp_read_packet (lcm_udpm_t *lcm)
                              lcm->udp_discarded_buf + 
                              lcm->udp_discarded_bad;
         if (total_bad > 0 || lcm->udp_low_watermark < 0.5) {
-            printf("%d.%03d LCM loss %4.1f%% : %5d lcmb, %5d buf, %5d err, "
+            fprintf(stderr, 
+                    "%d.%03d LCM loss %4.1f%% : %5d lcmb, %5d buf, %5d err, "
                     "buf avail %4.1f%%\n", 
                    (int) tv.tv_sec, (int) tv.tv_usec/1000,
                    total_bad * 100.0 / (lcm->udp_rx + total_bad),
@@ -736,7 +737,7 @@ udp_read_packet (lcm_udpm_t *lcm)
         }
 
         if (sz < sizeof(lcm2_header_short_t)) {
-            printf("Packet too short to be LCM\n");
+//            fprintf(stderr, "Packet too short to be LCM\n");
             lcm->udp_discarded_bad++;
             continue;
         }
