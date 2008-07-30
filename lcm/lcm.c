@@ -16,6 +16,7 @@
 
 struct _lcm_t {
     GStaticRecMutex mutex;  // guards data structures
+    GStaticRecMutex handle_mutex;  // only one thread allowed in lcm_handle at a time
 
     GPtrArray   *handlers_all;  // list containing *all* handlers
     GHashTable  *handlers_map;  // map of channel name (string) to GPtrArray 
@@ -102,6 +103,7 @@ lcm_create (const char *url)
     lcm->handlers_map = g_hash_table_new (g_str_hash, g_str_equal);
 
     g_static_rec_mutex_init (&lcm->mutex);
+    g_static_rec_mutex_init (&lcm->handle_mutex);
 
     lcm->provider = info->vtable->create (lcm, network, args);
 
@@ -170,9 +172,13 @@ lcm_destroy (lcm_t * lcm)
 int
 lcm_handle (lcm_t * lcm)
 {
-    if (lcm->provider && lcm->vtable->handle)
-        return lcm->vtable->handle (lcm->provider);
-    else
+    if (lcm->provider && lcm->vtable->handle) {
+        int ret;
+        g_static_rec_mutex_lock (&lcm->handle_mutex);
+        ret = lcm->vtable->handle (lcm->provider);
+        g_static_rec_mutex_unlock (&lcm->handle_mutex);
+        return ret;
+    } else
         return -1;
 }
 
