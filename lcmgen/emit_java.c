@@ -261,14 +261,6 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "import java.io.*;");
         emit(0, "import java.util.*;");
         emit(0, " ");
-
-//        for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-//            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
-//            
-//            if (!lcm_is_primitive_type(lm->type->typename) && strcmp(lm->type->package, lr->structname->package))
-//                emit(0, "import %s;", lm->type->package);
-//        }
-//
         emit(0, "public class %s %s", lr->structname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
         emit(0, "{");
 
