@@ -11,12 +11,17 @@ public class ClassDiscoverer
 {
     public static void findClasses(ClassVisitor visitor)
     {
-	findClasses(System.getenv("CLASSPATH"), visitor);
-	findClasses(System.getProperty("java.class.path"), visitor);
+	// In order to correctly handle types that reference other
+	// types whose definitions are in another JAR file, create a
+	// big "master" classpath that contains everything we might
+	// want to load.
+	String cp = System.getenv("CLASSPATH")+":"+System.getProperty("java.class.path");
+	findClasses(cp, visitor);
     }
 
     /** Given a colon-delimited list of jar files, iterate over the
      * classes in them.
+     * @param cp The colon-deliimited classpath to search
      **/
     public static void findClasses(String cp, ClassVisitor visitor)
     {
@@ -24,6 +29,20 @@ public class ClassDiscoverer
 	    return;
 
 	String[] items = cp.split(":");
+
+	// Create a class loader that has access to the whole class path.
+	URLClassLoader cldr;
+	try {
+	    URL[] urls = new URL[items.length];
+	    for (int i = 0; i < items.length; i++)
+		urls[i] = new File(items[i]).toURL();
+	    
+	    cldr = new URLClassLoader(urls);
+	} catch (IOException ex) {
+	    System.out.println("ClassDiscoverer ERR: "+ex);
+	    return;
+	}
+
 	for (int i = 0; i < items.length; i++) {
 	    
 	    String item = items[i];
@@ -32,9 +51,6 @@ public class ClassDiscoverer
 		continue;
 
 	    try {
-		URLClassLoader cldr = new URLClassLoader(new URL[] {
-			new File(item).toURL() });
-
 		JarFile jf = new JarFile(item);
 		
 		for (Enumeration<JarEntry> e = jf.entries() ; e.hasMoreElements() ;) {
