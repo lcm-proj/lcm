@@ -383,8 +383,9 @@ lcm_udpm_destroy (lcm_udpm_t *lcm)
 static int
 parse_mc_addr_and_port (const char *str, udpm_params_t * params)
 {
-    if (!str || !strlen (str))
-        return -1;
+    if (!str || !strlen (str)) {
+        str = "239.255.76.67:7667";
+    }
 
     char **words = g_strsplit (str, ":", 2);
     if (inet_aton (words[0], (struct in_addr*) &params->mc_addr) < 0) {
@@ -423,6 +424,10 @@ new_argument (gpointer key, gpointer value, gpointer user)
         params->mc_ttl = strtol (value, &endptr, 0);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for ttl\n");
+    }
+    else if (!strcmp (key, "transmit_only")) {
+        fprintf (stderr, "%s:%d -- transmit_only option is now obsolete\n",
+                __FILE__, __LINE__);
     }
 }
 
