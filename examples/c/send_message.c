@@ -37,7 +37,7 @@ main (int argc, char ** argv)
 {
     lcm_t * lcm;
 
-    lcm = lcm_create ("udpm://?transmit_only=true");
+    lcm = lcm_create (NULL);
     if (!lcm)
         return 1;
 
