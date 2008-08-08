@@ -1,0 +1,5 @@
+ struct temperature_t
+ {
+    int64_t  utime;
+    double   deg_celsius;
+ }

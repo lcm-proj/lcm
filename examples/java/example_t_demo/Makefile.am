@@ -2,14 +2,15 @@ JAVAROOT = .
 
 if HAVE_JAVA
 
-LCMGEN = ../../lcmgen/lcm-gen
+EXAMPLE_T_LCM = ../../types/example_t.lcm
+LCMGEN = ../../../lcmgen/lcm-gen
 
 dist_noinst_JAVA = Listener.java SendMessage.java example_t.java
 
 CLEANFILES = example_t.java
 
-example_t.java: ../types/example_t.lcm
-	$(LCMGEN) -j ../types/example_t.lcm
+example_t.java: $(EXAMPLE_T_LCM)
+	$(LCMGEN) -j $(EXAMPLE_T_LCM)
 
 JAVACFLAGS = -cp ../../lcm-java/lcm.jar:. -source 5
 
