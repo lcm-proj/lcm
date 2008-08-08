@@ -1,0 +1,210 @@
+<refentry id="tutorial-java" revision="08 Aug 2008">
+<refmeta>
+  <refentrytitle>The LCM Type Specification Language</refentrytitle>
+</refmeta>
+
+<refnamediv>
+  <refname>The LCM Type Specification Language</refname>
+  <refpurpose>The usage and features of the LCM type
+  language.</refpurpose>
+</refnamediv>
+
+<refsect1>
+  <title>Introduction</title>
+  <para>
+    LCM is a utility designed to generate platform-independent marshalling
+    and unmarshalling functions for user-defined data types. It is similar
+    to XDR, though it is written with greater type safety in mind, and
+    with the goal of natively supporting other languages such as Java (in
+    addition to C).
+  </para>
+
+  <para>
+    Goals: Cross platform, multi-language, type safe.
+  </para>
+
+  <para>
+    Development history: MIT DGC 2007.
+  </para>
+</refsect1>
+
+<refsect1>
+  <title>Related Work</title>
+  <para>
+    XDR, XML/RPC, IPC's thingie
+  </para>
+</refsect1>
+
+<refsect1>
+  <title>Type Specifications</title>
+  <para>
+    Type specifications are contained in files with an ".lcm" file
+    type. They are conventially named in lower case with underscores
+    between words: e.g., the type "wind_speed_t" is defined in the
+    file "wind_speed_t.lcm". The utility <emphasis>lcm-gen</emphasis>
+    converts an LCM type specification into a language-dependent
+    implementation.
+  </para>
+  
+  <refsect2>
+    <title>Structs</title>
+    
+    <para>
+      Primitive Types. Signed types only.
+    </para>
+    
+    <para>
+      Arrays of constant size. Arrays of variable size.
+    </para>
+  </refsect2>
+
+  <refsect2>
+    <title>Enumerations/Constants</title>
+    
+    <para>
+      Not really enumerations. Allow bitfield operations.
+    </para>
+  </refsect2>
+
+  <para>
+    Type safety, hash computation. (Refer to appendix 1).
+  </para>
+</refsect1>
+
+<refsect1>
+  <title>Namespaces</title>
+  <para>
+    foo
+  </para>
+</refsect1>
+
+<refsect1>
+  <title>Performance Considerations</title>
+  <para>
+    Performance evaluation?
+  </para>
+</refsect1>
+
+<refsect1>
+  <title>Future Work</title>
+  <para>
+    foo
+  </para>
+</refsect1>
+
+<refsect1>
+  <title>Appendix 1: Fingerprint Computation</title>
+  <para>
+    Fingerprints ensure that the encoding and decoding methods agree on
+    the format of a data type. The fingerprints are a function,
+    recursively, of all of the types that a type contains. This creates a
+    potential problem when types could be mutually recursive: we must
+    avoid an infinite recursion.
+  </para>
+  
+  <para>
+    The basic idea is for each type to have a "base" fingerprint, which
+    we'll denote for type "A" as "K_A". K_A is a constant derived from the
+    lcm type description (and it's stored as lcm_struct->hash). We wish to
+    compute the actual fingerprint (or hash), A(), which is a function of
+    all of A's contained types.
+  </para>
+  
+  <para>
+    In addition, so that we can recognize a recursion, the A() function
+    takes an argument, which is a list of the types already visited. E.g.,
+    C(&lt;A,B&gt;) indicates that we wish to compute the hash of type C, given
+    that C is a member of type B, which is a member of type A.  We avoid
+    recursions by setting C(&lt;list&gt;) = 0 if &lt;list&gt; contains C. 
+  </para>
+  
+  <para>
+    The contribution of primitive types is handled via the K_A; there is
+    no recursion for them.
+  </para>
+  
+  <para>
+    A small wrinkle arises from the above definitions: if types A, B, and
+    C are mutually recursive, we can have two types with the same
+    hash. This is clearly undesirable. We fix this by making the order of
+    recursion relevant: at each node in the tree, we rotate the value
+    (bitwise) 1 bit to the left. A type that is included at recursion
+    depth N has its contribution rotated by N bits.
+  </para>
+  
+  <para>
+    Note that this mechanism is entirely unnecessary for enumerations
+    (they cannot contain other types); for enumerations, we just use the
+    hash in lcmenum->hash.
+  </para>
+  
+<para>PSEUDO-CODE </para>
+
+<programlisting>
+  v = compute_hash(type, parents)
+  
+  if type is member of parents
+     return 0
+
+  v = K_type;
+
+  for each members m of type
+      v += compute_hash(m, &lt;parents, type&gt;)
+
+  return rot_left(v);
+</programlisting>
+
+<para>
+  When encoding/decode a type T, we would use compute_hash(T,
+  &lt;&gt;) as the hash function.
+</para>
+
+<para>EXAMPLE</para>
+
+<programlisting>
+struct A
+{
+        B b;
+        C c;
+}
+
+struct B
+{
+        A a;
+}
+
+struct C
+{
+        B b;
+}
+</programlisting>
+
+<para>
+  Diagramatically, we can compute their hashes by showing the children
+  of each branch. We use lower case to indicate a terminal leaf (where
+  the leaf is the same class as one of its parents).
+</para>
+
+<programlisting>
+         A                B                  C
+       /   \              |                  |
+      B     C             A                  B
+      |     |            / \                 |
+      a     B           b   C                A
+            |               |               / \
+            a               b              b   c
+
+A() = R{K_A + R{K_B}} + R{K_C + R{K_B}}}
+
+B() = R{K_B + R{K_A + R{K_C}}}
+
+C() = R{K_C + R{K_B + R{K_A}}}
+</programlisting>
+
+<para>
+  Note that without the rotations, B() == C().
+</para>
+
+</refsect1>
+
+</refentry>

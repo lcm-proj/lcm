@@ -31,6 +31,7 @@
     <xi:include href="intro.sgml"/>
     <xi:include href="tutorial-c.sgml"/>
     <xi:include href="tutorial-java.sgml"/>
+    <xi:include href="lcm-type-ref.sgml"/>
     <xi:include href="multicast-setup.sgml"/>
   </chapter>
 
