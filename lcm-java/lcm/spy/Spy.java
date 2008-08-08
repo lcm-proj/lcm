@@ -251,7 +251,7 @@ public class Spy
 		case 6:
 		    return "Bandwidth";
 		case 7:
-		    return "Errors";
+		    return "Undecodable";
 		}
 	    return "???";
 	}

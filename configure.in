@@ -104,6 +104,7 @@ AC_OUTPUT([
   examples/c/Makefile
   examples/python/Makefile
   examples/java/Makefile
+  examples/java/example_t_demo/Makefile
   examples/types/Makefile
   docs/Makefile
   docs/reference/Makefile
