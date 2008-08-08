@@ -23,7 +23,12 @@ public class LCM
 
     static LCM singleton;
 
-    public LCM(Object... urls) throws IOException
+    /** Create a new LCM object, subscribing to one or more URLs. If
+     * no URL is specified, the system variable LCM_DEFAULT_URL is
+     * used. If that environment variable is not defined, then the
+     * default URL is used.
+     **/
+    public LCM(String... urls) throws IOException
     {
 	if (urls.length==0) {
 	    String env = System.getenv("LCM_DEFAULT_URL");
@@ -33,9 +38,7 @@ public class LCM
 		urls = new String[] { env };
 	}
 	
-	for (Object o : urls) {
-	    String url = (String) o;
-
+	for (String url : urls) {
 	    URLParser up = new URLParser(url);
 	    String protocol = up.get("protocol");
 	    
@@ -48,6 +51,10 @@ public class LCM
 	}
     }
 
+    /** Retrieve a default instance of LCM using either the system
+     * variable LCM_DEFAULT_URL or the default. If an exception
+     * occurs, System.exit(-1) is called. 
+     **/
     public static LCM getSingleton()
     {
 	if (singleton == null) {
@@ -55,7 +62,7 @@ public class LCM
 		singleton = new LCM();
 	    } catch (Exception ex) {
 		System.out.println("LC singleton fail: "+ex);
-		System.exit(0);
+		System.exit(-1);
 		return null;
 	    }
 	}
@@ -63,11 +70,17 @@ public class LCM
 	return singleton;
     }
 
+    /** Return the number of subscriptions. **/
     public int getNumSubscriptions()
     {
 	return subscriptions.size();
     }
 
+    /** Publish a string on a channel. This method does not use the
+     * LCM type definitions and thus is not type safe. This method is
+     * primarily provided for testing purposes and may be removed in
+     * the future.
+     **/
     public void publish(String channel, String s) throws IOException
     {
 	s=s+"\0";
@@ -75,6 +88,9 @@ public class LCM
 	publish(channel, b, 0, b.length);
     }
 
+    /** Publish an LCM-defined type on a channel. If more than one URL was
+     * specified, the message will be sent on each.
+     **/
     public void publish(String channel, LCMEncodable e)
     {
 	try {
@@ -91,6 +107,10 @@ public class LCM
 	}
     }
 
+    /** Publish raw data on a channel, bypassing the LCM type
+     * specification. If more than one URL was specified when the LCM
+     * object was created, the message will be sent on each.
+     **/
     public synchronized void publish(String channel, byte[] data, int offset, int length) 
 	throws IOException
     {
@@ -98,6 +118,10 @@ public class LCM
 	    p.publish(channel, data, offset, length);
     }
 
+    /** Subscribe to all channels whose name matches the regular
+     * expression. Note that to subscribe to all channels, you must
+     * specify ".*", not "*". 
+     **/
     public void subscribe(String regex, LCMSubscriber sub)
     {
 	SubscriptionRecord srec = new SubscriptionRecord();
@@ -122,6 +146,10 @@ public class LCM
 	}
     }
 
+    /** Not for use by end users. Provider back ends call this method
+     * when they receive a message. The subscribers that match the
+     * channel name are synchronously notified. 
+     **/
     public void receiveMessage(String channel, byte data[], int offset, int length)
     {
 	synchronized (subscriptions) {
@@ -148,6 +176,7 @@ public class LCM
 	}
     }
     
+    /** A convenience function that subscribes to all LCM channels. **/
     public synchronized void subscribeAll(LCMSubscriber sub)
     {
 	subscribe(".*", sub);
@@ -155,6 +184,7 @@ public class LCM
 
     ////////////////////////////////////////////////////////////////
 
+    /** Minimalist test code. **/
     public static void main(String args[])
     {
 	LCM lcm;

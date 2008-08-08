@@ -6,6 +6,14 @@ import java.util.*;
 import java.util.regex.*;
 import java.nio.*;
 
+/** LCM provider for the udpm: URL. All messages are broadcast over a
+ * pre-arranged UDP multicast address. Subscription operations are a
+ * no-op, since all messages are always broadcast.
+ *
+ * This mechanism is very simple, low-latency, and efficient due to
+ * not having to transmit messages more than once when there are
+ * multiple subscribers. Since it uses UDP, it is lossy.
+ **/
 public class UDPMulticastProvider implements Provider
 {
     MulticastSocket sock;
