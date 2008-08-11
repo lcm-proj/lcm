@@ -1,4 +1,4 @@
-<refentry id="tutorial-java" revision="08 Aug 2008">
+<refentry id="tutorial-lcm-language" revision="08 Aug 2008">
 <refmeta>
   <refentrytitle>The LCM Type Specification Language</refentrytitle>
 </refmeta>
@@ -18,6 +18,9 @@
     with the goal of natively supporting other languages such as Java (in
     addition to C).
   </para>
+    <para>
+    <emphasis>TODO</emphasis>
+    </para>
 
   <para>
     Goals: Cross platform, multi-language, type safe.
@@ -52,9 +55,15 @@
     <para>
       Primitive Types. Signed types only.
     </para>
+    <para>
+    <emphasis>TODO</emphasis>
+    </para>
     
     <para>
       Arrays of constant size. Arrays of variable size.
+    </para>
+    <para>
+    <emphasis>TODO</emphasis>
     </para>
   </refsect2>
 
@@ -63,6 +72,9 @@
     
     <para>
       Not really enumerations. Allow bitfield operations.
+    </para>
+    <para>
+    <emphasis>TODO</emphasis>
     </para>
   </refsect2>
 
@@ -74,7 +86,7 @@
 <refsect1>
   <title>Namespaces</title>
   <para>
-    foo
+  <emphasis>TODO</emphasis>
   </para>
 </refsect1>
 
@@ -83,12 +95,15 @@
   <para>
     Performance evaluation?
   </para>
+    <para>
+    <emphasis>TODO</emphasis>
+    </para>
 </refsect1>
 
 <refsect1>
   <title>Future Work</title>
   <para>
-    foo
+  <emphasis>TODO</emphasis>
   </para>
 </refsect1>
 

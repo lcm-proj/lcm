@@ -75,9 +75,9 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  *         "udpm://239.255.76.67:7667"
  *             Default initialization string
  *
- *         "udpm://?ttl=1"
- *             Uses default address/port, but sets the multicast TTL to 1 so
- *             that packets published will enter the local network.
+ *         "udpm://239.255.76.67:7667?ttl=1"
+ *             Sets the multicast TTL to 1 so that packets published will enter
+ *             the local network.
  * </programlisting>
  * 
  * <programlisting>
