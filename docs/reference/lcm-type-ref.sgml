@@ -48,25 +48,120 @@
     converts an LCM type specification into a language-dependent
     implementation.
   </para>
-  
+
   <refsect2>
     <title>Structs</title>
     
-    <para>
-      Primitive Types. Signed types only.
+    <para>LCM structs are compound types consisting of other types. We
+      begin with a simple struct named "temperature_t" that contains a
+      64 bit integer named "utime" and a 64 bit floating point number
+      named "degCelsius". Two types of comments are also illustrated.
     </para>
-    <para>
-    <emphasis>TODO</emphasis>
-    </para>
-    
-    <para>
-      Arrays of constant size. Arrays of variable size.
-    </para>
-    <para>
-    <emphasis>TODO</emphasis>
-    </para>
-  </refsect2>
 
+    <programlisting>
+      struct temperature_t 
+      {
+          int64_t   utime;         // Timestamp, in microseconds
+
+          /* Temperature in degrees Celsius. A "float" would probably
+           * be good enough, unless we're measuring temperatures during
+           * the big bang. Note that the asterisk on the beginning of this
+           * line is not syntactically necessary, it's just pretty.
+           */
+          double    degCelsius;    
+      }
+    </programlisting>
+
+    <para>
+      This declaration must appear in a file named "temperature_t.lcm".
+    </para>
+
+    <para>LCM types do not contain pointers (but arrays are supported, see
+      below): this eliminates the possibility of circular references.
+    </para>
+
+    <para>Before we go further, let's take a look at the various
+      primitive types available.</para>
+
+    <refsect3>
+      <title>Primitive Types</title>
+      
+      <para>LCM supports a number of primitive types: int8_t, int16_t,
+	int32_t, int64_t, byte, float, double, string, and boolean. The
+	integer types are all signed (as is necessary to ensure easy
+	inter-operation with Java, which lacks unsigned types) and are
+	encoded in network byte order.</para>
+      
+      <para>The type 'byte' is encoded the same way as int8_t. However,
+	there are instances in which buffers of data (such as a JPEG
+	image) must be sent across the network. These buffers of data
+	must be decoded by some additional software. The type 'byte' can
+	be used by a type designer to help convey the notion that the
+	data is opaque, and should not be interpreted (literally) as an
+	array of 8 bit integers.
+      </para>
+      
+      <para>Floating point types are encoded using the IEEE 32 and 64
+	bit formats. An LCM implementation may not use any other
+	encoding. The 32 and 64 bit quantities are transmitted in
+	network byte order.
+      </para>
+      
+      <para>The boolean type is encoded as a single byte whose value is
+	either 0 or 1. An array of N booleans will require N bytes.
+      </para>
+      
+      <para>The string type encodes a NULL-terminated UTF-8 string. The
+	string is sent as a 32 bit integer comprising the total length of
+	string in bytes (including terminating NULL character) followed by
+	the bytes of the string (again, including the NULL character).
+      </para>
+    </refsect3>
+    
+    <refsect3>
+      <title>Arrays</title>
+ 
+      <para>
+	LCM supports multi-dimensional arrays consisting of
+	primitives, structs, or enums. The number of dimensions in the
+	array are declared by the LCM type declaration: you cannot
+	encode an LCM type that consists of a variable-dimension
+	array. In contrast, variable-sized arrays are fine. Consider
+	this example:
+      </para>
+      
+      <programlisting>
+	struct point2d_list_t
+        {
+	   int32_t npoints;
+	   double  points[npoints][2];
+        }
+      </programlisting>
+
+      <para>
+	This example shows a two-dimensional array declaration
+	consisting of both variable-length and fixed-length
+	components. In a variable-length declaration, the variable
+	that contains the length must be declared prior to its use as
+	an array length. Also note that the length variable (npoints,
+	in the example above) must be an integer type, and must always
+	have a value greater than or equal to zero.
+      </para>
+
+      <para>
+	When arrays are encoded and decoded, each dimension's size is
+	already known: it is either a constant (given by the LCM type
+	declaration), or it was a previously encoded/decoded
+	variable. Thus, an array is encoded simply by recursively
+	encoding each element of the array, with inner-most dimensions
+	being encoded together. In other words, the array above would
+	be encoded in the order points[0][0], points[0][1],
+	points[1][0], points[1][1], points[2][0], points[2][1], etc.
+      </para>
+
+    </refsect3>
+  </refsect2>
+  
   <refsect2>
     <title>Enumerations/Constants</title>
     
@@ -74,13 +169,13 @@
       Not really enumerations. Allow bitfield operations.
     </para>
     <para>
-    <emphasis>TODO</emphasis>
+      <emphasis>TODO</emphasis>
     </para>
   </refsect2>
 
   <para>
-    Type safety, hash computation. (Refer to appendix 1).
-  </para>
+      Type safety, hash computation. (Refer to appendix 1).
+    </para>
 </refsect1>
 
 <refsect1>
