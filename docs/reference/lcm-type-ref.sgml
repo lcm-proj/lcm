@@ -12,29 +12,100 @@
 <refsect1>
   <title>Introduction</title>
   <para>
-    LCM is a utility designed to generate platform-independent marshalling
-    and unmarshalling functions for user-defined data types. It is similar
-    to XDR, though it is written with greater type safety in mind, and
-    with the goal of natively supporting other languages such as Java (in
-    addition to C).
+    In addition to providing a set of communications primitives, LCM
+    includes utilities for generating platform-independent marshalling
+    and unmarshalling functions for user-defined data types. It is
+    similar to XDR, though it is written with greater type safety in
+    mind, and with the goal of first-class support for a variety of
+    languages including C, Java, and Python. This document describes
+    the data marshalling facility; the communications facility is
+    described elsewhere. Note that it is possible to use the data
+    marshalling features of LCM independently of LCM's communication
+    facilities.
   </para>
+
+  <refsect2>
+    <title>Design Goals</title>
+  <para>
+    The primary design goals of the LCM marshalling facility are:
+
+    <itemizedlist>
+      <listitem>Provide a simple mechanism to define complex types
+	that would be immediately comfortable to users of C and
+	Java</listitem>
+      <listitem>Provide first class support for a wide variety of
+	client languages</listitem>
+      <listitem>Abstract away platform-specific details such as byte
+	ordering</listitem>
+      <listitem>Maximize the amount of compile-time and run-time type
+	safety</listitem>
+      <listitem>Be able to detect message type incompatibilities, such
+	as when two applications have different versions of the same
+	datatype</listitem>
+      <listitem>Produce space-efficient encoded messages</listitem>
+      <listitem>Minimize encoding and decoding computational
+	costs</listitem>
+    </itemizedlist>
+  </para>
+
+  <para>
+    The current version of LCM achieves these goals with only a few
+    compromises. In some cases, a least-common-denominator approach
+    was used to ensure that all platforms supported the features
+    provided by LCM.
+  </para>
+  </refsect2>
+
+  <refsect2>
+    <title>Development History</title>
+    
     <para>
-    <emphasis>TODO</emphasis>
+      LCM's marshalling facilities were created for use on MIT's DARPA
+      Urban Challenge vehicle, with development starting during the
+      summer of 2006. Early versions supported many features that have
+      since been deprecated: reducing the number of extranneous
+      features has simplified the code base significantly, since most
+      features typically impact several language back-ends (currently
+      C, Java, and Python).
     </para>
 
-  <para>
-    Goals: Cross platform, multi-language, type safe.
-  </para>
-
-  <para>
-    Development history: MIT DGC 2007.
-  </para>
+  </refsect2>
 </refsect1>
 
 <refsect1>
   <title>Related Work</title>
   <para>
-    XDR, XML/RPC, IPC's thingie
+    LCM is most similar to XDR, which is used in by RPC and described
+    by RFC4506. Both use a C-like syntax (and even C keywords like
+    "struct"). LCM differs in that its language is smaller:
+    rarely-used features like unions are not supported. LCM does not
+    support pointers: this eliminates the pointer-chasing problems
+    that can arise in XDR. Variable-length arrays are supported in a
+    more natural way in LCM, and LCM includes a type "signature" in
+    the encoded data. This type signature allows run-time error
+    detection.
+  </para>
+
+  <para>
+    IPC. (TODO).
+  </para>
+
+  <para>
+    MOOS
+  </para>
+
+  <para>
+    It seems that every data encoding representation is invariably
+    compared to XML. XML and LCM, however, serve very different
+    functions. XML is designed to facilitate data interchange between
+    agents whose internal representations may be otherwise
+    incompatible. The verbosity and generic structure of XML are aids
+    for agents to use information that they understand while safely
+    skipping over properties that are alien to them. In contrast, LCM
+    is designed for agents that are tightly coupled but that may not
+    be in the same memory space. A more rigid type definition, along
+    with space-efficient and computationally-efficient encodings, are
+    better fits for these types of applications.
   </para>
 </refsect1>
 

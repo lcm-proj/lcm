@@ -117,7 +117,7 @@ int emit_java(lcmgen_t *lcm)
                                                "# = ins.readLong();",  
                                                "outs.writeLong(#);"));
     g_hash_table_insert(type_table, "string",   prim("String",
-                                               "__strbuf = new byte[ins.readInt()]; ins.readFully(__strbuf); # = new String(__strbuf, \"UTF-8\");",
+                                               "__strbuf = new byte[ins.readInt()-1]; ins.readFully(__strbuf); ins.readByte(); # = new String(__strbuf, \"UTF-8\");",
                                                "__strbuf = #.getBytes(\"UTF-8\"); outs.writeInt(__strbuf.length+1); outs.write(__strbuf, 0, __strbuf.length); outs.writeByte(0);"));
     g_hash_table_insert(type_table, "boolean",  prim("boolean",
                                                "# = ins.readByte()!=0;",

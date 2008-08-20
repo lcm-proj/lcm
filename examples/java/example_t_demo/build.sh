@@ -1,6 +1,6 @@
 #!/bin/sh
 
-lcm-gen -j ../types/example_t.lcm
+lcm-gen -j ../../types/example_t.lcm
 
 export CLASSPATH="`pkg-config --variable=classpath lcm-java`:."
 
