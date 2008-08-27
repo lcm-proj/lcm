@@ -361,6 +361,7 @@ int parse_const(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
         parse_error(t, "invalid type for const");
     char *typename = strdup(t->token);
 
+another_constant:
     // get the member name
     tokenize_next_or_fail(t, "name identifier");
     if (!lcm_is_legal_member_name(t->token))
@@ -426,8 +427,12 @@ int parse_const(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
 
     g_ptr_array_add(lr->constants, lc);
 
-    free(typename);
     free(membername);
+
+    if (parse_try_consume(t, ","))
+        goto another_constant;
+
+    free(typename);
 
     parse_require(t, ";");
     return 0;

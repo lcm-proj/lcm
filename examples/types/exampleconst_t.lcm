@@ -1,0 +1,5 @@
+struct exampleconst_t
+{
+const int32_t ABC = 1, DEF = 2;
+const double PI=3.1415926, E=2.8718;
+}
