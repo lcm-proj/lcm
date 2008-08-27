@@ -120,7 +120,9 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     char *tn = ls->structname->typename;
     char *tn_ = dots_to_underscores(tn);
+    char *tn_upper = g_utf8_strup(tn_, -1);
 
+    // include header files required by members
     for (unsigned int i = 0; i < g_ptr_array_size(ls->members); i++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, i);
         
@@ -134,13 +136,23 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         }
     }
 
+    // output constants
+    for (unsigned int i = 0; i < g_ptr_array_size(ls->constants); i++) {
+        lcm_constant_t *lc = g_ptr_array_index(ls->constants, i);
+        assert(lcm_is_legal_const_type(lc->typename));
+        emit(0, "#define %s_%s %s", tn_upper, lc->membername, lc->val_str);
+    }
+    if (g_ptr_array_size(ls->constants) > 0) {
+        emit(0, "");
+    }
+
+    // define the struct
     emit(0, "typedef struct _%s %s;", tn_, tn_);
     emit(0, "struct _%s", tn_);
     emit(0, "{");
 
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, m);
-//        char *tname = dots_to_underscores (lm->
 
         int ndim = g_ptr_array_size(lm->dimensions);
         if (ndim == 0) {
@@ -164,6 +176,9 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     }
     emit(0, "};");
     emit(0, " ");
+
+    free(tn_);
+    free(tn_upper);
 }
 
 static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)

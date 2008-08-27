@@ -68,13 +68,35 @@ struct lcm_struct
 
        // recursive declaration of structs and enums
 	GPtrArray *structs;  // lcm_struct_t
-	GPtrArray *enums;    // locally-declared enums
+	GPtrArray *enums;    // locally-declared enums  DEPRECATED
+	GPtrArray *constants; // lcm_constant_t
 
 	char *lcmfile;       // file/path of function that declared it
 	int64_t hash;
 };
 
 /////////////////////////////////////////////////
+// lcm_constant_: the symbolic name of a constant and its value.
+//
+typedef struct lcm_constant lcm_constant_t;
+
+struct lcm_constant
+{
+    char *typename;    // int8_t / int16_t / int32_t / int64_t / float / double
+    char *membername;
+    union {
+        int8_t i8;
+        int16_t i16;
+        int32_t i32;
+        int64_t i64;
+        float f;
+        double d;
+    } val;
+    char *val_str;   // value as a string, as specified in the .lcm file
+};
+
+/////////////////////////////////////////////////
+// DEPRECATED
 // lcm_enum_value_t: the symbolic name of an enum and its constant
 //                   value.
 //
@@ -87,6 +109,7 @@ struct lcm_enum_value
 };
 
 /////////////////////////////////////////////////
+// DEPRECATED
 // lcm_enum_t: an enumeration, also a first-class LCM object.
 //
 typedef struct lcm_enum lcm_enum_t;
@@ -125,8 +148,14 @@ struct lcmgen
 // Returns 1 if the argument is a built-in type (e.g., "int64_t", "float").
 int lcm_is_primitive_type(const char *t);
 
+// Returns 1 if the argument is a legal constant type (e.g., "int64_t", "float").
+int lcm_is_legal_const_type(const char *t);
+
 // Returns the member of a struct by name. Returns NULL on error.
 lcm_member_t *lcm_find_member(lcm_struct_t *lr, const char *name);
+
+// Returns the constant of a struct by name. Returns NULL on error.
+lcm_constant_t *lcm_find_const(lcm_struct_t *lr, const char *name);
 
 // Returns 1 if the "lazy" option is enabled AND the file "outfile" is
 // older than the file "declaringfile"

@@ -49,6 +49,15 @@ static const char *array_dimension_types[] = { "int8_t",
                                                "int64_t",
                                                NULL};
 
+// which types can be legally used as const values?
+static const char *const_types[] = { "int8_t",
+                                     "int16_t",
+                                     "int32_t",
+                                     "int64_t",
+                                     "float",
+                                     "double",
+                                     NULL };
+
 // Given NULL-terminated array of strings "ts", does "t" appear in it?
 static int string_in_array(const char *t, const char **ts)
 {
@@ -73,6 +82,11 @@ int lcm_is_array_dimension_type(const char *t)
 int lcm_is_legal_member_name(const char *t)
 {
     return isalpha(t[0]) || t[0]=='_';
+}
+
+int lcm_is_legal_const_type(const char *t)
+{
+    return string_in_array(t, const_types);
 }
 
 // Make the hash dependent on the value of the given character. The
@@ -148,9 +162,27 @@ lcm_struct_t *lcm_struct_create(lcmgen_t *lcmgen, const char *lcmfile, const cha
     lr->lcmfile    = strdup(lcmfile);
     lr->structname = lcm_typename_create(lcmgen, structname);
     lr->members    = g_ptr_array_new();
+    lr->constants  = g_ptr_array_new();
     lr->enums      = g_ptr_array_new();
     lr->structs    = g_ptr_array_new();
     return lr;
+}
+
+lcm_constant_t *lcm_constant_create(const char *type, const char *name, const char *val_str)
+{
+    lcm_constant_t *lc = (lcm_constant_t*) calloc(1, sizeof(lcm_constant_t));
+    lc->typename = strdup(type);
+    lc->membername = strdup(name);
+    lc->val_str = strdup(val_str);
+    // don't fill in the value
+    return lc;
+}
+
+void lcm_constant_destroy(lcm_constant_t *lc)
+{
+    free(lc->typename);
+    free(lc->membername);
+    free(lc);
 }
 
 lcm_enum_t *lcm_enum_create(lcmgen_t *lcmgen, const char *lcmfile, const char *name)
@@ -178,6 +210,8 @@ lcm_member_t *lcm_member_create()
     lm->dimensions = g_ptr_array_new();
     return lm;
 }
+
+//lcm_constant_t *lcm_constant_create(lcmgen_t *lcmgen, const char *lcmfile
 
 int64_t lcm_struct_hash(lcm_struct_t *lr)
 {
@@ -240,7 +274,7 @@ void semantic_error(tokenize_t *t, const char *fmt, ...)
     printf("%s", t->buffer);
 
     va_end(ap);
-    _exit(0);
+    _exit(1);
 }
 
 // semantic warning: it parsed fine, but it's dangerous.
@@ -280,7 +314,7 @@ void parse_error(tokenize_t *t, const char *fmt, ...)
     printf("^\n");
 
     va_end(ap);
-    _exit(0);
+    _exit(1);
 }
 
 // If the next token is "tok", consume it and return 1. Else, return 0
@@ -318,6 +352,87 @@ void tokenize_next_or_fail(tokenize_t *t, const char *description)
         parse_error(t, "End of file reached, expected %s.", description);
 }
 
+int parse_const(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
+{
+    tokenize_next_or_fail(t, "type identifier");
+
+    // get the constant type
+    if (!lcm_is_legal_const_type(t->token))
+        parse_error(t, "invalid type for const");
+    char *typename = strdup(t->token);
+
+    // get the member name
+    tokenize_next_or_fail(t, "name identifier");
+    if (!lcm_is_legal_member_name(t->token))
+        parse_error(t, "Invalid member name: must start with [a-zA-Z_].");
+    char *membername = strdup(t->token);
+
+    // make sure this name isn't already taken.
+    if (lcm_find_member(lr, t->token) != NULL)
+        semantic_error(t, "Duplicate member name '%s'.", t->token);
+    if (lcm_find_const(lr, t->token) != NULL)
+        semantic_error(t, "Duplicate member name '%s'.", t->token);
+
+    // get the value
+    parse_require(t, "=");
+    tokenize_next_or_fail(t, "constant value");
+
+    // create a new const member
+    lcm_constant_t *lc = lcm_constant_create(typename, membername, t->token);
+
+    char *endptr = NULL;
+    if (!strcmp(typename, "int8_t")) {
+        long long v = strtoll(t->token, &endptr, 0);
+        if (endptr == t->token || *endptr != '\0')
+            parse_error(t, "Expected integer value");
+        if (v < INT8_MIN || v > INT8_MAX)
+            semantic_error(t, "Integer value out of bounds for int8_t");
+        lc->val.i8 = (int8_t)v;
+    } else if (!strcmp(typename, "int16_t")) {
+        long long v = strtoll(t->token, &endptr, 0);
+        if (endptr == t->token || *endptr != '\0')
+            parse_error(t, "Expected integer value");
+        if (v < INT16_MIN || v > INT16_MAX)
+            semantic_error(t, "Integer value out of range for int16_t");
+        lc->val.i16 = (int16_t)v;
+    } else if (!strcmp(typename, "int32_t")) {
+        long long v = strtoll(t->token, &endptr, 0);
+        if (endptr == t->token || *endptr != '\0')
+            parse_error(t, "Expected integer value");
+        if (v < INT32_MIN || v > INT32_MAX)
+            semantic_error(t, "Integer value out of range for int32_t");
+        lc->val.i32 = (int32_t)v;
+    } else if (!strcmp(typename, "int64_t")) {
+        long long v = strtoll(t->token, &endptr, 0);
+        if (endptr == t->token || *endptr != '\0')
+            parse_error(t, "Expected integer value");
+        lc->val.i64 = (int64_t)v;
+    } else if (!strcmp(typename, "float")) {
+        double v = strtod(t->token, &endptr);
+        if (endptr == t->token || *endptr != '\0')
+            parse_error(t, "Expected floating point value");
+        if (v > FLT_MAX || v < -FLT_MAX)
+            semantic_error(t, "Floating point value out of range for float");
+        lc->val.f = (float)v;
+    } else if (!strcmp(typename, "double")) {
+        double v = strtod(t->token, &endptr);
+        if (endptr == t->token || *endptr != '\0')
+            parse_error(t, "Expected floating point value");
+        lc->val.d = v;
+    } else {
+        fprintf(stderr, "[%s]\n", t->token);
+        assert(0);
+    }
+
+    g_ptr_array_add(lr->constants, lc);
+
+    free(typename);
+    free(membername);
+
+    parse_require(t, ";");
+    return 0;
+}
+
 // parse a member declaration. This looks long and scary, but most of
 // the code is for semantic analysis (error checking)
 int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
@@ -335,6 +450,8 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
         parse_error(t, "recursive enums not implemented.");
     } else if (parse_try_consume(t, "union")) {
         parse_error(t, "recursive unions not implemented.");
+    } else if (parse_try_consume(t, "const")) {
+        return parse_const(lcmgen, lr, t);
     }
 
     // standard declaration
@@ -355,6 +472,8 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
 
         // make sure this name isn't already taken.
         if (lcm_find_member(lr, t->token) != NULL)
+            semantic_error(t, "Duplicate member name '%s'.", t->token);
+        if (lcm_find_const(lr, t->token) != NULL)
             semantic_error(t, "Duplicate member name '%s'.", t->token);
 
         // create a new member
@@ -653,6 +772,17 @@ lcm_member_t *lcm_find_member(lcm_struct_t *lr, const char *name)
             return lm;
     }
 
+    return NULL;
+}
+
+/** Find and return the const whose name is name. **/
+lcm_constant_t *lcm_find_const(lcm_struct_t *lr, const char *name)
+{
+    for (unsigned int i = 0; i < g_ptr_array_size(lr->constants); i++) {
+        lcm_constant_t *lc = (lcm_constant_t*) g_ptr_array_index(lr->constants, i);
+        if (!strcmp(lc->membername, name))
+            return lc;
+    }
     return NULL;
 }
 

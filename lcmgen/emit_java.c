@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
+#include <assert.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -312,6 +313,29 @@ int emit_java(lcmgen_t *lcm)
         emit(1, "public static final long LCM_FINGERPRINT;");
         emit(1, "public static final long LCM_FINGERPRINT_BASE = 0x%016"PRIx64"L;", lr->hash);
         emit(0," ");
+
+        //////////////////////////////////////////////////////////////
+        // CONSTANTS
+        for (unsigned int cn = 0; cn < g_ptr_array_size(lr->constants); cn++) {
+            lcm_constant_t *lc = g_ptr_array_index(lr->constants, cn);
+            assert(lcm_is_legal_const_type(lc->typename));
+
+            if (!strcmp(lc->typename, "int8_t") ||
+                !strcmp(lc->typename, "int16_t") ||
+                !strcmp(lc->typename, "int32_t")) {
+                emit(1, "public static final int %s = %s;", lc->membername, lc->val_str);
+            } else if (!strcmp(lc->typename, "int64_t")) {
+                emit(1, "public static final long %s = %s;", lc->membername, lc->val_str);
+            } else if (!strcmp(lc->typename, "float")) {
+                emit(1, "public static final float %s = %s;", lc->membername, lc->val_str);
+            } else if (!strcmp(lc->typename, "double")) {
+                emit(1, "public static final double %s = %s;", lc->membername, lc->val_str);
+            } else {
+                assert(0);
+            }
+        }
+        if (g_ptr_array_size(lr->constants) > 0)
+            emit(0, "");
 
         ///////////////// encode //////////////////
         emit(1, "static {");

@@ -689,6 +689,15 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         }
         fprintf (f, ")\n\n");
 
+        // CONSTANTS
+        for (unsigned int cn = 0; cn < g_ptr_array_size(ls->constants); cn++) {
+            lcm_constant_t *lc = g_ptr_array_index(ls->constants, cn);
+            assert(lcm_is_legal_const_type(lc->typename));
+            emit(1, "%s = %s", lc->membername, lc->val_str);
+        }
+        if (g_ptr_array_size(ls->constants) > 0)
+            emit(0, "");
+
         emit_python_init (lcm, f, ls);
         emit_python_encode (lcm, f, ls);
         emit_python_encode_one (lcm, f, ls);
