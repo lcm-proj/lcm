@@ -194,11 +194,11 @@
  
       <para>
 	LCM supports multi-dimensional arrays consisting of
-	primitives, structs, or enums. The number of dimensions in the
-	array are declared by the LCM type declaration: you cannot
-	encode an LCM type that consists of a variable-dimension
-	array. In contrast, variable-sized arrays are fine. Consider
-	this example:
+	primitives, structs, or constant declarations. The number of
+	dimensions in the array are declared by the LCM type
+	declaration: you cannot encode an LCM type that consists of a
+	variable-dimension array. In contrast, variable-sized arrays
+	are fine. Consider this example:
       </para>
       
       <programlisting>
@@ -234,14 +234,29 @@
   </refsect2>
   
   <refsect2>
-    <title>Enumerations/Constants</title>
+    <title>Constants</title>
     
     <para>
-      Not really enumerations. Allow bitfield operations.
+      LCM provides a simple way of declaring constants that can
+      subsequently be used to populate other data fields. Users are
+      free to use these constants in any way they choose: as magic
+      numbers, enumerations, or bitfields.
     </para>
     <para>
-      <emphasis>TODO</emphasis>
+      Constants can be declared by using the const keyword.
+
+      <programlisting>
+	const int32_t YELLOW=1, GOLDENROD=2, CANARY=3;
+      </programlisting>
     </para>
+
+    <para>
+      Note that types must be declared for constants. All integer and
+      floating point types are supported. Note that string constants
+      are not supported, since strings are not simple value types on
+      many platforms.
+    </para>
+    
   </refsect2>
 
   <para>
@@ -252,18 +267,47 @@
 <refsect1>
   <title>Namespaces</title>
   <para>
-  <emphasis>TODO</emphasis>
+    LCM allows types to be defined in a namespace, making it easier
+    for users to use types from other organizations even if those
+    types have the same name. The namespace mechanism is closely
+    modelled after that of Java. In languages that support namespaces
+    (such as Java), the LCM namespace mechanism is mapped onto the
+    native mechanism. In cases like C99, namespaces are created by
+    prepending the package name to the type name. See below for an
+    example of namespaces. Note that the package keyword identifies
+    the namespace of the structs defined in that file, and that
+    fully-qualified types are formed by concatenating the package and
+    type name, with a period between.
+  </para>
+
+  <programlisting>
+    package mycorp;
+
+    struct camera_image_t {
+       int64_t      utime;
+       string       camera_name;
+       jpeg.image_t jpeg_image;
+       mit.pose_t   pose;
+    }
+  </programlisting>
+
+  <para>
+    LCM users are encouraged to put their types into a unique
+    namespace and to fully-qualify the types of all the member
+    fields.
   </para>
 </refsect1>
 
 <refsect1>
   <title>Performance Considerations</title>
   <para>
-    Performance evaluation?
+    The runtime costs of encoding and decoding with LCM are generally
+    not a system bottleneck. The marshalling functions are
+    dramatically faster than an XML implementation, but since each
+    member must be individually processed (in order to ensure correct
+    byte ordering, for example), LCM is more expensive than using raw
+    C structs. That said, LCM's first application used over 40MB/s.
   </para>
-    <para>
-    <emphasis>TODO</emphasis>
-    </para>
 </refsect1>
 
 <refsect1>
