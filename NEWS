@@ -1,3 +1,34 @@
+Aug 29, 2008
+============
+
+    Release 0.1.0:
+
+    New features
+
+    * Added const declaration to .lcm specification.
+    * Removed transmit_only option from LCM URL.  All LCM instances are now 
+      considered transmit only until a channel subscription is made.
+    * Added LCM_DEFAULT_URL environment variable.  If the LCM URL is not 
+      specified during instantiation, and LCM_DEFAULT_URL is defined, then 
+      that is used as the LCM URL initialization string.
+    * Added documentation for LCM type specification language.
+    * Added close method to Java LCM class.
+
+    Deprecations
+
+    * enum is now deprecated in the .lcm specification.  Current implementations
+      will be left functional, but enums will no longer be documented or supported
+      in future releases.  At some point in the distant future they may be 
+      completely removed.  Use of const instead of enums is now recommended.
+
+    Bugfixes
+
+    * Java: fix enum types.  This breaks the API for compiled Java enum types.
+      Changed java enum value field from private to public so that raw
+      numerical value is accessible.
+    * C: lcm_udp bugfix to eliminate a corner-case infinite loop.
+    * C: add mutex to allow only one thread in lcm_handle at a time.
+
 May 5, 2008
 ===========
 
