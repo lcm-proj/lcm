@@ -23,4 +23,12 @@ public interface Provider
        with additional hosts.
     **/
     public void subscribe(String channel);
+
+    /**
+     * close() will be called when the application no longer requires the provider
+     * and wishes to free the resources used by the provider.  For example,
+     * file handles and network sockets should be closed.  After this method is
+     * called, the results of any calls to publish or subscribe are undefined.
+     */
+    public void close();
 }

@@ -21,6 +21,8 @@ public class LCM
 
     HashMap<String,ArrayList<SubscriptionRecord>> subscriptionsMap = new HashMap<String,ArrayList<SubscriptionRecord>>();
 
+    boolean closed = false;
+
     static LCM singleton;
 
     /** Create a new LCM object, subscribing to one or more URLs. If
@@ -73,6 +75,7 @@ public class LCM
     /** Return the number of subscriptions. **/
     public int getNumSubscriptions()
     {
+	if (this.closed) throw new IllegalStateException();
 	return subscriptions.size();
     }
 
@@ -83,6 +86,7 @@ public class LCM
      **/
     public void publish(String channel, String s) throws IOException
     {
+	if (this.closed) throw new IllegalStateException();
 	s=s+"\0";
 	byte[] b = s.getBytes();
 	publish(channel, b, 0, b.length);
@@ -93,6 +97,7 @@ public class LCM
      **/
     public void publish(String channel, LCMEncodable e)
     {
+	if (this.closed) throw new IllegalStateException();
 	try {
 	    ByteArrayOutputStream bouts = new ByteArrayOutputStream(256);
 	    DataOutputStream outs = new DataOutputStream(bouts);
@@ -114,6 +119,7 @@ public class LCM
     public synchronized void publish(String channel, byte[] data, int offset, int length) 
 	throws IOException
     {
+	if (this.closed) throw new IllegalStateException();
 	for (Provider p : providers) 
 	    p.publish(channel, data, offset, length);
     }
@@ -124,6 +130,7 @@ public class LCM
      **/
     public void subscribe(String regex, LCMSubscriber sub)
     {
+	if (this.closed) throw new IllegalStateException();
 	SubscriptionRecord srec = new SubscriptionRecord();
 	srec.regex = regex;
 	srec.pat = Pattern.compile(regex);
@@ -152,6 +159,7 @@ public class LCM
      **/
     public void receiveMessage(String channel, byte data[], int offset, int length)
     {
+	if (this.closed) throw new IllegalStateException();
 	synchronized (subscriptions) {
 	    ArrayList<SubscriptionRecord> srecs = subscriptionsMap.get(channel);
 	    
@@ -180,6 +188,20 @@ public class LCM
     public synchronized void subscribeAll(LCMSubscriber sub)
     {
 	subscribe(".*", sub);
+    }
+
+    /** Call this function to release all resources used by the LCM instance.  After calling this
+     * function, the LCM instance should consume no resources, and cannot be used to 
+     * receive or transmit messages.
+     */
+    public synchronized void close()
+    {
+	if (this.closed) throw new IllegalStateException();
+	for (Provider p : providers) {
+	    p.close();
+	}
+	providers = null;
+	this.closed = true;
     }
 
     ////////////////////////////////////////////////////////////////

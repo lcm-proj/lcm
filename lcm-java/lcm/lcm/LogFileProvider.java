@@ -18,6 +18,8 @@ public class LogFileProvider implements Provider
     boolean verbose; // report actual speed periodically
     double skip; // skip a fraction of the log file [0, 1.0]
 
+    ReaderThread reader;
+
     public LogFileProvider(LCM lcm, URLParser up) throws IOException
     {
 	this.lcm = lcm;
@@ -30,7 +32,8 @@ public class LogFileProvider implements Provider
 	verbose = up.get("verbose", false);
 	skip = up.get("skip", 0.0); // skip this fraction of the log file.
 
-	new ReaderThread().start();
+	reader = new ReaderThread();
+	reader.start();
     }
 
     boolean publishWarned = false;
@@ -45,6 +48,22 @@ public class LogFileProvider implements Provider
 
     public synchronized void subscribe(String channel) { }
 
+    public synchronized void close() {
+	if (reader != null) {
+	    reader.interrupt();
+	    try {
+		reader.join();
+	    } catch (InterruptedException ex) {
+	    }
+	}
+	reader = null;
+	try {
+	    log.close();
+	} catch (IOException ex) {
+	}
+	log = null;
+    }
+
     class ReaderThread extends Thread
     {
 	ReaderThread()
@@ -57,7 +76,7 @@ public class LogFileProvider implements Provider
 	    try {
 		runEx();
 	    } catch (InterruptedException ex) {
-		System.out.println("ex: "+ex);
+		return;
 	    } catch (IOException ex) {
 		System.out.println("ex: "+ex);
 	    }

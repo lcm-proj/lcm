@@ -77,6 +77,21 @@ public class UDPMulticastProvider implements Provider
 	}
     }
 
+    public synchronized void close()
+    {
+	if (null != reader) {
+	    reader.interrupt();
+	    try {
+		reader.join();
+	    } catch (InterruptedException ex) {
+	    }
+	}
+	reader = null;
+	sock.close();
+	sock = null;
+	fragBufs = null;
+    }
+
     void publishEx(String channel, byte data[], int offset, int length) throws Exception
     {
 	byte[] channel_bytes = channel.getBytes("US-ASCII");
@@ -195,6 +210,8 @@ public class UDPMulticastProvider implements Provider
 		} catch (IOException ex) {
 		    System.out.println("ex: "+ex);
 		    continue;
+//		} catch (InterruptedException ex) {
+//		    return;
 		}
 	    }
 	}
