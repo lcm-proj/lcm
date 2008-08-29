@@ -63,7 +63,7 @@
       LCM's marshalling facilities were created for use on MIT's DARPA
       Urban Challenge vehicle, with development starting during the
       summer of 2006. Early versions supported many features that have
-      since been deprecated: reducing the number of extranneous
+      since been deprecated: reducing the number of extraneous
       features has simplified the code base significantly, since most
       features typically impact several language back-ends (currently
       C, Java, and Python).
@@ -75,7 +75,7 @@
 <refsect1>
   <title>Related Work</title>
   <para>
-    LCM is most similar to XDR, which is used in by RPC and described
+    LCM is most similar to XDR, which is used in RPC and is described
     by RFC4506. Both use a C-like syntax (and even C keywords like
     "struct"). LCM differs in that its language is smaller:
     rarely-used features like unions are not supported. LCM does not
@@ -113,7 +113,7 @@
   <title>Type Specifications</title>
   <para>
     Type specifications are contained in files with an ".lcm" file
-    type. They are conventially named in lower case with underscores
+    type. They are conventionally named in lower case with underscores
     between words: e.g., the type "wind_speed_t" is defined in the
     file "wind_speed_t.lcm". The utility <emphasis>lcm-gen</emphasis>
     converts an LCM type specification into a language-dependent
@@ -270,9 +270,9 @@
     LCM allows types to be defined in a namespace, making it easier
     for users to use types from other organizations even if those
     types have the same name. The namespace mechanism is closely
-    modelled after that of Java. In languages that support namespaces
-    (such as Java), the LCM namespace mechanism is mapped onto the
-    native mechanism. In cases like C99, namespaces are created by
+    modeled after that of Java. In languages that support namespaces
+    (such as Java and Python), the LCM namespace mechanism is mapped onto the
+    native mechanism. In languages like C, namespaces are approximated by
     prepending the package name to the type name. See below for an
     example of namespaces. Note that the package keyword identifies
     the namespace of the structs defined in that file, and that
@@ -405,7 +405,7 @@ struct C
 </programlisting>
 
 <para>
-  Diagramatically, we can compute their hashes by showing the children
+  Diagrammatically, we can compute their hashes by showing the children
   of each branch. We use lower case to indicate a terminal leaf (where
   the leaf is the same class as one of its parents).
 </para>
