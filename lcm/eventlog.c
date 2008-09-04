@@ -55,9 +55,11 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
     assert (le->channellen < 1000);
 
     if (l->eventcount != le->eventnum) {
-        printf ("Mismatch: eventcount %"PRId64" eventnum %"PRId64"\n", 
-                l->eventcount, le->eventnum);
-        printf ("file offset %"PRId64"\n", ftello (l->f));
+        // these warnings will spew unnecessarily for log files that have been
+        // filtered through lcm-logplayer-gui since it preserves event numbers
+//        printf ("Mismatch: eventcount %"PRId64" eventnum %"PRId64"\n", 
+//                l->eventcount, le->eventnum);
+//        printf ("file offset %"PRId64"\n", ftello (l->f));
         l->eventcount = le->eventnum;
     }
 

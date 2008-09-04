@@ -212,8 +212,13 @@ lcm_logread_handle (lcm_logread_t * lr)
     lcm_dispatch_handlers (lr->lcm, &rbuf, lr->event->channel);
 
     int64_t prev_log_time = lr->event->timestamp;
-    if (load_next_event (lr) < 0)
-        return 0; /* end-of-file */
+    if (load_next_event (lr) < 0) {
+        /* end-of-file reached.  This call succeeds, but next call to
+         * _handle will fail */
+        lr->event = NULL;
+        write (lr->notify_pipe[1], "+", 1);
+        return 0; 
+    }
 
     /* Compute the wall time for the next event */
     if (lr->speed > 0)
