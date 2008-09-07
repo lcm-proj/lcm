@@ -1,6 +1,6 @@
-INCLUDES = -I$(top_srcdir)
+INCLUDES = -I$(top_srcdir) $(GLIB_CFLAGS)
 
-noinst_PROGRAMS = lcm-sink lcm-source lcm-tester lcm-example
+noinst_PROGRAMS = lcm-sink lcm-source lcm-tester lcm-example lcm-logfilter
 
 lcm_example_SOURCES = lcm-example.c 
 lcm_example_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la
@@ -13,6 +13,9 @@ lcm_source_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la
 
 lcm_tester_SOURCES = lcm-tester.c 
 lcm_tester_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la
+
+lcm_logfilter_SOURCES = lcm-logfilter.c 
+lcm_logfilter_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la
 
 #man_MANS = lcm-example.1 lcm-sink.1 lcm-source.1 lcm-tester.1
 
