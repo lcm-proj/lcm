@@ -18,6 +18,8 @@
 
 #include "glib_util.h"
 
+GMainLoop *_mainloop;
+
 static inline int64_t timestamp_seconds(int64_t v)
 {
     return v/1000000;
@@ -119,6 +121,8 @@ static void usage ()
             "    -i, --increment          Automatically append a suffix to FILE\n"
             "                             such that the resulting filename does not\n"
             "                             already exist.  This option precludes -f\n"
+            "    -c, --channel            Channel string to pass to lcm_subscribe.\n"
+            "                             (default: \".*\")\n"
             "    -s, --strftime           Format FILE with strftime.\n" 
             "    -h, --help               Shows this help text and exits\n"
             "\n");
@@ -135,12 +139,14 @@ int main(int argc, char *argv[])
     int force = 0;
     int auto_increment = 0;
     int use_strftime = 0;
+    char *chan_regex = strdup(".*");
 
-    char *optstring = "fisp:h";
+    char *optstring = "fic:sp:h";
     char c;
     struct option long_opts[] = { 
         { "force", no_argument, 0, 'f' },
         { "increment", required_argument, 0, 'i' },
+        { "channel", required_argument, 0, 'c' },
         { "strftime", required_argument, 0, 's' },
         { 0, 0, 0, 0 }
     };
@@ -150,6 +156,10 @@ int main(int argc, char *argv[])
         switch (c) {
             case 'f':
                 force = 1;
+                break;
+            case 'c':
+                free(chan_regex);
+                chan_regex = strdup(optarg);
                 break;
             case 'i':
                 auto_increment = 1;
@@ -238,14 +248,15 @@ int main(int argc, char *argv[])
         return -1;
     }
     
-    lcm_subscribe(logger.lcm, ".*", message_handler, &logger);
+    lcm_subscribe(logger.lcm, chan_regex, message_handler, &logger);
+    free(chan_regex);
 
-    GMainLoop *mainloop = g_main_loop_new (NULL, FALSE);
-    signal_pipe_glib_quit_on_kill (mainloop);
+    _mainloop = g_main_loop_new (NULL, FALSE);
+    signal_pipe_glib_quit_on_kill ();
     glib_mainloop_attach_lcm (logger.lcm);
 
     // main loop
-    g_main_loop_run (mainloop);
+    g_main_loop_run (_mainloop);
 
     // cleanup
     glib_mainloop_detach_lcm (logger.lcm);

@@ -25,6 +25,8 @@ typedef struct _signal_pipe {
 static signal_pipe_t g_sp;
 static int g_sp_initialized = 0;
 
+extern GMainLoop *_mainloop;
+
 int 
 signal_pipe_init()
 {
@@ -135,13 +137,12 @@ signal_pipe_attach_glib (signal_pipe_glib_handler_t func, gpointer user_data)
 static void
 spgqok_handler (int signum, void *user)
 {
-    GMainLoop *mainloop = (GMainLoop*) user;
-    g_main_loop_quit (mainloop);
+    g_main_loop_quit (_mainloop);
     signal_pipe_cleanup();
 }
 
 int 
-signal_pipe_glib_quit_on_kill (GMainLoop *mainloop)
+signal_pipe_glib_quit_on_kill ()
 {
     if (0 != signal_pipe_init()) return -1;
 
@@ -150,13 +151,16 @@ signal_pipe_glib_quit_on_kill (GMainLoop *mainloop)
     signal_pipe_add_signal (SIGKILL);
     signal_pipe_add_signal (SIGHUP);
 
-    return signal_pipe_attach_glib (spgqok_handler, mainloop);
+    return signal_pipe_attach_glib (spgqok_handler, _mainloop);
 }
 
 static int
 lcm_message_ready (GIOChannel *source, GIOCondition cond, lcm_t *lcm)
 {
-    lcm_handle (lcm);
+    if (0 != lcm_handle (lcm)) {
+        g_main_loop_quit(_mainloop);
+        return FALSE;
+    }
     return TRUE;
 }
 

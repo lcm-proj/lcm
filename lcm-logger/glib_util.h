@@ -29,7 +29,7 @@ int signal_pipe_attach_glib (signal_pipe_glib_handler_t user_func,
 // signal_pipe_init, and adds a signal handler that automatically call
 // g_main_loop_quit (mainloop) on receiving SIGTERM, SIGINT, or SIGHUP.
 // also invokes signal_pipe_cleanup() on receiving these signals.
-int signal_pipe_glib_quit_on_kill (GMainLoop *mainloop);
+int signal_pipe_glib_quit_on_kill ();
 
 int glib_mainloop_attach_lcm (lcm_t *lcm);
 
