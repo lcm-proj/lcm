@@ -7,7 +7,7 @@
 
 void catchall_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
-    printf("catchall handler [%s] (content: %s)\n", channel, rbuf->data);
+    printf("catchall handler [%s] (content: %s)\n", channel, (char*)rbuf->data);
 }
 
 int main(int argc, char **argv)

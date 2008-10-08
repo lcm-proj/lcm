@@ -22,13 +22,13 @@ int catchall_count = 0;
 
 void test_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
-    printf ("handling [%s] msg (content: %s)\n", channel, rbuf->data);
+    printf ("handling [%s] msg (content: %s)\n", channel, (char*)rbuf->data);
     test_count++;
 }
 
 void test_handler2 (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
-    printf ("handling [%s] msg (content: %s)\n", channel, rbuf->data);
+    printf ("handling [%s] msg (content: %s)\n", channel, (char*)rbuf->data);
     test_count2++;
 }
 

@@ -192,7 +192,7 @@ lcm_get_fileno (lcm_t * lcm)
 }
 
 int
-lcm_publish (lcm_t *lcm, const char *channel, const uint8_t *data,
+lcm_publish (lcm_t *lcm, const char *channel, const void *data,
         unsigned int datalen)
 {
     if (lcm->provider && lcm->vtable->publish)

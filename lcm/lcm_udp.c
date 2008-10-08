@@ -840,7 +840,7 @@ lcm_udpm_subscribe (lcm_udpm_t *lcm, const char *channel)
 }
 
 static int 
-lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const uint8_t *data,
+lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
         unsigned int datalen)
 {
     int channel_size = strlen (channel);

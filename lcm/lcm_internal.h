@@ -18,7 +18,7 @@ struct _lcm_provider_vtable_t {
             const GHashTable *args);
     void (*destroy)(lcm_provider_t *);
     int (*subscribe)(lcm_provider_t *, const char *channel);
-    int (*publish)(lcm_provider_t *, const char *, const uint8_t *, 
+    int (*publish)(lcm_provider_t *, const char *, const void *, 
             unsigned int);
     int (*handle)(lcm_provider_t *);
     int (*get_fileno)(lcm_provider_t *);

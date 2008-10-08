@@ -27,7 +27,7 @@ typedef struct _lcm_subscription_t lcm_subscription_t;
 typedef struct _lcm_recv_buf_t lcm_recv_buf_t;
 struct _lcm_recv_buf_t
 {
-    uint8_t *data;
+    void *data;
     uint32_t data_size;
     int64_t recv_utime;
     lcm_t *lcm;
@@ -156,7 +156,7 @@ int lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *handler);
  *
  * transmits a message to a multicast group
  */
-int lcm_publish (lcm_t *lcm, const char *channel, const uint8_t *data,
+int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
         unsigned int datalen);
 
 /**
