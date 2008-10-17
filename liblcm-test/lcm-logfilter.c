@@ -23,6 +23,12 @@ usage()
            "Optiosn:\n"
            "  -h        prints this help text and exits\n"
            "  -c CHAN   POSIX extended regular expression.\n"
+           "  -s START  start time.  Messages logged less than START seconds\n"
+           "            after the first message in the logfile will not be\n"
+           "            extracted.\n"
+           "  -e END    end time.  Messages logged more than END seconds\n"
+           "            after the first message in the logfile will not be\n"
+           "            extracted.\n"
            "  -v        verbose mode. Prints a summary of channels extracted\n"
            );
     exit(1);
@@ -40,8 +46,11 @@ int main(int argc, char **argv)
     char *pattern = NULL;
     char *source_fname = NULL;
     char *dest_fname = NULL;
+    int64_t start_utime = 0;
+    int64_t end_utime = -1;
+    int have_end_utime = 0;
 
-    char *optstring = "hc:v";
+    char *optstring = "hc:vs:e:";
     char c;
 
     while ((c = getopt_long (argc, argv, optstring, NULL, 0)) >= 0)
@@ -49,6 +58,25 @@ int main(int argc, char **argv)
         switch (c) {
             case 'h':
                 usage();
+                break;
+            case 's':
+                {
+                    char *eptr = NULL;
+                    double start_time = strtod(optarg, &eptr);
+                    if(*eptr != 0)
+                        usage();
+                    start_utime = (int64_t) (start_time * 1000000);
+                }
+                break;
+            case 'e':
+                {
+                    char *eptr = NULL;
+                    double end_time = strtod(optarg, &eptr);
+                    if(*eptr != 0)
+                        usage();
+                    end_utime = (int64_t) (end_time * 1000000);
+                    have_end_utime = 1;
+                }
                 break;
             case 'c':
                 pattern = strdup(optarg);
@@ -62,12 +90,14 @@ int main(int argc, char **argv)
         };
     }
 
-    if (optind != argc - 2) {
+    if(start_utime < 0 || (have_end_utime && end_utime < start_utime))
         usage();
-    }
-    if (!pattern) {
+
+    if (optind != argc - 2)
         usage();
-    }
+
+    if (!pattern)
+        usage();
 
     regex_t preg;
     if (0 != regcomp(&preg, pattern, REG_NOSUB | REG_EXTENDED)) {
@@ -95,10 +125,24 @@ int main(int argc, char **argv)
     GHashTable *counts = g_hash_table_new_full(g_str_hash, g_str_equal,
             free, free);
     int nwritten = 0;
+    int have_first_event_timestamp = 0;
+    int64_t first_event_timestamp;
 
     for (lcm_eventlog_event_t *event = lcm_eventlog_read_next_event(src_log);
             event != NULL;
             event = lcm_eventlog_read_next_event(src_log)) {
+        if(!have_first_event_timestamp)
+            first_event_timestamp = event->timestamp;
+
+        int64_t elapsed = event->timestamp - first_event_timestamp;
+        if(elapsed < start_utime) {
+            lcm_eventlog_free_event(event);
+            continue;
+        }
+        if(have_end_utime && elapsed > end_utime) {
+            lcm_eventlog_free_event(event);
+            break;
+        }
 
         if (0 == regexec(&preg, event->channel, 0, NULL, 0)) {
             lcm_eventlog_write_event(dst_log, event);
