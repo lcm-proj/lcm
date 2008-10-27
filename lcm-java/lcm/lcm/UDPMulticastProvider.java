@@ -19,7 +19,7 @@ public class UDPMulticastProvider implements Provider
     MulticastSocket sock;
 
     static final String DEFAULT_NETWORK = "239.255.76.67:7667";
-    static final int    DEFAULT_TTL     = 0;
+    static final int    DEFAULT_TTL     = 1;
 
     static final int    MAGIC_SHORT = 0x4c433032; // ascii of "LC02"
     static final int    MAGIC_LONG  = 0x4c433033; // ascii of "LC03"
@@ -55,6 +55,15 @@ public class UDPMulticastProvider implements Provider
 	
 	sock.setReuseAddress(true);
 	sock.setLoopbackMode(false); // true *disables* loopback
+
+	int ttl = up.get("ttl", DEFAULT_TTL);
+	if (ttl == 0) 
+	    System.out.println("LCM: TTL set to zero, traffic will not leave localhost.");
+	else if (ttl > 1)
+	    System.out.println("LCM: TTL set to > 1... That's almost never correct!");
+	else
+	    System.out.println("LCM: TTL set to 1.");
+
 	sock.setTimeToLive(up.get("ttl", DEFAULT_TTL));
 	
 	sock.joinGroup(inetAddr);
