@@ -72,10 +72,18 @@ static primitive_info_t *prim(char *storage, char *decode, char *encode)
     return p;
 }
 
+static int jdefaultpkg_warned = 0;
+
 const char *make_fqn(lcmgen_t *lcm, const char *type_name)
 {
     if (strchr(type_name, '.')!=NULL)
         return type_name;
+
+    if (!jdefaultpkg_warned) {
+        printf("Notice: enclosing LCM types without package into java namespace '%s'.\n", getopt_get_string(lcm->gopt, "jdefaultpkg"));
+        jdefaultpkg_warned = 1;
+    }
+
     return sprintfalloc("%s.%s", getopt_get_string(lcm->gopt, "jdefaultpkg"), type_name);
 }
 
@@ -496,7 +504,7 @@ int emit_java(lcmgen_t *lcm)
             primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
             make_accessor(lm, "", accessor);
 
-           // allocate an array if necessary
+            // allocate an array if necessary
             if (g_ptr_array_size(lm->dimensions) > 0) {
 
                 emit_start(2, "outobj.%s = new ", lm->membername);
@@ -519,12 +527,23 @@ int emit_java(lcmgen_t *lcm)
                 emit(2+i, "for (int %c = 0; %c < %s; %c++) {", 'a'+i, 'a'+i, dim->size, 'a'+i);
             }
             
-            emit_start(2 + g_ptr_array_size(lm->dimensions),"");
-            if (pinfo != NULL) 
-                emit_continue("outobj.%s = this.%s;", lm->membername, lm->membername);
-            else
+            if (pinfo != NULL) {
+
+                emit_start(2+g_ptr_array_size(lm->dimensions), "this.%s", lm->membername);
+                for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
+                    emit_continue("[%c]", 'a'+i);
+                }
+                emit_continue(" = outobj.%s", lm->membername);
+                
+                for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
+                    emit_continue("[%c]", 'a'+i);
+                }
+
+                emit_end(";");
+                
+            } else {
                 emit_continue("outobj.%s = this.%s.copy();", accessor, accessor);
-            emit_end("");
+            }
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 emit(2 + g_ptr_array_size(lm->dimensions) - 1, "}");

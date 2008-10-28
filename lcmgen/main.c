@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
     getopt_add_bool  (gopt, 0,    "lazy",     0,    "Generate output file only if .lcm is newer");
 
     // we only support portable declarations now.
-    // getopt_add_bool  (gopt, 0,    "warn-unsafe", 1, "Warn about unportable delcrations");
+    // getopt_add_bool  (gopt, 0,    "warn-unsafe", 1, "Warn about unportable declarations");
 
     getopt_add_spacer(gopt, "**** C options ****");
     getopt_add_bool  (gopt, 'c', "c",         0,     "Emit C code");
