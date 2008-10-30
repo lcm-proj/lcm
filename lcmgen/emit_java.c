@@ -529,11 +529,11 @@ int emit_java(lcmgen_t *lcm)
             
             if (pinfo != NULL) {
 
-                emit_start(2+g_ptr_array_size(lm->dimensions), "this.%s", lm->membername);
+                emit_start(2+g_ptr_array_size(lm->dimensions), "outobj.%s", lm->membername);
                 for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                     emit_continue("[%c]", 'a'+i);
                 }
-                emit_continue(" = outobj.%s", lm->membername);
+                emit_continue(" = this.%s", lm->membername);
                 
                 for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                     emit_continue("[%c]", 'a'+i);
