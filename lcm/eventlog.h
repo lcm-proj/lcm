@@ -21,7 +21,7 @@ struct _lcm_eventlog_event_t {
     int32_t channellen, datalen;
 
     char     *channel;
-    uint8_t     *data;
+    void     *data;
 };
 
 // mode must be "r" or "w"
