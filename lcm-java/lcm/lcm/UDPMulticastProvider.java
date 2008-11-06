@@ -39,7 +39,7 @@ public class UDPMulticastProvider implements Provider
     static 
     {
 	System.setProperty("java.net.preferIPv4Stack", "true");
-	System.out.println("LC: Disabling IPV6 support");
+	System.out.println("LCM: Disabling IPV6 support");
     }
 
     public UDPMulticastProvider(LCM lcm, URLParser up) throws IOException
