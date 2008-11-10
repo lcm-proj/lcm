@@ -49,7 +49,7 @@ public class LCM
 	    else if (protocol.equals("file"))
 		providers.add(new LogFileProvider(this, up));
 	    else
-		System.out.println("LCM: Unknown URL protocol: "+protocol);
+		System.err.println("LCM: Unknown URL protocol: "+protocol);
 	}
     }
 
@@ -63,7 +63,7 @@ public class LCM
 	    try {
 		singleton = new LCM();
 	    } catch (Exception ex) {
-		System.out.println("LC singleton fail: "+ex);
+		System.err.println("LC singleton fail: "+ex);
 		System.exit(-1);
 		return null;
 	    }
@@ -108,7 +108,7 @@ public class LCM
 	    
 	    publish(channel, b, 0, b.length);
 	} catch (IOException ex) {
-	    System.out.println("LC publish fail: "+ex);
+	    System.err.println("LC publish fail: "+ex);
 	}
     }
 
@@ -214,7 +214,7 @@ public class LCM
 	try {
 	    lcm = new LCM();
 	} catch (IOException ex) {
-	    System.out.println("ex: "+ex);
+	    System.err.println("ex: "+ex);
 	    return;
 	}
 
@@ -225,7 +225,7 @@ public class LCM
 		Thread.sleep(1000);
 		lcm.publish("TEST", "foobar");
 	    } catch (Exception ex) {
-		System.out.println("ex: "+ex);
+		System.err.println("ex: "+ex);
 	    }
 	}
     }
@@ -234,7 +234,7 @@ public class LCM
     {
 	public void messageReceived(LCM lcm, String channel, DataInputStream dins)
 	{
-	    System.out.println("RECV: "+channel);
+	    System.err.println("RECV: "+channel);
 	}
     }
 }

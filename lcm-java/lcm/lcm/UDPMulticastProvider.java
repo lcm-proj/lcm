@@ -19,7 +19,7 @@ public class UDPMulticastProvider implements Provider
     MulticastSocket sock;
 
     static final String DEFAULT_NETWORK = "239.255.76.67:7667";
-    static final int    DEFAULT_TTL     = 1;
+    static final int    DEFAULT_TTL     = 0;
 
     static final int    MAGIC_SHORT = 0x4c433032; // ascii of "LC02"
     static final int    MAGIC_LONG  = 0x4c433033; // ascii of "LC03"
@@ -39,7 +39,7 @@ public class UDPMulticastProvider implements Provider
     static 
     {
 	System.setProperty("java.net.preferIPv4Stack", "true");
-	System.out.println("LCM: Disabling IPV6 support");
+	System.err.println("LCM: Disabling IPV6 support");
     }
 
     public UDPMulticastProvider(LCM lcm, URLParser up) throws IOException
@@ -58,11 +58,11 @@ public class UDPMulticastProvider implements Provider
 
 	int ttl = up.get("ttl", DEFAULT_TTL);
 	if (ttl == 0) 
-	    System.out.println("LCM: TTL set to zero, traffic will not leave localhost.");
+	    System.err.println("LCM: TTL set to zero, traffic will not leave localhost.");
 	else if (ttl > 1)
-	    System.out.println("LCM: TTL set to > 1... That's almost never correct!");
+	    System.err.println("LCM: TTL set to > 1... That's almost never correct!");
 	else
-	    System.out.println("LCM: TTL set to 1.");
+	    System.err.println("LCM: TTL set to 1.");
 
 	sock.setTimeToLive(up.get("ttl", DEFAULT_TTL));
 	
@@ -74,7 +74,7 @@ public class UDPMulticastProvider implements Provider
 	try {
 	    publishEx(channel, data, offset, length);
 	} catch (Exception ex) {
-	    System.out.println("ex: "+ex);
+	    System.err.println("ex: "+ex);
 	}
     }
 
@@ -128,7 +128,7 @@ public class UDPMulticastProvider implements Provider
 	    if (payload_size % FRAGMENTATION_THRESHOLD > 0) nfragments++;
 
 	    if (nfragments > 65535) {
-		System.out.println("LC error: too much data for a single message");
+		System.err.println("LC error: too much data for a single message");
 		return;
 	    }
 
@@ -217,7 +217,7 @@ public class UDPMulticastProvider implements Provider
 		    sock.receive(packet);
 		    handlePacket(packet);
 		} catch (IOException ex) {
-		    System.out.println("ex: "+ex);
+		    System.err.println("ex: "+ex);
 		    continue;
 //		} catch (InterruptedException ex) {
 //		    return;
@@ -249,7 +249,7 @@ public class UDPMulticastProvider implements Provider
 	    int data_length = channel_and_data.length - (channel_len + 1);
 
 	    if (ins.available() > 0) {
-		System.out.println("Unread data! "+ins.available());
+		System.err.println("Unread data! "+ins.available());
 	    }
 
 	    lcm.receiveMessage(channel, channel_and_data, data_offset, data_length);
@@ -268,7 +268,7 @@ public class UDPMulticastProvider implements Provider
 	    ins.read(payload);
 
 	    if (ins.available() > 0) {
-		System.out.println("Unread data! "+ins.available());
+		System.err.println("Unread data! "+ins.available());
 	    }
 
 	    int data_start = 0;
@@ -307,7 +307,7 @@ public class UDPMulticastProvider implements Provider
 	    }
 
 	    if (fragment_offset + frag_size > fbuf.data_size) {
-		System.out.println ("LC: dropping invalid fragment");
+		System.err.println ("LC: dropping invalid fragment");
 		fragBufs.remove (fbuf.from);
 		return;
 	    }
@@ -333,7 +333,7 @@ public class UDPMulticastProvider implements Provider
 	    } else if (magic == MAGIC_LONG) {
 		handleFragment(packet, ins);
 	    } else {
-		System.out.println("bad magic: " + Integer.toHexString(magic));
+		System.err.println("bad magic: " + Integer.toHexString(magic));
 		return;
 	    }
 	}

@@ -42,7 +42,7 @@ public class LogFileProvider implements Provider
 	if (publishWarned)
 	    return;
 
-	System.out.println("LogFileProvider does not support publishing");
+	System.err.println("LogFileProvider does not support publishing");
 	publishWarned = true;
     }
 
@@ -78,7 +78,7 @@ public class LogFileProvider implements Provider
 	    } catch (InterruptedException ex) {
 		return;
 	    } catch (IOException ex) {
-		System.out.println("ex: "+ex);
+		System.err.println("ex: "+ex);
 	    }
 	}
 
@@ -121,7 +121,7 @@ public class LogFileProvider implements Provider
 		if (verboseAccumulator > 1.0 && verbose) {
 		    double eventDt = (lastEventUtime - verboseLastEventUtime)/1000000.0;
 		    verboseLastEventUtime = lastEventUtime;
-		    System.out.printf("LogFile: rate = %8.3f, position = %8.3f %%\n", 
+		    System.err.printf("LogFile: rate = %8.3f, position = %8.3f %%\n", 
 				      eventDt/verboseAccumulator,
 				      log.getPositionFraction()*100.0);
 		    verboseAccumulator = 0;

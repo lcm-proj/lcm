@@ -25,7 +25,7 @@ public class URLParser
 	    for (int i = 0; i < keyvalues.length; i++) {
 		String toks[] = keyvalues[i].split("=");
 		if (toks.length != 2) 
-		    System.out.println("Invalid key-value pair in URL : "+keyvalues[i]);
+		    System.err.println("Invalid key-value pair in URL : "+keyvalues[i]);
 		else
 		    params.put(toks[0], toks[1]);
 	    }
@@ -85,7 +85,7 @@ public class URLParser
 	}
 
 	for (String key : u.params.keySet()) {
-	    System.out.printf("param %15s: %s\n", key, u.params.get(key));
+	    System.err.printf("param %15s: %s\n", key, u.params.get(key));
 	}
     }
 }
