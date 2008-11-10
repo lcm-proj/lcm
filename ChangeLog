@@ -1,5 +1,82 @@
+2008-11-10  ashuang
+
+	* [r292] lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/LogFileProvider.java,
+	  lcm-java/lcm/lcm/UDPMulticastProvider.java,
+	  lcm-java/lcm/lcm/URLParser.java: Java -- change default TTL back
+	  to 0. replace System.out with System.err
+
+2008-11-06  edwinolson
+
+	* [r291] lcm-java/lcm/lcm/UDPMulticastProvider.java: update
+	  spelling of LC
+
+2008-11-02  ashuang
+
+	* [r290] lcm/eventlog.h: lcm_eventlog_t -> change uint8_t* to void*
+
+2008-10-30  edwinolson
+
+	* [r289] lcmgen/emit_java.c: actually fix serious java copy() bug
+
+2008-10-28  edwinolson
+
+	* [r288] examples/java/example_t_demo/Makefile.am,
+	  lcmgen/emit_java.c, lcmgen/main.c: fix serious bug in emit_java
+	  for lcm.copy(). emit a warning when using jdefaultpkg. fix java
+	  example_t build
+
+2008-10-27  edwinolson
+
+	* [r287] lcm-java/lcm/lcm/UDPMulticastProvider.java: make java LCM
+	  default TTL the same as C... 1. add warnings.
+
+2008-10-21  edwinolson
+
+	* [r286] docs/reference/tutorial-java.sgml: add docs for lcm-gen
+	  change
+	* [r285] examples/java/example_t_demo/Listener.java,
+	  examples/java/example_t_demo/Makefile.am,
+	  examples/java/example_t_demo/SendMessage.java,
+	  lcmgen/emit_java.c: add default java package name if lcm class
+	  has no package
+
+2008-10-17  ashuang
+
+	* [r284] liblcm-test/lcm-logfilter.c: add -s, -e options to
+	  lcm-logfilter
+
+2008-10-08  ashuang
+
+	* [r283] lcm/lcm.c, lcm/lcm.h, lcm/lcm_internal.h, lcm/lcm_udp.c,
+	  liblcm-test/lcm-example.c, liblcm-test/lcm-sink.c: change
+	  uint8_t* to void* in lcm_recv_buf and lcm_publish
+
+2008-09-08  ashuang
+
+	* [r282] lcm-logger/glib_util.c, lcm-logger/glib_util.h,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c: lcm-logger: add
+	  option to log only channels matching a regex
+
+2008-09-07  ashuang
+
+	* [r281] liblcm-test, liblcm-test/Makefile.am,
+	  liblcm-test/lcm-logfilter.c: add lcm-logfilter to liblcm-test
+
+2008-09-04  ashuang
+
+	* [r280] lcm/eventlog.c, lcm/lcm_file.c: C: Modify "file://"
+	  provider so that lcm_handle returns -1 on EOF. Suppress warning
+	  messages when event numbers in a logfile are not consecutive
+
 2008-08-29  ashuang
 
+	* [r272] lcm-java/lcm-logplayer-gui.1, lcm-java/lcm-spy.1,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm-logplayer.1,
+	  lcmgen/lcm-gen.1: update debian packaging tweak manpages to
+	  appease lintian
+	* [r269] ChangeLog, NEWS, configure.in, examples/java/Makefile.am,
+	  lcm/lcm.h: prepare for 0.1.0 release
 	* [r268] lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/LogFileProvider.java,
 	  lcm-java/lcm/lcm/Provider.java,

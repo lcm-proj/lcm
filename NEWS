@@ -1,3 +1,18 @@
+Nov 9, 2008
+===========
+
+    Release 0.1.1:
+
+    * C: Modify "file://" provider so that lcm_handle returns -1 on EOF.
+      Suppress warning messages when event numbers in a logfile are not 
+      consecutive
+    * C: change uint8_t* to void* in lcm_recv_buf, lcm_publish, and 
+      lcm_eventlog_t
+    * lcm-logger: add option to log only channels matching a regex
+    * lcm-gen: bugfixes in emitted Java code
+    * lcm-gen: add -jdefaultpkg option for emitted Java code, changed default
+      behavior.
+
 Aug 29, 2008
 ============
 
