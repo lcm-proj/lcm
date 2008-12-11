@@ -1227,6 +1227,58 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     return 0;
 }
 
+#ifdef __linux__
+#include <sys/ioctl.h>
+#include <net/if.h>
+
+static void
+linux_check_network_interfaces(void)
+{
+    char buf[1024];
+    struct ifconf ifc;
+
+    int fd = socket(AF_INET, SOCK_DGRAM, 0);
+    if(fd < 0) {
+        perror("socket");
+        return;
+    }
+
+    /* Query available interfaces. */
+    ifc.ifc_len = sizeof(buf);
+    ifc.ifc_buf = buf;
+    if(ioctl(fd, SIOCGIFCONF, &ifc) < 0) {
+        perror("ioctl(SIOCGIFCONF)");
+        return;
+    }
+
+    /* Iterate through the list of interfaces. */
+    struct ifreq *ifr = ifc.ifc_req;
+    int n_interfaces = ifc.ifc_len / sizeof(struct ifreq);
+    int have_non_loopback = 0;
+    for(int i = 0; i < n_interfaces; i++) {
+        struct ifreq *item = &ifr[i];
+
+        struct sockaddr_in * sa = (struct sockaddr_in*)&item->ifr_addr;
+        int is_loopback = (ntohl(sa->sin_addr.s_addr) >> 24) == 127;
+        if(!is_loopback)
+            have_non_loopback++;
+    }
+    if(!have_non_loopback) {
+        fprintf(stderr, 
+"LCM requires at least one configured and running non-loopback network\n"
+"interface and a valid multicast route.  If this is a Linux computer and is\n"
+"simply not connected to a network, the following commands are usually\n"
+"sufficient as a temporary solution:\n"
+"\n"
+"   sudo ifconfig eth0 192.168.99.99\n"
+"   sudo route add default dev eth0\n"
+"\n"
+"For more information, visit:\n"
+"   http://lcm.googlecode.com/svn/www/reference/lcm/multicast-setup.html\n\n");
+    }
+}
+#endif
+
 lcm_provider_t * 
 lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 {
@@ -1287,6 +1339,9 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
                 sizeof (dest_addr)) < 0) {
         perror ("connect");
         lcm_udpm_destroy (lcm);
+#ifdef __linux__
+        linux_check_network_interfaces();
+#endif
         return NULL;
     }
 
