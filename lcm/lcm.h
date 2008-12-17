@@ -13,7 +13,19 @@ extern "C" {
 
 #define LCM_MAX_CHANNEL_NAME_LENGTH 63
 
+/**
+ * SECTION:lcm
+ * @short_description: Publish and receive messages with LCM.
+ *
+ */
+
 typedef struct _lcm_t lcm_t;
+
+/**
+ * lcm_subscription_t:
+ *
+ * This is an opaque data structure that identifies an LCM subscription.
+ */
 typedef struct _lcm_subscription_t lcm_subscription_t;
 
 /**
@@ -21,8 +33,11 @@ typedef struct _lcm_subscription_t lcm_subscription_t;
  * @data:      the data received (raw bytes)
  * @data_size: the length of the data received (in bytes)
  * @recv_utime: timestamp (micrseconds since the epoch) at which the first data
- *             bytes of the messages were were received.
+ *             bytes of the message were received.
  * @lcm:       pointer to the lcm_t struct that owns this buffer
+ *
+ * Received messages are passed to user programs using this data structure.  One
+ * struct represents one message.
  */
 typedef struct _lcm_recv_buf_t lcm_recv_buf_t;
 struct _lcm_recv_buf_t
@@ -38,7 +53,7 @@ struct _lcm_recv_buf_t
  * @user_data: the user-specified parameter passed to lcm_subscribe
  * @channel: 
  *
- * callback function prototype 
+ * callback function prototype.
  */
 typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf, 
         const char *channel, void *user_data);
@@ -108,6 +123,9 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  *             source.  Events are played back at 4x speed.
  *             
  * </programlisting>
+ *
+ * Returns: a newly allocated @lcm_t instance.  Free with lcm_destroy() when no
+ * longer needed.
  */
 lcm_t * lcm_create (const char *provider);
 
@@ -121,7 +139,7 @@ void lcm_destroy (lcm_t *lcm);
 /**
  * lcm_get_fileno:
  *
- * for use with select, poll, etc.
+ * Returns: a file descriptor suitable for use with select, poll, etc.
  */
 int lcm_get_fileno (lcm_t *lcm);
 

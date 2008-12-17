@@ -42,17 +42,19 @@
     applications will see them.  Choose a value of 1 for the entire subnet to
     see the traffic.  Even larger values will enable the packets to pass
     through routers.  However, these routers must be set up with multicast
-    routing tables in order to successfully relay multicast traffic.</para>
+    routing tables in order to successfully relay multicast traffic.
+    </para>
 
-    <note>It has been observed in Linux that if a network interface is
-    reconfigured (reconnecting to a new wireless access point, assigned a new
-    IP address, etc.), currently running LCM applications will start using a
-    TTL of 1, even if 0 was assigned at startup.  This can cause traffic to
-    "leak" onto the network when you don't expect it.  To recover from this
-    situation you need to restart any LCM processes.  To avoid this scenario,
-    it is a good idea to assign an explicit multicast route to a wired
-    interface rather than a wireless interface when you wish to keep your TTL
-    at 0.</note>
+    <para>There are two ways to set the TTL.  First, LCM constructors in all
+    languages provide a way to set the TTL (e.g. see <function><link
+    linkend="lcm-create">lcm_create</link></function>), so you can set this in your
+    code.  Second, if your program does not explicitly set its provider URL,
+    then you can use the <literal>LCM_DEFAULT_URL</literal> environment
+    variable.  For exaple, in the bash shell:
+    <blockquote>
+    <command>export LCM_DEFAULT_URL=udpm://239.255.76.67:7667?ttl=1</command>
+    </blockquote>
+    </para>
 
 </refsect1>
 <refsect1>
