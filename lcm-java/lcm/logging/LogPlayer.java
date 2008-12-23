@@ -212,15 +212,17 @@ public class LogPlayer extends JComponent
 	posLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
 	actualSpeedLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
 
-	fasterButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, false)));
-	fasterButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.cyan, false)));
-	fasterButton.setPressedIcon(new ImageIcon(makeArrowImage(Color.red, false)));
+	fasterButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, getBackground(), false)));
+	fasterButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.magenta, getBackground(), false)));
+	fasterButton.setPressedIcon(new ImageIcon(makeArrowImage(Color.red, getBackground(), false)));
 	fasterButton.setBorderPainted(false);
 	fasterButton.setContentAreaFilled(false);
+	// Borders keep appearing when the buttons are pressed. Not sure why.
+	//fasterButton.setBorder(null); //new javax.swing.border.EmptyBorder(0,0,0,0));
 
-	slowerButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, true)));
-	slowerButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.cyan, true)));
-	slowerButton.setPressedIcon(new ImageIcon(makeArrowImage(Color.red, true)));
+	slowerButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, getBackground(), true)));
+	slowerButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.magenta, getBackground(), true)));
+	slowerButton.setPressedIcon(new ImageIcon(makeArrowImage(Color.red, getBackground(), true)));
 	slowerButton.setBorderPainted(false);
 	slowerButton.setContentAreaFilled(false);
 
@@ -606,8 +608,6 @@ public class LogPlayer extends JComponent
 	
 	player = new PlayerThread();
 	player.start();
-	
-	setPlaying(true);
     }
 
     void doStep()
@@ -617,8 +617,6 @@ public class LogPlayer extends JComponent
 	
 	player = new PlayerThread(stepChannelField.getText());
 	player.start();
-	
-	setPlaying(true);
     }
 
     void doSeek(double ratio)
@@ -696,6 +694,10 @@ public class LogPlayer extends JComponent
 	    long last_e_utime = 0;
 
 	    double lastspeed = 0;
+
+	    synchronized (sync) {
+		setPlaying(true);
+	    }
 
 	    try {
 		while (!stopflag) 
@@ -891,13 +893,15 @@ public class LogPlayer extends JComponent
 	}
     }
 
-    static BufferedImage makeArrowImage(Color fillColor, boolean flip)
+    static BufferedImage makeArrowImage(Color fillColor, Color backgroundColor, boolean flip)
     {
 	int height = 18, width = 18;
 	BufferedImage im = new BufferedImage(width,height, BufferedImage.TYPE_INT_ARGB);
 	
 	Graphics2D g = im.createGraphics();
 	g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+	//	g.setColor(backgroundColor);
 
 	g.setColor(new Color(0,0,0,0));
 	//	g.setColor(new Color(0,0,255,128));
@@ -921,14 +925,14 @@ public class LogPlayer extends JComponent
 	g.setColor(fillColor);
 	g.fill(gp);
 	g.setColor(Color.black);
-	g.draw(gp);
+	//	g.draw(gp);
 
 	g.translate(.75, 0);
 
 	g.setColor(fillColor);
 	g.fill(gp);
 	g.setColor(Color.black);
-	g.draw(gp);
+	//	g.draw(gp);
 
 	return im;
     }
