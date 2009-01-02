@@ -168,8 +168,6 @@ pylcm_unsubscribe (PyLCMObject *lcm_obj, PyObject *args)
     subs_obj->handler = NULL;
     subs_obj->lcm_obj = NULL;
 
-    printf ("OK!\n");
-
     Py_RETURN_NONE;
 }
 PyDoc_STRVAR (pylcm_unsubscribe_doc, 
