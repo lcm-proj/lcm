@@ -11,11 +11,13 @@ public class ClassDiscoverer
 {
     public static void findClasses(ClassVisitor visitor)
     {
+	String ps = System.getProperty("path.separator");
+
 	// In order to correctly handle types that reference other
 	// types whose definitions are in another JAR file, create a
 	// big "master" classpath that contains everything we might
 	// want to load.
-	String cp = System.getenv("CLASSPATH")+":"+System.getProperty("java.class.path");
+	String cp = System.getenv("CLASSPATH")+ ps +System.getProperty("java.class.path");
 	findClasses(cp, visitor);
     }
 
@@ -28,7 +30,8 @@ public class ClassDiscoverer
 	if (cp == null)
 	    return;
 
-	String[] items = cp.split(":");
+	String ps = System.getProperty("path.separator");
+	String[] items = cp.split(ps);
 
 	// Create a class loader that has access to the whole class path.
 	URLClassLoader cldr;
@@ -68,7 +71,8 @@ public class ClassDiscoverer
 			// convert the path into a class name
 			String cn = n.substring(0, n.length()-6);
 			cn = cn.replace('/', '.');
-			
+			cn = cn.replace('\\', '.');
+
 			// try loading that class
 			try {
 			    Class cls = cldr.loadClass(cn);
