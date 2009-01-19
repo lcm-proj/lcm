@@ -268,7 +268,7 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     g_queue_free (struct_fmt);
     g_queue_free (struct_members);
-    emit (1, "_decode_one = staticmethod (_decode_one)");
+    emit (1, "_decode_one = staticmethod(_decode_one)");
     fprintf (f, "\n");
 }
 
@@ -276,15 +276,15 @@ static void
 emit_python_decode (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit (1, "def decode(data):");
-    emit (2, "if hasattr (data, 'read'):");
+    emit (2, "if hasattr(data, 'read'):");
     emit (3,     "buf = data");
     emit (2, "else:");
     emit (3,     "buf = StringIO.StringIO(data)");
     emit (2, "if buf.read(8) != %s._get_packed_fingerprint():", 
             ls->structname->shortname);
     emit (3,     "raise ValueError(\"Decode error\")");
-    emit (2, "return %s._decode_one (buf)", ls->structname->shortname);
-    emit (1, "decode = staticmethod (decode)");
+    emit (2, "return %s._decode_one(buf)", ls->structname->shortname);
+    emit (1, "decode = staticmethod(decode)");
     fprintf (f, "\n");
 }
 
@@ -439,7 +439,7 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     const char *sn = ls->structname->shortname;
     emit (1, "_hash = None");
 
-    emit (1, "def _get_hash_recursive (parents):");
+    emit (1, "def _get_hash_recursive(parents):");
     emit (2,     "if %s in parents: return 0", sn);
     emit (2,     "newparents = parents + [%s]", sn);
     emit_start (2, "tmphash = (0x%"PRIx64, ls->hash);
@@ -461,7 +461,7 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit (2, "tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + "
             "(tmphash>>63)) & 0xffffffffffffffff ");
     emit (2,     "return tmphash");
-    emit (1, "_get_hash_recursive=staticmethod(_get_hash_recursive)");
+    emit (1, "_get_hash_recursive = staticmethod(_get_hash_recursive)");
 
     emit (1, "_packed_fingerprint = None");
     emit (1, "");
@@ -607,8 +607,8 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                 "import struct\n");
 
         // enums always encoded as int32
-        emit (0, "class %s:", le->enumname->shortname);
-        emit (1, "__slots__ = ( \"value\" )");
+        emit (0, "class %s(object):", le->enumname->shortname);
+        emit (1, "__slots__ = [ \"value\" ]");
         for (unsigned int v = 0; v < le->values->len; v++) {
             lcm_enum_value_t *lev = g_ptr_array_index(le->values, v);
             emit(1, "%s = %i", lev->valuename, lev->value);
@@ -680,14 +680,14 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 
         emit_python_dependencies (lcm, f, ls);
 
-        fprintf(f, "class %s:\n", ls->structname->shortname);
-        fprintf (f,"    __slots__ = (");
+        fprintf(f, "class %s(object):\n", ls->structname->shortname);
+        fprintf (f,"    __slots__ = [");
         for (unsigned int member = 0; member < ls->members->len; member++) {
             lcm_member_t *lm = g_ptr_array_index (ls->members, member);
             fprintf (f, "\"%s\"%s", lm->membername, 
                     member < ls->members->len-1 ? ", " : "");
         }
-        fprintf (f, ")\n\n");
+        fprintf (f, "]\n\n");
 
         // CONSTANTS
         for (unsigned int cn = 0; cn < g_ptr_array_size(ls->constants); cn++) {
