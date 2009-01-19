@@ -1,7 +1,7 @@
 
 JAVAROOT = build
 JARFILE = lcm$(apiversion).jar
-JAVACFLAGS = -source 5
+JAVACFLAGS = -source 1.5 -target 1.5
 
 $(JARFILE): classdist_noinst.stamp
 	rm -f $(JARFILE)
