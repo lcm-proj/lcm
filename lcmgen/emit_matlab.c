@@ -418,7 +418,8 @@ emit_matlab_decode_one(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                                 emit_continue(", obj.%s", dim->size);
                             }
                         }
-                        emit_end(");");
+                        // matlab reshapes in column-major order, so need a transpose
+                        emit_end(")';"); 
                     }
                 }
             } else {
