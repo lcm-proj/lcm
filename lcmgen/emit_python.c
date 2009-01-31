@@ -67,7 +67,8 @@ get_all_vals_helper (gpointer key, gpointer value, gpointer user_data)
     g_ptr_array_add(vals, value);    
 }
 
-GPtrArray * _hash_table_get_vals (GHashTable *hash_table)
+static GPtrArray * 
+_hash_table_get_vals (GHashTable *hash_table)
 {
     GPtrArray *vals = g_ptr_array_sized_new(g_hash_table_size(hash_table));
     g_hash_table_foreach (hash_table, get_all_vals_helper, vals);

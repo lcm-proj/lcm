@@ -23,6 +23,9 @@ int emit_java(lcmgen_t *lcm);
 void setup_python_options(getopt_t *gopt);
 int emit_python(lcmgen_t *lcm);
 
+void setup_matlab_options(getopt_t *gopt);
+int emit_matlab(lcmgen_t *lcm);
+
 int main(int argc, char *argv[])
 {
     getopt_t *gopt = getopt_create();
@@ -46,6 +49,10 @@ int main(int argc, char *argv[])
     getopt_add_spacer(gopt, "**** Python options ****");
     getopt_add_bool  (gopt, 'p', "python",      0,     "Emit Python code");
     setup_python_options(gopt);
+
+    getopt_add_spacer(gopt, "**** MATLAB options ****");
+    getopt_add_bool  (gopt, 'm', "matlab",      0,     "Emit MATLAB code");
+    setup_matlab_options(gopt);
 
     if (!getopt_parse(gopt, argc, argv, 1) || getopt_get_bool(gopt,"help")) {
         printf("Usage: %s [options] <input files>\n\n", argv[0]);
@@ -93,6 +100,13 @@ int main(int argc, char *argv[])
     if (getopt_get_bool(gopt, "python")) {
         did_something = 1;
         if (emit_python(lcm)) {
+            printf("An error occurred while emitting Python code.\n");
+        }
+    }
+
+    if (getopt_get_bool(gopt, "matlab")) {
+        did_something = 1;
+        if (emit_matlab(lcm)) {
             printf("An error occurred while emitting Python code.\n");
         }
     }
