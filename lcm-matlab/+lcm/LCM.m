@@ -14,6 +14,14 @@ classdef LCM
             % When invoked with no arguments, the default LCM URL is used.
             %
             % When lcmurl is specified, this is passed directly to the C LCM API.
+            %
+            % available methods:
+            %     close()
+            %     publish(channel, data)
+            %     subscribe(channel [, userdata])
+            %     get_fileno()
+            %     get_messages([timeout_ms])
+            %
             if length(varargin) == 0
                 obj.mex = lcm_mex('create');
             elseif length(varargin) == 1
