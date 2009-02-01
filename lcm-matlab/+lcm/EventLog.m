@@ -1,11 +1,11 @@
-classdef lcm_eventlog
+classdef EventLog
     properties
         fid = -1;
         mode = ' ';
     end
 
     methods
-        function obj=lcm_eventlog(fname, mode)
+        function obj=EventLog(fname, mode)
         % obj = eventlog(fname, mode)
         %
         % Open a LCM log file

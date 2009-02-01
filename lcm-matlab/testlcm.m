@@ -1,12 +1,12 @@
-lcm = lcm_create()
+lc = lcm.LCM()
 disp 'created'
-subs = lcm_subscribe(lcm, 'FOO', 'test-user-data')
+subs = lc.subscribe('FOO', 'test-user-data')
 disp 'subscribed'
-lcm_publish(lcm, 'FOO', 'asdf')
+lc.publish('FOO', 'asdf')
 disp 'published'
-msgs = lcm_get_messages(lcm)
+msgs = lc.get_messages()
 disp 'handled'
-lcm_unsubscribe(lcm, subs)
+lc.unsubscribe(subs)
 disp 'unsubscribed'
-lcm_destroy(lcm)
-disp 'destroyed'
+lc.close()
+disp 'closed'
