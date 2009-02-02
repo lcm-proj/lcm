@@ -341,7 +341,7 @@ int emit_java(lcmgen_t *lcm)
                 !strcmp(lc->typename, "int32_t")) {
                 emit(1, "public static final int %s = %s;", lc->membername, lc->val_str);
             } else if (!strcmp(lc->typename, "int64_t")) {
-                emit(1, "public static final long %s = %s;", lc->membername, lc->val_str);
+                emit(1, "public static final long %s = %sL;", lc->membername, lc->val_str);
             } else if (!strcmp(lc->typename, "float")) {
                 emit(1, "public static final float %s = %s;", lc->membername, lc->val_str);
             } else if (!strcmp(lc->typename, "double")) {
