@@ -153,6 +153,44 @@ public class LCM
 	}
     }
 
+    /** Remove this particular regex/subscriber pair (UNTESTED). If
+     * regex is null, all subscriptions for 'sub' are cancelled. If
+     * subscriber is null, any previous subscriptions matching the
+     * regular expression will be cancelled. If both 'sub' and 'regex'
+     * are null, all subscriptions will be cancelled.
+     **/
+    public void unsubscribe(String regex, LCMSubscriber sub) {
+	if (this.closed) throw new IllegalStateException();
+
+        // TODO: need providers to unsubscribe?
+        // TODO: providers don't seem to use anything beyond first channel
+
+	synchronized(subscriptions) {
+
+            // Find and remove subscriber from list
+            for (Iterator<SubscriptionRecord> it = subscriptions.iterator(); it.hasNext(); ) {
+		SubscriptionRecord sr = it.next();
+
+                if ((sub == null || sr.lcsub == sub) &&
+		    (regex == null || sr.regex.equals(regex))) {
+                    it.remove();
+                }
+            }
+
+            // Find and remove subscriber from map
+	    for (String channel : subscriptionsMap.keySet()) {
+              for (Iterator<SubscriptionRecord> it = subscriptionsMap.get(channel).iterator(); it.hasNext(); ) {
+		  SubscriptionRecord sr = it.next();
+		  
+		  if ((sub == null || sr.lcsub == sub) &&
+		      (regex == null || sr.regex.equals(regex))) {
+		      it.remove();
+		  }
+                }
+	    }
+        }      
+    }
+
     /** Not for use by end users. Provider back ends call this method
      * when they receive a message. The subscribers that match the
      * channel name are synchronously notified. 
