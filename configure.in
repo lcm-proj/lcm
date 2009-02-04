@@ -42,17 +42,28 @@ AC_SEARCH_LIBS([inet_aton],[resolv])
 dnl ------------------
 dnl Python support
 dnl ------------------
-AC_PYTHON_DEVEL
-AM_PATH_PYTHON([2.3],, [:])
-AM_CONDITIONAL([HAVE_PYTHON], [test "$pythonexists" = "yes"])
+AC_ARG_WITH(python,
+            [AS_HELP_STRING([--without-python],
+             [Do not compile lcm-python bindings even if Python is available])],
+            [], [with_python=yes])
+
+AS_IF([test "x$with_python" != xno],
+      [AC_PYTHON_DEVEL
+       AM_PATH_PYTHON([2.3],, [:])
+       AM_CONDITIONAL([HAVE_PYTHON], [test "x$pythonexists" = yes])],
+      [AM_CONDITIONAL([HAVE_PYTHON], FALSE)])
 
 pylcmexecdir="$pyexecdir/$PACKAGE"
 AC_SUBST(pylcmexecdir)
 
+AC_ARG_WITH(java,
+            [AS_HELP_STRING([--without-java],
+                [Do not compile lcm-java bindings even if Java is available])],
+            [], [with_java=yes])
 dnl ------------------
 dnl Java support
 dnl ------------------
-if test "x$JAR" = x -o "x$JAVAC" = x; then
+if test "x$with_java" = xno -o "x$JAR" = x -o "x$JAVAC" = x; then
     AC_MSG_WARN([Java support disabled])
 else
     JAVA_FOUND="yes"
