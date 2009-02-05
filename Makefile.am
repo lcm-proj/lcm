@@ -1,5 +1,10 @@
 SUBDIRS = m4 lcm liblcm-test lcmgen lcm-logger lcm-java lcm-python \
-	examples docs po m4macros
+	docs po m4macros
+
+if WITH_EXAMPLES
+SUBDIRS += examples
+endif
+
 #EXTRA_DIST = @PACKAGE@.spec
 ACLOCAL_AMFLAGS = -I m4
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc

@@ -77,6 +77,14 @@ INSTALLED_CLASSPATH=\${jardir}/lcm${apiversion}-${VERSION}.jar
 AC_SUBST(INSTALLED_CLASSPATH)
 AC_SUBST(java_apiversion)
 
+dnl -------------------------------------------------
+dnl Maybe the user doesn't want to build the examples
+dnl -------------------------------------------------
+AC_ARG_WITH(examples,
+            [AS_HELP_STRING([--without-examples], [Do not compile examples])],
+            [], [with_examples=yes])
+AM_CONDITIONAL(WITH_EXAMPLES,[test "x$with_examples" = xyes])
+
 dnl ---------------------------------------------------------------------------
 dnl i18n support
 dnl ---------------------------------------------------------------------------
