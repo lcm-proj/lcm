@@ -50,16 +50,16 @@ to next() returning the next Event in the log.
         self.f = None
 
     def seek (self, filepos):
-        self.c_eventlog.seek (filepos)
+        return self.c_eventlog.seek (filepos)
 
     def size (self):
-        self.c_eventlog.size ()
+        return self.c_eventlog.size ()
 
     def close (self):
-        self.c_eventlog.close ()
+        return self.c_eventlog.close ()
 
     def write_event (self, utime, channel, data):
-        self.c_eventlog.write_event (utime, channel, data)
+        return self.c_eventlog.write_event (utime, channel, data)
 
     def read_next_event (self):
         tup = self.c_eventlog.read_next_event ()
