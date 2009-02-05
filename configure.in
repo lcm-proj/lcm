@@ -50,7 +50,7 @@ AC_ARG_WITH(python,
 AS_IF([test "x$with_python" != xno],
       [AC_PYTHON_DEVEL
        AM_PATH_PYTHON([2.3],, [:])
-       AM_CONDITIONAL([HAVE_PYTHON], [test "x$pythonexists" = yes])],
+       AM_CONDITIONAL([HAVE_PYTHON], [test "x$pythonexists" = xyes])],
       [AM_CONDITIONAL([HAVE_PYTHON], FALSE)])
 
 pylcmexecdir="$pyexecdir/$PACKAGE"
