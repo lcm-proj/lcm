@@ -29,6 +29,10 @@ Channel string to pass to lcm_subscribe. (default: ".*")
 .B \-s, \-\-strftime
 Format \fIFILE\fR with strftime.
 .TP
+.B \-m \-\-max\-unwritten-mb K
+Maximum size of received but unwritten messages to store in memory before 
+dropping messages.  (default: 100 MB)
+.TP
 .B \-h, \-\-help
 Shows some help text and exits
 

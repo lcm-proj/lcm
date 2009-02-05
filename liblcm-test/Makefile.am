@@ -1,6 +1,10 @@
 INCLUDES = -I$(top_srcdir) $(GLIB_CFLAGS)
 
-noinst_PROGRAMS = lcm-sink lcm-source lcm-tester lcm-example lcm-logfilter
+noinst_PROGRAMS = lcm-sink \
+				  lcm-source \
+				  lcm-tester \
+				  lcm-example \
+				  lcm-logfilter
 
 lcm_example_SOURCES = lcm-example.c 
 lcm_example_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la

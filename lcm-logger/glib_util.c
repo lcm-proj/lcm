@@ -4,6 +4,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include <glib.h>
 
@@ -236,4 +238,22 @@ glib_mainloop_detach_lcm (lcm_t *lcm)
 
     g_static_mutex_unlock (&lcm_glib_sources_mutex);
     return 0;
+}
+
+void 
+mkdir_with_parents (const char *path, mode_t mode)
+{
+    int len = strlen(path);
+    for (int i = 0; i < len; i++) {
+        if (path[i]=='/') {
+            char *dirpath = malloc(i+1);
+            strncpy(dirpath, path, i);
+            dirpath[i]=0;
+
+            mkdir(dirpath, mode);
+            free(dirpath);
+
+            i++; // skip the '/'
+        }
+    }
 }

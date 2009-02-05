@@ -54,10 +54,10 @@ int main(int argc, char **argv)
     int verbose = 0;
     int random_channel = 1;
     char channel[80];
-    uint8_t data[65536];
+    uint8_t *data = NULL;
     int transmit_interval_usec = DEFAULT_TRANSMIT_INTERVAL_USEC;
     int packet_sz = 0;
-    memset (data, 0, sizeof(data));
+//    memset (data, 0, sizeof(data));
 
     char *optstring = "hm:p:s:v";
     char c;
@@ -89,6 +89,13 @@ int main(int argc, char **argv)
                 usage();
                 break;
         };
+    }
+
+    if (0 == packet_sz) {
+        data = (uint8_t*) malloc(65536);
+    } else {
+        data = (uint8_t*) malloc(packet_sz);
+        memset(data, 0, packet_sz);
     }
 
     lcm_t *lcm = lcm_create(NULL);
@@ -136,6 +143,7 @@ int main(int argc, char **argv)
         }
         seqno++;
     }
+    free(data);
 
     lcm_destroy (lcm);
     
