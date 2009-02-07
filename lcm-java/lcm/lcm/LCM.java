@@ -46,6 +46,8 @@ public class LCM
 	    
 	    if (protocol.equals("udpm"))
 		providers.add(new UDPMulticastProvider(this, up));
+	    else if (protocol.equals("tcp"))
+		providers.add(new TCPProvider(this, up));
 	    else if (protocol.equals("file"))
 		providers.add(new LogFileProvider(this, up));
 	    else
@@ -153,16 +155,18 @@ public class LCM
 	}
     }
 
-    /** Remove this particular regex/subscriber pair (UNTESTED). If
-     * regex is null, all subscriptions for 'sub' are cancelled. If
-     * subscriber is null, any previous subscriptions matching the
-     * regular expression will be cancelled. If both 'sub' and 'regex'
-     * are null, all subscriptions will be cancelled.
+    /** Remove this particular regex/subscriber pair (UNTESTED AND API
+     * MAY CHANGE). If regex is null, all subscriptions for 'sub' are
+     * cancelled. If subscriber is null, any previous subscriptions
+     * matching the regular expression will be cancelled. If both
+     * 'sub' and 'regex' are null, all subscriptions will be
+     * cancelled.
      **/
     public void unsubscribe(String regex, LCMSubscriber sub) {
 	if (this.closed) throw new IllegalStateException();
 
         // TODO: need providers to unsubscribe?
+
         // TODO: providers don't seem to use anything beyond first channel
 
 	synchronized(subscriptions) {
