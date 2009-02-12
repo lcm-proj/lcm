@@ -47,7 +47,7 @@ main(int argc, char ** argv)
 {
     logplayer_t l;
     double speed = 1.0;
-    char c;
+    int c;
     char * expression = NULL;
     struct option long_opts[] = { 
         { "help", no_argument, 0, 'h' },

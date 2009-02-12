@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
     double max_write_queue_size_mb = DEFAULT_MAX_WRITE_QUEUE_SIZE_MB;
 
     char *optstring = "fic:shm:";
-    char c;
+    int c;
     struct option long_opts[] = { 
         { "force", no_argument, 0, 'f' },
         { "increment", required_argument, 0, 'i' },
