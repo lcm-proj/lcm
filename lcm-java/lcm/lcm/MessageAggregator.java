@@ -41,7 +41,7 @@ public class MessageAggregator
 	    queue_data_size += data.length;
 
 	    while(queue_data_size > max_queue_data_size ||
-		  message.size() > max_queue_length) {
+		  messages.size() > max_queue_length) {
 		Message to_remove = messages.removeFirst();
 		queue_data_size -= to_remove.data.length;
 	    }
