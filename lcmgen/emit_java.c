@@ -425,7 +425,13 @@ int emit_java(lcmgen_t *lcm)
 
         ///////////////// decode //////////////////
 
-        // decoding constructor
+        // decoding constructors
+        emit(1, "public %s(byte[] data) throws IOException", lr->structname->shortname);
+        emit(1, "{");
+        emit(2, "this(new DataInputStream(new ByteArrayInputStream(data)));");
+        emit(1, "}");
+        emit(0, " ");
+
         emit(1,"public %s(DataInputStream ins) throws IOException", lr->structname->shortname);
         emit(1,"{");
         emit(2,"if (ins.readLong() != LCM_FINGERPRINT)");
