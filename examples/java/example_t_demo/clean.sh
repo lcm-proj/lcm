@@ -1,3 +1,5 @@
 #!/bin/sh
 
-rm -f example_t.class example_t.java Listener.class Sender.class
+rm -f lcmtypes/example_t.class lcmtypes/example_t.java 
+rmdir lcmtypes
+rm -f Listener.class Sender.class

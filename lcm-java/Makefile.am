@@ -46,6 +46,8 @@ dist_noinst_JAVA = \
     lcm/lcm/Provider.java \
     lcm/lcm/UDPMulticastProvider.java \
     lcm/lcm/LogFileProvider.java \
+	lcm/lcm/TCPProvider.java \
+	lcm/lcm/MessageAggregator.java \
     lcm/util/BufferedRandomAccessFile.java \
     lcm/util/ColorMapper.java \
     lcm/util/TableSorter.java \

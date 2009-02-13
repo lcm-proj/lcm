@@ -1,1 +1,3 @@
-SUBDIRS = c python java types
+SUBDIRS = c python 
+
+EXTRA_DIST = java matlab lcm-spy types

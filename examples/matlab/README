@@ -1,0 +1,51 @@
+This file provides a very brief tutorial on how to use LCM from MATLAB
+
+
+Requirements:
+  MATLAB
+  LCM Java bindings
+
+
+Step 0:
+  Compile the Java bindings for the LCM message types that you intend to use.
+  These need to be placed in a JAR file.  
+ 
+  This is typically done from outside of MATLAB, from a command-line shell, and
+  is the exact same procedure you'd follow if you wanted to use LCM from Java.
+
+  For example, if the message type definition file we want is located here:
+    ../types/example_t.lcm
+
+  Then we could run the following commands:
+  
+  $ lcm-gen -j ../types/example_t.lcm
+  Notice: enclosing LCM types without package into java namespace 'lcmtypes'.
+
+  $ javac lcmtypes/*.java
+
+  $ jar cf my_types.jar lcmtypes/*.class
+
+  This is summarized in the shell script "buildjar.sh"
+
+Step 1:
+  Once you have the message types compiled to a JAR file, you can use them from
+  MATLAB.
+
+  To use a JAR file from MATLAB, you need to tell MATLAB where that JAR file
+  is.  In this case, there are two JAR files: the one for the message types we
+  just compiled, and the one for the general LCM functionality.
+
+  Use the javaaddpath command for this.
+
+  >> javaaddpath /path/to/lcm.jar
+
+  >> javaaddpath my_types.jar
+
+  This is summarized in addjars.m
+
+Step 2:
+  Now you can use LCM from MATLAB, along with the message types you've
+  compiled.  See the example .m files for more details.
+
+  Since LCM in MATLAB uses the Java bindings, refer to the Java API
+  documentation as needed.
