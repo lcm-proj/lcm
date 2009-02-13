@@ -27,15 +27,19 @@ public class MessageAggregator
     long queue_data_size = 0;
     long max_queue_data_size = 10 * (1 << 20); // 10 megabytes
 
+    /**
+     * Internal method, called by LCM when a message is received.
+     */
     public synchronized void messageReceived(LCM lcm, String channel, 
 	    DataInputStream dins)
     {
 	try {
 	    byte data[] = new byte[dins.available()];
 	    dins.readFully(data);
-	    messages.addLast(new Message(channel, data));
 
+	    messages.addLast(new Message(channel, data));
 	    queue_data_size += data.length;
+
 	    while(queue_data_size > max_queue_data_size) {
 		Message to_remove = messages.removeFirst();
 		queue_data_size -= to_remove.data.length;
@@ -55,10 +59,19 @@ public class MessageAggregator
 	return max_queue_data_size;
     }
 
+    /**
+     * Attempt to retrieve the next received LCM message.
+     * @param timeout_ms Max # of milliseconds to wait for a message.  If 0,
+     * then don't wait.  If less than 0, then wait indefinitely.
+     * @return a Message, or null if no message was received.  
+     */
     public synchronized Message getNextMessage(long timeout_ms)
     {
-	if(!messages.isEmpty())
-	    return messages.removeFirst();
+	if(!messages.isEmpty()) {
+	    Message m = messages.removeFirst();
+	    queue_data_size -= m.data.length;
+	    return m;
+	}
 
 	if(timeout_ms == 0)
 	    return null;
@@ -69,13 +82,19 @@ public class MessageAggregator
 	    else
 		wait();
 
-	    if(!messages.isEmpty())
-		return messages.removeFirst();
+	    if(!messages.isEmpty()) {
+		Message m = messages.removeFirst();
+		queue_data_size -= m.data.length;
+		return m;
+	    }
 	} catch (InterruptedException xcp) { }
 
 	return null;
     }
 
+    /**
+     * Returns the number of received messages waiting to be retrieved.
+     */
     public synchronized int numMessagesAvailable()
     {
 	return messages.size();
