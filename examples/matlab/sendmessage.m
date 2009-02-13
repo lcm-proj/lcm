@@ -1,5 +1,3 @@
-%import lcm
-
 lc = lcm.lcm.LCM.getSingleton();
 
 msg = lcmtypes.example_t();

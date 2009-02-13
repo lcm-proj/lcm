@@ -6,9 +6,8 @@ import java.util.*;
 /**
  * Accumulates received LCM messages in a queue.
  *
- * The aggregator has a configurable maximum buffer size.  If too many messages
- * are aggregated without having been retrieved, then older messages are
- * discarded until the maximum buffer size is no longer exceeded.
+ * The aggregator has configurable limits.  If too many messages are aggregated
+ * without having been retrieved, then older messages are discarded.
  */
 public class MessageAggregator
     implements LCMSubscriber
@@ -25,7 +24,8 @@ public class MessageAggregator
 
     ArrayDeque<Message> messages = new ArrayDeque<Message>();
     long queue_data_size = 0;
-    long max_queue_data_size = 10 * (1 << 20); // 10 megabytes
+    long max_queue_data_size = 100 * (1 << 20); // 100 megabytes
+    int max_queue_length = Integer.MAX_VALUE;
 
     /**
      * Internal method, called by LCM when a message is received.
@@ -40,7 +40,8 @@ public class MessageAggregator
 	    messages.addLast(new Message(channel, data));
 	    queue_data_size += data.length;
 
-	    while(queue_data_size > max_queue_data_size) {
+	    while(queue_data_size > max_queue_data_size ||
+		  message.size() > max_queue_length) {
 		Message to_remove = messages.removeFirst();
 		queue_data_size -= to_remove.data.length;
 	    }
@@ -58,6 +59,9 @@ public class MessageAggregator
     {
 	return max_queue_data_size;
     }
+
+    public synchronized void setMaxMessages(int val) { max_queue_length = val; }
+    public synchronized int getMaxMessage() { return max_queue_length; }
 
     /**
      * Attempt to retrieve the next received LCM message.
@@ -90,6 +94,14 @@ public class MessageAggregator
 	} catch (InterruptedException xcp) { }
 
 	return null;
+    }
+
+    /**
+     * Retrieves the next message, waiting if necessary.
+     */
+    public synchronized Message getNextMessage()
+    {
+	return getNextMessage(-1);
     }
 
     /**
