@@ -1,5 +1,5 @@
 struct example_list_t
 {
     int32_t n;
-    example_t examples;
+    example_t examples[n];
 }

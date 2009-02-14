@@ -1,3 +1,33 @@
+Feb 14, 2009
+============
+
+ Release 0.2.0:
+
+  C
+    - make some error messages a bit more user-friendly
+  Python
+    - remove some extraneous print statements
+    - minor bugfixes
+  Java
+    - better handle windows path separator
+    - force .class files to be backwards compatible with Java 1.5
+    - add MessageAggregator class
+    - add <type_t>(byte[] data) decode constructor for generated code.
+    - minor bugfixes for generated code
+    - documentation improvements
+  MATLAB
+    - now supported via Java bindings.
+    - example code added
+  
+  logplayer-gui
+    - fix race WRT single-stepping.  UI tweaks.
+
+  logger
+    - add memory buffer to better handle intermittent high disk latencies
+
+  configure
+    - add --without-java and --without-python options
+
 Nov 9, 2008
 ===========
 

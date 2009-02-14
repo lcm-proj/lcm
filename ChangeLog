@@ -1,5 +1,143 @@
+2009-02-13  ashuang
+
+	* [r321] lcm-java/lcm/lcm/MessageAggregator.java: another bugfix
+	* [r320] examples/matlab/sendmessage.m,
+	  lcm-java/lcm/lcm/MessageAggregator.java: MessageAggregator tweaks
+	* [r319] configure.in: configure.in bugfixes
+	* [r318] lcm-java/lcm/lcm/MessageAggregator.java: bugfix, add
+	  javadoc
+	* [r317] examples/Makefile.am, examples/java/Makefile.am,
+	  examples/java/example_t_demo,
+	  examples/java/example_t_demo/Makefile.am,
+	  examples/java/example_t_demo/build.sh,
+	  examples/java/example_t_demo/clean.sh, examples/lcm-spy,
+	  examples/lcm-spy/buildjar.sh, examples/lcm-spy/runspy.sh,
+	  examples/matlab, examples/matlab/README,
+	  examples/matlab/addjars.m, examples/matlab/buildjar.sh,
+	  examples/matlab/listener.m, examples/matlab/sendmessage.m,
+	  examples/python, examples/python/Makefile.am,
+	  examples/python/send-message.py, examples/types/Makefile.am,
+	  examples/types/example_list_t.lcm, lcm-java/Makefile.am,
+	  lcm-java/lcm/lcm/MessageAggregator.java, lcm-matlab,
+	  lcmgen/Makefile.am, lcmgen/emit_matlab.c, lcmgen/main.c: - add
+	  lcm.lcm.MessageAggregator class to make lcm-java easier to use in
+	  MATLAB - remove lcmgen/emit_matlab, LCM mex bindings. obsoleted
+	  by java api change. - add matlab examples - add lcm-spy examples
+	  - add example_list_t as example of compound type
+	* [r316] lcmgen/emit_java.c: emit_java: add <type_t>(byte[] data)
+	  decode constructor for easier decoding of log data.
+
+2009-02-12  ashuang
+
+	* [r315] lcm-logger/lcm_logger.c, lcm-logger/lcm_logplayer.c:
+	  getopt returns int, not char (fix for arm et al)
+
+2009-02-07  edwinolson
+
+	* [r314] lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/TCPProvider.java,
+	  lcm-java/lcm/lcm/TCPService.java, lcm-java/lcm/test,
+	  lcm-java/lcm/test/SlowLCMSubscriber.java: add lossless/ordered
+	  TCPProvider
+
+2009-02-05  ashuang
+
+	* [r313] Makefile.am, configure.in: add --without-examples
+	  configure option.
+	* [r312] configure.in: python build bugfix
+	* [r311] liblcm-test/lcm-seq_check.c: remove cruft
+	* [r310] lcm-logger/glib_util.c, lcm-logger/glib_util.h,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c,
+	  liblcm-test/Makefile.am, liblcm-test/lcm-source.c: multithread
+	  lcm-logger, add memory buffer for unwritten packets allow
+	  lcm-source to transmit large packets
+	* [r309] lcm-python/lcm/__init__.py: python eventlog bugfix
+
+2009-02-04  ashuang
+
+	* [r308] configure.in: add --without-java and --without-python
+	  options to configure script
+
+2009-02-02  edwinolson
+
+	* [r307] lcm-java/lcm/lcm/LCM.java: add untested LCM.unsubscribe()
+	  method to java implementation. Based on code from Matt Antone
+
+2009-02-02  ashuang
+
+	* [r306] lcmgen/emit_java.c: fix bug 14. emit_java needs to append
+	  'L' for const int64_t
+
+2009-02-01  ashuang
+
+	* [r305] lcm-matlab/+lcm/LCM.m: docs
+	* [r304] lcm-matlab/+lcm, lcm-matlab/+lcm/EventLog.m,
+	  lcm-matlab/+lcm/LCM.m, lcm-matlab/lcm_create.m,
+	  lcm-matlab/lcm_destroy.m, lcm-matlab/lcm_eventlog.m,
+	  lcm-matlab/lcm_get_fileno.m, lcm-matlab/lcm_get_messages.m,
+	  lcm-matlab/lcm_publish.m, lcm-matlab/lcm_subscribe.m,
+	  lcm-matlab/lcm_unsubscribe.m, lcm-matlab/testlcm.m: convert lcm
+	  to class, put in package
+	* [r303] lcm-matlab, lcm-matlab/Makefile,
+	  lcm-matlab/lcm_build_mex.m, lcm-matlab/lcm_create.m,
+	  lcm-matlab/lcm_destroy.m, lcm-matlab/lcm_eventlog.m,
+	  lcm-matlab/lcm_get_fileno.m, lcm-matlab/lcm_get_messages.m,
+	  lcm-matlab/lcm_mex.c, lcm-matlab/lcm_mex.m,
+	  lcm-matlab/lcm_publish.m, lcm-matlab/lcm_subscribe.m,
+	  lcm-matlab/lcm_unsubscribe.m, lcm-matlab/testlcm.m: add some
+	  experimental MEX bindings
+
+2009-01-31  ashuang
+
+	* [r302] lcmgen/emit_matlab.c: add a transpose
+	* [r301] lcmgen/Makefile.am, lcmgen/emit_matlab.c,
+	  lcmgen/emit_python.c, lcmgen/main.c: lcmgen: add MATLAB 2008
+	  support. encode/decode only, no publish/subscribe
+
+2009-01-19  ashuang
+
+	* [r300] lcmgen/emit_python.c: emit python minor bugfixes
+
+2009-01-19  edwinolson
+
+	* [r299] lcm-java/Makefile.am: Make java build 1.5 version classes
+	  so the resulting .jar will be maximially compatible with other
+	  systems
+
+2009-01-10  edwinolson
+
+	* [r298] lcm-java/lcm/util/ClassDiscoverer.java: better handle
+	  windows path separator
+
+2009-01-02  ashuang
+
+	* [r297] lcm-python/pylcm.c: remove extraneous printf in python lcm
+
+2008-12-23  edwinolson
+
+	* [r296] lcm-java/lcm/logging/LogPlayer.java: logplayer-gui: fix
+	  race WRT single-stepping. improve cosmetics of faster/slower
+	  buttons
+
+2008-12-17  ashuang
+
+	* [r295] docs/reference/multicast-setup.sgml,
+	  docs/reference/tutorial-c.sgml, lcm/lcm.h: minor documentation
+	  updates
+
+2008-12-11  ashuang
+
+	* [r294] lcm/lcm_udp.c: Make a commonly triggered error message a
+	  bit more friendly on Linux systems. If a UDP LCM socket cannot be
+	  created and there are no non-loopback network interfaces
+	  available, then print the suggested commands for temporarily
+	  assigning a 192.168.x.x address and setting up a routing table.
+
 2008-11-10  ashuang
 
+	* [r293] ChangeLog, NEWS, configure.in, examples/java/Makefile.am,
+	  examples/java/example_t_demo/Makefile.am: prepare for 0.1.1
+	  release
 	* [r292] lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/LogFileProvider.java,
 	  lcm-java/lcm/lcm/UDPMulticastProvider.java,
