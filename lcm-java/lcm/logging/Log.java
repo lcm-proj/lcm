@@ -7,6 +7,9 @@ import java.util.*;
 
 import lcm.util.*;
 
+/**
+ * A class for reading and writing LCM log files.
+ */
 public class Log
 {
     BufferedRandomAccessFile raf;
@@ -15,15 +18,39 @@ public class Log
     static final int LOG_MAGIC = 0xEDA1DA01;
     String path;
 
+    /**
+     * Represents a single received LCM message.
+     */
     public static class Event
     {
+	/**
+	 * Time of message receipt, represented in microseconds since 00:00:00
+	 * UTC January 1, 1970.
+	 */
 	public long   utime;
+	/**
+	 * Event number assigned to the message in the log file.
+	 */
 	public long   eventNumber;
 
+	/**
+	 * Raw data bytes of the message body.
+	 */
 	public byte   data[];
+
+	/**
+	 * Channel on which the message was received.
+	 */
 	public String channel;
     }
 
+    /**
+     * Opens a log file for reading or writing.
+     *
+     * @param path the filename to open
+     * @param mode Specifies the access mode, must be one of "r", "rw",
+     * "rws", or "rwd".  See {@link java.io.RandomAccessFile#RandomAccessFile RandomAccessFile} for more detail.
+     */
     public Log(String path, String mode) throws IOException
     {
 	this.path = path;
@@ -31,11 +58,20 @@ public class Log
 	//raf = new RandomAccessFile(path, mode);
     }
 
+    /**
+     * Retrieves the path to the log file.
+     * @return the path to the log file
+     */
     public String getPath()
     {
 	return path;
     }
 
+    /**
+     * Reads the next event in the log file
+     *
+     * @throws java.io.EOFException if the end of the file has been reached.
+     */
     public synchronized Event readNext() throws IOException
     {
 	int magic = 0;
@@ -80,11 +116,19 @@ public class Log
 	return raf.getFilePointer()/((double) raf.length());
     }
 
+    /**
+     * Seek to a position in the log file, specified by a fraction.
+     *
+     * @param frac a number in the range [0, 1)
+     */
     public synchronized void seekPositionFraction(double frac) throws IOException
     {
 	raf.seek((long) (raf.length()*frac));
     }
 
+    /**
+     * Writes an event to the log file.
+     */
     public synchronized void write(Event e) throws IOException
     {
 	byte[] channelb = e.channel.getBytes();
@@ -99,6 +143,9 @@ public class Log
 	raf.write(e.data, 0, e.data.length);
     }
     
+    /**
+     * Closes the log file and releases and system resources used by it.
+     */
     public synchronized void close() throws IOException
     {
 	raf.close();

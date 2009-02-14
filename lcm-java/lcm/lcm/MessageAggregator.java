@@ -5,15 +5,30 @@ import java.util.*;
 
 /**
  * Accumulates received LCM messages in a queue.
- *
+ * <p>
+ * {@link LCM} normally delivers messages asynchronously by invoking the 
+ * {@link LCMSubscriber#messageReceived messageReceived} 
+ * method on a subscriber as soon as a message is received.  This class provides an 
+ * alternate way to receive messages by storing them in an internal queue, and then
+ * delivering them to synchronously to the user.
+ * <p>
  * The aggregator has configurable limits.  If too many messages are aggregated
  * without having been retrieved, then older messages are discarded.
  */
 public class MessageAggregator
     implements LCMSubscriber
 {
+    /**
+     * A received message.
+     */
     public class Message {
+	/**
+	 * The raw data bytes of the message body.
+	 */
 	final public byte[] data;
+	/**
+	 * Channel on which the message was received.
+	 */
 	final public String channel;
 	public Message(String channel_, byte[] data_)
 	{
@@ -50,18 +65,41 @@ public class MessageAggregator
 	} catch (IOException xcp) {}
     }
 
+    /**
+     * Sets the maximum amount of memory that will be used to store messages.
+     *
+     * This is an alternative way to limit the messages stored by the
+     * aggregator.  Messages are discarded oldest-first to ensure that the
+     * total size of unretrieved messages stays under this limit.
+     *
+     * @param val memory limit, in bytes.
+     */
     public synchronized void setMaxBufferSize(long val)
     {
 	max_queue_data_size = val;
     }
 
+    /**
+     * Retrieves the maximum amount of memory that will be used to store messages.
+     */
     public synchronized long getMaxBufferSize()
     {
 	return max_queue_data_size;
     }
 
+    /**
+     * Sets the maximum number of unretrieved message that will be queued up by
+     * the aggregator.
+     *
+     * Messages are discarded oldest-first to ensure that the number of
+     * unretrieved messages stays under this limit.
+     */
     public synchronized void setMaxMessages(int val) { max_queue_length = val; }
-    public synchronized int getMaxMessage() { return max_queue_length; }
+    /**
+     * Retrieves the maximum number of unretrieved message that will be queued
+     * up by the aggregator.
+     */
+    public synchronized int getMaxMessages() { return max_queue_length; }
 
     /**
      * Attempt to retrieve the next received LCM message.

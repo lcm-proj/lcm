@@ -6,7 +6,7 @@ import java.util.*;
 import java.util.regex.*;
 import java.nio.*;
 
-/** Lightweight Communications implementation **/
+/** Lightweight Communications and Marshalling Java implementation **/
 public class LCM
 {
     static class SubscriptionRecord
@@ -25,8 +25,8 @@ public class LCM
 
     static LCM singleton;
 
-    /** Create a new LCM object, subscribing to one or more URLs. If
-     * no URL is specified, the system variable LCM_DEFAULT_URL is
+    /** Create a new LCM object, connecting to one or more URLs. If
+     * no URL is specified, the environment variable LCM_DEFAULT_URL is
      * used. If that environment variable is not defined, then the
      * default URL is used.
      **/
@@ -55,7 +55,7 @@ public class LCM
 	}
     }
 
-    /** Retrieve a default instance of LCM using either the system
+    /** Retrieve a default instance of LCM using either the environment
      * variable LCM_DEFAULT_URL or the default. If an exception
      * occurs, System.exit(-1) is called. 
      **/
@@ -248,7 +248,8 @@ public class LCM
 
     ////////////////////////////////////////////////////////////////
 
-    /** Minimalist test code. **/
+    /** Minimalist test code. 
+     **/
     public static void main(String args[])
     {
 	LCM lcm;
