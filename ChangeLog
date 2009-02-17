@@ -1,3 +1,14 @@
+2009-02-14  ashuang
+
+	* [r323] ChangeLog, NEWS, configure.in,
+	  examples/types/example_list_t.lcm: release 0.2.0
+	* [r322] lcm-java, lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/LCMEncodable.java,
+	  lcm-java/lcm/lcm/LCMSubscriber.java,
+	  lcm-java/lcm/lcm/MessageAggregator.java,
+	  lcm-java/lcm/logging/Log.java, lcm-java/make-javadocs.sh: java
+	  documentation
+
 2009-02-13  ashuang
 
 	* [r321] lcm-java/lcm/lcm/MessageAggregator.java: another bugfix
