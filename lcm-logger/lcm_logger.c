@@ -163,7 +163,7 @@ message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
     strcpy(le->channel, channel);
     le->data = le->channel + channellen + 1;
     assert((char*)le->data + rbuf->data_size == (char*)le + mem_sz);
-//    memcpy(le->data, rbuf->data, rbuf->data_size);
+    memcpy(le->data, rbuf->data, rbuf->data_size);
 
     g_async_queue_push(logger->write_queue, le);
 }
