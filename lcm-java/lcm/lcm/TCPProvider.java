@@ -31,6 +31,9 @@ public class TCPProvider implements Provider
 	this.lcm = lcm;
 
 	String addrport[] = up.get("network", DEFAULT_NETWORK).split(":");
+	if (addrport.length != 2) 
+	    System.out.println("LCM TCP provider URL must contain a host:port pair.");
+
 	inetAddr = InetAddress.getByName(addrport[0]);
 	inetPort = Integer.valueOf(addrport[1]);
 

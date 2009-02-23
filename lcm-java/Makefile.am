@@ -44,7 +44,9 @@ dist_noinst_JAVA = \
     lcm/lcm/LCMSubscriber.java \
     lcm/lcm/URLParser.java \
     lcm/lcm/Provider.java \
+    lcm/lcm/TCPProvider.java \
     lcm/lcm/UDPMulticastProvider.java \
+    lcm/lcm/TCPService.java \
     lcm/lcm/LogFileProvider.java \
 	lcm/lcm/TCPProvider.java \
 	lcm/lcm/MessageAggregator.java \

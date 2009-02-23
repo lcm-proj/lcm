@@ -140,7 +140,10 @@ public class TCPService
     public static void main(String args[])
     {
 	try {
-	    new TCPService(7700);
+	    int port = 7700;
+	    if (args.length > 0)
+		port = Integer.parseInt(args[0]);
+	    new TCPService(port);
 	} catch (IOException ex) {
 	    System.out.println("Ex: "+ex);
 	}
