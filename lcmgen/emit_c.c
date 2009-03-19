@@ -140,7 +140,12 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     for (unsigned int i = 0; i < g_ptr_array_size(ls->constants); i++) {
         lcm_constant_t *lc = g_ptr_array_index(ls->constants, i);
         assert(lcm_is_legal_const_type(lc->typename));
-        emit(0, "#define %s_%s %s", tn_upper, lc->membername, lc->val_str);
+        const char *suffix = "";
+        if (!strcmp(lc->typename, "int64_t")) {
+            suffix = "LL";
+        }
+        emit(0, "#define %s_%s %s%s", tn_upper, lc->membername, lc->val_str, 
+                suffix);
     }
     if (g_ptr_array_size(ls->constants) > 0) {
         emit(0, "");
