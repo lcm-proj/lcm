@@ -175,8 +175,10 @@ static void
 _flush_read_struct_fmt (const lcmgen_t *lcm, FILE *f, 
         GQueue *formats, GQueue *members)
 {
-    assert (g_queue_get_length (formats) == g_queue_get_length (members));
-    if (g_queue_is_empty (formats)) return;
+    int nfmts = g_queue_get_length(formats);
+    assert (nfmts == g_queue_get_length (members));
+    if(nfmts == 0) 
+        return;
 
     fprintf (f, "        ");
     int fmtsize = 0;
@@ -192,7 +194,7 @@ _flush_read_struct_fmt (const lcmgen_t *lcm, FILE *f,
     while (! g_queue_is_empty (formats)) {
         emit_continue ("%c", GPOINTER_TO_INT (g_queue_pop_head (formats)));
     }
-    emit_end ("\", buf.read(%d))", fmtsize);
+    emit_end ("\", buf.read(%d))%s", fmtsize, nfmts == 1 ? "[0]" : "");
 }
 
 static void
@@ -209,14 +211,14 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         char fmt = _struct_format (lcm, lm);
 
         if (! lm->dimensions->len) {
-            if (0 && fmt) {
+            if (fmt) {
                 g_queue_push_tail (struct_fmt, GINT_TO_POINTER ((int)fmt));
                 g_queue_push_tail (struct_members, lm);
             } else {
                 _flush_read_struct_fmt (lcm, f, struct_fmt, struct_members);
-                char accessor[strlen(lm->membername) + strlen("self.") + 4];
-                snprintf (accessor, sizeof (accessor), "self.%s = ", 
-                        lm->membername);
+                int alen = strlen(lm->membername) + strlen("self.") + 3 + 4;
+                char accessor[alen];
+                snprintf (accessor, alen, "self.%s = ", lm->membername);
                 _emit_decode_one (lcm, f, ls, lm, accessor, 2, "");
             }
         } else {
@@ -596,6 +598,9 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         char path[PATH_MAX];
         sprintf (path, "%s%s.py", package_dir, le->enumname->shortname);
 
+        if (!lcm_needs_generation(lcm, le->lcmfile, path))
+            continue;
+
         FILE *f = fopen(path, "w");
         if (f==NULL) return -1;
 
@@ -667,6 +672,9 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 
         char path[PATH_MAX];
         sprintf (path, "%s%s.py", package_dir, ls->structname->shortname);
+
+        if (!lcm_needs_generation(lcm, ls->lcmfile, path))
+            continue;
 
         FILE *f = fopen(path, "w");
         if (f==NULL) return -1;
