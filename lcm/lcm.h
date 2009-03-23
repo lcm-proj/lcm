@@ -102,8 +102,10 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  *     LCM Log file-based provider
  *     network should be the path to the log file
  *
- *     Events are read from the log file.  It is not possible to publish events
- *     to a log file using this provider.
+ *     Events are read from or written to the log file.  In read mode, events
+ *     are generated from the log file in real-time, or at the rate specified
+ *     by the speed option.  In write mode, events published to the LCM instance
+ *     will be written to the log file in real-time.
  *
  *     options:
  *
@@ -111,6 +113,9 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  *             Scale factor controlling the playback speed of the log file.
  *             Defaults to 1.  If less than or equal to zero, then the events
  *             in the log file are played back as fast as possible.
+ *         
+ *         mode = r | w
+ *             Specifies the log file mode.  Defaults to 'r'
  *
  *     examples:
  *         
