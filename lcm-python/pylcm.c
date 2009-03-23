@@ -121,7 +121,7 @@ pylcm_subscribe (PyLCMObject *lcm_obj, PyObject *args)
 PyDoc_STRVAR (pylcm_subscribe_doc, 
 "subscribe(channel, callback) -> LCMSubscription\n\
 \n\
-@param channel: LCM channel to subscribe to.  Can also be a POSIX regular\n\
+@param channel: LCM channel to subscribe to.  Can also be a GLib/PCRE regular\n\
 expression.  Implicitly treated as the regex \"^channel$\"\n\
 @param callback:  Message handler, must accept two arguments.\n\
 When a message is received, callback is invoked with two arguments\n\
