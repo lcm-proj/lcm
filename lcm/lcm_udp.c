@@ -327,8 +327,12 @@ _destroy_recv_parts (lcm_udpm_t *lcm)
 {
     if (lcm->thread_created) {
         // send the read thread an exit command
-        write (lcm->thread_msg_pipe[1], "\0", 1);
-        g_thread_join (lcm->read_thread);
+        int wstatus = write (lcm->thread_msg_pipe[1], "\0", 1);
+        if(wstatus < 0) {
+            perror(__FILE__ " write(destroy)");
+        } else {
+            g_thread_join (lcm->read_thread);
+        }
         lcm->read_thread = NULL;
         lcm->thread_created = 0;
     }
@@ -1204,7 +1208,11 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     }
 
     // setup a pipe for notifying the reader thread when to quit
-    pipe (lcm->thread_msg_pipe);
+    if(0 != pipe (lcm->thread_msg_pipe)) {
+        perror(__FILE__ " pipe(setup)");
+        _destroy_recv_parts (lcm);
+        return -1;
+    }
     fcntl (lcm->thread_msg_pipe[1], F_SETFL, O_NONBLOCK);
 
     /* Start the reader thread */
@@ -1310,7 +1318,12 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     lcm->frag_bufs_max_total_size = 1 << 24; // 16 megabytes
     lcm->max_n_frag_bufs = 1000;
 
-    pipe (lcm->notify_pipe);
+    if(0 != pipe (lcm->notify_pipe)) {
+        perror(__FILE__ " pipe(create)");
+        g_hash_table_destroy(lcm->frag_bufs);
+        free(lcm);
+        return NULL;
+    }
     fcntl (lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
 
     g_static_rec_mutex_init (&lcm->mutex);
