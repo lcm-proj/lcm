@@ -18,6 +18,10 @@ public class LogFileProvider implements Provider
     boolean verbose; // report actual speed periodically
     double skip; // skip a fraction of the log file [0, 1.0]
 
+    boolean writemode;
+    long nanotime_start;
+    long utime_start;
+
     ReaderThread reader;
 
     public LogFileProvider(LCM lcm, URLParser up) throws IOException
@@ -25,25 +29,45 @@ public class LogFileProvider implements Provider
 	this.lcm = lcm;
 
 	String logPath = up.get("network","");
-	log = new Log(logPath, "r");
 
 	speed = up.get("speed", 1.0);
 	delay = up.get("delay", 0.5);
 	verbose = up.get("verbose", false);
 	skip = up.get("skip", 0.0); // skip this fraction of the log file.
+	writemode = up.get("mode", "r").equals("w");
 
-	reader = new ReaderThread();
-	reader.start();
+	if(writemode) {
+	    log = new Log(logPath, "w");
+	    nanotime_start = System.nanoTime();
+	    utime_start = System.currentTimeMillis() * 1000;
+	} else {
+	    log = new Log(logPath, "r");
+	    reader = new ReaderThread();
+	    reader.start();
+	}
     }
 
     boolean publishWarned = false;
     public synchronized void publish(String channel, byte data[], int offset, int length) 
     {
-	if (publishWarned)
-	    return;
+	if(!writemode) {
+	    if (publishWarned)
+		return;
+	    System.err.println("LogFileProvider opened in read mode, no publishing allowed.");
+	    publishWarned = true;
+	}
 
-	System.err.println("LogFileProvider does not support publishing");
-	publishWarned = true;
+	Log.Event event = new Log.Event();
+	event.utime = utime_start + (System.nanoTime() - nanotime_start) / 1000;
+	event.eventNumber = 0;
+	event.data = new byte[length];
+	System.arraycopy(data, offset, event.data, 0, length);
+	event.channel = channel;
+	try {
+	    log.write(event);
+	} catch (IOException ex) {
+	    System.err.println("ex: "+ex);
+	}
     }
 
     public synchronized void subscribe(String channel) { }
