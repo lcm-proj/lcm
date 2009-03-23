@@ -3,16 +3,18 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "lcm_internal.h"
 #include "dbg.h"
 #include "eventlog.h"
 
-typedef struct _lcm_provider_t lcm_logread_t;
+typedef struct _lcm_provider_t lcm_logprov_t;
 struct _lcm_provider_t {
     lcm_t * lcm;
 
     char * filename;
+    int8_t writer;
 
     lcm_eventlog_t * log;
     lcm_eventlog_event_t * event;
@@ -27,20 +29,23 @@ struct _lcm_provider_t {
 };
 
 static void
-lcm_logread_destroy (lcm_logread_t *lr) 
+lcm_logprov_destroy (lcm_logprov_t *lr)
 {
-    dbg (DBG_LCM, "closing lcm log read context\n");
+    dbg (DBG_LCM, "closing lcm log provider context\n");
     if (lr->thread_created) {
         /* Destroy the timer thread */
-        int64_t abort_command = -1;
-        write (lr->timer_pipe[1], &abort_command, sizeof (abort_command));
+        int64_t abort_cmd = -1;
+        int status = write(lr->timer_pipe[1], &abort_cmd, sizeof(abort_cmd));
+        if(status < 0) {
+            perror(__FILE__ " - write (abort_cmd)");
+        }
         g_thread_join (lr->timer_thread);
     }
 
-    close (lr->notify_pipe[0]);
-    close (lr->notify_pipe[1]);
-    close (lr->timer_pipe[0]);
-    close (lr->timer_pipe[1]);
+    if(lr->notify_pipe[0] >= 0) close (lr->notify_pipe[0]);
+    if(lr->notify_pipe[1] >= 0) close (lr->notify_pipe[1]);
+    if(lr->timer_pipe[0] >= 0)  close (lr->timer_pipe[0]);
+    if(lr->timer_pipe[1] >= 0)  close (lr->timer_pipe[1]);
 
     if (lr->event)
         lcm_eventlog_free_event (lr->event);
@@ -62,7 +67,7 @@ timestamp_now (void)
 static void *
 timer_thread (void * user)
 {
-    lcm_logread_t * lr = user;
+    lcm_logprov_t * lr = user;
     int64_t abstime;
 
     while (read (lr->timer_pipe[0], &abstime, 8) == 8) {
@@ -82,15 +87,19 @@ timer_thread (void * user)
             FD_ZERO (&fds);
             FD_SET (lr->timer_pipe[0], &fds);
 
-            int status = select (lr->timer_pipe[0] + 1, &fds, NULL, NULL, 
+            int status = select (lr->timer_pipe[0] + 1, &fds, NULL, NULL,
                     &sleep_tv);
 
-            if (0 == status) {  
+            if (0 == status) {
                 // select timed out
-                write (lr->notify_pipe[1], "+", 1);
+                if(write (lr->notify_pipe[1], "+", 1) < 0) {
+                    perror(__FILE__ " - write (timer select)");
+                }
             }
         } else {
-            write (lr->notify_pipe[1], "+", 1);
+            if(write (lr->notify_pipe[1], "+", 1) < 0) {
+                perror(__FILE__ " - write (timer)");
+            }
        }
     }
     perror ("timer_thread read failed");
@@ -100,17 +109,26 @@ timer_thread (void * user)
 static void
 new_argument (gpointer key, gpointer value, gpointer user)
 {
-    lcm_logread_t * lr = user;
+    lcm_logprov_t * lr = user;
     if (!strcmp (key, "speed")) {
         char *endptr = NULL;
         lr->speed = strtod (value, &endptr);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for speed\n");
     }
+    if (!strcmp (key, "mode")) {
+        const char *mode = value;
+        if(!strcmp(mode, "w")) {
+            lr->writer=1;
+        } else if(strcmp(mode,"r")) {
+            fprintf(stderr, "Warning: Invalid value for mode\n");
+        }
+    }
+    fprintf(stderr, "Warning: unrecognized option: [%s]\n", (const char*)key);
 }
 
 static int
-load_next_event (lcm_logread_t * lr)
+load_next_event (lcm_logprov_t * lr)
 {
     if (lr->event)
         lcm_eventlog_free_event (lr->event);
@@ -123,15 +141,15 @@ load_next_event (lcm_logread_t * lr)
 }
 
 
-static lcm_provider_t * 
-lcm_logread_create (lcm_t * parent, const char *target, const GHashTable *args)
+static lcm_provider_t *
+lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
 {
     if (!target || !strlen (target)) {
         fprintf (stderr, "Error: Missing filename\n");
         return NULL;
     }
 
-    lcm_logread_t * lr = calloc (1, sizeof (lcm_logread_t));
+    lcm_logprov_t * lr = calloc (1, sizeof (lcm_logprov_t));
     lr->lcm = parent;
     lr->filename = strdup(target);
     lr->speed = 1;
@@ -139,49 +157,67 @@ lcm_logread_create (lcm_t * parent, const char *target, const GHashTable *args)
 
     g_hash_table_foreach ((GHashTable*) args, new_argument, lr);
 
-    dbg (DBG_LCM, "Initializing LCM log read context...\n");
+    dbg (DBG_LCM, "Initializing LCM log provider context...\n");
     dbg (DBG_LCM, "Filename %s\n", lr->filename);
 
-    pipe (lr->notify_pipe);
-    pipe (lr->timer_pipe);
+    if(pipe (lr->notify_pipe) != 0) {
+        perror(__FILE__ " - pipe (notify)");
+        lcm_logprov_destroy (lr);
+        return NULL;
+    }
+    if(pipe (lr->timer_pipe) != 0) {
+        perror(__FILE__ " - pipe (timer)");
+        lcm_logprov_destroy (lr);
+        return NULL;
+    }
     //fcntl (lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
 
-    lr->log = lcm_eventlog_create (lr->filename, "r");
+    if (!lr->writer) {
+        lr->log = lcm_eventlog_create (lr->filename, "r");
+    } else {
+        lr->log = lcm_eventlog_create (lr->filename, "w");
+    }
+
     if (!lr->log) {
         fprintf (stderr, "Error: Failed to open %s: %s\n", lr->filename,
                 strerror (errno));
-        lcm_logread_destroy (lr);
+        lcm_logprov_destroy (lr);
         return NULL;
     }
 
-    if (load_next_event (lr) < 0) {
-        fprintf (stderr, "Error: Failed to read first event from log\n");
-        lcm_logread_destroy (lr);
-        return NULL;
-    }
+    // only start the reader thread if not in write mode
+    if (!lr->writer){
+        if (load_next_event (lr) < 0) {
+            fprintf (stderr, "Error: Failed to read first event from log\n");
+            lcm_logprov_destroy (lr);
+            return NULL;
+        }
 
-    /* Start the reader thread */
-    lr->timer_thread = g_thread_create (timer_thread, lr, TRUE, NULL);
-    if (!lr->timer_thread) {
-        fprintf (stderr, "Error: LCM failed to start timer thread\n");
-        lcm_logread_destroy (lr);
-        return NULL;
-    }
-    lr->thread_created = 1;
+        /* Start the reader thread */
+        lr->timer_thread = g_thread_create (timer_thread, lr, TRUE, NULL);
+        if (!lr->timer_thread) {
+            fprintf (stderr, "Error: LCM failed to start timer thread\n");
+            lcm_logprov_destroy (lr);
+            return NULL;
+        }
+        lr->thread_created = 1;
 
-    write (lr->notify_pipe[1], "+", 1);
+        if(write (lr->notify_pipe[1], "+", 1) < 0) {
+            perror(__FILE__ " - write (reader create)");
+        }
+    }
 
     return lr;
 }
 
-static int 
-lcm_logread_get_fileno (lcm_logread_t *lr)
+static int
+lcm_logprov_get_fileno (lcm_logprov_t *lr)
 {
     return lr->notify_pipe[0];
 }
 
 static int
-lcm_logread_handle (lcm_logread_t * lr)
+lcm_logprov_handle (lcm_logprov_t * lr)
 {
     if (!lr->event)
         return -1;
@@ -216,8 +252,10 @@ lcm_logread_handle (lcm_logread_t * lr)
         /* end-of-file reached.  This call succeeds, but next call to
          * _handle will fail */
         lr->event = NULL;
-        write (lr->notify_pipe[1], "+", 1);
-        return 0; 
+        if(write (lr->notify_pipe[1], "+", 1) < 0) {
+            perror(__FILE__ " - write(notify)");
+        }
+        return 0;
     }
 
     /* Compute the wall time for the next event */
@@ -227,31 +265,72 @@ lcm_logread_handle (lcm_logread_t * lr)
     else
         lr->next_clock_time = now;
 
-    if (lr->next_clock_time > now)
-        write (lr->timer_pipe[1], &lr->next_clock_time, 8);
-    else
-        write (lr->notify_pipe[1], "+", 1);
+    if (lr->next_clock_time > now) {
+        int wstatus = write (lr->timer_pipe[1], &lr->next_clock_time, 8);
+        if(wstatus < 0) {
+            perror(__FILE__ " - write(timer_pipe)");
+        }
+    } else {
+        int wstatus = write (lr->notify_pipe[1], "+", 1);
+        if(wstatus < 0) {
+            perror(__FILE__ " - write(notify_pipe)");
+        }
+    }
 
     return 0;
 }
 
-static lcm_provider_vtable_t logread_vtable = {
-    .create     = lcm_logread_create,
-    .destroy    = lcm_logread_destroy,
+
+static int
+lcm_logprov_publish (lcm_logprov_t *lcm, const char *channel, const void *data,
+        unsigned int datalen)
+{
+    if(!lcm->writer){
+        fprintf (stderr, "LCM error: lcm file provider is not in write mode\n");
+        return -1;
+    }
+    int channellen = strlen(channel);
+
+    int64_t mem_sz = sizeof(lcm_eventlog_event_t) + channellen + 1 + datalen;
+
+    lcm_eventlog_event_t *le = (lcm_eventlog_event_t*) malloc(mem_sz);
+    memset(le, 0, mem_sz);
+
+    struct timeval tv;
+    gettimeofday (&tv, NULL);
+    le->timestamp = (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;;
+    le->channellen = channellen;
+    le->datalen = datalen;
+    // log_write_event will handle le.eventnum.
+
+    le->channel = ((char*)le) + sizeof(lcm_eventlog_event_t);
+    strcpy(le->channel, channel);
+    le->data = le->channel + channellen + 1;
+    assert((char*)le->data + datalen == (char*)le + mem_sz);
+    memcpy(le->data, data, datalen);
+
+    lcm_eventlog_write_event(lcm->log, le);
+    free(le);
+
+    return 0;
+}
+
+static lcm_provider_vtable_t logprov_vtable = {
+    .create     = lcm_logprov_create,
+    .destroy    = lcm_logprov_destroy,
     .subscribe  = NULL,
-    .publish    = NULL,
-    .handle     = lcm_logread_handle,
-    .get_fileno = lcm_logread_get_fileno,
+    .publish    = lcm_logprov_publish,
+    .handle     = lcm_logprov_handle,
+    .get_fileno = lcm_logprov_get_fileno,
 };
 
-static lcm_provider_info_t logread_info = {
+static lcm_provider_info_t logprov_info = {
     .name = "file",
-    .vtable = &logread_vtable,
+    .vtable = &logprov_vtable,
 };
 
 void
-lcm_logread_provider_init (GPtrArray * providers)
+lcm_logprov_provider_init (GPtrArray * providers)
 {
-    g_ptr_array_add (providers, &logread_info);
+    g_ptr_array_add (providers, &logprov_info);
 }
-

@@ -44,7 +44,7 @@ struct map_callback_data
 extern void
 lcm_udpm_provider_init (GPtrArray * providers);
 extern void
-lcm_logread_provider_init (GPtrArray * providers);
+lcm_logprov_provider_init (GPtrArray * providers);
 
 lcm_t * 
 lcm_create (const char *url)
@@ -60,7 +60,7 @@ lcm_create (const char *url)
 
     // initialize the list of providers
     lcm_udpm_provider_init (providers);
-    lcm_logread_provider_init (providers);
+    lcm_logprov_provider_init (providers);
     if (providers->len == 0) {
         fprintf (stderr, "Error: no LCM providers found\n");
         goto fail;
