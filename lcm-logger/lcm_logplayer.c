@@ -37,7 +37,7 @@ Usage: %s [OPTION...] FILE\n\
 Options:\n\
   -v, --verbose       Print information about each packet.\n\
   -s, --speed=NUM     Playback speed multiplier.  Default is 1.0.\n\
-  -e, --regexp=EXPR   POSIX regular expression of channels to play.\n\
+  -e, --regexp=EXPR   GLib regular expression of channels to play.\n\
   -h, --help          Shows some help text and exits.\n\
   \n", cmd);
 }

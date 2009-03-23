@@ -22,7 +22,7 @@ usage()
            "\n"
            "Optiosn:\n"
            "  -h        prints this help text and exits\n"
-           "  -c CHAN   POSIX extended regular expression.\n"
+           "  -c CHAN   GLib regular expression.\n"
            "  -s START  start time.  Messages logged less than START seconds\n"
            "            after the first message in the logfile will not be\n"
            "            extracted.\n"

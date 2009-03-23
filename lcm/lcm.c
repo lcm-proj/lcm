@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
-#include <regex.h>
 #include <assert.h>
 
 #include <glib.h>
@@ -30,7 +29,7 @@ struct _lcm_subscription_t {
     char             *channel;
     lcm_msg_handler_t  handler;
     void             *userdata;
-    regex_t preg;
+    GRegex * regex;
     int callback_scheduled;
     int marked_for_deletion;
 };
@@ -144,7 +143,7 @@ static void
 lcm_handler_free (lcm_subscription_t *h) 
 {
     assert (!h->callback_scheduled);
-    regfree (&h->preg);
+    g_regex_unref(h->regex);
     free (h->channel);
     memset (h, 0, sizeof (lcm_subscription_t));
     free (h);
@@ -204,12 +203,7 @@ lcm_publish (lcm_t *lcm, const char *channel, const void *data,
 static int 
 is_handler_subscriber(lcm_subscription_t *h, const char *channel_name)
 {
-    int match = 0;
-
-    if (!regexec(&h->preg, channel_name, 0, NULL, 0))
-        match = 1;
-
-    return match;
+    return g_regex_match(h->regex, channel_name, 0, NULL);
 }
 
 // add the handler to any channel's handler list if its subscription matches
@@ -257,12 +251,14 @@ lcm_subscription_t
     h->marked_for_deletion = 0;
 
     char regexbuf[strlen(channel)+3];
-    /* We don't allow substring matches */
     sprintf (regexbuf, "^%s$", channel);
-    int rstatus = regcomp (&h->preg, regexbuf, REG_NOSUB | REG_EXTENDED);
-    if (rstatus != 0) {
-        dbg (DBG_LCM, "bad regex in channel name!\n");
-        free (h);
+    GError *rerr = NULL;
+    h->regex = g_regex_new(regexbuf, 0, 0, &rerr);
+    if(rerr) {
+        fprintf(stderr, "%s: %s\n", __FUNCTION__, rerr->message);
+        dbg(DBG_LCM, "%s: %s\n", __FUNCTION__, rerr->message);
+        g_error_free(rerr);
+        free(h);
         return NULL;
     }
 

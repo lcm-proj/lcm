@@ -160,6 +160,9 @@ int lcm_get_fileno (lcm_t *lcm);
  * specified channel is received.  Multiple callbacks can be subscribed for a
  * given channel.
  *
+ * %channel can also be a GLib regular expression, and is treated as a regex
+ * implicitly surrounded by '^' and '$'.
+ *
  * Returns: a lcm_subscription_t to identify the new subscription,
  *          which can be passed to lcm_unsubscribe
  */
