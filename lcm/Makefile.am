@@ -1,5 +1,3 @@
-AM_CFLAGS = 
-
 INCLUDES = $(GLIB_CFLAGS)
 
 lib_LTLIBRARIES = liblcm.la
