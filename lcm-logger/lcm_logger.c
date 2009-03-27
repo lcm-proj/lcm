@@ -27,7 +27,7 @@ static inline int64_t timestamp_seconds(int64_t v)
     return v/1000000;
 }
 
-static inline int64_t timestamp_now()
+static inline int64_t timestamp_now(void)
 {
     struct timeval tv;
     gettimeofday (&tv, NULL);
@@ -84,7 +84,16 @@ write_thread(void *user_data)
         // nope.  write the event to disk
         lcm_eventlog_event_t *le = (lcm_eventlog_event_t*) msg;
 
-        lcm_eventlog_write_event(logger->log, le);
+        if(0 != lcm_eventlog_write_event(logger->log, le)) {
+            static int64_t last_spew_utime = 0;
+            int64_t now = timestamp_now();
+            if(now - last_spew_utime > 500000) {
+                perror("lcm_eventlog_write_event");
+                last_spew_utime = now;
+            }
+            free(le);
+            continue;
+        };
 
         // bookkeeping, cleanup
         int64_t offset_utime = le->timestamp - logger->time0;
