@@ -86,11 +86,13 @@ write_thread(void *user_data)
 
         if(0 != lcm_eventlog_write_event(logger->log, le)) {
             static int64_t last_spew_utime = 0;
+            char *reason = strdup(strerror(errno));
             int64_t now = timestamp_now();
             if(now - last_spew_utime > 500000) {
-                perror("lcm_eventlog_write_event");
+                fprintf(stderr, "lcm_eventlog_write_event: %s\n", reason);
                 last_spew_utime = now;
             }
+            free(reason);
             free(le);
             continue;
         };
