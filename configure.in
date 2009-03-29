@@ -121,7 +121,6 @@ AC_OUTPUT([
   lcm-java/lcm-java.pc
   lcm-python/Makefile
   examples/Makefile
-  examples/c/Makefile
   examples/python/Makefile
   docs/Makefile
   docs/reference/Makefile
