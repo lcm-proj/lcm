@@ -763,7 +763,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         emit (2,     "return 0x%"PRIx64, le->hash);
         emit (1, "_get_hash_recursive=staticmethod(_get_hash_recursive)");
         emit (1, "def _get_packed_fingerprint():");
-        emit (2,     "return _%s._packed_fingerprint", le->enumname->shortname);
+        emit (2,     "return %s._packed_fingerprint", le->enumname->shortname);
         emit (1, "_get_packed_fingerprint = staticmethod(_get_packed_fingerprint)");
         fprintf (f, "\n");
 
