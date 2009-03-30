@@ -107,7 +107,7 @@ nil_initializer_string(const lcm_typename_t *type)
 }
 
 static char
-_struct_format (const lcmgen_t *lcm, lcm_member_t *lm) 
+_struct_format (lcm_member_t *lm) 
 {
     const char *tn = lm->type->typename;
     if (!strcmp ("byte", tn)) return 'B';
@@ -122,7 +122,7 @@ _struct_format (const lcmgen_t *lcm, lcm_member_t *lm)
 }
 
 static int
-_primitive_type_size (const lcmgen_t *lcm, const char *tn)
+_primitive_type_size (const char *tn)
 {
     if (!strcmp ("byte", tn)) return 1;
     if (!strcmp ("boolean", tn)) return 1;
@@ -172,6 +172,43 @@ _emit_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
 }
 
 static void
+_emit_decode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
+        lcm_member_t *lm, const char *accessor, int indent, int is_first,
+        const char *len, int fixed_len)
+{
+    const char *tn = lm->type->typename;
+    const char *suffix = "";
+    if(!is_first) {
+        suffix = ")";
+    }
+    if (!strcmp ("byte", tn)) {
+        emit (indent, "%sbuf.read(%s%s)%s", 
+                accessor, fixed_len ? "":"self.", len, suffix);
+    } else if (!strcmp ("int8_t", tn) || 
+               !strcmp ("boolean", tn) ||
+               !strcmp ("int16_t", tn) ||
+               !strcmp ("int32_t", tn) ||
+               !strcmp ("int64_t", tn) ||
+               !strcmp ("float", tn) ||
+               !strcmp ("double", tn)) {
+        if(fixed_len) {
+            emit (indent, "%sstruct.unpack('>%s%c', buf.read(%d))%s", 
+                    accessor, len, _struct_format(lm), 
+                    atoi(len) * _primitive_type_size(tn), 
+                    suffix);
+        } else {
+            emit (indent, 
+                    "%sstruct.unpack('>%%d%c' %% self.%s, buf.read(self.%s%s%d))%s", 
+                    accessor, _struct_format(lm), len, len, 
+                    _primitive_type_size(tn) > 1 ? " * " : "",
+                    _primitive_type_size(tn), suffix);
+        }
+    } else {
+        assert(0);
+    }
+}
+
+static void
 _flush_read_struct_fmt (const lcmgen_t *lcm, FILE *f, 
         GQueue *formats, GQueue *members)
 {
@@ -188,7 +225,7 @@ _flush_read_struct_fmt (const lcmgen_t *lcm, FILE *f,
         if (! g_queue_is_empty (members)) {
             emit_continue (", ");
         }
-        fmtsize += _primitive_type_size (lcm, lm->type->typename);
+        fmtsize += _primitive_type_size (lm->type->typename);
     }
     emit_continue (" = struct.unpack(\">");
     while (! g_queue_is_empty (formats)) {
@@ -201,14 +238,14 @@ static void
 emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(1, "def _decode_one(buf):");
-    emit (2, "self = %s()\n", ls->structname->shortname);
+    emit (2, "self = %s()", ls->structname->shortname);
 
     GQueue *struct_fmt = g_queue_new ();
     GQueue *struct_members = g_queue_new ();
 
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, m);
-        char fmt = _struct_format (lcm, lm);
+        char fmt = _struct_format (lm);
 
         if (! lm->dimensions->len) {
             if (fmt) {
@@ -227,24 +264,16 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             GString *accessor = g_string_new ("");
             g_string_append_printf (accessor, "self.%s", lm->membername);
 
-            if (lm->dimensions->len != 1 || strcmp("byte", lm->type->typename)){
-                emit (2, "%s = []", accessor->str);
-            }
-
-            int wrotebytes = 0;
+            // iterate through the dimensions of the member, building up 
+            // an accessor string, and emitting for loops
             unsigned int n;
-            for (n=0; n<lm->dimensions->len; n++) {
-                lcm_dimension_t *dim = 
-                    (lcm_dimension_t*) g_ptr_array_index (lm->dimensions, n);
+            for (n=0; n<lm->dimensions->len-1; n++) {
+                lcm_dimension_t *dim = g_ptr_array_index (lm->dimensions, n);
 
-                if (n == lm->dimensions->len-1 && 
-                    !strcmp (lm->type->typename, "byte")) {
-                    emit (2+n, "%s = buf.read(%s%s)", 
-                            accessor->str, 
-                            (dim->mode==LCM_CONST?"":"self."),
-                            dim->size);
-                    wrotebytes = 1;
-                    break;
+                if(n == 0) {
+                    emit (2, "%s = []", accessor->str);
+                } else {
+                    emit (2+n, "%s.append ([])", accessor->str);
                 }
 
                 if (dim->mode == LCM_CONST) {
@@ -253,15 +282,45 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                     emit (2+n, "for i%d in range(self.%s):", n, dim->size);
                 }
 
-                if (n < lm->dimensions->len-1) {
-                    emit (3+n, "%s.append ([])", accessor->str);
+                if(n < lm->dimensions->len-2) {
                     g_string_append_printf (accessor, "[i%d]", n);
                 }
             }
 
-            if (!wrotebytes) {
+            // last dimension.
+            lcm_dimension_t *last_dim = g_ptr_array_index(lm->dimensions,
+                    lm->dimensions->len - 1);
+            int last_dim_fixed_len = last_dim->mode == LCM_CONST;
+
+            if(lcm_is_primitive_type(lm->type->typename) && 
+               0 != strcmp(lm->type->typename, "string")) {
+                // member is a primitive non-string type.  Emit code to 
+                // decode a full array in one call to struct.unpack
+                if(n == 0) {
+                    g_string_append_printf (accessor, " = ");
+                } else {
+                    g_string_append_printf (accessor, ".append(");
+                }
+
+                _emit_decode_list(lcm, f, ls, lm,
+                        accessor->str, 2+n, n==0, 
+                        last_dim->size, last_dim_fixed_len);
+            } else {
+                // member is either a string type or an inner LCM type.  Each
+                // array element must be decoded individually
+                if(n == 0) {
+                    emit (2, "%s = []", accessor->str);
+                } else {
+                    emit (2+n, "%s.append ([])", accessor->str);
+                    g_string_append_printf (accessor, "[i%d]", n-1);
+                }
+                if (last_dim_fixed_len) {
+                    emit (2+n, "for i%d in range(%s):", n, last_dim->size);
+                } else {
+                    emit (2+n, "for i%d in range(self.%s):", n, last_dim->size);
+                }
                 g_string_append_printf (accessor, ".append(");
-                _emit_decode_one (lcm, f, ls, lm, accessor->str, n+2, ")");
+                _emit_decode_one (lcm, f, ls, lm, accessor->str, n+3, ")");
             }
             g_string_free (accessor, TRUE);
         }
@@ -322,11 +381,41 @@ _emit_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
 }
 
 static void
+_emit_encode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
+        lcm_member_t *lm, const char *accessor, int indent, 
+        const char *len, int fixed_len)
+{
+    const char *tn = lm->type->typename;
+    if (!strcmp ("byte", tn)) {
+        emit (indent, "buf.write(%s[:%s%s])", 
+                accessor, (fixed_len?"":"self."), len);
+        return;
+    } else if (!strcmp ("int8_t", tn) ||
+               !strcmp ("int16_t", tn) ||
+               !strcmp ("int32_t", tn) ||
+               !strcmp ("int64_t", tn) ||
+               !strcmp ("float", tn) ||
+               !strcmp ("double", tn)) {
+        if(fixed_len) {
+            emit(indent, "buf.write(struct.pack('>%s%c', *%s[:%s]))", 
+                    len, _struct_format(lm), accessor, len);
+        } else {
+            emit(indent, 
+                    "buf.write(struct.pack('>%%d%c' %% self.%s, *%s[:self.%s]))", 
+                    _struct_format(lm), len, accessor, len);
+        }
+    } else {
+        assert(0);
+    }
+
+}
+
+static void
 _flush_write_struct_fmt (FILE *f, GQueue *formats, GQueue *members)
 {
     assert (g_queue_get_length (formats) == g_queue_get_length (members));
     if (g_queue_is_empty (formats)) return;
-    emit_start (2, "buf.write (struct.pack(\">");
+    emit_start (2, "buf.write(struct.pack(\">");
     while (! g_queue_is_empty (formats)) {
         emit_continue ("%c", GPOINTER_TO_INT (g_queue_pop_head (formats)));
     }
@@ -351,7 +440,7 @@ emit_python_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = g_ptr_array_index(ls->members, m);
-        char fmt = _struct_format (lcm, lm);
+        char fmt = _struct_format (lm);
 
         if (! lm->dimensions->len) {
             if (fmt) {
@@ -370,19 +459,9 @@ emit_python_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             g_string_append_printf (accessor, "self.%s", lm->membername);
 
             unsigned int n;
-            int wrotebytes = 0;
-            for (n=0; n<lm->dimensions->len; n++) {
+            for (n=0; n<lm->dimensions->len - 1; n++) {
                 lcm_dimension_t *dim = 
                     (lcm_dimension_t*) g_ptr_array_index (lm->dimensions, n);
-
-                if (n == lm->dimensions->len-1 && 
-                    !strcmp (lm->type->typename, "byte")) {
-                    emit (2+n, "buf.write(%s[:%s%s])", 
-                            accessor->str, (dim->mode==LCM_CONST?"":"self."),
-                            dim->size);
-                    wrotebytes = 1;
-                    break;
-                }
 
                 g_string_append_printf (accessor, "[i%d]", n);
                 if (dim->mode == LCM_CONST) {
@@ -392,9 +471,25 @@ emit_python_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 }
             }
 
-            if (!wrotebytes) {
-                _emit_encode_one (lcm, f, ls, lm, accessor->str, n+2);
+            // last dimension.
+            lcm_dimension_t *last_dim = g_ptr_array_index(lm->dimensions,
+                    lm->dimensions->len - 1);
+            int last_dim_fixed_len = last_dim->mode == LCM_CONST;
+
+            if(lcm_is_primitive_type(lm->type->typename) && 
+               0 != strcmp(lm->type->typename, "string")) {
+
+                _emit_encode_list(lcm, f, ls, lm,
+                        accessor->str, 2+n, last_dim->size, last_dim_fixed_len);
+            } else {
+                if (last_dim_fixed_len) {
+                    emit (2+n, "for i%d in range(%s):", n, last_dim->size);
+                } else {
+                    emit (2+n, "for i%d in range(self.%s):", n, last_dim->size);
+                }
+                _emit_encode_one (lcm, f, ls, lm, accessor->str, n+3);
             }
+            
             g_string_free (accessor, TRUE);
         }
     }
