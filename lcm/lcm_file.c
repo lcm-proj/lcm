@@ -115,16 +115,17 @@ new_argument (gpointer key, gpointer value, gpointer user)
         lr->speed = strtod (value, &endptr);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for speed\n");
-    }
-    if (!strcmp (key, "mode")) {
+    } else if (!strcmp (key, "mode")) {
         const char *mode = value;
         if(!strcmp(mode, "w")) {
             lr->writer=1;
-        } else if(strcmp(mode,"r")) {
+        } else {
             fprintf(stderr, "Warning: Invalid value for mode\n");
         }
+    } else {
+        fprintf(stderr, "Warning: unrecognized option: [%s]\n", 
+                (const char*)key);
     }
-    fprintf(stderr, "Warning: unrecognized option: [%s]\n", (const char*)key);
 }
 
 static int
