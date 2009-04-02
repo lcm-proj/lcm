@@ -487,6 +487,7 @@ emit_python_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 } else {
                     emit (2+n, "for i%d in range(self.%s):", n, last_dim->size);
                 }
+                g_string_append_printf (accessor, "[i%d]", n);
                 _emit_encode_one (lcm, f, ls, lm, accessor->str, n+3);
             }
             
