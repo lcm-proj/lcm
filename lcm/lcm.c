@@ -7,6 +7,15 @@
 
 #include <glib.h>
 
+// It would be nice to use GRegex, but it's a bit new... only in GLib since
+// 2.14 (August, 2007)
+//
+//#define USE_GREGEX
+
+#ifndef USE_GREGEX
+#include <regex.h>
+#endif
+
 #include "lcm.h"
 #include "lcm_internal.h"
 #include "dbg.h"
@@ -29,7 +38,11 @@ struct _lcm_subscription_t {
     char             *channel;
     lcm_msg_handler_t  handler;
     void             *userdata;
+#ifdef USE_GREGEX
     GRegex * regex;
+#else
+    regex_t preg;
+#endif
     int callback_scheduled;
     int marked_for_deletion;
 };
@@ -143,7 +156,11 @@ static void
 lcm_handler_free (lcm_subscription_t *h) 
 {
     assert (!h->callback_scheduled);
+#ifdef USE_GREGEX
     g_regex_unref(h->regex);
+#else
+    regfree(&h->preg);
+#endif
     free (h->channel);
     memset (h, 0, sizeof (lcm_subscription_t));
     free (h);
@@ -204,7 +221,11 @@ lcm_publish (lcm_t *lcm, const char *channel, const void *data,
 static int 
 is_handler_subscriber(lcm_subscription_t *h, const char *channel_name)
 {
+#ifdef USE_GREGEX
     return g_regex_match(h->regex, channel_name, 0, NULL);
+#else 
+    return (0 == regexec(&h->preg, channel_name, 0, NULL, 0));
+#endif
 }
 
 // add the handler to any channel's handler list if its subscription matches
@@ -253,6 +274,7 @@ lcm_subscription_t
 
     char regexbuf[strlen(channel)+3];
     sprintf (regexbuf, "^%s$", channel);
+#ifdef USE_GREGEX
     GError *rerr = NULL;
     h->regex = g_regex_new(regexbuf, 0, 0, &rerr);
     if(rerr) {
@@ -262,6 +284,14 @@ lcm_subscription_t
         free(h);
         return NULL;
     }
+#else
+    int rstatus = regcomp (&h->preg, regexbuf, REG_NOSUB | REG_EXTENDED);
+    if (rstatus != 0) {
+        dbg (DBG_LCM, "bad regex in channel name!\n");
+        free (h);
+        return NULL;
+    }
+#endif
 
     g_static_rec_mutex_lock (&lcm->mutex);
     g_ptr_array_add(lcm->handlers_all, h);
