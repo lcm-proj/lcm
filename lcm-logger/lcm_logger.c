@@ -79,10 +79,11 @@ write_thread(void *user_data)
             g_mutex_unlock(logger->mutex);
             return NULL;
         }
-        g_mutex_unlock(logger->mutex);
-
         // nope.  write the event to disk
         lcm_eventlog_event_t *le = (lcm_eventlog_event_t*) msg;
+        int64_t sz = sizeof(lcm_eventlog_t) + le->channellen + 1 + le->datalen;
+        logger->write_queue_size -= sz;
+        g_mutex_unlock(logger->mutex);
 
         if(0 != lcm_eventlog_write_event(logger->log, le)) {
             static int64_t last_spew_utime = 0;
@@ -103,11 +104,7 @@ write_thread(void *user_data)
         logger->events_since_last_report ++;
         logger->logsize += 4 + 8 + 8 + 4 + le->channellen + 4 + le->datalen;
 
-        int64_t sz = sizeof(lcm_eventlog_t) + le->channellen + 1 + le->datalen;
         free(le);
-        g_mutex_lock(logger->mutex);
-        logger->write_queue_size -= sz;
-        g_mutex_unlock(logger->mutex);
 
         if (offset_utime - logger->last_report_time > 1000000) {
             double dt = (offset_utime - logger->last_report_time)/1000000.0;
