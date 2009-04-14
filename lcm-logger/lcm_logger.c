@@ -81,7 +81,7 @@ write_thread(void *user_data)
         }
         // nope.  write the event to disk
         lcm_eventlog_event_t *le = (lcm_eventlog_event_t*) msg;
-        int64_t sz = sizeof(lcm_eventlog_t) + le->channellen + 1 + le->datalen;
+        int64_t sz = sizeof(lcm_eventlog_event_t) + le->channellen + 1 + le->datalen;
         logger->write_queue_size -= sz;
         g_mutex_unlock(logger->mutex);
 
