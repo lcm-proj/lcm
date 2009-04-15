@@ -1,3 +1,84 @@
+2009-04-14  ashuang
+
+	* [r357] lcm-logger/lcm_logger.c: logger bugfix (that was stupid)
+	* [r356] lcm-python/lcm/__init__.py: lcm-python remove pure python
+	  log class, add some comment docs
+	* [r355] lcm-logger/lcm_logger.c: logger fix memory queue size
+	  counting bug
+
+2009-04-03  ashuang
+
+	* [r354] lcm/lcm.c: switch back to POSIX regex for now... GRegex is
+	  too new (only since Aug, 2007)
+
+2009-04-02  ashuang
+
+	* [r353] lcm/lcm.c: fix memory leak
+	* [r352] lcmgen/emit_python.c: emit_python bugfix
+
+2009-03-31  ashuang
+
+	* [r349] lcm/lcm_file.c: lcm_file write mode bugfix
+
+2009-03-30  ashuang
+
+	* [r348] lcmgen/emit_python.c: emit_python: enum bugfix
+	* [r347] lcmgen/emit_python.c: emit_python: encode/decode the last
+	  dimension all at once if possible
+	* [r346] lcmgen/emit_python.c: emit_python: populate __init__.py
+	  with module imports
+
+2009-03-29  ashuang
+
+	* [r345] configure.in, examples/Makefile.am, examples/c,
+	  examples/c/Makefile, examples/c/Makefile.am: convert C example to
+	  use a standard Makefile... arguably more useful as an example
+
+2009-03-27  ashuang
+
+	* [r344] lcm-logger/lcm_logger.c: bugfix
+	* [r343] lcm-logger/lcm_logger.c: logger verbose when unable to log
+
+2009-03-25  ashuang
+
+	* [r342] lcm/Makefile.am: remove AM_CFLAGS from Makefile.am
+	* [r341] configure.in: autoconf set AM_CFLAGS instead of CFLAGS
+	* [r340] docs/reference: update svn:ignore
+
+2009-03-23  ashuang
+
+	* [r339] lcm-python/pylcm.c: update python regex doc
+	* [r338] lcm/lcm_udp.c: lcm_udp: fix some gcc warnings about unused
+	  return values
+	* [r337] lcm-logger/lcm_logplayer.c, lcm/lcm.c, lcm/lcm.h,
+	  liblcm-test/lcm-logfilter.c: C/Python: switch from POSIX extended
+	  regular expressions to GLib regular expressions.
+	* [r336] lcm/lcm.h: some documentation for log file provider write
+	  mode
+	* [r335] lcm-java/lcm/lcm/LogFileProvider.java: add write mode to
+	  Java file provider
+	* [r334] lcm/lcm.c, lcm/lcm_file.c: add write mode to LCM file
+	  provider (abe bachrach)
+
+2009-03-21  ashuang
+
+	* [r333] lcmgen/emit_python.c: emit_python: consolidate calls to
+	  struct.unpack when possible use --lazy flag
+
+2009-03-19  ashuang
+
+	* [r332] lcmgen/emit_c.c: emit_c: append "LL" to int64_t constants
+
+2009-02-23  edwinolson
+
+	* [r331] lcm-java/Makefile.am, lcm-java/lcm/lcm/TCPProvider.java,
+	  lcm-java/lcm/lcm/TCPService.java: TCPProvider enhancements
+
+2009-02-17  ashuang
+
+	* [r330] ChangeLog, NEWS, configure.in: release 0.2.1
+	* [r329] lcm-logger/lcm_logger.c: fix major regression in logger
+
 2009-02-14  ashuang
 
 	* [r323] ChangeLog, NEWS, configure.in,

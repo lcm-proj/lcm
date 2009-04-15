@@ -1,3 +1,17 @@
+Apr 15, 2009
+============
+
+ Release 0.2.2:
+
+ logger
+   - fixed internal counting bug
+ lcm-gen
+   - C bugfix: append "LL" to int64_t constants
+   - Python optimization:  consolidate calls to struct.pack/unpack if possible
+   - Python uses --lazy flag now
+ C/Python
+   - fix minor memory leak
+
 Feb 16, 2009
 ============
 

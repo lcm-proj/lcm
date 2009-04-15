@@ -2,7 +2,7 @@ AC_PREREQ(2.50)
 AC_INIT(lcm/lcm.h)
 AM_CONFIG_HEADER(config.h)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(lcm, 0.2.1)
+AM_INIT_AUTOMAKE(lcm, 0.2.2)
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CC
@@ -20,7 +20,7 @@ dnl  3. If the interface changes consist solely of additions, increment AGE.
 dnl  4. If the interface has removed or changed elements, set AGE to 0.
 dnl ---------------------------------------------------------------------------
 LIBLCM_AGE=0
-LIBLCM_REVISION=6
+LIBLCM_REVISION=7
 LIBLCM_CURRENT=1
 AC_SUBST(LIBLCM_AGE)
 AC_SUBST(LIBLCM_REVISION)
