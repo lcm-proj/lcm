@@ -22,6 +22,9 @@ usage()
            "\n"
            "Optiosn:\n"
            "  -h        prints this help text and exits\n"
+           "  -c CHAN   POSIX regular expression.  Channels matching this expression\n"
+           "            will be copied to the destination logfile.\n"
+           "  -i        invert the regular expression CHAN, so that only channels not\n"
            "  -c CHAN   GLib regular expression.\n"
            "  -s START  start time.  Messages logged less than START seconds\n"
            "            after the first message in the logfile will not be\n"
@@ -49,8 +52,9 @@ int main(int argc, char **argv)
     int64_t start_utime = 0;
     int64_t end_utime = -1;
     int have_end_utime = 0;
+    int invert_regex = 0;
 
-    char *optstring = "hc:vs:e:";
+    char *optstring = "hc:vs:e:i";
     char c;
 
     while ((c = getopt_long (argc, argv, optstring, NULL, 0)) >= 0)
@@ -77,6 +81,9 @@ int main(int argc, char **argv)
                     end_utime = (int64_t) (end_time * 1000000);
                     have_end_utime = 1;
                 }
+                break;
+            case 'i':
+                invert_regex = 1;
                 break;
             case 'c':
                 pattern = strdup(optarg);
@@ -131,8 +138,10 @@ int main(int argc, char **argv)
     for (lcm_eventlog_event_t *event = lcm_eventlog_read_next_event(src_log);
             event != NULL;
             event = lcm_eventlog_read_next_event(src_log)) {
-        if(!have_first_event_timestamp)
+        if(!have_first_event_timestamp) {
             first_event_timestamp = event->timestamp;
+            have_first_event_timestamp = 1;
+        }
 
         int64_t elapsed = event->timestamp - first_event_timestamp;
         if(elapsed < start_utime) {
@@ -144,7 +153,10 @@ int main(int argc, char **argv)
             break;
         }
 
-        if (0 == regexec(&preg, event->channel, 0, NULL, 0)) {
+        int regmatch = regexec(&preg, event->channel, 0, NULL, 0);
+        int copy_to_dest = (regmatch == 0 && !invert_regex) ||
+                           (regmatch != 0 && invert_regex);
+        if (copy_to_dest) {
             lcm_eventlog_write_event(dst_log, event);
             nwritten++;
 
