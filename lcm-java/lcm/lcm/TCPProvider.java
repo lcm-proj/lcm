@@ -15,6 +15,7 @@ public class TCPProvider implements Provider
 {
     LCM lcm;
 
+    static final int DEFAULT_PORT = 7700;
     static final String DEFAULT_NETWORK = "127.0.0.1:7700";
     InetAddress inetAddr;
     int         inetPort;
@@ -31,11 +32,16 @@ public class TCPProvider implements Provider
 	this.lcm = lcm;
 
 	String addrport[] = up.get("network", DEFAULT_NETWORK).split(":");
-	if (addrport.length != 2) 
-	    System.out.println("LCM TCP provider URL must contain a host:port pair.");
-
-	inetAddr = InetAddress.getByName(addrport[0]);
-	inetPort = Integer.valueOf(addrport[1]);
+	if (addrport.length == 1) {
+	    inetAddr = InetAddress.getByName(addrport[0]);
+	    inetPort = 7700;
+	} else if (addrport.length == 2) {
+	    inetAddr = InetAddress.getByName(addrport[0]);
+	    inetPort = Integer.valueOf(addrport[1]);
+	} else {
+	    System.out.println("TCPProvider: Don't know how to parse "+up.get("network", DEFAULT_NETWORK));
+	    System.exit(-1);
+	}
 
 	reader = new ReaderThread();
 	reader.start();
