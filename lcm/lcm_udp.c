@@ -136,7 +136,11 @@ struct _lcm_provider_t {
 
     udpm_params_t params;
 
-    /* Packet structures for available for sending or receiving use are
+    /* size of the kernel UDP receive buffer */
+    int kernel_rbuf_sz;
+    int warned_about_small_kernel_buf;
+
+    /* Packet structures available for sending or receiving use are
      * stored in the *_empty queues. */
     lcm_buf_queue_t * inbufs_empty;
     /* Received packets that are filled with data are queued here. */
@@ -536,6 +540,22 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     }
 
     if (!fbuf) return 0;
+
+#ifdef __linux__
+    if(lcm->kernel_rbuf_sz < 262145 && 
+       data_size > lcm->kernel_rbuf_sz &&
+       ! lcm->warned_about_small_kernel_buf) {
+        fprintf(stderr, 
+"==== LCM Warning ===\n"
+"LCM detected that large packets are being received, but the kernel UDP\n"
+"receive buffer is very small.  The possibility of dropping packets due to\n"
+"insufficient buffer space is very high.\n"
+"\n"
+"For more information, visit:\n"
+"   http://lcm.googlecode.com/svn/www/reference/lcm/multicast-setup.html\n\n");
+        lcm->warned_about_small_kernel_buf = 1;
+    }
+#endif
 
     if (fragment_offset + frag_size > fbuf->data_size) {
         dbg (DBG_LCM, "dropping invalid fragment (off: %d, %d / %d)\n",
@@ -1149,8 +1169,8 @@ _setup_recv_thread (lcm_udpm_t *lcm)
             (char*)&sockbufsize, &retsize);
     dbg (DBG_LCM, "LCM: send buffer is %d bytes\n", sockbufsize);
     getsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF, 
-            (char*)&sockbufsize, &retsize);
-    dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", sockbufsize);
+            (char*)&lcm->kernel_rbuf_sz, &retsize);
+    dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", lcm->kernel_rbuf_sz);
     if (lcm->params.recv_buf_size) {
         if (setsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF,
                 &lcm->params.recv_buf_size, 
@@ -1159,15 +1179,15 @@ _setup_recv_thread (lcm_udpm_t *lcm)
             fprintf (stderr, "Warning: Unable to set recv buffer size\n");
         }
         getsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF, 
-                (char*)&sockbufsize, &retsize);
-        dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", sockbufsize);
+                (char*)&lcm->kernel_rbuf_sz, &retsize);
+        dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", lcm->kernel_rbuf_sz);
 
-        if (lcm->params.recv_buf_size > sockbufsize) {
+        if (lcm->params.recv_buf_size > lcm->kernel_rbuf_sz) {
             g_warning ("LCM UDP receive buffer size (%d) \n"
                     "       is smaller than reqested (%d). "
                     "For more info:\n"
                     "       http://lcm.googlecode.com/svn/www/reference/lcm/multicast-setup.html\n", 
-                    sockbufsize, lcm->params.recv_buf_size);
+                    lcm->kernel_rbuf_sz, lcm->params.recv_buf_size);
         }
     }
 
@@ -1311,6 +1331,9 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     lcm->sendfd = -1;
     lcm->thread_msg_pipe[0] = lcm->thread_msg_pipe[1] = -1;
     lcm->udp_low_watermark = 1.0;
+
+    lcm->kernel_rbuf_sz = 0;
+    lcm->warned_about_small_kernel_buf = 0;
 
     lcm->frag_bufs = g_hash_table_new_full (_sockaddr_in_hash, 
             _sockaddr_in_equal, NULL, (GDestroyNotify) lcm_frag_buf_destroy);
