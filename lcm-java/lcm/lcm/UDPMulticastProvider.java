@@ -109,19 +109,16 @@ public class UDPMulticastProvider implements Provider
 
 	if (payload_size <= FRAGMENTATION_THRESHOLD) {
 
-	    ByteArrayOutputStream bouts = new ByteArrayOutputStream(length + channel.length() + 32);
-	    DataOutputStream outs = new DataOutputStream(bouts);
+	    LCMDataOutputStream outs = new LCMDataOutputStream(length + channel.length() + 32);
 
 	    outs.writeInt(MAGIC_SHORT);
 	    outs.writeInt(this.msgSeqNumber);
 
-	    outs.write(channel_bytes, 0, channel_bytes.length);
-	    outs.writeByte(0);
+	    outs.writeStringZ(channel);
 
 	    outs.write(data, offset, length);
 
-	    byte[] b = bouts.toByteArray();
-	    sock.send(new DatagramPacket(b, 0, b.length, inetAddr, inetPort));
+	    sock.send(new DatagramPacket(outs.getBuffer(), 0, outs.size(), inetAddr, inetPort));
 
 	} else {
 	    int nfragments = payload_size / FRAGMENTATION_THRESHOLD;
@@ -219,43 +216,19 @@ public class UDPMulticastProvider implements Provider
 		} catch (IOException ex) {
 		    System.err.println("ex: "+ex);
 		    continue;
-//		} catch (InterruptedException ex) {
-//		    return;
 		}
 	    }
 	}
 
-	void handleShortMessage(DatagramPacket packet, DataInputStream ins) throws IOException
+	void handleShortMessage(DatagramPacket packet, LCMDataInputStream ins) throws IOException
 	{
 	    int msgSeqNumber = ins.readInt();
+	    String channel = ins.readStringZ();
 
-	    /////////////////////////////////////////
-	    // read channel name and data
-	    /////////////////////////////////////////
-	    byte channel_and_data[] = new byte[ins.available()];
-	    ins.read(channel_and_data);
-
-	    // extract channel name
-	    int channel_len = 0;
-	    for (; channel_len < channel_and_data.length; channel_len++) {
-		if (0 == channel_and_data[channel_len]) {
-		    break;
-		}
-	    }
-	    int data_offset = channel_len + 1;
-
-	    String channel = new String(channel_and_data, 0, channel_len, "US-ASCII");
-
-	    int data_length = channel_and_data.length - (channel_len + 1);
-
-	    if (ins.available() > 0) {
-		System.err.println("Unread data! "+ins.available());
-	    }
-
-	    lcm.receiveMessage(channel, channel_and_data, data_offset, data_length);
+	    lcm.receiveMessage(channel, ins.getBuffer(), ins.getBufferOffset(), ins.available());
 	}
 
-	void handleFragment (DatagramPacket packet, DataInputStream ins) throws IOException
+	void handleFragment (DatagramPacket packet, LCMDataInputStream ins) throws IOException
 	{
 	    int msgSeqNumber = ins.readInt();
 	    int msg_size = ins.readInt() & 0xffffffff;
@@ -265,7 +238,7 @@ public class UDPMulticastProvider implements Provider
 
 	    // read entire packet payload
 	    byte payload[] = new byte[ins.available()];
-	    ins.read(payload);
+	    ins.readFully(payload);
 
 	    if (ins.available() > 0) {
 		System.err.println("Unread data! "+ins.available());
@@ -323,9 +296,9 @@ public class UDPMulticastProvider implements Provider
 
 	void handlePacket(DatagramPacket packet) throws IOException
 	{
-	    DataInputStream ins = new DataInputStream(new ByteArrayInputStream(packet.getData(), 
-									       packet.getOffset(), 
-									       packet.getLength()));
+	    LCMDataInputStream ins = new LCMDataInputStream(packet.getData(),
+							    packet.getOffset(),
+							    packet.getLength());
 	    
 	    int magic = ins.readInt();
 	    if (magic == MAGIC_SHORT) {

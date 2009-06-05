@@ -177,7 +177,7 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "import java.util.*;");
         emit(0, " ");
 
-        emit(0, "public class %s %s", le->enumname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
+        emit(0, "public final class %s %s", le->enumname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
 
         emit(0, "{");
         emit(1, "public int value;");
@@ -197,20 +197,20 @@ int emit_java(lcmgen_t *lcm)
         emit(1,"public int getValue() { return value; }");
         emit(0," ");
 
-        emit(1,"public void _encodeRecursive(DataOutputStream outs) throws IOException");
+        emit(1,"public void _encodeRecursive(DataOutput outs) throws IOException");
         emit(1,"{");
         emit(2,"outs.writeInt(this.value);");
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public void encode(DataOutputStream outs) throws IOException");
+        emit(1,"public void encode(DataOutput outs) throws IOException");
         emit(1,"{");
         emit(2,"outs.writeLong(LCM_FINGERPRINT);");
         emit(2,"_encodeRecursive(outs);");
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public static %s _decodeRecursiveFactory(DataInputStream ins) throws IOException", make_fqn(lcm, le->enumname->typename));
+        emit(1,"public static %s _decodeRecursiveFactory(DataInput ins) throws IOException", make_fqn(lcm, le->enumname->typename));
         emit(1,"{");
         emit(2,"%s o = new %s(0);", make_fqn(lcm, le->enumname->typename), make_fqn(lcm, le->enumname->typename));
         emit(2,"o._decodeRecursive(ins);");
@@ -218,13 +218,13 @@ int emit_java(lcmgen_t *lcm)
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public void _decodeRecursive(DataInputStream ins) throws IOException");
+        emit(1,"public void _decodeRecursive(DataInput ins) throws IOException");
         emit(1,"{");
         emit(2,"this.value = ins.readInt();");
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public %s(DataInputStream ins) throws IOException", le->enumname->shortname);
+        emit(1,"public %s(DataInput ins) throws IOException", le->enumname->shortname);
         emit(1,"{");
         emit(2,"long hash = ins.readLong();");
         emit(2,"if (hash != LCM_FINGERPRINT)");
@@ -277,7 +277,7 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "import java.io.*;");
         emit(0, "import java.util.*;");
         emit(0, " ");
-        emit(0, "public class %s %s", lr->structname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
+        emit(0, "public final class %s %s", lr->structname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
         emit(0, "{");
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
@@ -386,14 +386,14 @@ int emit_java(lcmgen_t *lcm)
 
         ///////////////// encode //////////////////
 
-        emit(1,"public void encode(DataOutputStream outs) throws IOException");
+        emit(1,"public void encode(DataOutput outs) throws IOException");
         emit(1,"{");
         emit(2,"outs.writeLong(LCM_FINGERPRINT);");
         emit(2,"_encodeRecursive(outs);");
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public void _encodeRecursive(DataOutputStream outs) throws IOException");
+        emit(1,"public void _encodeRecursive(DataOutput outs) throws IOException");
         emit(1,"{");
         emit(2, "byte[] __strbuf = null;");
         char accessor[1024];
@@ -432,7 +432,7 @@ int emit_java(lcmgen_t *lcm)
         emit(1, "}");
         emit(0, " ");
 
-        emit(1,"public %s(DataInputStream ins) throws IOException", lr->structname->shortname);
+        emit(1,"public %s(DataInput ins) throws IOException", lr->structname->shortname);
         emit(1,"{");
         emit(2,"if (ins.readLong() != LCM_FINGERPRINT)");
         emit(3,     "throw new IOException(\"LCM Decode error: bad fingerprint\");");
@@ -441,7 +441,7 @@ int emit_java(lcmgen_t *lcm)
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public static %s _decodeRecursiveFactory(DataInputStream ins) throws IOException", make_fqn(lcm, lr->structname->typename));
+        emit(1,"public static %s _decodeRecursiveFactory(DataInput ins) throws IOException", make_fqn(lcm, lr->structname->typename));
         emit(1,"{");
         emit(2,"%s o = new %s();", make_fqn(lcm, lr->structname->typename), make_fqn(lcm, lr->structname->typename));
         emit(2,"o._decodeRecursive(ins);");
@@ -449,7 +449,7 @@ int emit_java(lcmgen_t *lcm)
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public void _decodeRecursive(DataInputStream ins) throws IOException");
+        emit(1,"public void _decodeRecursive(DataInput ins) throws IOException");
         emit(1,"{");        
         emit(2,     "byte[] __strbuf = null;");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {

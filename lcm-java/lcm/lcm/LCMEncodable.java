@@ -10,5 +10,5 @@ public interface LCMEncodable
      * Invoked by LCM.
      * @param outs Any data to be sent should be written to this output stream.
      */
-    public void encode(DataOutputStream outs) throws IOException;
+    public void encode(DataOutput outs) throws IOException;
 }

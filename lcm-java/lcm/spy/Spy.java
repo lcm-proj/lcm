@@ -260,7 +260,7 @@ public class Spy
 
     class MySubscriber implements LCMSubscriber
     {
-	public void messageReceived(LCM lcm, String channel, DataInputStream dins)
+	public void messageReceived(LCM lcm, String channel, LCMDataInputStream dins)
 	{
 	    Object o = null;
 	    ChannelData cd = channelMap.get(channel);

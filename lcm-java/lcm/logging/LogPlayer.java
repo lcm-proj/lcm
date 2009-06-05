@@ -634,6 +634,7 @@ public class LogPlayer extends JComponent
 	    log.seekPositionFraction(ratio);
 	    js.set(log.getPositionFraction());
 
+	    lastSystemTime = 0; // reset log-play statistics.
 	    updateDisplay(e);
 	} catch (IOException ex) {
 	    System.out.println("exception: "+ex);

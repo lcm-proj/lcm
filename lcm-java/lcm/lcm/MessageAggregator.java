@@ -46,7 +46,7 @@ public class MessageAggregator
      * Internal method, called by LCM when a message is received.
      */
     public synchronized void messageReceived(LCM lcm, String channel, 
-	    DataInputStream dins)
+					     LCMDataInputStream dins)
     {
 	try {
 	    byte data[] = new byte[dins.available()];

@@ -14,5 +14,5 @@ public interface LCMSubscriber
      * @param channel the channel on which the message was received.
      * @param ins the message contents.
      */
-    public void messageReceived(LCM lcm, String channel, DataInputStream ins);
+    public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins);
 }

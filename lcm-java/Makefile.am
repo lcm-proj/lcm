@@ -50,6 +50,8 @@ dist_noinst_JAVA = \
     lcm/lcm/LogFileProvider.java \
 	lcm/lcm/TCPProvider.java \
 	lcm/lcm/MessageAggregator.java \
+	lcm/lcm/LCMDataInputStream.java \
+	lcm/lcm/LCMDataOutputStream.java \
     lcm/util/BufferedRandomAccessFile.java \
     lcm/util/ColorMapper.java \
     lcm/util/TableSorter.java \

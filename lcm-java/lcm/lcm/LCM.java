@@ -6,6 +6,8 @@ import java.util.*;
 import java.util.regex.*;
 import java.nio.*;
 
+import lcm.util.*;
+
 /** Lightweight Communications and Marshalling Java implementation **/
 public class LCM
 {
@@ -24,6 +26,8 @@ public class LCM
     boolean closed = false;
 
     static LCM singleton;
+
+    LCMDataOutputStream encodeBuffer = new LCMDataOutputStream(new byte[1024]);
 
     /** Create a new LCM object, connecting to one or more URLs. If
      * no URL is specified, the environment variable LCM_DEFAULT_URL is
@@ -97,18 +101,16 @@ public class LCM
     /** Publish an LCM-defined type on a channel. If more than one URL was
      * specified, the message will be sent on each.
      **/
-    public void publish(String channel, LCMEncodable e)
+    public synchronized void publish(String channel, LCMEncodable e)
     {
 	if (this.closed) throw new IllegalStateException();
+
 	try {
-	    ByteArrayOutputStream bouts = new ByteArrayOutputStream(256);
-	    DataOutputStream outs = new DataOutputStream(bouts);
+	    encodeBuffer.reset();
+
+	    e.encode(encodeBuffer);
 	    
-	    e.encode(outs);
-	    
-	    byte[] b = bouts.toByteArray();
-	    
-	    publish(channel, b, 0, b.length);
+	    publish(channel, encodeBuffer.getBuffer(), 0, encodeBuffer.size());
 	} catch (IOException ex) {
 	    System.err.println("LC publish fail: "+ex);
 	}
@@ -219,9 +221,7 @@ public class LCM
 	    for (SubscriptionRecord srec : srecs) {
 		srec.lcsub.messageReceived(this,
 					   channel, 
-					   new DataInputStream(new ByteArrayInputStream(data, 
-											offset, 
-											length)));
+					   new LCMDataInputStream(data, offset, length));
 	    }
 	}
     }
@@ -275,7 +275,7 @@ public class LCM
 
     static class SimpleSubscriber implements LCMSubscriber
     {
-	public void messageReceived(LCM lcm, String channel, DataInputStream dins)
+	public void messageReceived(LCM lcm, String channel, LCMDataInputStream dins)
 	{
 	    System.err.println("RECV: "+channel);
 	}
