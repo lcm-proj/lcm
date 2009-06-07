@@ -302,7 +302,7 @@ public class Spy
 		
 		cd.nreceived++;
 
-		o = cd.cls.getConstructor(DataInputStream.class).newInstance(dins);
+		o = cd.cls.getConstructor(DataInput.class).newInstance(dins);
 
 		if (cd.viewer != null) 
 		    cd.viewer.setObject(o);
