@@ -287,7 +287,7 @@ int emit_java(lcmgen_t *lcm)
             emit_start(1, "public ");
             
             if (pinfo==NULL)  {
-                emit_continue(make_fqn(lcm, lm->type->typename));
+                emit_continue("%s", make_fqn(lcm, lm->type->typename));
             } else {
                 emit_continue("%s", pinfo->storage);
             }
@@ -313,9 +313,9 @@ int emit_java(lcmgen_t *lcm)
 
             emit_start(2, "%s = new ", lm->membername);
             if (pinfo != NULL)
-                emit_continue(pinfo->storage);
+                emit_continue("%s", pinfo->storage);
             else 
-                emit_continue(make_fqn(lcm, lm->type->typename));
+                emit_continue("%s", make_fqn(lcm, lm->type->typename));
       
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
@@ -464,9 +464,9 @@ int emit_java(lcmgen_t *lcm)
                 emit_start(2, "this.%s = new ", lm->membername);
 
                 if (pinfo != NULL)
-                    emit_continue(pinfo->storage);
+                    emit_continue("%s", pinfo->storage);
                 else
-                    emit_continue(make_fqn(lcm, lm->type->typename));
+                    emit_continue("%s", make_fqn(lcm, lm->type->typename));
 
                 for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                     lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
@@ -516,9 +516,9 @@ int emit_java(lcmgen_t *lcm)
                 emit_start(2, "outobj.%s = new ", lm->membername);
 
                 if (pinfo != NULL)
-                    emit_continue(pinfo->storage);
+                    emit_continue("%s", pinfo->storage);
                 else
-                    emit_continue(make_fqn(lcm, lm->type->typename));
+                    emit_continue("%s", make_fqn(lcm, lm->type->typename));
 
                 for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                     lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);

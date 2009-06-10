@@ -197,11 +197,16 @@ _emit_decode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
                     atoi(len) * _primitive_type_size(tn), 
                     suffix);
         } else {
+            if(_primitive_type_size(tn) > 1) {
+                emit (indent, 
+                        "%sstruct.unpack('>%%d%c' %% self.%s, buf.read(self.%s * %d))%s", 
+                        accessor, _struct_format(lm), len, len, 
+                        _primitive_type_size(tn), suffix);
+            } else {
             emit (indent, 
-                    "%sstruct.unpack('>%%d%c' %% self.%s, buf.read(self.%s%s%d))%s", 
-                    accessor, _struct_format(lm), len, len, 
-                    _primitive_type_size(tn) > 1 ? " * " : "",
-                    _primitive_type_size(tn), suffix);
+                    "%sstruct.unpack('>%%d%c' %% self.%s, buf.read(self.%s))%s", 
+                    accessor, _struct_format(lm), len, len, suffix);
+            }
         }
     } else {
         assert(0);
