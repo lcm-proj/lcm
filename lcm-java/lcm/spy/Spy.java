@@ -39,7 +39,7 @@ public class Spy
 
     public Spy() throws IOException
     {
-	jf = new JFrame("LC Spy");
+	jf = new JFrame("LCM Spy");
 	jdp = new JDesktopPane();
 	jdp.setBackground(new Color(0, 0, 160));
 	jf.setLayout(new BorderLayout());

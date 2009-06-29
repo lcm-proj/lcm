@@ -1,3 +1,45 @@
+2009-06-10  ashuang
+
+	* [r365] lcmgen/emit_java.c, lcmgen/emit_python.c: emit-java: fix
+	  some compile warnings emit-python: bugfix for decoding arrays of
+	  bytes
+
+2009-06-07  edwinolson
+
+	* [r364] lcm-java/lcm/spy/Spy.java: fix Spy to work with new java
+	  LCM types. (missed this in previous commit)
+
+2009-06-05  edwinolson
+
+	* [r363] lcm-java/Makefile.am, lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/LCMDataInputStream.java,
+	  lcm-java/lcm/lcm/LCMDataOutputStream.java,
+	  lcm-java/lcm/lcm/LCMEncodable.java,
+	  lcm-java/lcm/lcm/LCMSubscriber.java,
+	  lcm-java/lcm/lcm/MessageAggregator.java,
+	  lcm-java/lcm/lcm/UDPMulticastProvider.java,
+	  lcm-java/lcm/logging/LogPlayer.java, lcm-java/lcm/spy/Spy.java,
+	  lcmgen/emit_java.c: provide faster serialization classes for
+	  java. This requires minor source code changes
+
+2009-05-27  ashuang
+
+	* [r362] lcm/lcm_udp.c: LCM warn on Linux if large packets are
+	  being received but kernel rbuf is small
+
+2009-05-07  ashuang
+
+	* [r361] liblcm-test/lcm-logfilter.c: bugfix, add --invert.
+
+2009-05-07  edwinolson
+
+	* [r360] lcm-java/lcm/lcm/TCPProvider.java: make tcp provider use
+	  default port if not specified
+
+2009-04-15  ashuang
+
+	* [r358] ChangeLog, NEWS, configure.in: release 0.2.2
+
 2009-04-14  ashuang
 
 	* [r357] lcm-logger/lcm_logger.c: logger bugfix (that was stupid)

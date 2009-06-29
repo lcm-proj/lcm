@@ -1,3 +1,32 @@
+Jun 29, 2009
+============
+
+ Release 0.3.0:
+
+ Java
+   Faster serialization classes that provide a 4x-5x speedup.  This introduces
+   a backwards-incompatible change to the LCM Java API.  Specifically, 
+   the messageReceived() method of the LCMSubscriber interface has changed
+   from:
+
+    public void messageReceived(LCM lcm, String channel, DataInputStream ins)
+
+   to:
+  
+    public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
+
+   LCMDataInputStream has an almost identical API to DataInputStream, and
+   migration of source code to the new API should only require changing
+   implementations of LCMSubscriber in the manner described above.
+
+ C
+    warn on Linux if large packets are being received but the kernel rbuf is
+    small
+
+ Python
+   bugfix for decoding arrays of bytes
+
+
 Apr 15, 2009
 ============
 
