@@ -17,11 +17,6 @@ clean-local:
 bin_SCRIPTS = lcm-logplayer-gui lcm-spy
 CLEANFILES = $(bin_SCRIPTS)
 
-lcm/lcm/LCM.java: build
-
-build:
-	mkdir build
-
 lcm-logplayer-gui:
 	@echo > $@ "#!/bin/sh"
 	@echo >> $@ "exec java -server -Xincgc -Xmx64m -Xms32m -ea -cp ${jardir}/lcm.jar lcm.logging.LogPlayer \$$*"
@@ -69,6 +64,11 @@ dist_noinst_JAVA = \
     lcm/spy/LCMHandlerDatabase.java \
     lcm/spy/ObjectPanel.java \
     lcm/spy/ChannelData.java 
+
+$(dist_noinst_JAVA): build
+
+build:
+	mkdir build
 
 man_MANS = lcm-spy.1 lcm-logplayer-gui.1
 
