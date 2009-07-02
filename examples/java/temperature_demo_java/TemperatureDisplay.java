@@ -1,9 +1,11 @@
 import lcm.lcm.*;
 import java.io.*;
 
+import lcmtypes.*;
+
 public class TemperatureDisplay implements LCMSubscriber
 {
-    public void messageReceived(LCM lcm, String channel, DataInputStream ins)
+    public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
     {
 	try {
 	    temperature_t temp = new temperature_t(ins);

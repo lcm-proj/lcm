@@ -14,7 +14,7 @@ public class Listener implements LCMSubscriber
 	this.lcm.subscribe("EXAMPLE", this);
     }
 
-    public void messageReceived(LCM lcm, String channel, DataInputStream ins)
+    public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
     {
 	System.out.println("Received message on channel " + channel);
 

@@ -1,4 +1,6 @@
 import lcm.lcm.*;
+
+import lcmtypes.*;
     
 public class TemperatureTransmit
 {
