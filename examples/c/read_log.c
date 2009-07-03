@@ -16,8 +16,7 @@
 
 #include "example_t.h"
 
-int
-main (int argc, char ** argv)
+int main (int argc, char ** argv)
 {
     lcm_eventlog_t * log;
     if(argc < 2) {
@@ -32,9 +31,12 @@ main (int argc, char ** argv)
     }
 
     while(1) {
-        lcm_eventlog_event_t *event = lcm_eventlog_read_next_event(log);
         example_t msg;
         int i;
+        lcm_eventlog_event_t *event = lcm_eventlog_read_next_event(log);
+
+        if(!event)
+            break;
 
         if(0 != strcmp(event->channel, "EXAMPLE"))
             continue;
