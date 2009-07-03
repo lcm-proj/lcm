@@ -5,10 +5,10 @@ from example_t import example_t
 def my_handler(channel, data):
     msg = example_t.decode(data)
     print("Received message on channel \"%s\"" % channel)
-    print("   timestamp   = %s" % msg.timestamp)
-    print("   position    = %s" % msg.position)
-    print("   orientation = %s" % msg.orientation)
-    print("   ranges: %s" % msg.ranges)
+    print("   timestamp   = %s" % str(msg.timestamp))
+    print("   position    = %s" % str(msg.position))
+    print("   orientation = %s" % str(msg.orientation))
+    print("   ranges: %s" % str(msg.ranges))
     print("")
 
 lc = lcm.LCM()

@@ -16,12 +16,15 @@ lcm_obj_files=$(lcmtypes:%=%.o)
 libtypes = libtypes.a
 
 
-all: listener send-message
+all: listener send-message read-log
 
 listener: listener.o $(libtypes) 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 send-message: send_message.o $(libtypes) 
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+read-log: read_log.o $(libtypes)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 # prevent auto-generated lcm .c/.h files from being deleted
@@ -37,7 +40,7 @@ $(libtypes): $(lcm_obj_files)
 	lcm-gen -c $<
 
 clean:
-	rm -f listener send-message
+	rm -f listener send-message read-log
 	rm -f *.o
 	rm -f $(libtypes)
 	rm -f $(lcm_c_h_files)
