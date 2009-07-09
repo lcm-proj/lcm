@@ -2,7 +2,7 @@
 
 # Use pkg-config to lookup the proper compiler and linker flags for LCM
 CFLAGS=`pkg-config --cflags lcm`
-LDFLAGS=`pkg-config --libs lcm`
+LDFLAGS=`pkg-config --libs lcm glib-2.0 gthread-2.0`
 
 # list the LCM types here
 lcmtypes=example_t
@@ -13,24 +13,21 @@ lcm_c_h_files=$(lcmtypes:%=%.c) $(lcmtypes:%=%.h)
 lcm_obj_files=$(lcmtypes:%=%.o)
 
 # compile the LCM types to a static library 
-libtypes = libtypes.a
+all: libtypes.a listener send-message read-log
 
-
-all: listener send-message read-log
-
-listener: listener.o $(libtypes) 
+listener: listener.o libtypes.a
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-send-message: send_message.o $(libtypes) 
+send-message: send_message.o libtypes.a
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-read-log: read_log.o $(libtypes)
+read-log: read_log.o libtypes.a
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 # prevent auto-generated lcm .c/.h files from being deleted
 .SECONDARY : $(lcm_c_h_files)
 
-$(libtypes): $(lcm_obj_files)
+libtypes.a: $(lcm_obj_files)
 	ar rc $@ $(lcm_obj_files)
 
 %.o: %.c %.h
@@ -42,5 +39,5 @@ $(libtypes): $(lcm_obj_files)
 clean:
 	rm -f listener send-message read-log
 	rm -f *.o
-	rm -f $(libtypes)
+	rm -f libtypes.a
 	rm -f $(lcm_c_h_files)
