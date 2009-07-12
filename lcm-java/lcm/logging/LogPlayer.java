@@ -865,6 +865,12 @@ public class LogPlayer extends JComponent
     {
 	JFrame f;
 
+	// check if the JRE is supplied by gcj, and warn the user if it is.
+	if(System.getProperty("java.vendor").indexOf("Free Software Foundation") >= 0) {
+	    System.err.println("WARNING: Detected gcj. The LCM log player is not known to work well with gcj.");
+	    System.err.println("         The Sun JRE is recommended.");
+	}
+
 	try {
 	    p = new LogPlayer();
 	    f = new JFrame("LogPlayer");
