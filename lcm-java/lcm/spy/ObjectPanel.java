@@ -14,10 +14,9 @@ import java.util.zip.*;
 
 import java.lang.reflect.*;
 
-class ObjectPanel extends JPanel
+public class ObjectPanel extends JPanel
 {
     String name;
-    Class cls;
     Object o;
     
     class Section
@@ -28,11 +27,9 @@ class ObjectPanel extends JPanel
 
     ArrayList<Section> sections = new ArrayList<Section>();
 
-    public ObjectPanel(String name, Class cls, Object o)
+    public ObjectPanel(String name)
     {
 	this.name = name;
-	this.cls = cls;
-	this.o = o;
 
 	addMouseListener(new MyMouseAdapter());
     }
@@ -129,16 +126,22 @@ class ObjectPanel extends JPanel
 	    spacer();
 	}
 
-	public void drawStrings(String type, String name, String value)
+	public void drawStrings(String type, String name, String value, boolean isstatic)
 	{
 	    if (collapse_depth > 0)
 		return;
+
+	    Font of = g.getFont();
+	    if (isstatic)
+		g.setFont(of.deriveFont(Font.ITALIC));
 
 	    g.drawString(type,  x[0] + indent_level*indentpx, y);
 	    g.drawString(name,  x[1], y);
 	    g.drawString(value, x[2], y);
 
 	    y+= textheight;
+
+	    g.setFont(of);
 	}
 
 	public void spacer()
@@ -222,71 +225,65 @@ class ObjectPanel extends JPanel
 	ps.x[1] = Math.min(200, width/3);
 	ps.x[2] = Math.min(ps.x[1]+200, 2*width/3);
 	
-	paintRecurse(g, ps, "", cls, o);
+	if (o != null)
+	    paintRecurse(g, ps, "", o.getClass(), o, false); 
+
 	ps.finish();
 	lastheight = ps.y;
     }
 
-    void paintRecurse(Graphics g, PaintState ps, String name, Class cls, Object o)
+    void paintRecurse(Graphics g, PaintState ps, String name, Class cls, Object o, boolean isstatic)
     {
 	if (o == null) {
-	    ps.drawStrings(cls==null ? "(null)" : cls.getName(), name, "(null)");
+	    ps.drawStrings(cls==null ? "(null)" : cls.getName(), name, "(null)", isstatic);
 	    return;
 	}
 
-	/*
-	if (cls.equals(Integer.TYPE)) 
-	    {
-		ps.drawStrings(cls.getName(), name,
-			       String.format("0x%08X   %010d   %+011d",
-					     ((Integer)o),((Integer)o).longValue()&0x00FFFFFFFF,((Integer)o))
-			       );
-	    }
-	    else */
-	if (cls.equals(Byte.TYPE)) 
-	    {
-		ps.drawStrings(cls.getName(), name,
-			       String.format("0x%02X   %03d   %+04d",
-					     ((Byte)o),((Byte)o).intValue()&0x00FF,((Byte)o))
-			       );
-	    }
-	else if (cls.isPrimitive()) 
-	    {
-      		ps.drawStrings(cls.getName(), name, o.toString());
-	    } 
-	else if (o instanceof Enum)
-	    {
-		ps.drawStrings(cls.getName(), name, ((Enum) o).name());
-	    }
-	else if (cls.equals(String.class)) 
-	    {
-		ps.drawStrings("String", name, o.toString());
-	    }
-	else if (cls.isArray()) 
-	    {
-		int sec = ps.beginSection(cls.getComponentType()+"[]", name, "");
+	if (cls.equals(Byte.TYPE)) {
+	    ps.drawStrings(cls.getName(), name,
+			   String.format("0x%02X   %03d   %+04d",
+					 ((Byte)o),((Byte)o).intValue()&0x00FF,((Byte)o)),
+			   isstatic);
 
-		int sz = Array.getLength(o);
-		for (int i = 0; i < sz; i++) 
-		    paintRecurse(g, ps, name+"["+i+"]", cls.getComponentType(), Array.get(o, i));
+	} else if (cls.isPrimitive()) {
 
-		ps.endSection(sec);
-	    } 
-	else 
-	    {
-		int sec = ps.beginSection(cls.getName(), name, "");
+	    // This is our common case...
+	    ps.drawStrings(cls.getName(), name, o.toString(), isstatic);
 
-		// it's a class
-		Field fs[] = cls.getFields();
-		for (Field f : fs) 
-		    {
-			try {
-			    paintRecurse(g, ps, f.getName(), f.getType(), f.get(o));
-			} catch (Exception ex) {
-			}
-		    }
-		ps.endSection(sec);
+	} else if (o instanceof Enum) {
+
+	    ps.drawStrings(cls.getName(), name, ((Enum) o).name(), isstatic);
+
+	} else if (cls.equals(String.class)) {
+	    
+	    ps.drawStrings("String", name, o.toString(), isstatic);
+	    
+	} else if (cls.isArray())  {
+
+	    int sec = ps.beginSection(cls.getComponentType()+"[]", name, "");
+	    
+	    int sz = Array.getLength(o);
+	    for (int i = 0; i < sz; i++) 
+		paintRecurse(g, ps, name+"["+i+"]", cls.getComponentType(), Array.get(o, i), isstatic);
+	    
+	    ps.endSection(sec);
+
+	} else {
+	    
+	    // it's a compound type. recurse.
+	    int sec = ps.beginSection(cls.getName(), name, "");
+	    
+	    // it's a class
+	    Field fs[] = cls.getFields();
+	    for (Field f : fs) {
+		try {
+		    paintRecurse(g, ps, f.getName(), f.getType(), f.get(o), isstatic || ((f.getModifiers()&Modifier.STATIC) != 0));
+		} catch (Exception ex) {
+		}
 	    }
+
+	    ps.endSection(sec);
+	}
     }
 
     class MyMouseAdapter extends MouseAdapter

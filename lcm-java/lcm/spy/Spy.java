@@ -168,7 +168,7 @@ public class Spy
 	if (cd.viewer == null) {
 	    cd.viewerFrame = new JInternalFrame(cd.name, true, true);
 
-	    cd.viewer = new ObjectPanel(cd.name, cd.cls, null);
+	    cd.viewer = new ObjectPanel(cd.name);
 
 	    //	cd.viewer = new ObjectViewer(cd.name, cd.cls, null);
 	    cd.viewerFrame.setLayout(new BorderLayout());
