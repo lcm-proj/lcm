@@ -175,7 +175,7 @@ public class Spy
 	    cd.viewerFrame.add(new JScrollPane(cd.viewer), BorderLayout.CENTER);
 
 	    jdp.add(cd.viewerFrame);
-	    cd.viewerFrame.setSize(440,400);
+	    cd.viewerFrame.setSize(500,400);
 	    cd.viewerFrame.setVisible(true);
 	} else {
 	    cd.viewerFrame.setVisible(true);

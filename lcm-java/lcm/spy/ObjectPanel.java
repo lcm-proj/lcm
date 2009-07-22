@@ -18,7 +18,9 @@ public class ObjectPanel extends JPanel
 {
     String name;
     Object o;
-    
+    int lastwidth = 400;
+    int lastheight = 100;
+
     class Section
     {
 	int x0, y0, x1, y1; // bounding coordinates for sensitive area
@@ -116,6 +118,9 @@ public class ObjectPanel extends JPanel
 
 	public void endSection(int section)
 	{
+	    Section cs = sections.get(section);
+	    cs.y1 = y;
+
 	    // if this section is collapsed, resume drawing.
 	    if (sections.get(section).collapsed)
 		collapse_depth --;
@@ -197,12 +202,19 @@ public class ObjectPanel extends JPanel
 	repaint();
     }
 
-    int lastwidth = 400;
-    int lastheight = 100;
-
     public Dimension getPreferredSize()
     {
 	return new Dimension(lastwidth, lastheight);
+    }
+
+    public Dimension getMinimumSize()
+    {
+	return getPreferredSize();
+    }
+
+    public Dimension getMaximumSize()
+    {
+	return getPreferredSize();
     }
 
     public void paint(Graphics g)
@@ -229,7 +241,11 @@ public class ObjectPanel extends JPanel
 	    paintRecurse(g, ps, "", o.getClass(), o, false); 
 
 	ps.finish();
-	lastheight = ps.y;
+	if (ps.y != lastheight) {
+	    lastheight = ps.y;
+	    invalidate();
+	    getParent().validate();
+	}
     }
 
     void paintRecurse(Graphics g, PaintState ps, String name, Class cls, Object o, boolean isstatic)
@@ -260,9 +276,9 @@ public class ObjectPanel extends JPanel
 	    
 	} else if (cls.isArray())  {
 
-	    int sec = ps.beginSection(cls.getComponentType()+"[]", name, "");
-	    
 	    int sz = Array.getLength(o);
+	    int sec = ps.beginSection(cls.getComponentType()+"[]", name+"["+sz+"]", "");
+	    
 	    for (int i = 0; i < sz; i++) 
 		paintRecurse(g, ps, name+"["+i+"]", cls.getComponentType(), Array.get(o, i), isstatic);
 	    
@@ -294,7 +310,7 @@ public class ObjectPanel extends JPanel
 
 	    int bestsection = -1;
 	    
-	    // find the bottom most section that contains the mouse click.
+	    // find the bottom-most section that contains the mouse click.
 	    for (int i = 0; i < sections.size(); i++)
 		{
 		    Section cs = sections.get(i);
