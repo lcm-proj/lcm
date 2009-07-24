@@ -15,7 +15,7 @@
 PyDoc_STRVAR (pylcm_doc,
 "The LCM class provides a connection to an LCM network.\n\
 \n\
-usage:\n\
+usage::\n\
 \n\
    m = LCM ([provider])\n\
 \n\
@@ -24,7 +24,7 @@ LCM bindings are a wrapper around the C implementation, consult the C API\n\
 documentation on how provider should be formatted.  provider may be None or \n\
 the empty string, in which case a default network is chosen.\n\
 \n\
-To subscribe to a channel:\n\
+To subscribe to a channel::\n\
 \n\
    def msg_handler(channel, data):\n\
       # message handling code here.  For example:\n\
@@ -32,23 +32,25 @@ To subscribe to a channel:\n\
 \n\
    m.subscribe(channel, msg_handler)\n\
 \n\
-To transmit a raw binary string:\n\
+To transmit a raw binary string::\n\
 \n\
    m.publish(\"CHANNEL_NAME\", data)\n\
 \n\
 In general, LCM is used with python modules compiled by lcm-gen, each of \n\
 which provides the instance method encode() and the static method decode().\n\
 Thus, if one had a compiled type named example_t, the following message\n\
-handler would decode the message:\n\
+handler would decode the message::\n\
 \n\
    def msg_handler(channel, data):\n\
       msg = example_t.decode(data)\n\
 \n\
-and the following usage would publish a message:\n\
+and the following usage would publish a message::\n\
 \n\
     msg = example_t()\n\
     # ... set member variables of msg\n\
     m.publish(\"CHANNEL_NAME\", msg.encode())\n\
+\n\
+@undocumented: __new__, __getattribute__\n\
 ");
 
 PyTypeObject pylcm_type;
@@ -119,7 +121,11 @@ pylcm_subscribe (PyLCMObject *lcm_obj, PyObject *args)
 }
 
 PyDoc_STRVAR (pylcm_subscribe_doc, 
-"subscribe(channel, callback) -> LCMSubscription\n\
+"subscribe(channel, callback) -> L{LCMSubscription<lcm.LCMSubscription>}\n\
+Registers a callback function to handle messages received on the specified\n\
+channel.\n\
+\n\
+Multiple handlers can be registered for the same channel\n\
 \n\
 @param channel: LCM channel to subscribe to.  Can also be a GLib/PCRE regular\n\
 expression.  Implicitly treated as the regex \"^channel$\"\n\
@@ -127,11 +133,6 @@ expression.  Implicitly treated as the regex \"^channel$\"\n\
 When a message is received, callback is invoked with two arguments\n\
 corresponding to the actual channel on which the message was received, and \n\
 a binary string containing the raw message bytes.\n\
-\n\
-Registers a callback function to handle messages received on the specified\n\
-channel.\n\
-\n\
-Multiple handlers can be registered for the same channel\n\
 ");
 
 static PyObject *
@@ -172,11 +173,11 @@ pylcm_unsubscribe (PyLCMObject *lcm_obj, PyObject *args)
 }
 PyDoc_STRVAR (pylcm_unsubscribe_doc, 
 "unsubscribe(subscription_object) -> None\n\
+Unregisters a message handler so that it will no longer be invoked when\n\
+a message on the specified channel is received\n\
+\n\
 @param subscription_object: An LCMSubscription object, as returned by a\n\
 call to subscribe()\n\
-\n\
-unregisters a message handler so that it will no longer be invoked when\n\
-a message on the specified channel is received\n\
 ");
 
 static PyObject *
@@ -208,11 +209,11 @@ pylcm_publish (PyLCMObject *lcm_obj, PyObject *args)
 }
 PyDoc_STRVAR (pylcm_publish_doc,
 "publish(channel, data) -> None\n\
+Publishes a message to an LCM network\n\
 \n\
 @param channel: specifies the channel to which the message should be published.\n\
 @param data: binary string containing the message to publish\n\
-\n\
-Publishes a message to an LCM network\n");
+");
 
 static PyObject *
 pylcm_fileno (PyLCMObject *lcm_obj)

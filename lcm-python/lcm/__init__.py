@@ -3,11 +3,15 @@ import os
 import _lcm
 from _lcm import LCM, LCMSubscription
 
-class Event:
+class Event(object):
     """Data structure representing a single event in an LCM EventLog
     """
 
     def __init__ (self, eventnum, timestamp, channel, data):
+        """
+        Initializer
+        """
+
         self.eventnum = eventnum 
         """Event number"""
 
@@ -21,14 +25,17 @@ class Event:
         self.data = data
         """Binary string containing raw message data"""
 
-class EventLog:
+class EventLog(object):
     """EventLog is a class for reading and writing LCM log files in Python.
 
 An EventLog opened for reading supports the iterator protocol, with each call
-to next() returning the next Event in the log.
+to next() returning the next L{Event<lcm.Event>} in the log.
+
+@undocumented: __iter__
     """
     def __init__ (self, path, mode = "r", overwrite = False):
-        """EventLog(path, mode = "r", overwrite = False) --> EventLog
+        """
+        Initializer
 
         @param path:  Path to the logfile to open
         @param mode:  Open the log for reading ('r') or writing ('w')
@@ -50,41 +57,50 @@ to next() returning the next Event in the log.
         self.f = None
 
     def seek (self, filepos):
-        """seek(filepos) --> None
-        @param filepos: byte offset from start of log
-
+        """
         Positions the internal file pointer at the next event that
         starts at or is after byte offset filepos.
+
+        @param filepos: byte offset from start of log
+
+        @return: None
         """
         return self.c_eventlog.seek (filepos)
 
     def size (self):
-        """size() --> int
-
-        @return the total size of the log file, in bytes
+        """
+        @return: the total size of the log file, in bytes
+        @rtype: int
         """
         return self.c_eventlog.size ()
 
     def close (self):
-        """close() --> None
-
+        """
         Closes the log file.  After an EventLog is closed, it is essentially
         useless
+
+        @return: None
         """
         return self.c_eventlog.close ()
 
     def write_event (self, utime, channel, data):
-        """write_event(utime, channel, data) --> None
+        """
+        Writes an event to the log file.  Log file must be openeed in write
+        mode.
+
         @param utime:    Microseconds since 00:00:00 Jan 1, 1970 UTC
         @param channel:  Channel name corresponding to the event
         @param data:     data bytes
 
-        Writes an event to the log file.  Log file must be openeed in write
-        mode.
+        @return: None
         """
         return self.c_eventlog.write_event (utime, channel, data)
 
     def read_next_event (self):
+        """
+        @return: the next L{Event<lcm.Event>} in the log file.
+        @rtype: L{Event<lcm.Event>}
+        """
         tup = self.c_eventlog.read_next_event ()
         if not tup: return None
         return Event (*tup)
@@ -94,14 +110,17 @@ to next() returning the next Event in the log.
         return self
     
     def next (self):
+        """
+        @rtype: L{Event<lcm.Event>}
+        """
         next_evt = self.read_next_event ()
         if not next_evt:
             raise StopIteration
         return next_evt
 
     def tell (self):
-        """tell() --> int
-
-        @return the current position of the internal file pointer
+        """
+        @return: the current position of the internal file pointer, in bytes
+        @rtype: int
         """
         return self.c_eventlog.ftell ()

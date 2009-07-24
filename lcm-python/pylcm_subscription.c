@@ -5,6 +5,8 @@ PyDoc_STRVAR (_class_doc,
 a single subscription of a message handler to an LCM channel.\n\
 \n\
 This class should never be instantiated by the programmer.\n\
+\n\
+@undocumented: __new__, __getattribute__, __init__\n\
 ");
 
 static void
