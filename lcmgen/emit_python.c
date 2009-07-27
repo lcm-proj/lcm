@@ -395,7 +395,8 @@ _emit_encode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
         emit (indent, "buf.write(%s[:%s%s])", 
                 accessor, (fixed_len?"":"self."), len);
         return;
-    } else if (!strcmp ("int8_t", tn) ||
+    } else if (!strcmp ("boolean", tn) ||
+               !strcmp ("int8_t", tn) ||
                !strcmp ("int16_t", tn) ||
                !strcmp ("int32_t", tn) ||
                !strcmp ("int64_t", tn) ||
