@@ -1,4 +1,3 @@
-
 if HAVE_PYTHON
 pylcmexec_PYTHON = \
     lcm/__init__.py
@@ -16,3 +15,5 @@ _lcm_la_LIBADD = ../lcm/liblcm.la
 _lcm_la_CFLAGS = $(PYTHON_CPPFLAGS) -I$(top_srcdir)
 
 endif
+
+EXTRA_DIST = setup.py
