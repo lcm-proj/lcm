@@ -191,7 +191,7 @@ $ac_distutils_result])
                      print "-L" + distutils.sysconfig.get_config_var("LIBDIR") + \
                      " " + distutils.sysconfig.get_config_var("LDFLAGS")'`
 
-            PYTHON_LDFLAGS="${PYTHON_LDFLGAS} ${LDLIBS1} ${LDLIBS2} ${LDLIBS3}"
+            PYTHON_LDFLAGS="${PYTHON_LDFLAGS} ${LDLIBS1} ${LDLIBS2} ${LDLIBS3}"
         else
             LDFLAGS1="-framework ${PYTHONFRAMEWORK}"
 
