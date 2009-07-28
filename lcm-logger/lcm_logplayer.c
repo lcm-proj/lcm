@@ -38,6 +38,7 @@ Options:\n\
   -v, --verbose       Print information about each packet.\n\
   -s, --speed=NUM     Playback speed multiplier.  Default is 1.0.\n\
   -e, --regexp=EXPR   GLib regular expression of channels to play.\n\
+  -l, --lcm-url=URL   Play logged messages on the specified LCM URL.\n\
   -h, --help          Shows some help text and exits.\n\
   \n", cmd);
 }
@@ -52,17 +53,23 @@ main(int argc, char ** argv)
     struct option long_opts[] = { 
         { "help", no_argument, 0, 'h' },
         { "speed", required_argument, 0, 's' },
+        { "lcm-url", required_argument, 0, 'l' },
         { "verbose", no_argument, 0, 'v' },
         { "regexp", required_argument, 0, 'e' },
         { 0, 0, 0, 0 }
     };
 
+    char *lcmurl = NULL;
     memset (&l, 0, sizeof (logplayer_t));
     while ((c = getopt_long (argc, argv, "hp:s:ve:", long_opts, 0)) >= 0)
     {
         switch (c) {
             case 's':
                 speed = strtod (optarg, NULL);
+                break;
+            case 'l':
+                free(lcmurl);
+                lcmurl = strdup(optarg);
                 break;
             case 'v':
                 l.verbose = 1;
@@ -95,7 +102,8 @@ main(int argc, char ** argv)
         return 1;
     }
 
-    l.lcm_out = lcm_create (NULL);
+    l.lcm_out = lcm_create (lcmurl);
+    free(lcmurl);
     if (!l.lcm_out) {
         fprintf (stderr, "Error: Failed to create LCM\n");
         return 1;

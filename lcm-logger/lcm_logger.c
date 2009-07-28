@@ -191,10 +191,11 @@ static void usage ()
             "  -i, --increment            Automatically append a suffix to FILE\n"
             "                             such that the resulting filename does not\n"
             "                             already exist.  This option precludes -f\n"
-            "  -c, --channel              Channel string to pass to lcm_subscribe.\n"
+            "  -c, --channel=CHAN         Channel string to pass to lcm_subscribe.\n"
             "                             (default: \".*\")\n"
+            "  -l, --lcm-url=URL          Log messages on the specified LCM URL\n"
             "  -s, --strftime             Format FILE with strftime.\n" 
-            "  -m, --max-unwritten-mb K   Maximum size of received but unwritten\n"
+            "  -m, --max-unwritten-mb=SZ  Maximum size of received but unwritten\n"
             "                             messages to store in memory before dropping\n"
             "                             messages.  (default: 100 MB)\n"
             "  -h, --help                 Shows this help text and exits\n"
@@ -215,6 +216,7 @@ int main(int argc, char *argv[])
     char *chan_regex = strdup(".*");
     double max_write_queue_size_mb = DEFAULT_MAX_WRITE_QUEUE_SIZE_MB;
 
+    char *lcmurl = NULL;
     char *optstring = "fic:shm:";
     int c;
     struct option long_opts[] = { 
@@ -222,6 +224,7 @@ int main(int argc, char *argv[])
         { "increment", required_argument, 0, 'i' },
         { "channel", required_argument, 0, 'c' },
         { "strftime", required_argument, 0, 's' },
+        { "lcm-url", required_argument, 0, 'l' },
         { "max-unwritten-mb", required_argument, 0, 'm' },
         { 0, 0, 0, 0 }
     };
@@ -241,6 +244,10 @@ int main(int argc, char *argv[])
                 break;
             case 's':
                 use_strftime = 1;
+                break;
+            case 'l':
+                free(lcmurl);
+                lcmurl = strdup(optarg);
                 break;
             case 'm':
                 max_write_queue_size_mb = strtod(optarg, NULL);
@@ -298,7 +305,7 @@ int main(int argc, char *argv[])
 
         if (errno != ENOENT) {
             perror ("Error: checking for previous logs");
-            return -1;
+            return 1;
         }
 
         strcpy (logger.fname, tmpname);
@@ -324,7 +331,7 @@ int main(int argc, char *argv[])
     logger.log = lcm_eventlog_create(logger.fname, "w");
     if (logger.log == NULL) {
         perror ("Error: fopen failed");
-        return -1;
+        return 1;
     }
 
     // create write thread
@@ -335,10 +342,11 @@ int main(int argc, char *argv[])
     logger.write_thread = g_thread_create(write_thread, &logger, TRUE, NULL);
 
     // begin logging
-    logger.lcm = lcm_create (NULL);
+    logger.lcm = lcm_create (lcmurl);
+    free(lcmurl);
     if (!logger.lcm) {
         fprintf (stderr, "Couldn't initialize LCM!");
-        return -1;
+        return 1;
     }
     
     lcm_subscribe(logger.lcm, chan_regex, message_handler, &logger);
@@ -374,4 +382,6 @@ int main(int argc, char *argv[])
         free(msg);
     }
     g_async_queue_unref(logger.write_queue);
+
+    return 0;
 }

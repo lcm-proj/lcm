@@ -197,7 +197,7 @@ public class LogPlayer extends JComponent
 	speed = v;
     }
 
-    public LogPlayer() throws IOException
+    public LogPlayer(String lcmurl) throws IOException
     {
 	setLayout(new GridBagLayout());
 	GridBagConstraints gbc = new GridBagConstraints();
@@ -322,7 +322,10 @@ public class LogPlayer extends JComponent
 		}
 	    });
 				     
-	lcm = new LCM();
+	if(null == lcmurl)
+	    lcm = new LCM();
+	else
+	    lcm = new LCM(lcmurl);
 
 	logName.addMouseListener(new MouseAdapter() {
 		public void mouseClicked(MouseEvent e) {
@@ -861,6 +864,22 @@ public class LogPlayer extends JComponent
 
     static LogPlayer p;
 
+    public static void usage()
+    {
+	System.err.println("usage: lcm-spy [options]");
+	System.err.println("");
+	System.err.println("lcm-logplayer-gui is the Lightweight Communications and Marshalling");
+	System.err.println("log playback tool.  It provides a graphical user interface for playing logfiles");
+	System.err.println("recorded with lcm-logger.  Features include random access, different playback ");
+	System.err.println("speeds, channel suppression and remapping, and more.");
+	System.err.println("");
+	System.err.println("Options:");
+	System.err.println("  -l, --lcm-url=URL      Use the specified LCM URL");
+	System.err.println("  -h, --help             Shows this help text and exits");
+	System.err.println("");
+	System.exit(1);
+    }
+
     public static void main(String args[])
     {
 	JFrame f;
@@ -871,8 +890,32 @@ public class LogPlayer extends JComponent
 	    System.err.println("         The Sun JRE is recommended.");
 	}
 
+	String lcmurl = null;
+	int optind;
+	for(optind=0; optind<args.length; optind++) {
+	    String c = args[optind];
+	    if(c.equals("-h") || c.equals("--help")) {
+		usage();
+	    } else if(c.equals("-l") || c.equals("--lcm-url") || c.startsWith("--lcm-url=")) {
+		String optarg = null;
+		if(c.startsWith("--lcm-url=")) {
+		    optarg=c.split("=")[1];
+		} else if(optind < args.length) {
+		    optind++;
+		    optarg = args[optind];
+		}
+		if(null == optarg) {
+		    usage();
+		} else {
+		    lcmurl = optarg;
+		}
+	    } else {
+		break;
+	    }
+	}
+
 	try {
-	    p = new LogPlayer();
+	    p = new LogPlayer(lcmurl);
 	    f = new JFrame("LogPlayer");
 	    f.setLayout(new BorderLayout());
 	    f.add(p, BorderLayout.CENTER);
@@ -890,8 +933,8 @@ public class LogPlayer extends JComponent
 			System.exit(0);
 		    }});
 	    
-	    if (args.length > 0)
-		p.setLog(args[0]);
+	    if (optind < args.length)
+		p.setLog(args[optind]);
 	    else
 		p.openDialog();
 
