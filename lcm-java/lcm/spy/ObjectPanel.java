@@ -257,8 +257,8 @@ public class ObjectPanel extends JPanel
 
 	if (cls.equals(Byte.TYPE)) {
 	    ps.drawStrings(cls.getName(), name,
-			   String.format("0x%02X   %03d   %+04d",
-					 ((Byte)o),((Byte)o).intValue()&0x00FF,((Byte)o)),
+			   String.format("0x%02X   %03d   %+04d   %c",
+					 ((Byte)o),((Byte)o).intValue()&0x00FF,((Byte)o), ((Byte)o)&0xff),
 			   isstatic);
 
 	} else if (cls.isPrimitive()) {

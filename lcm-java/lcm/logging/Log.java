@@ -6,6 +6,7 @@ import java.io.*;
 import java.util.*;
 
 import lcm.util.*;
+import lcm.lcm.*;
 
 /**
  * A class for reading and writing LCM log files.
@@ -13,10 +14,12 @@ import lcm.util.*;
 public class Log
 {
     BufferedRandomAccessFile raf;
-    //RandomAccessFile raf;
 
     static final int LOG_MAGIC = 0xEDA1DA01;
     String path;
+
+    /** Used to count the number of messages written so far. **/
+    long numMessagesWritten = 0; 
 
     /**
      * Represents a single received LCM message.
@@ -127,7 +130,9 @@ public class Log
     }
 
     /**
-     * Writes an event to the log file.
+     * Writes an event to the log file. The user is responsible for
+     * filling in the eventNumber field, which should be sequentially
+     * increasing integers starting with 0.
      */
     public synchronized void write(Event e) throws IOException
     {
@@ -142,7 +147,24 @@ public class Log
 	raf.write(channelb, 0, channelb.length);
 	raf.write(e.data, 0, e.data.length);
     }
-    
+
+    /** A convenience method for write. It internally manages the
+     * eventNumber field, and so calls to this method should not be
+     * mixed with calls to the other write methods. **/
+    public synchronized void write(long utime, String channel, LCMEncodable msg) throws IOException
+    {
+	Log.Event le = new Log.Event();
+	le.utime = utime;
+	le.channel = channel;
+	LCMDataOutputStream outs = new LCMDataOutputStream();
+	msg.encode(outs);
+	le.data = outs.toByteArray();
+	le.eventNumber = numMessagesWritten;
+
+	write(le);
+	numMessagesWritten++;
+    }
+
     /**
      * Closes the log file and releases and system resources used by it.
      */
