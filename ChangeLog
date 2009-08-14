@@ -1,3 +1,88 @@
+2009-07-28  edwinolson
+
+	* [r386] lcm-java/lcm/logging/Log.java,
+	  lcm-java/lcm/spy/ObjectPanel.java: lcm-spy: display byte arrays
+	  as characters too.
+
+2009-07-28  ashuang
+
+	* [r385] lcm-java/lcm-logplayer-gui.1, lcm-java/lcm-spy.1,
+	  lcm-java/lcm/logging/LogPlayer.java, lcm-java/lcm/spy/Spy.java,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm-logplayer.1,
+	  lcm-logger/lcm_logger.c, lcm-logger/lcm_logplayer.c: boooooring
+	  meeting. add --lcm-url=URL cmd line option to
+	  lcm-{spy,logger,logplayer,logplayer-gui}
+
+2009-07-27  ashuang
+
+	* [r384] lcmgen/emit_python.c: emit_python bugfix: enable arrays of
+	  booleans
+	* [r383] lcm-python/Makefile.am: add setup.py to dist
+	* [r382] lcm-python/setup.py: update python distutils script
+	* [r381] m4/ac_python_devel.m4: python autoconf bugfix
+
+2009-07-24  ashuang
+
+	* [r380] lcm-python/lcm/__init__.py, lcm-python/pylcm.c,
+	  lcm-python/pylcm_subscription.c: update lcm-python comment docs
+
+2009-07-22  edwinolson
+
+	* [r379] lcm-java/lcm/spy/ObjectPanel.java,
+	  lcm-java/lcm/spy/Spy.java: - make ObjectPanel scroll bar update
+	  when render size changes - slightly enlarge default object panel
+	  - allow collapsing sections via a click anywhere within the
+	  section
+	* [r378] lcm-java/lcm/spy/ObjectPanel.java,
+	  lcm-java/lcm/spy/Spy.java: * Make ObjectPanel public, per popular
+	  request.
+	  
+	  * Make ObjectPanel easier to use by eliminating redundant cls
+	  field in constructor
+	  
+	  * Improve visual appearance of ObjectPanel by making static
+	  elements visually distinctive (italic)
+
+2009-07-12  ashuang
+
+	* [r377] lcm-java/lcm/logging/LogPlayer.java,
+	  lcm-java/lcm/spy/Spy.java: lcm-spy, lcm-logplayer-gui: print
+	  warning to stderr if gcj is detected as JRE
+
+2009-07-09  ashuang
+
+	* [r376] examples/c/Makefile: make C example work in cygwin
+
+2009-07-04  ashuang
+
+	* [r375] lcm-java: update svn:ignore
+
+2009-07-03  ashuang
+
+	* [r374] configure.in: makefile bugfix
+	* [r373] examples/c/read_log.c: tweak
+	* [r372] examples/Makefile.am, examples/c, examples/c/Makefile,
+	  examples/c/read_log.c, examples/python/Makefile.am,
+	  examples/python/cleanup.sh, examples/python/gen-types.sh,
+	  examples/python/listener.py, examples/python/read-log.py: cleanup
+	  examples start adding examples to read from log file
+
+2009-07-02  ashuang
+
+	* [r369] examples/java/example_t_demo/Listener.java,
+	  examples/java/temperature_demo_java/TemperatureDisplay.java,
+	  examples/java/temperature_demo_java/TemperatureTransmit.java:
+	  port examples to new Java API
+
+2009-06-30  ashuang
+
+	* [r368] lcm-java/Makefile.am: tweak lcm-java Makefile
+
+2009-06-29  ashuang
+
+	* [r366] ChangeLog, NEWS, configure.in, lcm-java/lcm/spy/Spy.java:
+	  release 0.3.0
+
 2009-06-10  ashuang
 
 	* [r365] lcmgen/emit_java.c, lcmgen/emit_python.c: emit-java: fix

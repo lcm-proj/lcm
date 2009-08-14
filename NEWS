@@ -1,3 +1,22 @@
+Aug 14, 2009
+============
+
+ Release 0.3.1:
+
+ This is a maintenance release, and incorporates a number of minor bugfixes and
+ enhancements.
+
+ Java:
+ - lcm-spy, lcm-logplayer-gui warn if gcj is detected as JRE
+ - minor enhancements to lcm-spy
+
+ Python:
+ - update comment docs
+
+ Other:
+ - add --lcm-url=URL cmd line option to lcm-{spy,logger,logplayer,logplayer-gui}
+ - updated examples
+
 Jun 29, 2009
 ============
 
