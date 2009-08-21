@@ -37,7 +37,11 @@ public class MessageAggregator
 	}
     }
 
-    ArrayDeque<Message> messages = new ArrayDeque<Message>();
+// Would prefer to use ArrayDequeue for performance reasons, but it's too new
+// (only since Java 1.6)
+//    Deque<Message> messages = new ArrayDeque<Message>();
+    Deque<Message> messages = new LinkedList<Message>();
+
     long queue_data_size = 0;
     long max_queue_data_size = 100 * (1 << 20); // 100 megabytes
     int max_queue_length = Integer.MAX_VALUE;

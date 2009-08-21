@@ -102,7 +102,7 @@ public class LogFileProvider implements Provider
 	    } catch (InterruptedException ex) {
 		return;
 	    } catch (IOException ex) {
-		System.err.println("ex: "+ex);
+		ex.printStackTrace();
 	    }
 	}
 
