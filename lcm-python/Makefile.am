@@ -1,4 +1,5 @@
 if HAVE_PYTHON
+INCLUDES = $(PYTHON_INCLUDES)
 pylcmexec_PYTHON = \
     lcm/__init__.py
 
@@ -10,9 +11,15 @@ _lcm_la_SOURCES = \
 			   pylcm.h \
 			   pylcm_subscription.c \
 			   pylcm_subscription.h
-_lcm_la_LDFLAGS = -avoid-version -module 
+
+# linker flags
+_lcm_la_LDFLAGS = -module -avoid-version
+#if PLATFORM_WIN32
+#_lcm_la_LDFLAGS += -no-undefined
+#endif
+
 _lcm_la_LIBADD = ../lcm/liblcm.la
-_lcm_la_CFLAGS = $(PYTHON_CPPFLAGS) -I$(top_srcdir)
+_lcm_la_CFLAGS = -I$(top_srcdir)
 
 endif
 

@@ -49,21 +49,20 @@ AC_ARG_WITH(python,
             [], [with_python=yes])
 
 AS_IF([test "x$with_python" != xno],
-      [AC_PYTHON_DEVEL
-       AM_PATH_PYTHON([2.3],, [:])
-       AM_CONDITIONAL([HAVE_PYTHON], [test "x$pythonexists" = xyes])],
-      [AM_CONDITIONAL([HAVE_PYTHON], FALSE)])
+      [AM_PATH_PYTHON(2.3)
+       AM_CHECK_PYTHON_HEADERS(with_python=yes,with_python=no)])
+AM_CONDITIONAL(HAVE_PYTHON, test "x$with_python" = "xyes")
 
 pylcmexecdir="$pyexecdir/$PACKAGE"
 AC_SUBST(pylcmexecdir)
 
+dnl ------------------
+dnl Java support
+dnl ------------------
 AC_ARG_WITH(java,
             [AS_HELP_STRING([--without-java],
                 [Do not compile lcm-java bindings even if Java is available])],
             [], [with_java=yes])
-dnl ------------------
-dnl Java support
-dnl ------------------
 if test "x$with_java" = xno -o "x$JAR" = x -o "x$JAVAC" = x; then
     AC_MSG_WARN([Java support disabled])
 else
@@ -134,7 +133,7 @@ else
     JAVA_STR="Disabled"
 fi
 
-if test "$pythonexists" = "yes"; then
+if test "$with_python" = "yes"; then
     PYTHON_STR="Enabled"
 else
     PYTHON_STR="Disabled"
