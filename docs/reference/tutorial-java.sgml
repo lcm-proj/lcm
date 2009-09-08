@@ -112,7 +112,12 @@ struct temperature_t
   <para>
     You will need to make sure that <emphasis>lcm.jar</emphasis> is in
     your classpath, and your Java classes will need to include "import
-    lcm.lcm.*". To initialize LCM, with default options, simply call:
+    lcm.lcm.*". If you do not manually specify a package for your LCM
+    types, they will be placed in a package called "lcmtypes", so you
+    should add "import lcmtypes.*" to your Java files.
+  </para>
+
+  <para>To initialize LCM, with default options, simply call:
   </para>
 
   <programlisting>
@@ -150,7 +155,7 @@ myLCM.publish("HALLWAY_TEMPERATURE", temp);  </programlisting>
   <para>
     In order to receive messages, you must register an LCMSubscriber
     and pass it to the LCM object using the subscribe call. The
-    subscriber will be provided with a DataInputStream that can be
+    subscriber will be provided with a LCMDataInputStream that can be
     read for the message contents. All LCM data types include a
     constructor that takes a DataInputStream as an argument. First,
     let's look at the subscriber:
@@ -159,7 +164,7 @@ myLCM.publish("HALLWAY_TEMPERATURE", temp);  </programlisting>
   <programlisting>
 public class MySubscriber implements LCMSubscriber
 {
-   public void messageReceived(LCM lcm, String channel, DataInputStream ins)
+   public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
    {
       if (channel.equals("HALLWAY_TEMPERATURE")) 
       {
@@ -194,6 +199,7 @@ myLCM.subscriber("HALLWAY_TEMPERATURE", new MySubscriber());  </programlisting>
 
   <programlisting>
 import lcm.lcm.*;
+import lcmtypes.*;
     
 public class TemperatureTransmit
 {
@@ -219,6 +225,7 @@ public class TemperatureTransmit
 
   <programlisting>
 import lcm.lcm.*;
+import lcmtypes.*;
 import java.io.*;
 
 public class TemperatureDisplay implements LCMSubscriber
