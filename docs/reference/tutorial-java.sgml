@@ -157,8 +157,9 @@ myLCM.publish("HALLWAY_TEMPERATURE", temp);  </programlisting>
     and pass it to the LCM object using the subscribe call. The
     subscriber will be provided with a LCMDataInputStream that can be
     read for the message contents. All LCM data types include a
-    constructor that takes a DataInputStream as an argument. First,
-    let's look at the subscriber:
+    constructor that takes a DataInput (including instances of
+    LCMDataInputStream) as an argument. First, let's look at the
+    subscriber:
   </para>
 
   <programlisting>
