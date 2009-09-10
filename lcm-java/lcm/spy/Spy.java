@@ -154,9 +154,7 @@ public class Spy
 			System.out.println("ex: "+ex);
 		    }
 		}
-
 	    }
-
 	}
     }
 

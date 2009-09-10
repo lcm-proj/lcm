@@ -82,12 +82,10 @@ public class ClassDiscoverer
 
 			    visitor.classFound(item, cls);
 
-			} catch (ClassNotFoundException ex) {
-			    System.out.println("ClassDiscoverer ERR: "+ex);
-			} catch (NoClassDefFoundError ex) {
-			    // fires if class has a dependency on an 
-			    // unloadable class
-			    System.out.println("ClassDiscoverer ERR: "+ex);
+			} catch (Throwable ex) {
+			    System.out.println("ClassDiscoverer: "+ex);
+			    System.out.println("                 jar: "+item);
+			    System.out.println("                 class: "+n);
 			}
 		    }
 		}

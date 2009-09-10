@@ -35,9 +35,9 @@ class LCMHandlerDatabase
     {
 	public void classFound(String jar, Class cls)
 	{
-	    Field[] fields = cls.getFields();
-
 	    try {
+		Field[] fields = cls.getFields();
+
 		for (Field f : fields) {
 		    if (f.getName().equals("LCM_FINGERPRINT")) {
 			// it's a static member, we don't need an instance
