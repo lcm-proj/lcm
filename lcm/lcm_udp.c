@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
 #include <sys/uio.h>
 #include <math.h>
@@ -331,7 +330,7 @@ _destroy_recv_parts (lcm_udpm_t *lcm)
 {
     if (lcm->thread_created) {
         // send the read thread an exit command
-        int wstatus = write (lcm->thread_msg_pipe[1], "\0", 1);
+        int wstatus = lcm_internal_pipe_write(lcm->thread_msg_pipe[1], "\0", 1);
         if(wstatus < 0) {
             perror(__FILE__ " write(destroy)");
         } else {
@@ -342,13 +341,13 @@ _destroy_recv_parts (lcm_udpm_t *lcm)
     }
 
     if (lcm->thread_msg_pipe[0] >= 0) {
-        close (lcm->thread_msg_pipe[0]);
-        close (lcm->thread_msg_pipe[1]);
+        lcm_internal_pipe_close(lcm->thread_msg_pipe[0]);
+        lcm_internal_pipe_close(lcm->thread_msg_pipe[1]);
         lcm->thread_msg_pipe[0] = lcm->thread_msg_pipe[1] = -1;
     }
 
     if (lcm->recvfd >= 0) {
-        close (lcm->recvfd);
+        shutdown(lcm->recvfd, SHUT_RDWR);
         lcm->recvfd = -1;
     }
 
@@ -378,10 +377,10 @@ lcm_udpm_destroy (lcm_udpm_t *lcm)
     _destroy_recv_parts (lcm);
 
     if (lcm->sendfd >= 0)
-        close (lcm->sendfd);
+        shutdown(lcm->sendfd, SHUT_RDWR);
 
-    close (lcm->notify_pipe[0]);
-    close (lcm->notify_pipe[1]);
+    lcm_internal_pipe_close(lcm->notify_pipe[0]);
+    lcm_internal_pipe_close(lcm->notify_pipe[1]);
 
     g_static_rec_mutex_free (&lcm->mutex);
     g_static_mutex_free (&lcm->transmit_lock);
@@ -836,7 +835,7 @@ recv_thread (void * user)
         g_static_rec_mutex_lock (&lcm->mutex);
 
         if (is_buf_queue_empty (lcm->inbufs_filled))
-            if (write (lcm->notify_pipe[1], "+", 1) < 0)
+            if (lcm_internal_pipe_write(lcm->notify_pipe[1], "+", 1) < 0)
                 perror ("write to notify");
 
         /* Queue the packet for future retrieval by lcm_handle (). */
@@ -989,7 +988,7 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
 
     /* Read one byte from the notify pipe.  This will block if no packets are
      * available yet and wake up when they are. */
-    status = read (lcm->notify_pipe[0], &ch, 1);
+    status = lcm_internal_pipe_read(lcm->notify_pipe[0], &ch, 1);
     if (status == 0) {
         fprintf (stderr, "Error: lcm_handle read 0 bytes from notify_pipe\n");
         return -1;
@@ -1013,7 +1012,7 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
     /* If there are still packets in the queue, put something back in the pipe
      * so that future invocations will get called. */
     if (!is_buf_queue_empty (lcm->inbufs_filled))
-        if (write (lcm->notify_pipe[1], "+", 1) < 0)
+        if (lcm_internal_pipe_write(lcm->notify_pipe[1], "+", 1) < 0)
             perror ("write to notify");
     g_static_rec_mutex_unlock (&lcm->mutex);
 
@@ -1228,7 +1227,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     }
 
     // setup a pipe for notifying the reader thread when to quit
-    if(0 != pipe (lcm->thread_msg_pipe)) {
+    if(0 != lcm_internal_pipe_create(lcm->thread_msg_pipe)) {
         perror(__FILE__ " pipe(setup)");
         _destroy_recv_parts (lcm);
         return -1;
@@ -1341,7 +1340,7 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     lcm->frag_bufs_max_total_size = 1 << 24; // 16 megabytes
     lcm->max_n_frag_bufs = 1000;
 
-    if(0 != pipe (lcm->notify_pipe)) {
+    if(0 != lcm_internal_pipe_create(lcm->notify_pipe)) {
         perror(__FILE__ " pipe(create)");
         g_hash_table_destroy(lcm->frag_bufs);
         free(lcm);

@@ -1,6 +1,7 @@
 #ifndef __LCM_INTERNAL_H__
 #define __LCM_INTERNAL_H__
 
+#include <unistd.h>
 #include <glib.h>
 #include "lcm.h"
 
@@ -31,5 +32,10 @@ int
 lcm_has_handlers (lcm_t * lcm, const char * channel);
 int
 lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf, const char *channel);
+
+#define lcm_internal_pipe_write write
+#define lcm_internal_pipe_read read
+#define lcm_internal_pipe_close close
+#define lcm_internal_pipe_create pipe
 
 #endif

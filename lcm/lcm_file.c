@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <sys/time.h>
 #include <errno.h>
 #include <assert.h>
@@ -35,17 +34,17 @@ lcm_logprov_destroy (lcm_logprov_t *lr)
     if (lr->thread_created) {
         /* Destroy the timer thread */
         int64_t abort_cmd = -1;
-        int status = write(lr->timer_pipe[1], &abort_cmd, sizeof(abort_cmd));
+        int status = lcm_internal_pipe_write(lr->timer_pipe[1], &abort_cmd, sizeof(abort_cmd));
         if(status < 0) {
             perror(__FILE__ " - write (abort_cmd)");
         }
         g_thread_join (lr->timer_thread);
     }
 
-    if(lr->notify_pipe[0] >= 0) close (lr->notify_pipe[0]);
-    if(lr->notify_pipe[1] >= 0) close (lr->notify_pipe[1]);
-    if(lr->timer_pipe[0] >= 0)  close (lr->timer_pipe[0]);
-    if(lr->timer_pipe[1] >= 0)  close (lr->timer_pipe[1]);
+    if(lr->notify_pipe[0] >= 0) lcm_internal_pipe_close(lr->notify_pipe[0]);
+    if(lr->notify_pipe[1] >= 0) lcm_internal_pipe_close(lr->notify_pipe[1]);
+    if(lr->timer_pipe[0] >= 0)  lcm_internal_pipe_close(lr->timer_pipe[0]);
+    if(lr->timer_pipe[1] >= 0)  lcm_internal_pipe_close(lr->timer_pipe[1]);
 
     if (lr->event)
         lcm_eventlog_free_event (lr->event);
@@ -70,7 +69,7 @@ timer_thread (void * user)
     lcm_logprov_t * lr = user;
     int64_t abstime;
 
-    while (read (lr->timer_pipe[0], &abstime, 8) == 8) {
+    while (lcm_internal_pipe_read(lr->timer_pipe[0], &abstime, 8) == 8) {
         if (abstime < 0) return NULL;
 
         int64_t now = timestamp_now();
@@ -92,12 +91,12 @@ timer_thread (void * user)
 
             if (0 == status) {
                 // select timed out
-                if(write (lr->notify_pipe[1], "+", 1) < 0) {
+                if(lcm_internal_pipe_write(lr->notify_pipe[1], "+", 1) < 0) {
                     perror(__FILE__ " - write (timer select)");
                 }
             }
         } else {
-            if(write (lr->notify_pipe[1], "+", 1) < 0) {
+            if(lcm_internal_pipe_write(lr->notify_pipe[1], "+", 1) < 0) {
                 perror(__FILE__ " - write (timer)");
             }
        }
@@ -161,12 +160,12 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
     dbg (DBG_LCM, "Initializing LCM log provider context...\n");
     dbg (DBG_LCM, "Filename %s\n", lr->filename);
 
-    if(pipe (lr->notify_pipe) != 0) {
+    if(lcm_internal_pipe_create(lr->notify_pipe) != 0) {
         perror(__FILE__ " - pipe (notify)");
         lcm_logprov_destroy (lr);
         return NULL;
     }
-    if(pipe (lr->timer_pipe) != 0) {
+    if(lcm_internal_pipe_create(lr->timer_pipe) != 0) {
         perror(__FILE__ " - pipe (timer)");
         lcm_logprov_destroy (lr);
         return NULL;
@@ -203,7 +202,7 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
         }
         lr->thread_created = 1;
 
-        if(write (lr->notify_pipe[1], "+", 1) < 0) {
+        if(lcm_internal_pipe_write(lr->notify_pipe[1], "+", 1) < 0) {
             perror(__FILE__ " - write (reader create)");
         }
     }
@@ -224,7 +223,7 @@ lcm_logprov_handle (lcm_logprov_t * lr)
         return -1;
 
     char ch;
-    int status = read (lr->notify_pipe[0], &ch, 1);
+    int status = lcm_internal_pipe_read(lr->notify_pipe[0], &ch, 1);
     if (status == 0) {
         fprintf (stderr, "Error: lcm_handle read 0 bytes from notify_pipe\n");
         return -1;
@@ -253,7 +252,7 @@ lcm_logprov_handle (lcm_logprov_t * lr)
         /* end-of-file reached.  This call succeeds, but next call to
          * _handle will fail */
         lr->event = NULL;
-        if(write (lr->notify_pipe[1], "+", 1) < 0) {
+        if(lcm_internal_pipe_write(lr->notify_pipe[1], "+", 1) < 0) {
             perror(__FILE__ " - write(notify)");
         }
         return 0;
@@ -267,12 +266,12 @@ lcm_logprov_handle (lcm_logprov_t * lr)
         lr->next_clock_time = now;
 
     if (lr->next_clock_time > now) {
-        int wstatus = write (lr->timer_pipe[1], &lr->next_clock_time, 8);
+        int wstatus = lcm_internal_pipe_write(lr->timer_pipe[1], &lr->next_clock_time, 8);
         if(wstatus < 0) {
             perror(__FILE__ " - write(timer_pipe)");
         }
     } else {
-        int wstatus = write (lr->notify_pipe[1], "+", 1);
+        int wstatus = lcm_internal_pipe_write(lr->notify_pipe[1], "+", 1);
         if(wstatus < 0) {
             perror(__FILE__ " - write(notify_pipe)");
         }
