@@ -46,7 +46,6 @@ timestamp_to_timeval (int64_t v, struct timeval *tv)
 
 int test_count = 0;
 int test_count2 = 0;
-int default_count = 0;
 int catchall_count = 0;
 
 static void
@@ -87,11 +86,6 @@ int main (int argc, char **argv)
     uint8_t *payload = malloc (datalen);
     strcpy ((char*)payload, words[windex]);
     
-//  lcm_params_t lcm_args;
-//  lcm_args.local_iface = INADDR_ANY;
-//  lcm_args.mc_addr = inet_addr ("225.0.0.3");
-//  lcm_args.mc_port = htons (2006);
-
     lcm_t *lcm = lcm_create (NULL);
     if (! lcm) {
         fprintf (stderr, "couldn't allocate lcm_t\n");
@@ -134,7 +128,7 @@ int main (int argc, char **argv)
     status = lcm_unsubscribe (lcm, h);
     FAIL_IFSNE (-1);
 
-    // register default and catchall handlers
+    // register catchall handler
     h = lcm_subscribe (lcm, ".*", catchall_handler, 0);
     FAIL_IF_BAD_HID (h);
 
@@ -186,39 +180,36 @@ int main (int argc, char **argv)
     }
 
     // should get two more messages..
-    FD_ZERO (&readfds);
-    FD_SET (fd,&readfds);
-    timeout.tv_sec = 0; timeout.tv_usec = 100000;
-    select (fd + 1,&readfds,0,0,&timeout);
-    if (FD_ISSET (fd,&readfds)) {
-        lcm_handle (lcm);
+    int i;
+    for(i=0; i<2; i++) {
+        FD_ZERO (&readfds);
+        FD_SET (fd,&readfds);
+        timeout.tv_sec = 0; timeout.tv_usec = 100000;
+        select (fd + 1,&readfds,0,0,&timeout);
+        if (FD_ISSET (fd,&readfds)) {
+            lcm_handle (lcm);
+        }
     }
-    FD_ZERO (&readfds);
-    FD_SET (fd,&readfds);
-    timeout.tv_sec = 0; timeout.tv_usec = 100000;
-    select (fd + 1,&readfds,0,0,&timeout);
-    if (FD_ISSET (fd,&readfds)) {
-        lcm_handle (lcm);
-    }
-
-#undef FAIL_IFSNE
 
     lcm_destroy (lcm);
 
     free (payload);
 
     int matched = 0 == test_count &&
-        ntotransmit+1 == test_count2 &&
-      //        ntotransmit == default_count &&
-        ntotransmit*2+1 == catchall_count;
+        ntotransmit == test_count2 &&
+        ntotransmit*2 == catchall_count;
 
+    printf ("LCM: receive count - "
+            "test: %d test2: %d catchall: %d\n",
+            test_count, test_count2, catchall_count);
+    printf ("    expected count - "
+            "test: %d test2: %d catchall: %d\n",
+            0, ntotransmit, ntotransmit*2);
     if (! matched) {
-        printf ("LCM: receive count - "
-                "test: %d test2: %d default: %d catchall: %d\n",
-                test_count, test_count2, default_count, catchall_count);
         printf ("ERROR:  message receive count does not match expected!!\n");
         return 1;
+    } else {
+        printf ("LCM: OK!\n");
+        return 0;
     } 
-    printf ("LCM: OK!\n");
-    return 0;
 }
