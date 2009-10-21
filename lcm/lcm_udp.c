@@ -106,7 +106,6 @@ typedef struct _lcm_buf_queue {
 
 /**
  * udpm_params_t:
- * @local_iface:    address of the local network interface to use
  * @mc_addr:        multicast address
  * @mc_port:        multicast port
  * @mc_ttl:         if 0, then packets never leave local host.
@@ -119,7 +118,6 @@ typedef struct _lcm_buf_queue {
  */
 typedef struct _udpm_params_t udpm_params_t;
 struct _udpm_params_t {
-    in_addr_t local_iface;
     in_addr_t mc_addr;
     uint16_t mc_port;
     uint8_t mc_ttl; 
@@ -130,6 +128,7 @@ typedef struct _lcm_provider_t lcm_udpm_t;
 struct _lcm_provider_t {
     int recvfd;
     int sendfd;
+    struct sockaddr_in dest_addr;
 
     lcm_t * lcm;
 
@@ -894,7 +893,15 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
         dbg (DBG_LCM_MSG, "transmitting %d byte [%s] payload (%d byte pkt)\n", 
                 datalen, channel, packet_size);
 
-        int status = writev (lcm->sendfd, sendbufs, 3);
+        struct msghdr msg;
+        msg.msg_name = &lcm->dest_addr;
+        msg.msg_namelen = sizeof(lcm->dest_addr);
+        msg.msg_iov = sendbufs;
+        msg.msg_iovlen = 3;
+        msg.msg_control = NULL;
+        msg.msg_controllen = 0;
+        msg.msg_flags = 0;
+        int status = sendmsg(lcm->sendfd, &msg, 0);
         lcm->msg_seqno ++;
         g_static_mutex_unlock (&lcm->transmit_lock);
 
@@ -940,7 +947,16 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
 
         int packet_size = sizeof (hdr) + channel_size + 1 + firstfrag_datasize;
         fragment_offset += firstfrag_datasize;
-        int status = writev (lcm->sendfd, first_sendbufs, 3);
+
+        struct msghdr msg;
+        msg.msg_name = &lcm->dest_addr;
+        msg.msg_namelen = sizeof(lcm->dest_addr);
+        msg.msg_iov = first_sendbufs;
+        msg.msg_iovlen = 3;
+        msg.msg_control = NULL;
+        msg.msg_controllen = 0;
+        msg.msg_flags = 0;
+        int status = sendmsg(lcm->sendfd, &msg, 0);
 
         // transmit the rest of the fragments
         for (uint16_t frag_no=1; 
@@ -957,7 +973,9 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
                 { (void*) (data + fragment_offset), fraglen },
             };
 
-            status = writev (lcm->sendfd, sendbufs, 2);
+            msg.msg_iov = sendbufs;
+            msg.msg_iovlen = 2;
+            status = sendmsg(lcm->sendfd, &msg, 0);
 
             fragment_offset += fraglen;
             packet_size = sizeof (hdr) + fraglen;
@@ -1048,6 +1066,7 @@ self_test_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *user)
 static int 
 udpm_self_test (lcm_udpm_t *lcm)
 {
+    return 0;
     int success = 0;
     int status;
     // register a handler for the self test message
@@ -1121,7 +1140,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     struct sockaddr_in addr;
     memset (&addr, 0, sizeof (addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = lcm->params.local_iface;
+    addr.sin_addr.s_addr = INADDR_ANY;
     addr.sin_port = lcm->params.mc_port;
 
     // allow other applications on the local machine to also bind to this
@@ -1204,7 +1223,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
 
     struct ip_mreq mreq;
     mreq.imr_multiaddr.s_addr = lcm->params.mc_addr;
-    mreq.imr_interface.s_addr = lcm->params.local_iface;
+    mreq.imr_interface.s_addr = INADDR_ANY;
     // join the multicast group
     dbg (DBG_LCM, "LCM: joining multicast group\n");
     if (setsockopt (lcm->recvfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
@@ -1311,7 +1330,6 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 {
     udpm_params_t params;
     memset (&params, 0, sizeof (udpm_params_t));
-    params.local_iface = INADDR_ANY;
     params.mc_addr = inet_addr ("0.0.0.0");
     params.mc_port = 0;
     params.mc_ttl = 0;
@@ -1353,25 +1371,19 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 
     dbg (DBG_LCM, "Initializing LCM UDPM context...\n");
     struct in_addr ia;
-    ia.s_addr = params.local_iface;
-    dbg (DBG_LCM, "Local %s\n", inet_ntoa (ia));
     ia.s_addr = params.mc_addr;
     dbg (DBG_LCM, "Multicast %s:%d\n", inet_ntoa (ia), ntohs (params.mc_port));
 
-    // create a transmit socket
-    //
-    // XXX need to create a separate transmit socket because I couldn't get a
-    // single multicast socket to work properly with the connect system call,
-    // which is needed when using writev.  If someone figures out how to get
-    // connect to work properly, then sendfd is redundant
-    lcm->sendfd = socket (AF_INET, SOCK_DGRAM, 0);
-    struct sockaddr_in dest_addr;
-    memset (&dest_addr, 0, sizeof (dest_addr));
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_addr.s_addr = params.mc_addr;
-    dest_addr.sin_port = params.mc_port;
-    if (connect (lcm->sendfd, (struct sockaddr*) &dest_addr, 
-                sizeof (dest_addr)) < 0) {
+    // setup destination multicast address
+    memset (&lcm->dest_addr, 0, sizeof (lcm->dest_addr));
+    lcm->dest_addr.sin_family = AF_INET;
+    lcm->dest_addr.sin_addr.s_addr = params.mc_addr;
+    lcm->dest_addr.sin_port = params.mc_port;
+
+    // test connectivity
+    int testfd = socket (AF_INET, SOCK_DGRAM, 0);
+    if (connect (testfd, (struct sockaddr*) &lcm->dest_addr, 
+                sizeof (lcm->dest_addr)) < 0) {
         perror ("connect");
         lcm_udpm_destroy (lcm);
 #ifdef __linux__
@@ -1379,14 +1391,13 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 #endif
         return NULL;
     }
+    close(testfd);
 
-    // set multicast transmit interface
-    if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_IF,
-                &params.local_iface, sizeof (params.local_iface)) < 0) {
-        perror ("setsockopt(IPPROTO_IP, IP_MULTICAST_IF)");
-        lcm_udpm_destroy (lcm);
-        return NULL;
-    }
+    // create a transmit socket
+    //
+    // don't use connect() on the actual transmit socket, because linux then
+    // has problems multicasting to localhost
+    lcm->sendfd = socket (AF_INET, SOCK_DGRAM, 0);
 
     // set multicast TTL
     if (params.mc_ttl == 0) {
