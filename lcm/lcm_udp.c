@@ -1066,7 +1066,6 @@ self_test_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *user)
 static int 
 udpm_self_test (lcm_udpm_t *lcm)
 {
-    return 0;
     int success = 0;
     int status;
     // register a handler for the self test message
