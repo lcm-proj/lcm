@@ -3,10 +3,13 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <regex.h>
 #include <getopt.h>
+
+#ifndef WIN32
+#include <regex.h>
+#else
+#define USE_GREGEX
+#endif
 
 #include <glib.h>
 
@@ -57,7 +60,7 @@ int main(int argc, char **argv)
     char *optstring = "hc:vs:e:i";
     char c;
 
-    while ((c = getopt_long (argc, argv, optstring, NULL, 0)) >= 0)
+    while ((c = getopt(argc, argv, optstring)) >= 0)
     {
         switch (c) {
             case 'h':
@@ -86,7 +89,7 @@ int main(int argc, char **argv)
                 invert_regex = 1;
                 break;
             case 'c':
-                pattern = strdup(optarg);
+                pattern = g_strdup(optarg);
                 break;
             case 'v':
                 verbose = 1;
@@ -106,11 +109,22 @@ int main(int argc, char **argv)
     if (!pattern)
         usage();
 
+#ifdef USE_GREGEX
+    GRegex * regex;
+    GError *rerr = NULL;
+    regex = g_regex_new(pattern, (GRegexCompileFlags) 0, (GRegexMatchFlags) 0, &rerr);
+    if(rerr) {
+        fprintf(stderr, "bad regex\n");
+        exit(1);
+    }
+#else
     regex_t preg;
+
     if (0 != regcomp(&preg, pattern, REG_NOSUB | REG_EXTENDED)) {
         fprintf(stderr, "bad regex\n");
         exit(1);
     }
+#endif
 
     source_fname = argv[argc - 2];
     dest_fname = argv[argc - 1];
@@ -118,19 +132,27 @@ int main(int argc, char **argv)
     lcm_eventlog_t *src_log = lcm_eventlog_create(source_fname, "r");
     if (!src_log) {
         perror("Unable to open source logfile");
+#ifdef USE_GREGEX
+		g_regex_unref(regex);
+#else
         regfree(&preg);
+#endif
         return 1;
     }
     lcm_eventlog_t *dst_log = lcm_eventlog_create(dest_fname, "w");
     if (!dst_log) {
         perror("Unable to open destination logfile");
         lcm_eventlog_destroy(src_log);
+#ifdef USE_GREGEX
+		g_regex_unref(regex);
+#else
         regfree(&preg);
+#endif
         return 1;
     }
 
     GHashTable *counts = g_hash_table_new_full(g_str_hash, g_str_equal,
-            free, free);
+            g_free, free);
     int nwritten = 0;
     int have_first_event_timestamp = 0;
     int64_t first_event_timestamp;
@@ -153,7 +175,11 @@ int main(int argc, char **argv)
             break;
         }
 
+#ifdef USE_GREGEX
+		int regmatch =  g_regex_match(regex, event->channel, (GRegexMatchFlags) 0, NULL);
+#else
         int regmatch = regexec(&preg, event->channel, 0, NULL, 0);
+#endif
         int copy_to_dest = (regmatch == 0 && !invert_regex) ||
                            (regmatch != 0 && invert_regex);
         if (copy_to_dest) {
@@ -161,11 +187,11 @@ int main(int argc, char **argv)
             nwritten++;
 
             if (verbose)  {
-                int *count = g_hash_table_lookup(counts, event->channel);
+                int *count = (int *) g_hash_table_lookup(counts, event->channel);
                 if (!count) {
                     count = (int*) malloc(sizeof(int));
                     *count = 1;
-                    g_hash_table_insert(counts, strdup(event->channel), count);
+                    g_hash_table_insert(counts, g_strdup(event->channel), count);
                     printf("matched channel %s\n", event->channel);
                 } else {
                     *count += 1;
@@ -181,7 +207,11 @@ int main(int argc, char **argv)
         printf("Events written: %d\n", nwritten);
     }
     
-    regfree(&preg);
+#ifdef USE_GREGEX
+	g_regex_unref(regex);
+#else
+	regfree(&preg);
+#endif
     lcm_eventlog_destroy(src_log);
     lcm_eventlog_destroy(dst_log);
     g_hash_table_destroy(counts);

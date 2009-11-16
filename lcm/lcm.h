@@ -13,6 +13,12 @@ extern "C" {
 
 #define LCM_MAX_CHANNEL_NAME_LENGTH 63
 
+#ifdef WIN32
+#define LCM_API_FUNCTION __declspec(dllexport)
+#else 
+#define LCM_API_FUNCTION
+#endif
+
 /**
  * SECTION:lcm
  * @short_description: Publish and receive messages with LCM.
@@ -132,6 +138,7 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  * Returns: a newly allocated @lcm_t instance.  Free with lcm_destroy() when no
  * longer needed.
  */
+LCM_API_FUNCTION
 lcm_t * lcm_create (const char *provider);
 
 /**
@@ -139,6 +146,7 @@ lcm_t * lcm_create (const char *provider);
  *
  * destructor
  */
+LCM_API_FUNCTION
 void lcm_destroy (lcm_t *lcm);
 
 /**
@@ -146,6 +154,7 @@ void lcm_destroy (lcm_t *lcm);
  *
  * Returns: a file descriptor suitable for use with select, poll, etc.
  */
+LCM_API_FUNCTION
 int lcm_get_fileno (lcm_t *lcm);
 
 /**
@@ -166,6 +175,7 @@ int lcm_get_fileno (lcm_t *lcm);
  * Returns: a lcm_subscription_t to identify the new subscription,
  *          which can be passed to lcm_unsubscribe
  */
+LCM_API_FUNCTION
 lcm_subscription_t *lcm_subscribe (lcm_t *lcm, const char *channel, 
 				   lcm_msg_handler_t handler, void *userdata);
 
@@ -175,6 +185,7 @@ lcm_subscription_t *lcm_subscribe (lcm_t *lcm, const char *channel,
  * unregisters a message handler so that it will no longer be invoked when the
  * specified message type is received.
  */
+LCM_API_FUNCTION
 int lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *handler);
 
 /**
@@ -182,6 +193,7 @@ int lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *handler);
  *
  * transmits a message to a multicast group
  */
+LCM_API_FUNCTION
 int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
         unsigned int datalen);
 
@@ -192,8 +204,9 @@ int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
  *
  * Message handlers are invoked in the order registered.
  */
+LCM_API_FUNCTION
 int lcm_handle (lcm_t *lcm);
-    
+
 #ifdef __cplusplus
 }
 #endif

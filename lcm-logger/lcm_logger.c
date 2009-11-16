@@ -1,16 +1,19 @@
 #include <stdio.h>
 #include <assert.h>
-#include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <time.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <inttypes.h>
+
+#ifdef WIN32
+#define __STDC_FORMAT_MACROS			// Enable integer types
+#include <WinPorting.h>
+#endif
+
 #include <getopt.h>
+
+#include <inttypes.h>
 
 #include <glib.h>
 
@@ -29,8 +32,8 @@ static inline int64_t timestamp_seconds(int64_t v)
 
 static inline int64_t timestamp_now(void)
 {
-    struct timeval tv;
-    gettimeofday (&tv, NULL);
+    GTimeVal tv;
+    g_get_current_time(&tv);
     return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
@@ -111,7 +114,6 @@ write_thread(void *user_data)
 
             double tps =  logger->events_since_last_report / dt;
             double kbps = (logger->logsize - logger->last_report_logsize) / dt / 1024.0;
-
             printf("Summary: %s ti:%4"PRIi64"sec Events: %-9"PRIi64" ( %4"PRIi64" MB )      TPS: %8.2f       KB/s: %8.2f\n", 
                     logger->fname,
                     timestamp_seconds(offset_utime),
@@ -204,7 +206,9 @@ static void usage ()
 
 int main(int argc, char *argv[])
 {
+#ifndef WIN32
     setlinebuf (stdout);
+#endif
 
     char logpath[PATH_MAX];
     memset (logpath, 0, sizeof (logpath));
@@ -296,12 +300,11 @@ int main(int argc, char *argv[])
          * already exist.  This way, we never overwrite an existing file. */
         char tmpname[PATH_MAX];
         int filenum = -1;
-        struct stat sbuf;
         do {
             filenum++;
             snprintf (tmpname, sizeof (tmpname), "%s.%02d", logger.fname, 
                     filenum);
-        } while (0 == stat (tmpname, &sbuf));
+		} while(g_file_test(tmpname, G_FILE_TEST_EXISTS));
 
         if (errno != ENOENT) {
             perror ("Error: checking for previous logs");
@@ -310,8 +313,8 @@ int main(int argc, char *argv[])
 
         strcpy (logger.fname, tmpname);
     } else if (! force) {
-        struct stat sbuf;
-        if (0 == stat (logger.fname, &sbuf)) {
+		if (g_file_test(logger.fname, G_FILE_TEST_EXISTS))
+		{
             fprintf (stderr, "Refusing to overwrite existing file \"%s\"\n",
                     logger.fname);
             return 1;

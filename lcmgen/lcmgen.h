@@ -15,13 +15,15 @@
 /////////////////////////////////////////////////
 // lcm_typename_t: represents the name of a type, including package
 //
+//	Originally, the first field in the lcm_typename was named typename - which is a C++
+//	keyword and caused much grief. Renamed to lctypename.
 typedef struct lcm_typename lcm_typename_t;
 
 struct lcm_typename
 {
-  	char *typename;  // fully-qualified name, e.g., "edu.mit.dgc.laser_t"
-    char *package;   // package name, e.g., "edu.mit.dgc"
-    char *shortname; // e.g., "laser_t"
+  	char *lctypename; // fully-qualified name, e.g., "edu.mit.dgc.laser_t"
+    char *package;    // package name, e.g., "edu.mit.dgc"
+    char *shortname;  // e.g., "laser_t"
 };
 
 /////////////////////////////////////////////////
@@ -82,7 +84,7 @@ typedef struct lcm_constant lcm_constant_t;
 
 struct lcm_constant
 {
-    char *typename;    // int8_t / int16_t / int32_t / int64_t / float / double
+    char *lctypename;    // int8_t / int16_t / int32_t / int64_t / float / double
     char *membername;
     union {
         int8_t i8;

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <assert.h>
 #include <stdint.h>
+
 #include "ringbuffer.h"
 
 // must be power of 2
@@ -72,7 +73,7 @@ lcm_ringbuf_new (unsigned int ring_size)
 {
     lcm_ringbuf_t * ring;
 
-    ring = malloc (sizeof (lcm_ringbuf_t));
+    ring = (lcm_ringbuf_t *) malloc (sizeof (lcm_ringbuf_t));
     ring->data = (char*) malloc (ring_size);
     ring->size = ring_size;
     ring->used = 0;

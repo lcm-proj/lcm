@@ -1,8 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <sys/time.h>
 #include <errno.h>
 #include <assert.h>
+#ifndef WIN32
+#include <sys/time.h>
+#else
+#include <WinPorting.h>
+#include <Winsock2.h>
+#endif
 
 #include "lcm_internal.h"
 #include "dbg.h"
@@ -58,16 +63,17 @@ lcm_logprov_destroy (lcm_logprov_t *lr)
 static int64_t
 timestamp_now (void)
 {
-    struct timeval tv;
-    gettimeofday (&tv, NULL);
+    GTimeVal tv;
+    g_get_current_time(&tv);
     return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
 static void *
 timer_thread (void * user)
 {
-    lcm_logprov_t * lr = user;
+    lcm_logprov_t * lr = (lcm_logprov_t *) user;
     int64_t abstime;
+	struct timeval sleep_tv;
 
     while (lcm_internal_pipe_read(lr->timer_pipe[0], &abstime, 8) == 8) {
         if (abstime < 0) return NULL;
@@ -76,10 +82,8 @@ timer_thread (void * user)
 
         if (abstime > now) {
             int64_t sleep_utime = abstime - now;
-            struct timeval sleep_tv = {
-                .tv_sec = sleep_utime / 1000000,
-                .tv_usec = sleep_utime % 1000000
-            };
+            sleep_tv.tv_sec = sleep_utime / 1000000;
+            sleep_tv.tv_usec = sleep_utime % 1000000;
 
             // sleep until the next timed message, or until an abort message
             fd_set fds;
@@ -87,7 +91,7 @@ timer_thread (void * user)
             FD_SET (lr->timer_pipe[0], &fds);
 
             int status = select (lr->timer_pipe[0] + 1, &fds, NULL, NULL,
-                    &sleep_tv);
+								 &sleep_tv);
 
             if (0 == status) {
                 // select timed out
@@ -108,14 +112,14 @@ timer_thread (void * user)
 static void
 new_argument (gpointer key, gpointer value, gpointer user)
 {
-    lcm_logprov_t * lr = user;
-    if (!strcmp (key, "speed")) {
+    lcm_logprov_t * lr = (lcm_logprov_t *) user;
+    if (!strcmp ((char *) key, "speed")) {
         char *endptr = NULL;
-        lr->speed = strtod (value, &endptr);
+        lr->speed = strtod ((char *) value, &endptr);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for speed\n");
-    } else if (!strcmp (key, "mode")) {
-        const char *mode = value;
+    } else if (!strcmp ((char *) key, "mode")) {
+        const char *mode = (char *) value;
         if(!strcmp(mode, "w")) {
             lr->writer=1;
         } else {
@@ -149,7 +153,7 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
         return NULL;
     }
 
-    lcm_logprov_t * lr = calloc (1, sizeof (lcm_logprov_t));
+    lcm_logprov_t * lr = (lcm_logprov_t *) calloc (1, sizeof (lcm_logprov_t));
     lr->lcm = parent;
     lr->filename = strdup(target);
     lr->speed = 1;
@@ -219,6 +223,8 @@ lcm_logprov_get_fileno (lcm_logprov_t *lr)
 static int
 lcm_logprov_handle (lcm_logprov_t * lr)
 {
+lcm_recv_buf_t rbuf;
+
     if (!lr->event)
         return -1;
 
@@ -238,13 +244,12 @@ lcm_logprov_handle (lcm_logprov_t * lr)
     if (lr->next_clock_time < 0)
         lr->next_clock_time = now;
 
-    lcm_recv_buf_t rbuf = {
-//        .channel = lr->event->channel,
-        .data = (uint8_t*) lr->event->data,
-        .data_size = lr->event->datalen,
-        .recv_utime = lr->next_clock_time,
-        .lcm = lr->lcm,
-    };
+//    rbuf.channel = lr->event->channel,
+    rbuf.data = (uint8_t*) lr->event->data,
+    rbuf.data_size = lr->event->datalen,
+    rbuf.recv_utime = lr->next_clock_time,
+    rbuf.lcm = lr->lcm,
+
     lcm_dispatch_handlers (lr->lcm, &rbuf, lr->event->channel);
 
     int64_t prev_log_time = lr->event->timestamp;
@@ -296,8 +301,8 @@ lcm_logprov_publish (lcm_logprov_t *lcm, const char *channel, const void *data,
     lcm_eventlog_event_t *le = (lcm_eventlog_event_t*) malloc(mem_sz);
     memset(le, 0, mem_sz);
 
-    struct timeval tv;
-    gettimeofday (&tv, NULL);
+    GTimeVal tv;
+    g_get_current_time(&tv);
     le->timestamp = (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;;
     le->channellen = channellen;
     le->datalen = datalen;
@@ -315,22 +320,23 @@ lcm_logprov_publish (lcm_logprov_t *lcm, const char *channel, const void *data,
     return 0;
 }
 
-static lcm_provider_vtable_t logprov_vtable = {
-    .create     = lcm_logprov_create,
-    .destroy    = lcm_logprov_destroy,
-    .subscribe  = NULL,
-    .publish    = lcm_logprov_publish,
-    .handle     = lcm_logprov_handle,
-    .get_fileno = lcm_logprov_get_fileno,
-};
+static lcm_provider_vtable_t logprov_vtable;
+static lcm_provider_info_t logprov_info;
 
-static lcm_provider_info_t logprov_info = {
-    .name = "file",
-    .vtable = &logprov_vtable,
-};
 
 void
 lcm_logprov_provider_init (GPtrArray * providers)
 {
+// Microsoft VS compiler issues. Can't do this statically
+	logprov_vtable.create     = lcm_logprov_create;
+    logprov_vtable.destroy    = lcm_logprov_destroy;
+    logprov_vtable.subscribe  = NULL;
+    logprov_vtable.publish    = lcm_logprov_publish;
+    logprov_vtable.handle     = lcm_logprov_handle;
+    logprov_vtable.get_fileno = lcm_logprov_get_fileno;
+
+	logprov_info.name = "file";
+    logprov_info.vtable = &logprov_vtable;
+
     g_ptr_array_add (providers, &logprov_info);
 }

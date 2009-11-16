@@ -4,10 +4,18 @@
 #include <string.h>
 #include <ctype.h>
 
+#ifdef WIN32
+#include <WinPorting.h>
+#endif
+
 #include "getopt.h"
 
 #define GOO_BOOL_TYPE 1
 #define GOO_STRING_TYPE 2
+
+#ifndef MAX
+#define MAX(a,b) ((a)>(b)?(a):(b))
+#endif
 
 getopt_t *getopt_create()
 {
@@ -250,11 +258,6 @@ int getopt_get_bool(getopt_t *getopt, const char *lname)
     return !strcmp(v, "true");
 }
 
-static int max(int a, int b)
-{
-    return a > b ? a : b;
-}
-
 void getopt_do_usage(getopt_t *gopt)
 {
     int leftmargin=2;
@@ -267,10 +270,10 @@ void getopt_do_usage(getopt_t *gopt)
         if (goo->spacer)
             continue;
 
-        longwidth = max(longwidth, strlen(goo->lname));
+        longwidth = MAX(longwidth, strlen(goo->lname));
 
         if (goo->type == GOO_STRING_TYPE)
-            valuewidth = max(valuewidth, strlen(goo->svalue));
+            valuewidth = MAX(valuewidth, strlen(goo->svalue));
     }
 
     for (unsigned int i = 0; i < gopt->options->len; i++) {

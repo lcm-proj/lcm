@@ -4,11 +4,19 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#ifdef WIN32
+#define __STDC_FORMAT_MACROS
+#endif
 #include <inttypes.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
 #include <glib.h>
+
+#ifdef WIN32
+#include <WinPorting.h>
+#include <windows.h>
+#endif
 
 #include "lcmgen.h"
 
@@ -24,10 +32,13 @@
 static void 
 mkdir_with_parents (const char *path, mode_t mode)
 {
+#ifdef WIN32
+    g_mkdir_with_parents(path, 0755);
+#else
     int len = strlen(path);
     for (int i = 0; i < len; i++) {
         if (path[i]=='/') {
-            char *dirpath = malloc(i+1);
+            char *dirpath = (char *) malloc(i+1);
             strncpy(dirpath, path, i);
             dirpath[i]=0;
 
@@ -37,6 +48,7 @@ mkdir_with_parents (const char *path, mode_t mode)
             i++; // skip the '/'
         }
     }
+#endif
 }
 
 static char * 
@@ -48,7 +60,7 @@ build_filenamev (char **parts)
         total_len += strlen (*p) + strlen(G_DIR_SEPARATOR_S);
     }
     total_len ++;
-    char *result = malloc(total_len);
+    char *result = (char *) malloc(total_len);
     memset(result, 0, total_len);
     for (p = parts; *p; p++) {
         if (! strlen(*p)) continue;
@@ -83,7 +95,7 @@ void setup_python_options(getopt_t *gopt)
 
 static int
 is_same_type (const lcm_typename_t *tn1, const lcm_typename_t *tn2) {
-    return ! strcmp (tn1->typename, tn2->typename);
+    return ! strcmp (tn1->lctypename, tn2->lctypename);
 }
 
 static int
@@ -94,22 +106,22 @@ is_same_package (const lcm_typename_t *tn1, const lcm_typename_t *tn2) {
 static const char *
 nil_initializer_string(const lcm_typename_t *type)
 {
-    if (!strcmp(type->typename, "byte")) return "0";
-    if (!strcmp(type->typename, "boolean")) return "False";
-    if (!strcmp(type->typename, "int8_t")) return "0";
-    if (!strcmp(type->typename, "int16_t")) return "0";
-    if (!strcmp(type->typename, "int32_t")) return "0";
-    if (!strcmp(type->typename, "int64_t")) return "0";
-    if (!strcmp(type->typename, "float")) return "0";
-    if (!strcmp(type->typename, "double")) return "0";
-    if (!strcmp(type->typename, "string")) return "\"\"";
+    if (!strcmp(type->lctypename, "byte")) return "0";
+    if (!strcmp(type->lctypename, "boolean")) return "False";
+    if (!strcmp(type->lctypename, "int8_t")) return "0";
+    if (!strcmp(type->lctypename, "int16_t")) return "0";
+    if (!strcmp(type->lctypename, "int32_t")) return "0";
+    if (!strcmp(type->lctypename, "int64_t")) return "0";
+    if (!strcmp(type->lctypename, "float")) return "0";
+    if (!strcmp(type->lctypename, "double")) return "0";
+    if (!strcmp(type->lctypename, "string")) return "\"\"";
     else return "None";
 }
 
 static char
 _struct_format (lcm_member_t *lm) 
 {
-    const char *tn = lm->type->typename;
+    const char *tn = lm->type->lctypename;
     if (!strcmp ("byte", tn)) return 'B';
     if (!strcmp ("boolean", tn)) return 'b';
     if (!strcmp ("int8_t", tn)) return 'b';
@@ -139,7 +151,7 @@ static void
 _emit_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls, 
         lcm_member_t *lm, const char *accessor, int indent, const char *sfx)
 {
-    const char *tn = lm->type->typename;
+    const char *tn = lm->type->lctypename;
     const char *mn = lm->membername;
     const char *sn = lm->type->shortname;
     if (!strcmp ("string", tn)) {
@@ -176,7 +188,7 @@ _emit_decode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
         lcm_member_t *lm, const char *accessor, int indent, int is_first,
         const char *len, int fixed_len)
 {
-    const char *tn = lm->type->typename;
+    const char *tn = lm->type->lctypename;
     const char *suffix = "";
     if(!is_first) {
         suffix = ")";
@@ -230,7 +242,7 @@ _flush_read_struct_fmt (const lcmgen_t *lcm, FILE *f,
         if (! g_queue_is_empty (members)) {
             emit_continue (", ");
         }
-        fmtsize += _primitive_type_size (lm->type->typename);
+        fmtsize += _primitive_type_size (lm->type->lctypename);
     }
     emit_continue (" = struct.unpack(\">");
     while (! g_queue_is_empty (formats)) {
@@ -249,7 +261,7 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     GQueue *struct_members = g_queue_new ();
 
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
-        lcm_member_t *lm = g_ptr_array_index(ls->members, m);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
         char fmt = _struct_format (lm);
 
         if (! lm->dimensions->len) {
@@ -258,10 +270,9 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 g_queue_push_tail (struct_members, lm);
             } else {
                 _flush_read_struct_fmt (lcm, f, struct_fmt, struct_members);
-                int alen = strlen(lm->membername) + strlen("self.") + 3 + 4;
-                char accessor[alen];
-                snprintf (accessor, alen, "self.%s = ", lm->membername);
+                char *accessor = g_strdup_printf("self.%s = ", lm->membername);
                 _emit_decode_one (lcm, f, ls, lm, accessor, 2, "");
+                g_free(accessor);
             }
         } else {
             _flush_read_struct_fmt (lcm, f, struct_fmt, struct_members);
@@ -273,7 +284,7 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             // an accessor string, and emitting for loops
             unsigned int n;
             for (n=0; n<lm->dimensions->len-1; n++) {
-                lcm_dimension_t *dim = g_ptr_array_index (lm->dimensions, n);
+                lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index (lm->dimensions, n);
 
                 if(n == 0) {
                     emit (2, "%s = []", accessor->str);
@@ -293,12 +304,12 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             }
 
             // last dimension.
-            lcm_dimension_t *last_dim = g_ptr_array_index(lm->dimensions,
+            lcm_dimension_t *last_dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions,
                     lm->dimensions->len - 1);
             int last_dim_fixed_len = last_dim->mode == LCM_CONST;
 
-            if(lcm_is_primitive_type(lm->type->typename) && 
-               0 != strcmp(lm->type->typename, "string")) {
+            if(lcm_is_primitive_type(lm->type->lctypename) && 
+               0 != strcmp(lm->type->lctypename, "string")) {
                 // member is a primitive non-string type.  Emit code to 
                 // decode a full array in one call to struct.unpack
                 if(n == 0) {
@@ -359,7 +370,7 @@ static void
 _emit_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls, 
         lcm_member_t *lm, const char *accessor, int indent)
 {
-    const char *tn = lm->type->typename;
+    const char *tn = lm->type->lctypename;
     const char *mn = lm->membername;
     if (!strcmp ("string", tn)) {
         emit (indent, "__%s_encoded = %s.encode('utf-8')", mn, accessor);
@@ -390,7 +401,7 @@ _emit_encode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
         lcm_member_t *lm, const char *accessor, int indent, 
         const char *len, int fixed_len)
 {
-    const char *tn = lm->type->typename;
+    const char *tn = lm->type->lctypename;
     if (!strcmp ("byte", tn)) {
         emit (indent, "buf.write(%s[:%s%s])", 
                 accessor, (fixed_len?"":"self."), len);
@@ -445,7 +456,7 @@ emit_python_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     GQueue *struct_members = g_queue_new ();
 
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
-        lcm_member_t *lm = g_ptr_array_index(ls->members, m);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
         char fmt = _struct_format (lm);
 
         if (! lm->dimensions->len) {
@@ -454,10 +465,9 @@ emit_python_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 g_queue_push_tail (struct_members, lm);
             } else {
                 _flush_write_struct_fmt (f, struct_fmt, struct_members);
-                char accessor[strlen(lm->membername) + strlen("self.") + 1];
-                snprintf (accessor, sizeof (accessor), "self.%s", 
-                        lm->membername);
+                char *accessor = g_strdup_printf("self.%s", lm->membername);
                 _emit_encode_one (lcm, f, ls, lm, accessor, 2);
+                g_free(accessor);
             }
         } else {
             _flush_write_struct_fmt (f, struct_fmt, struct_members);
@@ -478,12 +488,12 @@ emit_python_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             }
 
             // last dimension.
-            lcm_dimension_t *last_dim = g_ptr_array_index(lm->dimensions,
+            lcm_dimension_t *last_dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions,
                     lm->dimensions->len - 1);
             int last_dim_fixed_len = last_dim->mode == LCM_CONST;
 
-            if(lcm_is_primitive_type(lm->type->typename) && 
-               0 != strcmp(lm->type->typename, "string")) {
+            if(lcm_is_primitive_type(lm->type->lctypename) && 
+               0 != strcmp(lm->type->lctypename, "string")) {
 
                 _emit_encode_list(lcm, f, ls, lm,
                         accessor->str, 2+n, last_dim->size, last_dim_fixed_len);
@@ -525,7 +535,7 @@ emit_python_init (const lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
     fprintf(f, "    def __init__(self):\n");
     unsigned int member;
     for (member = 0; member < lr->members->len; member++) {
-        lcm_member_t *lm = g_ptr_array_index(lr->members, member);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
         fprintf(f, "        self.%s = ", lm->membername);
 
         if( 0 == lm->dimensions->len ) {
@@ -549,16 +559,16 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit (2,     "newparents = parents + [%s]", sn);
     emit_start (2, "tmphash = (0x%"PRIx64, ls->hash);
     for (unsigned int m = 0; m < ls->members->len; m++) {
-        lcm_member_t *lm = g_ptr_array_index(ls->members, m);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
         const char *msn = lm->type->shortname;
-        if (! lcm_is_primitive_type (lm->type->typename)) {
+        if (! lcm_is_primitive_type (lm->type->lctypename)) {
             const char *ghr = "_get_hash_recursive(newparents)";
             if (is_same_type (lm->type, ls->structname)) {
                 emit_continue ("+ %s.%s", msn, ghr);
             } else if (is_same_package (lm->type, ls->structname)) {
                 emit_continue ("+ %s.%s.%s", msn, msn, ghr);
             } else {
-                emit_continue ("+ %s.%s.%s", lm->type->typename, msn, ghr);
+                emit_continue ("+ %s.%s.%s", lm->type->lctypename, msn, ghr);
             }
         }
     }
@@ -585,13 +595,13 @@ emit_python_dependencies (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     GHashTable *dependencies = g_hash_table_new (g_str_hash, g_str_equal);
     for (unsigned int m=0; m<ls->members->len; m++) {
-        lcm_member_t *lm = g_ptr_array_index (ls->members, m);
-        if (! lcm_is_primitive_type (lm->type->typename)) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index (ls->members, m);
+        if (! lcm_is_primitive_type (lm->type->lctypename)) {
             if (strlen (lm->type->package) && 
                 ! is_same_package (ls->structname, lm->type)) {
-                if (! g_hash_table_lookup (dependencies, lm->type->typename)) {
-                    g_hash_table_insert (dependencies, lm->type->typename, 
-                            lm->type->typename);
+                if (! g_hash_table_lookup (dependencies, lm->type->lctypename)) {
+                    g_hash_table_insert (dependencies, lm->type->lctypename, 
+                            lm->type->lctypename);
                 }
             } else if (! g_hash_table_lookup (dependencies, 
                         lm->type->shortname)){
@@ -602,7 +612,7 @@ emit_python_dependencies (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     }
     GPtrArray *deps = _hash_table_get_vals (dependencies);
     for (int i=0; i<deps->len; i++) {
-        const char *package = g_ptr_array_index (deps, i);
+        const char *package = (char *) g_ptr_array_index (deps, i);
         emit (0, "import %s\n", package);
     }
     g_ptr_array_free (deps, TRUE);
@@ -617,7 +627,7 @@ typedef struct {
 
 static _package_contents_t * _package_contents_new (const char *name)
 {
-    _package_contents_t *pc = malloc (sizeof(_package_contents_t));
+    _package_contents_t *pc = (_package_contents_t *) malloc (sizeof(_package_contents_t));
     pc->enums = g_ptr_array_new ();
     pc->structs = g_ptr_array_new ();
     pc->name = strdup (name);
@@ -668,7 +678,9 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         for (ndirs=0; dirs[ndirs]; ndirs++);
 
         for (int i=0 ; i<ndirs; i++) {
-            char *initpy_fname_parts[ndirs + 4];
+			char *initpy_fname_parts[1024];
+            assert(ndirs + 4 < 1024);
+
             initpy_fname_parts[0] = package_dir_prefix;
             for (int j=0; j<=i; j++) {
                 initpy_fname_parts[j+1] = dirs[j];
@@ -727,7 +739,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
     ////////////////////////////////////////////////////////////
     // ENUMS
     for (int i=0; i<pc->enums->len; i++) {
-        lcm_enum_t *le = g_ptr_array_index (pc->enums, i);
+        lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index (pc->enums, i);
 
         char path[PATH_MAX];
         sprintf (path, "%s%s.py", package_dir, le->enumname->shortname);
@@ -754,7 +766,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         emit (0, "class %s(object):", le->enumname->shortname);
         emit (1, "__slots__ = [ \"value\" ]");
         for (unsigned int v = 0; v < le->values->len; v++) {
-            lcm_enum_value_t *lev = g_ptr_array_index(le->values, v);
+            lcm_enum_value_t *lev = (lcm_enum_value_t *) g_ptr_array_index(le->values, v);
             emit(1, "%s = %i", lev->valuename, lev->value);
         }
 
@@ -806,7 +818,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
     ////////////////////////////////////////////////////////////
     // STRUCTS
     for (int i = 0; i<pc->structs->len; i++) {
-        lcm_struct_t *ls = g_ptr_array_index(pc->structs, i);
+        lcm_struct_t *ls = (lcm_struct_t *) g_ptr_array_index(pc->structs, i);
 
         char path[PATH_MAX];
         sprintf (path, "%s%s.py", package_dir, ls->structname->shortname);
@@ -834,7 +846,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         fprintf(f, "class %s(object):\n", ls->structname->shortname);
         fprintf (f,"    __slots__ = [");
         for (unsigned int member = 0; member < ls->members->len; member++) {
-            lcm_member_t *lm = g_ptr_array_index (ls->members, member);
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index (ls->members, member);
             fprintf (f, "\"%s\"%s", lm->membername, 
                     member < ls->members->len-1 ? ", " : "");
         }
@@ -842,8 +854,8 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 
         // CONSTANTS
         for (unsigned int cn = 0; cn < g_ptr_array_size(ls->constants); cn++) {
-            lcm_constant_t *lc = g_ptr_array_index(ls->constants, cn);
-            assert(lcm_is_legal_const_type(lc->typename));
+            lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, cn);
+            assert(lcm_is_legal_const_type(lc->lctypename));
             emit(1, "%s = %s", lc->membername, lc->val_str);
         }
         if (g_ptr_array_size(ls->constants) > 0)
@@ -871,8 +883,8 @@ int emit_python(lcmgen_t *lcm)
 
     // group the enums and structs by package
     for (unsigned int i = 0; i < lcm->enums->len; i++) {
-        lcm_enum_t *le = g_ptr_array_index(lcm->enums, i);
-        _package_contents_t *pc = g_hash_table_lookup (packages, 
+        lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index(lcm->enums, i);
+        _package_contents_t *pc = (_package_contents_t *) g_hash_table_lookup (packages, 
                 le->enumname->package);
         if (!pc) {
             pc = _package_contents_new (le->enumname->package);
@@ -882,8 +894,8 @@ int emit_python(lcmgen_t *lcm)
     }
 
     for (unsigned int i = 0; i < lcm->structs->len; i++) {
-        lcm_struct_t *ls = g_ptr_array_index(lcm->structs, i);
-        _package_contents_t *pc = g_hash_table_lookup (packages, 
+        lcm_struct_t *ls = (lcm_struct_t *) g_ptr_array_index(lcm->structs, i);
+        _package_contents_t *pc = (_package_contents_t *) g_hash_table_lookup (packages, 
                 ls->structname->package);
         if (!pc) {
             pc = _package_contents_new (ls->structname->package);
@@ -895,7 +907,7 @@ int emit_python(lcmgen_t *lcm)
     GPtrArray *vals = _hash_table_get_vals (packages);
 
     for (int i=0; i<vals->len; i++) {
-        _package_contents_t *pc = g_ptr_array_index (vals, i);
+        _package_contents_t *pc = (_package_contents_t *) g_ptr_array_index (vals, i);
         int status = emit_package (lcm, pc); 
         if (0 != status) return status;
     }

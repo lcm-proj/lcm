@@ -3,10 +3,17 @@
 #include <string.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <inttypes.h>
+#ifdef WIN32
+#define __STDC_FORMAT_MACROS			// Enable integer types
+#endif
+#include <stdint.h>
 
 #include "ioutils.h"
 #include "eventlog.h"
+
+#ifdef WIN32
+#include <WinPorting.h>
+#endif
 
 #define MAGIC ((int32_t) 0xEDA1DA01L)
 
@@ -63,7 +70,7 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
         l->eventcount = le->eventnum;
     }
 
-    le->channel = calloc(1, le->channellen+1);
+    le->channel = (char *) calloc(1, le->channellen+1);
     if (fread(le->channel, 1, le->channellen, l->f) != (size_t) le->channellen)
         goto eof;
 

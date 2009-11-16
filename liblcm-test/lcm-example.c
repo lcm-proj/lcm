@@ -1,18 +1,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
 
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <arpa/inet.h>
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
 #include <fcntl.h>
-#include <netdb.h>
-
-#include <sys/time.h>
-#include <time.h>
-#include <sys/select.h>
 
 #include <lcm/lcm.h>
 
@@ -39,18 +33,8 @@ void catchall_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 
 int main (int argc, char **argv)
 {
-    int status;
-
-    char *words[] = { "foo", "bar", "baz", "cow", "bat", "hello", "world", 0 };
-    srand (time (NULL));
-    int nwords;
-    for (nwords = 0; words[nwords] != NULL; nwords++);
-    int windex = (int) (nwords * (rand () / (RAND_MAX+1.0)));
-    
-    printf ("windex: %d\n", windex);
-    int datalen = strlen (words[windex]) + 1;
-    uint8_t *payload = malloc (datalen);
-    strcpy ((char*)payload, words[windex]);
+    char *data = "payload";
+    int datalen = strlen(data) + 1;
     
     lcm_t *lcm = lcm_create (NULL);
     if (! lcm) {
@@ -73,11 +57,11 @@ int main (int argc, char **argv)
         FD_ZERO (&readfds);
         FD_SET (fd,&readfds);
 
-        status=select (fd + 1,&readfds,0,0,&timeout);
+        int status=select (fd + 1,&readfds,0,0,&timeout);
         if (0 == status) {
             printf ("sending\n");
-            lcm_publish (lcm, "TEST", payload, datalen);
-            lcm_publish (lcm, "12345", payload, datalen);
+            lcm_publish (lcm, "TEST", data, datalen);
+            lcm_publish (lcm, "12345", data, datalen);
             ntransmitted++;
         } else if (FD_ISSET (fd,&readfds)) {
             lcm_handle (lcm);
@@ -91,7 +75,5 @@ int main (int argc, char **argv)
     printf ("test: %d test2: %d catchall: %d\n", 
             test_count, test_count2, catchall_count);
 
-    free (payload);
-    
     return 0;
 }

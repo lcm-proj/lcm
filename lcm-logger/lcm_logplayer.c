@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <getopt.h>
+
 #include <string.h>
 
 #include <lcm/lcm.h>
@@ -18,7 +18,7 @@ struct logplayer
 void
 handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
-    logplayer_t * l = u;
+    logplayer_t * l = (logplayer_t *) u;
 
     if (l->verbose)
         printf ("%.3f Channel %-20s size %d\n", rbuf->recv_utime / 1000000.0,
@@ -93,8 +93,11 @@ main(int argc, char ** argv)
     printf ("Using playback speed %f\n", speed);
     if (!expression)
         expression = strdup (".*");
-
+#ifndef WIN32
     char url_in[strlen(file) + 64];
+#else
+    char url_in[2048];
+#endif
     sprintf (url_in, "file://%s?speed=%f", argv[optind], speed);
     l.lcm_in = lcm_create (url_in);
     if (!l.lcm_in) {

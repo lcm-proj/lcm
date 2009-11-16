@@ -30,12 +30,7 @@ public final class LCMDataOutputStream implements DataOutput
     void ensureSpace(int needed)
     {
 	if (pos+needed >= buf.length) {
-	    // compute new power-of-two capacity
-	    int newlen = buf.length;
-	    while (newlen < pos+needed)
-		newlen *= 2;
-
-	    byte buf2[] = new byte[newlen];
+	    byte buf2[] = new byte[buf.length*2];
 	    System.arraycopy(buf, 0, buf2, 0, pos);
 	    buf = buf2;
 	} 

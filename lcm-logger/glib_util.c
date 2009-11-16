@@ -1,19 +1,27 @@
 #include <stdio.h>
-#include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
 #include <stdlib.h>
 #include <signal.h>
+
+#ifdef WIN32
+#define SIGKILL 2
+#define SIGHUP  5
+#include <WinPorting.h>
+//#include <Winsock2.h>
+#else
+#include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#define lcm_internal_pipe_write write
+#define lcm_internal_pipe_read read
+#define lcm_internal_pipe_close close
+#define lcm_internal_pipe_create pipe
+#endif
 
 #include <glib.h>
 
 #include "glib_util.h"
-
-#define dbg(args...) fprintf(stderr, args)
-#undef dbg
-#define dbg(args...)
 
 typedef struct _signal_pipe {
     int fds[2];
@@ -37,17 +45,14 @@ signal_pipe_init()
         return -1;
     }
 
-    if (0 != pipe (g_sp.fds)) {
+    if (0 != lcm_internal_pipe_create (g_sp.fds)) {
         perror("signal_pipe");
         return -1;
     }
-
     int flags = fcntl (g_sp.fds[1], F_GETFL);
     fcntl (g_sp.fds[1], F_SETFL, flags | O_NONBLOCK);
-
     g_sp_initialized = 1;
 
-    dbg("signal_pipe: initialized\n");
     return 0;
 }
 
@@ -55,30 +60,28 @@ int
 signal_pipe_cleanup()
 {
     if (g_sp_initialized) {
-        close (g_sp.fds[0]);
-        close (g_sp.fds[1]);
+        lcm_internal_pipe_close (g_sp.fds[0]);
+        lcm_internal_pipe_close (g_sp.fds[1]);
         g_io_channel_unref (g_sp.ioc);
         g_sp_initialized = 0;
         return 0;
     }
 
-    dbg("signal_pipe: destroyed\n");
     return -1;
 }
 
 static void
 signal_handler (int signum)
 {
-    dbg("signal_pipe: caught signal %d\n", signum);
-    write (g_sp.fds[1], &signum, sizeof(int));
+    size_t status = lcm_internal_pipe_write (g_sp.fds[1], &signum, sizeof(int));
+    (void)status;
 }
 
 static int
 signal_handler_glib (GIOChannel *source, GIOCondition condition, void *ud)
 {
     int signum;
-    int status;
-    status = read (g_sp.fds[0], &signum, sizeof(int));
+    size_t status = lcm_internal_pipe_read (g_sp.fds[0], &signum, sizeof(int));
 
     if (status != sizeof(int)) {
         fprintf(stderr, "wtf!? signal_handler_glib is confused (%s:%d)\n", 
@@ -125,8 +128,8 @@ signal_pipe_attach_glib (signal_pipe_glib_handler_t func, gpointer user_data)
 
     g_sp.ioc = g_io_channel_unix_new (g_sp.fds[0]);
     g_io_channel_set_flags (g_sp.ioc, 
-            g_io_channel_get_flags (g_sp.ioc) | G_IO_FLAG_NONBLOCK, NULL);
-    g_sp.ios = g_io_add_watch (g_sp.ioc, G_IO_IN | G_IO_PRI, 
+            (GIOFlags) (g_io_channel_get_flags (g_sp.ioc) | G_IO_FLAG_NONBLOCK), NULL);
+    g_sp.ios = g_io_add_watch (g_sp.ioc, (GIOCondition) (G_IO_IN | G_IO_PRI), 
             (GIOFunc) signal_handler_glib, NULL);
 
     g_sp.userfunc = func;
@@ -185,7 +188,6 @@ glib_mainloop_attach_lcm (lcm_t *lcm)
     }
 
     if (g_hash_table_lookup (lcm_glib_sources, lcm)) {
-        dbg ("LC %p already attached to mainloop\n", lcm);
         g_static_mutex_unlock (&lcm_glib_sources_mutex);
         return -1;
     }
@@ -198,7 +200,6 @@ glib_mainloop_attach_lcm (lcm_t *lcm)
             lcm);
     galcm->lcm = lcm;
 
-    dbg ("inserted LC %p into glib mainloop\n", lcm);
     g_hash_table_insert (lcm_glib_sources, lcm, galcm);
 
     g_static_mutex_unlock (&lcm_glib_sources_mutex);
@@ -210,7 +211,6 @@ glib_mainloop_detach_lcm (lcm_t *lcm)
 {
     g_static_mutex_lock (&lcm_glib_sources_mutex);
     if (!lcm_glib_sources) {
-        dbg ("no lcm glib sources\n");
         g_static_mutex_unlock (&lcm_glib_sources_mutex);
         return -1;
     }
@@ -219,12 +219,10 @@ glib_mainloop_detach_lcm (lcm_t *lcm)
         (glib_attached_lcm_t*) g_hash_table_lookup (lcm_glib_sources, lcm);
 
     if (!galcm) {
-        dbg ("couldn't find matching gaLC\n");
         g_static_mutex_unlock (&lcm_glib_sources_mutex);
         return -1;
     }
 
-    dbg ("detaching LC from glib\n");
     g_io_channel_unref (galcm->ioc);
     g_source_remove (galcm->sid);
 
@@ -241,12 +239,15 @@ glib_mainloop_detach_lcm (lcm_t *lcm)
 }
 
 void 
-mkdir_with_parents (const char *path, mode_t mode)
+mkdir_with_parents (const char *path, int mode)
 {
+#ifdef WIN32
+	g_mkdir_with_parents(path, mode);
+#else
     int len = strlen(path);
     for (int i = 0; i < len; i++) {
         if (path[i]=='/') {
-            char *dirpath = malloc(i+1);
+            char *dirpath = (char *) malloc(i+1);
             strncpy(dirpath, path, i);
             dirpath[i]=0;
 
@@ -256,4 +257,5 @@ mkdir_with_parents (const char *path, mode_t mode)
             i++; // skip the '/'
         }
     }
+#endif
 }

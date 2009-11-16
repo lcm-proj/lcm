@@ -11,7 +11,7 @@ char *sprintfalloc(const char *fmt, ...)
     char *p, *np;
     va_list ap;
     
-    if ((p = malloc(size)) == NULL)
+    if ((p = (char *) malloc(size)) == NULL)
         return NULL;
     
     while (1) {
@@ -27,7 +27,7 @@ char *sprintfalloc(const char *fmt, ...)
             size = n+1; /* precisely what is needed */
         else           /* glibc 2.0 */
             size *= 2;  /* twice the old size */
-        if ((np = realloc (p, size)) == NULL) {
+        if ((np = (char *) realloc (p, size)) == NULL) {
             free(p);
             return NULL;
         } else {

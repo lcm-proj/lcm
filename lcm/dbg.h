@@ -186,11 +186,11 @@ static void dbg_init()
 
 #ifndef NO_DBG
 
-#define dbg(mode, args...) { \
+#define dbg(mode, ...) { \
     if( !dbg_initiated) dbg_init(); \
     if( dbg_modes & (mode) ) { \
         printf("%s", DCOLOR(mode)); \
-        printf(args); \
+        printf(__VA_ARGS__); \
         printf(_NORMAL_); \
     } \
 }
@@ -204,7 +204,7 @@ static void dbg_init()
 
 #endif
 
-#define cprintf(color, args...) { printf(color); printf(args); \
+#define cprintf(color, ...) { printf(color); printf(__VA_ARGS__); \
     printf(_NORMAL_); }
 
 

@@ -4,6 +4,10 @@
 #include <ctype.h>
 #include <assert.h>
 
+#ifdef WIN32
+#include <WinPorting.h>
+#endif
+
 #include "tokenize.h"
 
 static const char single_char_toks[] = "();\",:\'[]"; // no '.' so that name spaces are one token

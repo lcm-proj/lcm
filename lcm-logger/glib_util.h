@@ -36,7 +36,7 @@ int glib_mainloop_attach_lcm (lcm_t *lcm);
 int glib_mainloop_detach_lcm (lcm_t *lcm);
 
 // GLib has g_mkdir_with_parents, but only since 2.8
-void mkdir_with_parents (const char *path, mode_t mode);
+void mkdir_with_parents (const char *path, int mode);
 
 #ifdef __cplusplus
 }

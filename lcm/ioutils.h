@@ -2,8 +2,12 @@
 #define __LCM_IOUTILS_H__
 
 #include <stdio.h>
-#include <inttypes.h>
+#include <stdint.h>
+#ifndef WIN32
 #include <arpa/inet.h>
+#else
+#include <winsock2.h>
+#endif
 
 #ifdef __cplusplus
 extern "C" {

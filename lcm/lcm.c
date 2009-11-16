@@ -10,7 +10,11 @@
 // It would be nice to use GRegex, but it's a bit new... only in GLib since
 // 2.14 (August, 2007)
 //
-//#define USE_GREGEX
+#ifdef WIN32
+#define USE_GREGEX
+#include <WinPorting.h>
+#include <winsock2.h>
+#endif
 
 #ifndef USE_GREGEX
 #include <regex.h>
@@ -63,6 +67,15 @@ lcm_create (const char *url)
 {
     if (!g_thread_supported ()) g_thread_init (NULL);
 
+#ifdef WIN32
+	WSADATA	wsd;
+    int status = WSAStartup ( MAKEWORD ( 2, 0 ), &wsd );
+    if ( status )
+    {
+		return NULL;
+    }
+#endif
+
     char * provider_str = NULL;
     char * network = NULL;
     GHashTable * args = g_hash_table_new_full (g_str_hash, g_str_equal,
@@ -91,8 +104,8 @@ lcm_create (const char *url)
 
     lcm_provider_info_t * info = NULL;
     /* Find a matching provider */
-    for (int i = 0; i < providers->len; i++) {
-        lcm_provider_info_t * pinfo = g_ptr_array_index (providers, i);
+    for (unsigned int i = 0; i < providers->len; i++) {
+        lcm_provider_info_t * pinfo = (lcm_provider_info_t *) g_ptr_array_index (providers, i);
         if (!strcmp (pinfo->name, provider_str)) {
             info = pinfo;
             break;
@@ -108,7 +121,7 @@ lcm_create (const char *url)
         return NULL;
     }
 
-    lcm = calloc (1, sizeof (lcm_t));
+    lcm = (lcm_t *) calloc (1, sizeof (lcm_t));
 
     lcm->vtable = info->vtable;
     lcm->handlers_all = g_ptr_array_new();
@@ -175,8 +188,8 @@ lcm_destroy (lcm_t * lcm)
     g_hash_table_foreach (lcm->handlers_map, map_free_handlers_callback, NULL);
     g_hash_table_destroy (lcm->handlers_map);
 
-    for (int i = 0; i < lcm->handlers_all->len; i++) {
-        lcm_subscription_t *h = g_ptr_array_index(lcm->handlers_all, i);
+    for (unsigned int i = 0; i < lcm->handlers_all->len; i++) {
+        lcm_subscription_t *h = (lcm_subscription_t *) g_ptr_array_index(lcm->handlers_all, i);
         h->callback_scheduled = 0; // XXX hack...
         lcm_handler_free(h);
     }
@@ -184,6 +197,9 @@ lcm_destroy (lcm_t * lcm)
 
     g_static_rec_mutex_free (&lcm->mutex);
     free(lcm);
+#ifdef WIN32
+	WSACleanup();
+#endif
 }
 
 int
@@ -222,7 +238,7 @@ static int
 is_handler_subscriber(lcm_subscription_t *h, const char *channel_name)
 {
 #ifdef USE_GREGEX
-    return g_regex_match(h->regex, channel_name, 0, NULL);
+    return g_regex_match(h->regex, channel_name, (GRegexMatchFlags) 0, NULL);
 #else 
     return (0 == regexec(&h->preg, channel_name, 0, NULL, 0));
 #endif
@@ -272,11 +288,10 @@ lcm_subscription_t
     h->callback_scheduled = 0;
     h->marked_for_deletion = 0;
 
-    char regexbuf[strlen(channel)+3];
-    sprintf (regexbuf, "^%s$", channel);
+    char *regexbuf = g_strdup_printf("^%s$", channel);
 #ifdef USE_GREGEX
     GError *rerr = NULL;
-    h->regex = g_regex_new(regexbuf, 0, 0, &rerr);
+    h->regex = g_regex_new(regexbuf, (GRegexCompileFlags) 0, (GRegexMatchFlags) 0, &rerr);
     if(rerr) {
         fprintf(stderr, "%s: %s\n", __FUNCTION__, rerr->message);
         dbg(DBG_LCM, "%s: %s\n", __FUNCTION__, rerr->message);
@@ -292,6 +307,7 @@ lcm_subscription_t
         return NULL;
     }
 #endif
+    g_free(regexbuf);
 
     g_static_rec_mutex_lock (&lcm->mutex);
     g_ptr_array_add(lcm->handlers_all, h);
@@ -329,7 +345,7 @@ GPtrArray *
 lcm_get_handlers (lcm_t * lcm, const char * channel)
 {
     g_static_rec_mutex_lock (&lcm->mutex);
-    GPtrArray * handlers = g_hash_table_lookup (lcm->handlers_map, channel);
+    GPtrArray * handlers = (GPtrArray *) g_hash_table_lookup (lcm->handlers_map, channel);
     if (handlers)
         goto finished;
 
@@ -340,8 +356,8 @@ lcm_get_handlers (lcm_t * lcm, const char * channel)
     g_hash_table_insert (lcm->handlers_map, strdup(channel), handlers);
 
     // find all the matching handlers
-    for (int i = 0; i < lcm->handlers_all->len; i++) {
-        lcm_subscription_t *h = g_ptr_array_index (lcm->handlers_all, i);
+    for (unsigned int i = 0; i < lcm->handlers_all->len; i++) {
+        lcm_subscription_t *h = (lcm_subscription_t *) g_ptr_array_index (lcm->handlers_all, i);
         if (is_handler_subscriber (h, channel))
             g_ptr_array_add(handlers, h);
     }
@@ -377,13 +393,13 @@ lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf, const char *channel)
     // callbacks.
     int nhandlers = handlers->len;
     for (int i = 0; i < nhandlers; i++) {
-        lcm_subscription_t *h = g_ptr_array_index(handlers, i);
+        lcm_subscription_t *h = (lcm_subscription_t *) g_ptr_array_index(handlers, i);
         h->callback_scheduled = 1;
     }
 
     // now, call the handlers.
     for (int i = 0; i < nhandlers; i++) {
-        lcm_subscription_t *h = g_ptr_array_index(handlers, i);
+        lcm_subscription_t *h = (lcm_subscription_t *) g_ptr_array_index(handlers, i);
         if (!h->marked_for_deletion) {
             int depth = g_static_rec_mutex_unlock_full (&lcm->mutex);
             h->handler (buf, channel, h->userdata);
@@ -394,14 +410,14 @@ lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf, const char *channel)
     // unref the handlers and check if any should be deleted
     GList *to_remove = NULL;
     for (int i = 0; i < nhandlers; i++) {
-        lcm_subscription_t *h = g_ptr_array_index(handlers, i);
+        lcm_subscription_t *h = (lcm_subscription_t *) g_ptr_array_index(handlers, i);
         h->callback_scheduled = 0;
         if (h->marked_for_deletion)
             to_remove = g_list_prepend (to_remove, h);
     }
     // actually delete handlers marked for deletion
     for (;to_remove; to_remove = g_list_delete_link (to_remove, to_remove)) {
-        lcm_subscription_t *h = to_remove->data;
+        lcm_subscription_t *h = (lcm_subscription_t *) to_remove->data;
         g_ptr_array_remove (lcm->handlers_all, h);
         g_hash_table_foreach (lcm->handlers_map, 
                 map_remove_handler_callback, h);

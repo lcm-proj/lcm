@@ -1,16 +1,38 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#ifdef WIN32
+#define __STDC_FORMAT_MACROS			// Enable integer types
+#endif
 #include <inttypes.h>
 #include <ctype.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef WIN32
 #include <unistd.h>
+#else					// These should be coming from stdint.h - but not working?
+#include <WinPorting.h>
+#define INT8_MIN     ((int8_t)_I8_MIN)
+#define INT8_MAX     _I8_MAX
+#define INT16_MIN    ((int16_t)_I16_MIN)
+#define INT16_MAX    _I16_MAX
+#define INT32_MIN    ((int32_t)_I32_MIN)
+#define INT32_MAX    _I32_MAX
+#define INT64_MIN    ((int64_t)_I64_MIN)
+#define INT64_MAX    _I64_MAX
+#define UINT8_MAX    _UI8_MAX
+#define UINT16_MAX   _UI16_MAX
+#define UINT32_MAX   _UI32_MAX
+#endif
 
 #include "lcmgen.h"
 #include "tokenize.h"
 #include "sprintfalloc.h"
+
+#ifdef WIN32
+#define	strtoll	_strtoui64
+#endif
 
 /** The LCM grammar is implemented here with a recursive-descent parser.
     handle_file is the top-level function, which calls parse_struct/parse_enum,
@@ -123,18 +145,18 @@ lcmgen_t *lcmgen_create()
 // Parse a type into package and class name.  If no package is
 // specified, we will try to use the package from the last specified
 // "package" directive, like in Java.
-lcm_typename_t *lcm_typename_create(lcmgen_t *lcmgen, const char *typename)
+lcm_typename_t *lcm_typename_create(lcmgen_t *lcmgen, const char *lctypename)
 {
     lcm_typename_t *lt = (lcm_typename_t*) calloc(1, sizeof(lcm_typename_t));
 
-    lt->typename = strdup(typename);
+    lt->lctypename = strdup(lctypename);
 
     // package name: everything before the last ".", or "" if there is no "."
     //
     // shortname: everything after the last ".", or everything if
     // there is no "."
     //
-    char *tmp = strdup(typename);
+    char *tmp = strdup(lctypename);
     char *rtmp = strrchr(tmp, '.');
     if (rtmp == NULL) {
         lt->shortname = tmp;
@@ -143,9 +165,9 @@ lcm_typename_t *lcm_typename_create(lcmgen_t *lcmgen, const char *typename)
         } else {
             // we're overriding the package name using the last directive.
             lt->package = strdup(lcmgen->package);
-            lt->typename = sprintfalloc("%s%s%s", lt->package, 
-                                        strlen(lcmgen->package)>0 ? "." : "",
-                                        lt->shortname);
+            lt->lctypename = sprintfalloc("%s%s%s", lt->package, 
+                                          strlen(lcmgen->package)>0 ? "." : "",
+                                          lt->shortname);
         }
     } else {
         lt->package = tmp;
@@ -171,7 +193,7 @@ lcm_struct_t *lcm_struct_create(lcmgen_t *lcmgen, const char *lcmfile, const cha
 lcm_constant_t *lcm_constant_create(const char *type, const char *name, const char *val_str)
 {
     lcm_constant_t *lc = (lcm_constant_t*) calloc(1, sizeof(lcm_constant_t));
-    lc->typename = strdup(type);
+    lc->lctypename = strdup(type);
     lc->membername = strdup(name);
     lc->val_str = strdup(val_str);
     // don't fill in the value
@@ -180,7 +202,7 @@ lcm_constant_t *lcm_constant_create(const char *type, const char *name, const ch
 
 void lcm_constant_destroy(lcm_constant_t *lc)
 {
-    free(lc->typename);
+    free(lc->lctypename);
     free(lc->membername);
     free(lc);
 }
@@ -224,7 +246,7 @@ int64_t lcm_struct_hash(lcm_struct_t *lr)
     //  v = hash_string_update(v, lr->structname);
 
     for (unsigned int i = 0; i < g_ptr_array_size(lr->members); i++) {
-        lcm_member_t *lm = g_ptr_array_index(lr->members, i);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, i);
 
         // hash the member name
         v = hash_string_update(v, lm->membername);
@@ -233,8 +255,8 @@ int64_t lcm_struct_hash(lcm_struct_t *lr)
         // signature in the hash. Do not include them for compound
         // members, because their contents will be included, and we
         // don't want a struct's name change to break the hash.
-        if (lcm_is_primitive_type(lm->type->typename))
-            v = hash_string_update(v, lm->type->typename);
+        if (lcm_is_primitive_type(lm->type->lctypename))
+            v = hash_string_update(v, lm->type->lctypename);
 
         // hash the dimensionality information
         int ndim = g_ptr_array_size(lm->dimensions);
@@ -359,7 +381,7 @@ int parse_const(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
     // get the constant type
     if (!lcm_is_legal_const_type(t->token))
         parse_error(t, "invalid type for const");
-    char *typename = strdup(t->token);
+    char *lctypename = strdup(t->token);
 
 another_constant:
     // get the member name
@@ -379,43 +401,43 @@ another_constant:
     tokenize_next_or_fail(t, "constant value");
 
     // create a new const member
-    lcm_constant_t *lc = lcm_constant_create(typename, membername, t->token);
+    lcm_constant_t *lc = lcm_constant_create(lctypename, membername, t->token);
 
     char *endptr = NULL;
-    if (!strcmp(typename, "int8_t")) {
+    if (!strcmp(lctypename, "int8_t")) {
         long long v = strtoll(t->token, &endptr, 0);
         if (endptr == t->token || *endptr != '\0')
             parse_error(t, "Expected integer value");
         if (v < INT8_MIN || v > INT8_MAX)
             semantic_error(t, "Integer value out of bounds for int8_t");
         lc->val.i8 = (int8_t)v;
-    } else if (!strcmp(typename, "int16_t")) {
+    } else if (!strcmp(lctypename, "int16_t")) {
         long long v = strtoll(t->token, &endptr, 0);
         if (endptr == t->token || *endptr != '\0')
             parse_error(t, "Expected integer value");
         if (v < INT16_MIN || v > INT16_MAX)
             semantic_error(t, "Integer value out of range for int16_t");
         lc->val.i16 = (int16_t)v;
-    } else if (!strcmp(typename, "int32_t")) {
+    } else if (!strcmp(lctypename, "int32_t")) {
         long long v = strtoll(t->token, &endptr, 0);
         if (endptr == t->token || *endptr != '\0')
             parse_error(t, "Expected integer value");
         if (v < INT32_MIN || v > INT32_MAX)
             semantic_error(t, "Integer value out of range for int32_t");
         lc->val.i32 = (int32_t)v;
-    } else if (!strcmp(typename, "int64_t")) {
+    } else if (!strcmp(lctypename, "int64_t")) {
         long long v = strtoll(t->token, &endptr, 0);
         if (endptr == t->token || *endptr != '\0')
             parse_error(t, "Expected integer value");
         lc->val.i64 = (int64_t)v;
-    } else if (!strcmp(typename, "float")) {
+    } else if (!strcmp(lctypename, "float")) {
         double v = strtod(t->token, &endptr);
         if (endptr == t->token || *endptr != '\0')
             parse_error(t, "Expected floating point value");
         if (v > FLT_MAX || v < -FLT_MAX)
             semantic_error(t, "Floating point value out of range for float");
         lc->val.f = (float)v;
-    } else if (!strcmp(typename, "double")) {
+    } else if (!strcmp(lctypename, "double")) {
         double v = strtod(t->token, &endptr);
         if (endptr == t->token || *endptr != '\0')
             parse_error(t, "Expected floating point value");
@@ -432,7 +454,7 @@ another_constant:
     if (parse_try_consume(t, ","))
         goto another_constant;
 
-    free(typename);
+    free(lctypename);
 
     parse_require(t, ";");
     return 0;
@@ -521,7 +543,7 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
                     if (!strcmp(thislm->membername, t->token)) {
                         if (g_ptr_array_size(thislm->dimensions) != 0)
                             semantic_error(t, "Array dimension '%s' must be not be an array type.", t->token);
-                        if (!lcm_is_array_dimension_type(thislm->type->typename))
+                        if (!lcm_is_array_dimension_type(thislm->type->lctypename))
                             semantic_error(t, "Array dimension '%s' must be an integer type.", t->token);
                         okay = 1;
                         break;
@@ -563,7 +585,7 @@ int parse_enum_value(lcm_enum_t *le, tokenize_t *t)
         int32_t max = 0;
 
         for (unsigned int i = 0; i < g_ptr_array_size(le->values); i++) {
-            lcm_enum_value_t *tmp = g_ptr_array_index(le->values, i);
+            lcm_enum_value_t *tmp = (lcm_enum_value_t *) g_ptr_array_index(le->values, i);
             if (tmp->value > max)
                 max = tmp->value;
         }
@@ -573,7 +595,7 @@ int parse_enum_value(lcm_enum_t *le, tokenize_t *t)
 
     // make sure there aren't any duplicate values
     for (unsigned int i = 0; i < g_ptr_array_size(le->values); i++) {
-        lcm_enum_value_t *tmp = g_ptr_array_index(le->values, i);
+        lcm_enum_value_t *tmp = (lcm_enum_value_t *) g_ptr_array_index(le->values, i);
         if (tmp->value == lev->value)
             semantic_error(t, "Enum values %s and %s have the same value %d!", tmp->valuename, lev->valuename, lev->value);
         if (!strcmp(tmp->valuename, lev->valuename))
@@ -698,7 +720,7 @@ void lcm_typename_dump(lcm_typename_t *lt)
     char buf[1024];
     int pos = 0;
 
-    pos += sprintf(&buf[pos], "%s", lt->typename);
+    pos += sprintf(&buf[pos], "%s", lt->lctypename);
 
     printf("\t%-20s", buf);
 }
@@ -713,7 +735,7 @@ void lcm_member_dump(lcm_member_t *lm)
 
     int ndim = g_ptr_array_size(lm->dimensions);
     for (int i = 0; i < ndim; i++) {
-        lcm_dimension_t *dim = g_ptr_array_index(lm->dimensions, i);
+        lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, i);
         switch (dim->mode) 
         {
         case LCM_CONST:
@@ -733,24 +755,23 @@ void lcm_member_dump(lcm_member_t *lm)
 
 void lcm_enum_dump(lcm_enum_t *le)
 {
-    printf("enum %s\n", le->enumname->typename);
+    printf("enum %s\n", le->enumname->lctypename);
     for (unsigned int i = 0; i < g_ptr_array_size(le->values); i++) {
-        lcm_enum_value_t *lev = g_ptr_array_index(le->values, i);
+        lcm_enum_value_t *lev = (lcm_enum_value_t *) g_ptr_array_index(le->values, i);
         printf("        %-20s  %i\n", lev->valuename, lev->value);
     }
 }
 
 void lcm_struct_dump(lcm_struct_t *lr)
 {
-    printf("struct %s [hash=0x%16"PRId64"]\n", lr->structname->typename, lr->hash);
-
+    printf("struct %s [hash=0x%16"PRId64"]\n", lr->structname->lctypename, lr->hash);
     for (unsigned int i = 0; i < g_ptr_array_size(lr->members); i++) {
-        lcm_member_t *lm = g_ptr_array_index(lr->members, i);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, i);
         lcm_member_dump(lm);
     }
 
     for (unsigned int i = 0; i < g_ptr_array_size(lr->enums); i++) {
-        lcm_enum_t *le = g_ptr_array_index(lr->enums, i);
+        lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index(lr->enums, i);
         lcm_enum_dump(le);
     }
 }
@@ -758,12 +779,12 @@ void lcm_struct_dump(lcm_struct_t *lr)
 void lcmgen_dump(lcmgen_t *lcmgen)
 {
     for (unsigned int i = 0; i < g_ptr_array_size(lcmgen->enums); i++) {
-        lcm_enum_t *le = g_ptr_array_index(lcmgen->enums, i);
+        lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index(lcmgen->enums, i);
         lcm_enum_dump(le);
     }
 
     for (unsigned int i = 0; i < g_ptr_array_size(lcmgen->structs); i++) {
-        lcm_struct_t *lr = g_ptr_array_index(lcmgen->structs, i);
+        lcm_struct_t *lr = (lcm_struct_t *) g_ptr_array_index(lcmgen->structs, i);
         lcm_struct_dump(lr);
     }
 }
@@ -822,7 +843,7 @@ int lcm_is_constant_size_array(lcm_member_t *lm)
         return 1;
 
     for (int i = 0; i < ndim; i++) {
-        lcm_dimension_t *dim = g_ptr_array_index(lm->dimensions, i);
+        lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, i);
         
         if (dim->mode == LCM_VAR)
             return 0;

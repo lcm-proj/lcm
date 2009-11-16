@@ -5,10 +5,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <getopt.h>
 
-#include <sys/time.h>
+#ifdef WIN32
+#include <winsock2.h>
+#endif
+
+#include <getopt.h>
 #include <time.h>
 
 #include <lcm/lcm.h>
@@ -62,7 +64,7 @@ int main(int argc, char **argv)
     char *optstring = "hm:p:s:v";
     char c;
 
-    while ((c = getopt_long (argc, argv, optstring, NULL, 0)) >= 0)
+    while ((c = getopt(argc, argv, optstring)) >= 0)
     {
         switch (c) {
             case 'h':
@@ -98,7 +100,7 @@ int main(int argc, char **argv)
         memset(data, 0, packet_sz);
     }
 
-    lcm_t *lcm = lcm_create(NULL);
+    lcm_t *lcm = lcm_create("udpm://239.255.76.67:7667?ttl=1");
     if (! lcm) {
         fprintf(stderr, "couldn't allocate lcm_t\n");
         return 1;
@@ -133,6 +135,9 @@ int main(int argc, char **argv)
 
         if (transmit_interval_usec > 0) {
             // sleep...
+#ifdef WIN32
+			Sleep(transmit_interval_usec / 1000000);
+#else
             struct timespec ts = {
                 .tv_sec = (int) (transmit_interval_usec / 1000000),
                 .tv_nsec = (transmit_interval_usec % 1000000) * 1000
@@ -140,6 +145,7 @@ int main(int argc, char **argv)
             if (0 != nanosleep (&ts, NULL)) {
                 perror ("nanosleep");
             }
+#endif
         }
         seqno++;
     }

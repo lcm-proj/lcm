@@ -1,21 +1,34 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/uio.h>
 #include <math.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <time.h>
+#include <assert.h>
 
+#ifndef WIN32
+#include <sys/uio.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
-#include <fcntl.h>
 #include <netdb.h>
-#include <errno.h>
-
 #include <sys/time.h>
-#include <time.h>
-
-#include <assert.h>
 #include <sys/poll.h>
+#endif
+
+#ifdef SO_TIMESTAMP
+#define MSG_EXT_HDR
+#endif
+
+#ifdef WIN32
+#include <WinPorting.h>
+#include <winsock2.h>
+#include <Ws2tcpip.h>
+
+#define MSG_EXT_HDR
+
+#endif
 
 #include <glib.h>
 
@@ -23,6 +36,7 @@
 #include "lcm_internal.h"
 #include "dbg.h"
 #include "ringbuffer.h"
+
 
 #define LCM_RINGBUF_SIZE (1000*1024)
 
@@ -45,6 +59,7 @@
 #define USE_REUSEPORT
 #endif
 #endif
+
 
 typedef struct _lcm2_header_short lcm2_header_short_t;
 struct _lcm2_header_short {
@@ -72,7 +87,7 @@ typedef struct _lcm_frag_buf {
     uint32_t  data_size;
     uint16_t  fragments_remaining;
     uint32_t  msg_seqno;
-    struct timeval last_packet_time;
+    GTimeVal last_packet_time;
     int64_t   first_packet_utime;
 } lcm_frag_buf_t;
 
@@ -118,7 +133,7 @@ typedef struct _lcm_buf_queue {
  */
 typedef struct _udpm_params_t udpm_params_t;
 struct _udpm_params_t {
-    in_addr_t mc_addr;
+    struct in_addr mc_addr;
     uint16_t mc_port;
     uint8_t mc_ttl; 
     int recv_buf_size;
@@ -183,7 +198,7 @@ static int _setup_recv_thread (lcm_udpm_t *lcm);
 //            -1      a < b
 //             0      a == b
 static inline int
-_timeval_compare (const struct timeval *a, const struct timeval *b) {
+_timeval_compare (const GTimeVal *a, const GTimeVal *b) {
     if (a->tv_sec == b->tv_sec && a->tv_usec == b->tv_usec) return 0;
     if (a->tv_sec > b->tv_sec || 
             (a->tv_sec == b->tv_sec && a->tv_usec > b->tv_usec)) 
@@ -192,8 +207,7 @@ _timeval_compare (const struct timeval *a, const struct timeval *b) {
 }
 
 static inline void
-_timeval_add (const struct timeval *a, const struct timeval *b, 
-        struct timeval *dest) 
+_timeval_add (const GTimeVal *a, const GTimeVal *b, GTimeVal *dest) 
 {
     dest->tv_sec = a->tv_sec + b->tv_sec;
     dest->tv_usec = a->tv_usec + b->tv_usec;
@@ -204,8 +218,7 @@ _timeval_add (const struct timeval *a, const struct timeval *b,
 }
 
 static inline void
-_timeval_subtract (const struct timeval *a, const struct timeval *b,
-        struct timeval *dest)
+_timeval_subtract (const GTimeVal *a, const GTimeVal *b, GTimeVal *dest)
 {
     dest->tv_sec = a->tv_sec - b->tv_sec;
     dest->tv_usec = a->tv_usec - b->tv_usec;
@@ -218,8 +231,8 @@ _timeval_subtract (const struct timeval *a, const struct timeval *b,
 static inline int64_t 
 _timestamp_now()
 {
-    struct timeval tv;
-    gettimeofday (&tv, NULL);
+    GTimeVal tv;
+    g_get_current_time(&tv);
     return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
@@ -253,7 +266,7 @@ lcm_frag_buf_destroy (lcm_frag_buf_t *fbuf)
 static lcm_buf_queue_t *
 lcm_buf_queue_new (void)
 {
-    lcm_buf_queue_t * q = malloc (sizeof (lcm_buf_queue_t));
+    lcm_buf_queue_t * q = (lcm_buf_queue_t *) malloc (sizeof (lcm_buf_queue_t));
 
     q->head = NULL;
     q->tail = &q->head;
@@ -418,20 +431,20 @@ fail:
 static void
 new_argument (gpointer key, gpointer value, gpointer user)
 {
-    udpm_params_t * params = user;
-    if (!strcmp (key, "recv_buf_size")) {
+    udpm_params_t * params = (udpm_params_t *) user;
+    if (!strcmp ((char *) key, "recv_buf_size")) {
         char *endptr = NULL;
-        params->recv_buf_size = strtol (value, &endptr, 0);
+        params->recv_buf_size = strtol ((char *) value, &endptr, 0);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for recv_buf_size\n");
     }
-    else if (!strcmp (key, "ttl")) {
+    else if (!strcmp ((char *) key, "ttl")) {
         char *endptr = NULL;
-        params->mc_ttl = strtol (value, &endptr, 0);
+        params->mc_ttl = strtol ((char *) value, &endptr, 0);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for ttl\n");
     }
-    else if (!strcmp (key, "transmit_only")) {
+    else if (!strcmp ((char *) key, "transmit_only")) {
         fprintf (stderr, "%s:%d -- transmit_only option is now obsolete\n",
                 __FILE__, __LINE__);
     }
@@ -489,7 +502,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     lcm2_header_long_t *hdr = (lcm2_header_long_t*) lcmb->buf;
 
     // any existing fragment buffer for this message source?
-    lcm_frag_buf_t *fbuf = g_hash_table_lookup (lcm->frag_bufs, &lcmb->from);
+    lcm_frag_buf_t *fbuf = (lcm_frag_buf_t *) g_hash_table_lookup (lcm->frag_bufs, &lcmb->from);
 
     uint32_t msg_seqno = ntohl (hdr->msg_seqno);
     uint32_t data_size = ntohl (hdr->msg_size);
@@ -564,7 +577,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
 
     // copy data
     memcpy (fbuf->data + fragment_offset, data_start, frag_size);
-    gettimeofday (&fbuf->last_packet_time, NULL);
+    g_get_current_time(&fbuf->last_packet_time);
 
     fbuf->fragments_remaining --;
 
@@ -640,8 +653,8 @@ udp_read_packet (lcm_udpm_t *lcm)
     if (buf_avail < lcm->udp_low_watermark)
         lcm->udp_low_watermark = buf_avail;
 
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
+    GTimeVal tv;
+    g_get_current_time(&tv);
     int elapsedsecs = tv.tv_sec - lcm->udp_last_report_secs;
     if (elapsedsecs > 2) {
         uint32_t total_bad = lcm->udp_discarded_lcmb + 
@@ -732,29 +745,26 @@ udp_read_packet (lcm_udpm_t *lcm)
             // zero the last byte so that strlen never segfaults
             lcmb->buf[65535] = 0; 
         }
+        struct iovec        vec;
+        vec.iov_base = lcmb->buf;
+        vec.iov_len = 65535;
 
-        struct iovec vec = {
-            .iov_base = lcmb->buf,
-            .iov_len = 65535,
-        };
-
-#ifdef SO_TIMESTAMP
+#ifdef MSG_EXT_HDR
         // operating systems that provide SO_TIMESTAMP allow us to obtain more
         // accurate timestamps by having the kernel produce timestamps as soon
         // as packets are received.
         char controlbuf[64];
 #endif
-        struct msghdr msg = {
-            .msg_name = &lcmb->from,
-            .msg_namelen = sizeof (struct sockaddr),
-            .msg_iov = &vec,
-            .msg_iovlen = 1,
-#ifdef SO_TIMESTAMP
-            .msg_control = controlbuf,
-            .msg_controllen = sizeof (controlbuf),
-            .msg_flags = 0,
+        struct msghdr msg;
+        msg.msg_name = &lcmb->from;
+        msg.msg_namelen = sizeof (struct sockaddr);
+        msg.msg_iov = &vec;
+        msg.msg_iovlen = 1;
+#ifdef MSG_EXT_HDR
+        msg.msg_control = controlbuf;
+        msg.msg_controllen = sizeof (controlbuf);
+        msg.msg_flags = 0;
 #endif
-        };
         sz = recvmsg (lcm->recvfd, &msg, 0);
 
         if (sz < 0) {
@@ -763,8 +773,8 @@ udp_read_packet (lcm_udpm_t *lcm)
             continue;
         }
 
-        if (sz < sizeof(lcm2_header_short_t)) {
-//            fprintf(stderr, "Packet too short to be LCM\n");
+        if (sz < sizeof(lcm2_header_short_t)) { 
+            // packet too short to be LCM
             lcm->udp_discarded_bad++;
             continue;
         }
@@ -778,7 +788,8 @@ udp_read_packet (lcm_udpm_t *lcm)
         while (!lcmb->recv_utime && cmsg) {
             if (cmsg->cmsg_level == SOL_SOCKET &&
                     cmsg->cmsg_type == SCM_TIMESTAMP) {
-                struct timeval * t = (struct timeval *) CMSG_DATA (cmsg);
+                // GTimeVal is identical to struct timeval, so this cast is ok
+                GTimeVal * t = (GTimeVal*) CMSG_DATA (cmsg);  
                 lcmb->recv_utime = (int64_t) t->tv_sec * 1000000 + t->tv_usec;
                 got_utime = 1;
                 break;
@@ -877,24 +888,27 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
         // message is short.  send in a single packet
 
         g_static_mutex_lock (&lcm->transmit_lock);
-        lcm2_header_short_t hdr = {
-            .magic = htonl (LCM2_MAGIC_SHORT),
-            .msg_seqno = lcm->msg_seqno
-        };
 
-        struct iovec sendbufs[3] = { 
-            { &hdr, sizeof (hdr) }, 
-            { (void*)channel, channel_size + 1 },
-            { (void*)data, datalen }
-        };
+        lcm2_header_short_t hdr;
+        hdr.magic = htonl (LCM2_MAGIC_SHORT);
+        hdr.msg_seqno = lcm->msg_seqno;
+
+        struct iovec sendbufs[3];
+        sendbufs[0].iov_base = (char *) &hdr;
+        sendbufs[0].iov_len = sizeof (hdr);
+        sendbufs[1].iov_base = (char *) channel;
+        sendbufs[1].iov_len = channel_size + 1;
+        sendbufs[2].iov_base = (char *) data;
+        sendbufs[2].iov_len = datalen;
 
         // transmit
         int packet_size = datalen + sizeof (hdr) + channel_size + 1;
         dbg (DBG_LCM_MSG, "transmitting %d byte [%s] payload (%d byte pkt)\n", 
                 datalen, channel, packet_size);
 
+//        int status = writev (lcm->sendfd, sendbufs, 3);
         struct msghdr msg;
-        msg.msg_name = &lcm->dest_addr;
+        msg.msg_name = (struct sockaddr*) &lcm->dest_addr;
         msg.msg_namelen = sizeof(lcm->dest_addr);
         msg.msg_iov = sendbufs;
         msg.msg_iovlen = 3;
@@ -902,6 +916,7 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
         msg.msg_controllen = 0;
         msg.msg_flags = 0;
         int status = sendmsg(lcm->sendfd, &msg, 0);
+
         lcm->msg_seqno ++;
         g_static_mutex_unlock (&lcm->transmit_lock);
 
@@ -927,29 +942,31 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
 
         uint32_t fragment_offset = 0;
 
-        lcm2_header_long_t hdr = {
-            .magic = htonl (LCM2_MAGIC_LONG),
-            .msg_seqno = htonl (lcm->msg_seqno),
-            .msg_size = htonl (datalen),
-            .fragment_offset = 0,
-            .fragment_no = 0,
-            .fragments_in_msg = htons (nfragments)
-        };
+        lcm2_header_long_t hdr;
+        hdr.magic = htonl (LCM2_MAGIC_LONG);
+        hdr.msg_seqno = htonl (lcm->msg_seqno);
+        hdr.msg_size = htonl (datalen);
+        hdr.fragment_offset = 0;
+        hdr.fragment_no = 0;
+        hdr.fragments_in_msg = htons (nfragments);
 
         // first fragment is special.  insert channel before data
         int firstfrag_datasize = LCM_SHORT_MESSAGE_MAX_SIZE - (channel_size + 1);
         assert (firstfrag_datasize <= datalen);
-        struct iovec first_sendbufs[] = {
-            { &hdr, sizeof (hdr) },
-            { (void*) channel, channel_size + 1 },
-            { (void*) data, firstfrag_datasize}
-        };
+
+        struct iovec    first_sendbufs[3];
+        first_sendbufs[0].iov_base = (char *) &hdr;
+        first_sendbufs[0].iov_len = sizeof (hdr);
+        first_sendbufs[1].iov_base = (char *) channel;
+        first_sendbufs[1].iov_len = channel_size + 1;
+        first_sendbufs[2].iov_base = (char *) data;
+        first_sendbufs[2].iov_len = firstfrag_datasize;
 
         int packet_size = sizeof (hdr) + channel_size + 1 + firstfrag_datasize;
         fragment_offset += firstfrag_datasize;
-
+//        int status = writev (lcm->sendfd, first_sendbufs, 3);
         struct msghdr msg;
-        msg.msg_name = &lcm->dest_addr;
+        msg.msg_name = (struct sockaddr*) &lcm->dest_addr;
         msg.msg_namelen = sizeof(lcm->dest_addr);
         msg.msg_iov = first_sendbufs;
         msg.msg_iovlen = 3;
@@ -968,11 +985,13 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
             int fraglen = MIN (LCM_SHORT_MESSAGE_MAX_SIZE, 
                     datalen - fragment_offset);
 
-            struct iovec sendbufs[2] = {
-                { &hdr, sizeof (hdr) },
-                { (void*) (data + fragment_offset), fraglen },
-            };
+            struct iovec sendbufs[2];
+            sendbufs[0].iov_base = (char *) &hdr;
+            sendbufs[0].iov_len = sizeof (hdr);
+            sendbufs[1].iov_base = (char *) ((char *)data + fragment_offset);
+            sendbufs[1].iov_len = fraglen;
 
+//            status = writev (lcm->sendfd, sendbufs, 2);
             msg.msg_iov = sendbufs;
             msg.msg_iovlen = 2;
             status = sendmsg(lcm->sendfd, &msg, 0);
@@ -1034,12 +1053,11 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
             perror ("write to notify");
     g_static_rec_mutex_unlock (&lcm->mutex);
 
-    lcm_recv_buf_t rbuf = {
-        .data = (uint8_t*) lcmb->buf + lcmb->data_offset,
-        .data_size = lcmb->data_size,
-        .recv_utime = lcmb->recv_utime,
-        .lcm = lcm->lcm
-    };
+    lcm_recv_buf_t rbuf;
+    rbuf.data = (uint8_t*) lcmb->buf + lcmb->data_offset;
+    rbuf.data_size = lcmb->data_size;
+    rbuf.recv_utime = lcmb->recv_utime;
+    rbuf.lcm = lcm->lcm;
 
     lcm_dispatch_handlers (lcm->lcm, &rbuf, lcmb->channel_name);
 
@@ -1077,39 +1095,38 @@ udpm_self_test (lcm_udpm_t *lcm)
     lcm_udpm_publish (lcm, "LCM_SELF_TEST", (uint8_t*)msg, strlen (msg));
 
     // wait one second for message to be received
-    struct timeval now, endtime;
-    gettimeofday (&now, NULL);
+    GTimeVal now, endtime;
+    g_get_current_time(&now);
     endtime.tv_sec = now.tv_sec + 10;
     endtime.tv_usec = now.tv_usec;
 
     // periodically retransmit, just in case
-    struct timeval retransmit_interval = { 0, 100000 };
-    struct timeval next_retransmit;
+    GTimeVal retransmit_interval = { 0, 100000 };
+    GTimeVal next_retransmit;
     _timeval_add (&now, &retransmit_interval, &next_retransmit);
 
     int recvfd = lcm_udpm_get_fileno (lcm);
 
     do {
-        struct timeval selectto;
+        GTimeVal selectto;
         _timeval_subtract (&next_retransmit, &now, &selectto);
 
         fd_set readfds;
         FD_ZERO (&readfds);
         FD_SET (recvfd,&readfds);
 
-        gettimeofday (&now, NULL);
+        g_get_current_time(&now);
         if (_timeval_compare (&now, &next_retransmit) > 0) {
             status = lcm_udpm_publish (lcm, "LCM_SELF_TEST", (uint8_t*)msg, 
                     strlen (msg));
             _timeval_add (&now, &retransmit_interval, &next_retransmit);
         }
 
-        status=select (recvfd + 1,&readfds,0,0,&selectto);
+        status=select (recvfd + 1,&readfds,0,0, (struct timeval*) &selectto);
         if (status > 0 && FD_ISSET (recvfd,&readfds)) {
             lcm_udpm_handle (lcm);
         }
-
-        gettimeofday (&now, NULL);
+        g_get_current_time(&now);
 
     } while (! success && _timeval_compare (&now, &endtime) < 0);
 
@@ -1179,24 +1196,28 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     }
 #endif
 
+#ifdef WIN32
+    // Windows has small (8k) buffer by default
+    // Increase it to a default reasonable amount
+    int recv_buf_size = 2048 * 1024;
+    setsockopt(lcm->recvfd, SOL_SOCKET, SO_RCVBUF, 
+            (char*)&recv_buf_size, sizeof(recv_buf_size));
+#endif
+
     // debugging... how big is the receive buffer?
-    int sockbufsize = 0;
     unsigned int retsize = sizeof (int);
-    getsockopt (lcm->sendfd, SOL_SOCKET, SO_SNDBUF, 
-            (char*)&sockbufsize, &retsize);
-    dbg (DBG_LCM, "LCM: send buffer is %d bytes\n", sockbufsize);
     getsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF, 
-            (char*)&lcm->kernel_rbuf_sz, &retsize);
+            (char*)&lcm->kernel_rbuf_sz, (socklen_t *) &retsize);
     dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", lcm->kernel_rbuf_sz);
     if (lcm->params.recv_buf_size) {
         if (setsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF,
-                &lcm->params.recv_buf_size, 
+                (char *) &lcm->params.recv_buf_size, 
                 sizeof (lcm->params.recv_buf_size)) < 0) {
             perror ("setsockopt(SOL_SOCKET, SO_RCVBUF)");
             fprintf (stderr, "Warning: Unable to set recv buffer size\n");
         }
         getsockopt (lcm->recvfd, SOL_SOCKET, SO_RCVBUF, 
-                (char*)&lcm->kernel_rbuf_sz, &retsize);
+                (char*)&lcm->kernel_rbuf_sz, (socklen_t *) &retsize);
         dbg (DBG_LCM, "LCM: receive buffer is %d bytes\n", lcm->kernel_rbuf_sz);
 
         if (lcm->params.recv_buf_size > lcm->kernel_rbuf_sz) {
@@ -1221,7 +1242,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     }
 
     struct ip_mreq mreq;
-    mreq.imr_multiaddr.s_addr = lcm->params.mc_addr;
+    mreq.imr_multiaddr = lcm->params.mc_addr;
     mreq.imr_interface.s_addr = INADDR_ANY;
     // join the multicast group
     dbg (DBG_LCM, "LCM: joining multicast group\n");
@@ -1240,7 +1261,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     for (i = 0; i < LCM_DEFAULT_RECV_BUFS; i++) {
         /* We don't set the receive buffer's data pointer yet because it
          * will be taken from the ringbuffer at receive time. */
-        lcm_buf_t * lcmb = calloc (1, sizeof (lcm_buf_t));
+        lcm_buf_t * lcmb = (lcm_buf_t *) calloc (1, sizeof (lcm_buf_t));
         lcm_buf_enqueue (lcm->inbufs_empty, lcmb);
     }
 
@@ -1329,9 +1350,6 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 {
     udpm_params_t params;
     memset (&params, 0, sizeof (udpm_params_t));
-    params.mc_addr = inet_addr ("0.0.0.0");
-    params.mc_port = 0;
-    params.mc_ttl = 0;
 
     g_hash_table_foreach ((GHashTable*) args, new_argument, &params);
 
@@ -1339,7 +1357,7 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
         return NULL;
     }
 
-    lcm_udpm_t * lcm = calloc (1, sizeof (lcm_udpm_t));
+    lcm_udpm_t * lcm = (lcm_udpm_t *) calloc (1, sizeof (lcm_udpm_t));
 
     lcm->lcm = parent;
     lcm->params = params;
@@ -1369,20 +1387,19 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     g_static_mutex_init (&lcm->transmit_lock);
 
     dbg (DBG_LCM, "Initializing LCM UDPM context...\n");
-    struct in_addr ia;
-    ia.s_addr = params.mc_addr;
-    dbg (DBG_LCM, "Multicast %s:%d\n", inet_ntoa (ia), ntohs (params.mc_port));
+    dbg (DBG_LCM, "Multicast %s:%d\n", inet_ntoa(params.mc_addr), ntohs (params.mc_port));
 
     // setup destination multicast address
     memset (&lcm->dest_addr, 0, sizeof (lcm->dest_addr));
     lcm->dest_addr.sin_family = AF_INET;
-    lcm->dest_addr.sin_addr.s_addr = params.mc_addr;
+    lcm->dest_addr.sin_addr = params.mc_addr;
     lcm->dest_addr.sin_port = params.mc_port;
 
     // test connectivity
     int testfd = socket (AF_INET, SOCK_DGRAM, 0);
     if (connect (testfd, (struct sockaddr*) &lcm->dest_addr, 
                 sizeof (lcm->dest_addr)) < 0) {
+
         perror ("connect");
         lcm_udpm_destroy (lcm);
 #ifdef __linux__
@@ -1390,7 +1407,15 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 #endif
         return NULL;
     }
-    close(testfd);
+    shutdown(testfd, SHUT_RDWR);
+
+//    // set multicast transmit interface
+//    if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_IF,
+//                (char *) &params.local_iface, sizeof (params.local_iface)) < 0) {
+//        perror ("setsockopt(IPPROTO_IP, IP_MULTICAST_IF)");
+//        lcm_udpm_destroy (lcm);
+//        return NULL;
+//    }
 
     // create a transmit socket
     //
@@ -1405,11 +1430,26 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     }
     dbg (DBG_LCM, "LCM: setting multicast packet TTL to %d\n", params.mc_ttl);
     if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_TTL,
-                &params.mc_ttl, sizeof (params.mc_ttl)) < 0) {
+                (char *) &params.mc_ttl, sizeof (params.mc_ttl)) < 0) {
         perror ("setsockopt(IPPROTO_IP, IP_MULTICAST_TTL)");
         lcm_udpm_destroy (lcm);
         return NULL;
     }
+
+#ifdef WIN32
+    // Windows has small (8k) buffer by default
+    // increase the send buffer to a reasonable amount.
+    int send_buf_size = 256 * 1024;
+    setsockopt(lcm->sendfd, SOL_SOCKET, SO_SNDBUF, 
+            (char*)&send_buf_size, sizeof(send_buf_size));
+#endif
+
+    // debugging... how big is the send buffer?
+    int sockbufsize = 0;
+    unsigned int retsize = sizeof(int);
+    getsockopt(lcm->sendfd, SOL_SOCKET, SO_SNDBUF, 
+            (char*)&sockbufsize, (socklen_t *) &retsize);
+    dbg (DBG_LCM, "LCM: send buffer is %d bytes\n", sockbufsize);
 
     // set loopback option on the send socket
 #ifdef __sun__
@@ -1418,7 +1458,7 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     unsigned int send_lo_opt = 1;
 #endif
     if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_LOOP, 
-                &send_lo_opt, sizeof (send_lo_opt)) < 0) {
+                (char *) &send_lo_opt, sizeof (send_lo_opt)) < 0) {
         perror ("setsockopt (IPPROTO_IP, IP_MULTICAST_LOOP)");
         lcm_udpm_destroy (lcm);
         return NULL;
@@ -1430,24 +1470,24 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     return lcm;
 }
 
-
-static lcm_provider_vtable_t udpm_vtable = {
-    .create     = lcm_udpm_create,
-    .destroy    = lcm_udpm_destroy,
-    .subscribe  = lcm_udpm_subscribe,
-    .publish    = lcm_udpm_publish,
-    .handle     = lcm_udpm_handle,
-    .get_fileno = lcm_udpm_get_fileno,
-};
-
-static lcm_provider_info_t udpm_info = {
-    .name = "udpm",
-    .vtable = &udpm_vtable,
-};
+static lcm_provider_vtable_t udpm_vtable;
+static lcm_provider_info_t udpm_info;
 
 void
 lcm_udpm_provider_init (GPtrArray * providers)
 {
+// Because of Microsoft Visual Studio compiler
+// difficulties, do this now, not statically
+    udpm_vtable.create     = lcm_udpm_create;
+    udpm_vtable.destroy    = lcm_udpm_destroy;
+    udpm_vtable.subscribe  = lcm_udpm_subscribe;
+    udpm_vtable.publish    = lcm_udpm_publish;
+    udpm_vtable.handle     = lcm_udpm_handle;
+    udpm_vtable.get_fileno = lcm_udpm_get_fileno;
+
+    udpm_info.name = "udpm";
+    udpm_info.vtable = &udpm_vtable;
+
     g_ptr_array_add (providers, &udpm_info);
 }
 

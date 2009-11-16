@@ -2,7 +2,9 @@
 #include <stdint.h>
 #include <ctype.h>
 #include <string.h>
+#ifndef WIN32
 #include <unistd.h>
+#endif
 #include <stdarg.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -10,6 +12,10 @@
 #include <sys/types.h>
 #include <inttypes.h>
 #include "lcmgen.h"
+
+#ifdef WIN32
+#include <WinPorting.h>
+#endif
 
 #include "getopt.h"
 #include "tokenize.h"
@@ -57,7 +63,7 @@ int main(int argc, char *argv[])
     lcm->gopt = gopt;
 
     for (unsigned int i = 0; i < g_ptr_array_size(gopt->extraargs); i++) {
-        char *path = g_ptr_array_index(gopt->extraargs, i);
+        char *path = (char *) g_ptr_array_index(gopt->extraargs, i);
 
         int res = lcmgen_handle_file(lcm, path);
         if (res)

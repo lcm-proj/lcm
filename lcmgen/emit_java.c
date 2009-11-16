@@ -2,6 +2,9 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#ifdef WIN32
+#define __STDC_FORMAT_MACROS
+#endif
 #include <inttypes.h>
 #include <assert.h>
 
@@ -11,6 +14,10 @@
 #include "lcmgen.h"
 #include "sprintfalloc.h"
 #include "getopt.h"
+
+#ifdef WIN32
+#include <WinPorting.h>
+#endif
 
 #define INDENT(n) (4*(n))
 
@@ -32,10 +39,13 @@ static char *dots_to_slashes(const char *s)
 
 static void make_dirs_for_file(const char *path)
 {
+#ifdef WIN32
+    g_mkdir_with_parents(path, 0755);
+#else
     int len = strlen(path);
     for (int i = 0; i < len; i++) {
         if (path[i]=='/') {
-            char *dirpath = malloc(i+1);
+            char *dirpath = (char *) malloc(i+1);
             strncpy(dirpath, path, i);
             dirpath[i]=0;
 
@@ -45,6 +55,7 @@ static void make_dirs_for_file(const char *path)
             i++; // skip the '/'
         }
     }
+#endif
 }
 
 void setup_java_options(getopt_t *gopt)
@@ -149,9 +160,9 @@ int emit_java(lcmgen_t *lcm)
     //////////////////////////////////////////////////////////////
     // ENUMS
     for (unsigned int en = 0; en < g_ptr_array_size(lcm->enums); en++) {
-        lcm_enum_t *le = g_ptr_array_index(lcm->enums, en);
+        lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index(lcm->enums, en);
         
-        const char *classname = make_fqn(lcm, le->enumname->typename);
+        const char *classname = make_fqn(lcm, le->enumname->lctypename);
         char *path = sprintfalloc("%s%s%s.java", 
                                   getopt_get_string(lcm->gopt, "jpath"),
                                   strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
@@ -184,7 +195,7 @@ int emit_java(lcmgen_t *lcm)
         emit(0, " ");
 
         for (unsigned int v = 0; v < g_ptr_array_size(le->values); v++) {
-            lcm_enum_value_t *lev = g_ptr_array_index(le->values, v);
+            lcm_enum_value_t *lev = (lcm_enum_value_t *) g_ptr_array_index(le->values, v);
             emit(1, "public static final int %-16s = %i;", 
                     lev->valuename, lev->value);
         }
@@ -210,9 +221,9 @@ int emit_java(lcmgen_t *lcm)
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public static %s _decodeRecursiveFactory(DataInput ins) throws IOException", make_fqn(lcm, le->enumname->typename));
+        emit(1,"public static %s _decodeRecursiveFactory(DataInput ins) throws IOException", make_fqn(lcm, le->enumname->lctypename));
         emit(1,"{");
-        emit(2,"%s o = new %s(0);", make_fqn(lcm, le->enumname->typename), make_fqn(lcm, le->enumname->typename));
+        emit(2,"%s o = new %s(0);", make_fqn(lcm, le->enumname->lctypename), make_fqn(lcm, le->enumname->lctypename));
         emit(2,"o._decodeRecursive(ins);");
         emit(2,"return o;");
         emit(1,"}");
@@ -250,9 +261,9 @@ int emit_java(lcmgen_t *lcm)
     }
     
     for (unsigned int st = 0; st < g_ptr_array_size(lcm->structs); st++) {
-        lcm_struct_t *lr = g_ptr_array_index(lcm->structs, st);
+        lcm_struct_t *lr = (lcm_struct_t *) g_ptr_array_index(lcm->structs, st);
 
-        const char *classname = make_fqn(lcm, lr->structname->typename);
+        const char *classname = make_fqn(lcm, lr->structname->lctypename);
         char *path = sprintfalloc("%s%s%s.java", 
                                   getopt_get_string(lcm->gopt, "jpath"), 
                                   strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
@@ -286,13 +297,13 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "{");
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
 
             emit_start(1, "public ");
             
             if (pinfo==NULL)  {
-                emit_continue("%s", make_fqn(lcm, lm->type->typename));
+                emit_continue("%s", make_fqn(lcm, lm->type->lctypename));
             } else {
                 emit_continue("%s", pinfo->storage);
             }
@@ -310,8 +321,8 @@ int emit_java(lcmgen_t *lcm)
 
         // pre-allocate any fixed-size arrays.
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
 
             if (g_ptr_array_size(lm->dimensions)==0 || !lcm_is_constant_size_array(lm))
                 continue;
@@ -320,7 +331,7 @@ int emit_java(lcmgen_t *lcm)
             if (pinfo != NULL)
                 emit_continue("%s", pinfo->storage);
             else 
-                emit_continue("%s", make_fqn(lcm, lm->type->typename));
+                emit_continue("%s", make_fqn(lcm, lm->type->lctypename));
       
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
@@ -338,18 +349,18 @@ int emit_java(lcmgen_t *lcm)
         //////////////////////////////////////////////////////////////
         // CONSTANTS
         for (unsigned int cn = 0; cn < g_ptr_array_size(lr->constants); cn++) {
-            lcm_constant_t *lc = g_ptr_array_index(lr->constants, cn);
-            assert(lcm_is_legal_const_type(lc->typename));
+            lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(lr->constants, cn);
+            assert(lcm_is_legal_const_type(lc->lctypename));
 
-            if (!strcmp(lc->typename, "int8_t") ||
-                !strcmp(lc->typename, "int16_t") ||
-                !strcmp(lc->typename, "int32_t")) {
+            if (!strcmp(lc->lctypename, "int8_t") ||
+                !strcmp(lc->lctypename, "int16_t") ||
+                !strcmp(lc->lctypename, "int32_t")) {
                 emit(1, "public static final int %s = %s;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->typename, "int64_t")) {
+            } else if (!strcmp(lc->lctypename, "int64_t")) {
                 emit(1, "public static final long %s = %sL;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->typename, "float")) {
+            } else if (!strcmp(lc->lctypename, "float")) {
                 emit(1, "public static final float %s = %s;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->typename, "double")) {
+            } else if (!strcmp(lc->lctypename, "double")) {
                 emit(1, "public static final double %s = %s;", lc->membername, lc->val_str);
             } else {
                 assert(0);
@@ -366,20 +377,20 @@ int emit_java(lcmgen_t *lcm)
 
         emit(1, "public static long _hashRecursive(ArrayList<Class> classes)");
         emit(1, "{");
-        emit(2, "if (classes.contains(%s.class))", make_fqn(lcm, lr->structname->typename));
+        emit(2, "if (classes.contains(%s.class))", make_fqn(lcm, lr->structname->lctypename));
         emit(3,     "return 0L;");
         emit(0, " ");
-        emit(2, "classes.add(%s.class);", make_fqn(lcm, lr->structname->typename));
+        emit(2, "classes.add(%s.class);", make_fqn(lcm, lr->structname->lctypename));
 
         emit(2, "long hash = LCM_FINGERPRINT_BASE");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
 
             if (pinfo)
                 continue;
 
-            emit(3, " + %s._hashRecursive(classes)", make_fqn(lcm, lm->type->typename));
+            emit(3, " + %s._hashRecursive(classes)", make_fqn(lcm, lm->type->lctypename));
         }
         emit(3,";");
 
@@ -404,8 +415,8 @@ int emit_java(lcmgen_t *lcm)
         char accessor[1024];
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
             make_accessor(lm, "this", accessor);
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
@@ -446,9 +457,9 @@ int emit_java(lcmgen_t *lcm)
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public static %s _decodeRecursiveFactory(DataInput ins) throws IOException", make_fqn(lcm, lr->structname->typename));
+        emit(1,"public static %s _decodeRecursiveFactory(DataInput ins) throws IOException", make_fqn(lcm, lr->structname->lctypename));
         emit(1,"{");
-        emit(2,"%s o = new %s();", make_fqn(lcm, lr->structname->typename), make_fqn(lcm, lr->structname->typename));
+        emit(2,"%s o = new %s();", make_fqn(lcm, lr->structname->lctypename), make_fqn(lcm, lr->structname->lctypename));
         emit(2,"o._decodeRecursive(ins);");
         emit(2,"return o;");
         emit(1,"}");
@@ -458,8 +469,8 @@ int emit_java(lcmgen_t *lcm)
         emit(1,"{");        
         emit(2,     "byte[] __strbuf = null;");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
 
             make_accessor(lm, "this", accessor);
 
@@ -471,7 +482,7 @@ int emit_java(lcmgen_t *lcm)
                 if (pinfo != NULL)
                     emit_continue("%s", pinfo->storage);
                 else
-                    emit_continue("%s", make_fqn(lcm, lm->type->typename));
+                    emit_continue("%s", make_fqn(lcm, lm->type->lctypename));
 
                 for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                     lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
@@ -489,7 +500,7 @@ int emit_java(lcmgen_t *lcm)
             if (pinfo != NULL) 
                 freplace(f, pinfo->decode, accessor);
             else {
-                emit_continue("%s = %s._decodeRecursiveFactory(ins);", accessor, make_fqn(lcm, lm->type->typename));
+                emit_continue("%s = %s._decodeRecursiveFactory(ins);", accessor, make_fqn(lcm, lm->type->lctypename));
             }
             emit_end("");
 
@@ -511,8 +522,8 @@ int emit_java(lcmgen_t *lcm)
         emit(2,"%s outobj = new %s();", classname, classname);
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
             make_accessor(lm, "", accessor);
 
             // allocate an array if necessary
@@ -523,7 +534,7 @@ int emit_java(lcmgen_t *lcm)
                 if (pinfo != NULL)
                     emit_continue("%s", pinfo->storage);
                 else
-                    emit_continue("%s", make_fqn(lcm, lm->type->typename));
+                    emit_continue("%s", make_fqn(lcm, lm->type->lctypename));
 
                 for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                     lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
