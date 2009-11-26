@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example_t_demo", "example_t_demo\example_t_demo.csproj", "{070C52DF-21E9-4E64-9544-3B3D4FC42502}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tcp_provider_demo", "tcp_provider_demo\tcp_provider_demo.csproj", "{73DF9E5E-47C6-4235-96E2-4796D5DA8108}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{070C52DF-21E9-4E64-9544-3B3D4FC42502}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{070C52DF-21E9-4E64-9544-3B3D4FC42502}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{070C52DF-21E9-4E64-9544-3B3D4FC42502}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{070C52DF-21E9-4E64-9544-3B3D4FC42502}.Release|Any CPU.Build.0 = Release|Any CPU
+		{73DF9E5E-47C6-4235-96E2-4796D5DA8108}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{73DF9E5E-47C6-4235-96E2-4796D5DA8108}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{73DF9E5E-47C6-4235-96E2-4796D5DA8108}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{73DF9E5E-47C6-4235-96E2-4796D5DA8108}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
