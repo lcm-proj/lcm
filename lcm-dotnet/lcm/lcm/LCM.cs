@@ -102,7 +102,6 @@ namespace LCM.LCM
                 if (protocol.Equals("udpm"))
                 {
                     providers.Add(new UDPMulticastProvider(this, up));
-                    TCPProvider u = new TCPProvider(this, up);
                 }
                 else if (protocol.Equals("tcp"))
                 {

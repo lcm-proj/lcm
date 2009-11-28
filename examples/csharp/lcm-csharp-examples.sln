@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example_t_demo", "example_t
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tcp_provider_demo", "tcp_provider_demo\tcp_provider_demo.csproj", "{73DF9E5E-47C6-4235-96E2-4796D5DA8108}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "lcm", "..\..\lcm-dotnet\lcm\lcm.csproj", "{1A945928-4DDA-465B-949B-7A867860EDCF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{73DF9E5E-47C6-4235-96E2-4796D5DA8108}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{73DF9E5E-47C6-4235-96E2-4796D5DA8108}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{73DF9E5E-47C6-4235-96E2-4796D5DA8108}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A945928-4DDA-465B-949B-7A867860EDCF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A945928-4DDA-465B-949B-7A867860EDCF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A945928-4DDA-465B-949B-7A867860EDCF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A945928-4DDA-465B-949B-7A867860EDCF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

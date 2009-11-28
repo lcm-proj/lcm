@@ -160,9 +160,9 @@ int emit_csharp(lcmgen_t *lcm)
     //////////////////////////////////////////////////////////////
     // ENUMS
     for (unsigned int en = 0; en < g_ptr_array_size(lcm->enums); en++) {
-        lcm_enum_t *le = g_ptr_array_index(lcm->enums, en);
+        lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index(lcm->enums, en);
         
-        const char *classname = make_fqn_csharp(lcm, le->enumname->typename);
+        const char *classname = make_fqn_csharp(lcm, le->enumname->lctypename);
         char *path = sprintfalloc("%s%s%s.cs", 
                                   getopt_get_string(lcm->gopt, "csharp-path"),
                                   strlen(getopt_get_string(lcm->gopt, "csharp-path")) > 0 ? "/" : "",
@@ -222,9 +222,9 @@ int emit_csharp(lcmgen_t *lcm)
         emit(2,"}");
         emit(0," ");
 
-        emit(2,"public static %s _decodeRecursiveFactory(BinaryReader ins)", make_fqn_csharp(lcm, le->enumname->typename));
+        emit(2,"public static %s _decodeRecursiveFactory(BinaryReader ins)", make_fqn_csharp(lcm, le->enumname->lctypename));
         emit(2,"{");
-        emit(3,"%s o = new %s(0);", make_fqn_csharp(lcm, le->enumname->typename), make_fqn_csharp(lcm, le->enumname->typename));
+        emit(3,"%s o = new %s(0);", make_fqn_csharp(lcm, le->enumname->lctypename), make_fqn_csharp(lcm, le->enumname->lctypename));
         emit(3,"o._decodeRecursive(ins);");
         emit(3,"return o;");
         emit(2,"}");
@@ -263,9 +263,9 @@ int emit_csharp(lcmgen_t *lcm)
     }
     
     for (unsigned int st = 0; st < g_ptr_array_size(lcm->structs); st++) {
-        lcm_struct_t *lr = g_ptr_array_index(lcm->structs, st);
+        lcm_struct_t *lr = (lcm_struct_t *) g_ptr_array_index(lcm->structs, st);
 
-        const char *classname = make_fqn_csharp(lcm, lr->structname->typename);
+        const char *classname = make_fqn_csharp(lcm, lr->structname->lctypename);
         char *path = sprintfalloc("%s%s%s.cs", 
                                   getopt_get_string(lcm->gopt, "csharp-path"), 
                                   strlen(getopt_get_string(lcm->gopt, "csharp-path")) > 0 ? "/" : "",
@@ -303,12 +303,12 @@ int emit_csharp(lcmgen_t *lcm)
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
 
             emit_start(2, "public ");
             
             if (pinfo==NULL)  {
-                emit_continue("%s", make_fqn_csharp(lcm, lm->type->typename));
+                emit_continue("%s", make_fqn_csharp(lcm, lm->type->lctypename));
             } else {
                 emit_continue("%s", pinfo->storage);
             }
@@ -327,7 +327,7 @@ int emit_csharp(lcmgen_t *lcm)
         // pre-allocate any fixed-size arrays.
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
 
             if (g_ptr_array_size(lm->dimensions)==0 || !lcm_is_constant_size_array(lm))
                 continue;
@@ -336,7 +336,7 @@ int emit_csharp(lcmgen_t *lcm)
             if (pinfo != NULL)
                 emit_continue("%s", pinfo->storage);
             else 
-                emit_continue("%s", make_fqn_csharp(lcm, lm->type->typename));
+                emit_continue("%s", make_fqn_csharp(lcm, lm->type->lctypename));
       
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
@@ -354,18 +354,18 @@ int emit_csharp(lcmgen_t *lcm)
         //////////////////////////////////////////////////////////////
         // CONSTANTS
         for (unsigned int cn = 0; cn < g_ptr_array_size(lr->constants); cn++) {
-            lcm_constant_t *lc = g_ptr_array_index(lr->constants, cn);
-            assert(lcm_is_legal_const_type(lc->typename));
+            lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(lr->constants, cn);
+            assert(lcm_is_legal_const_type(lc->lctypename));
 
-            if (!strcmp(lc->typename, "int8_t") ||
-                !strcmp(lc->typename, "int16_t") ||
-                !strcmp(lc->typename, "int32_t")) {
+            if (!strcmp(lc->lctypename, "int8_t") ||
+                !strcmp(lc->lctypename, "int16_t") ||
+                !strcmp(lc->lctypename, "int32_t")) {
                 emit(2, "public const int %s = %s;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->typename, "int64_t")) {
+            } else if (!strcmp(lc->lctypename, "int64_t")) {
                 emit(2, "public const long %s = %sL;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->typename, "float")) {
+            } else if (!strcmp(lc->lctypename, "float")) {
                 emit(2, "public const float %s = %s;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->typename, "double")) {
+            } else if (!strcmp(lc->lctypename, "double")) {
                 emit(2, "public const double %s = %s;", lc->membername, lc->val_str);
             } else {
                 assert(0);
@@ -382,20 +382,20 @@ int emit_csharp(lcmgen_t *lcm)
 
         emit(2, "public static ulong _hashRecursive(List<String> classes)");
         emit(2, "{");
-        emit(3, "if (classes.Contains(\"%s\"))", make_fqn_csharp(lcm, lr->structname->typename));
+        emit(3, "if (classes.Contains(\"%s\"))", make_fqn_csharp(lcm, lr->structname->lctypename));
         emit(4,     "return 0L;");
         emit(0, " ");
-        emit(3, "classes.Add(\"%s\");", make_fqn_csharp(lcm, lr->structname->typename));
+        emit(3, "classes.Add(\"%s\");", make_fqn_csharp(lcm, lr->structname->lctypename));
 
         emit(3, "ulong hash = LCM_FINGERPRINT_BASE");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
 
             if (pinfo)
                 continue;
 
-            emit(4, " + %s._hashRecursive(classes)", make_fqn_csharp(lcm, lm->type->typename));
+            emit(4, " + %s._hashRecursive(classes)", make_fqn_csharp(lcm, lm->type->lctypename));
         }
         emit(4,";");
 
@@ -420,8 +420,8 @@ int emit_csharp(lcmgen_t *lcm)
         char accessor[1024];
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
             make_accessor(lm, "this", accessor);
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
@@ -460,9 +460,9 @@ int emit_csharp(lcmgen_t *lcm)
         emit(2,"}");
         emit(0," ");
 
-        emit(2,"public static %s _decodeRecursiveFactory(BinaryReader ins)", make_fqn_csharp(lcm, lr->structname->typename));
+        emit(2,"public static %s _decodeRecursiveFactory(BinaryReader ins)", make_fqn_csharp(lcm, lr->structname->lctypename));
         emit(2,"{");
-        emit(3,"%s o = new %s();", make_fqn_csharp(lcm, lr->structname->typename), make_fqn_csharp(lcm, lr->structname->typename));
+        emit(3,"%s o = new %s();", make_fqn_csharp(lcm, lr->structname->lctypename), make_fqn_csharp(lcm, lr->structname->lctypename));
         emit(3,"o._decodeRecursive(ins);");
         emit(3,"return o;");
         emit(2,"}");
@@ -472,8 +472,8 @@ int emit_csharp(lcmgen_t *lcm)
         emit(2,"{");        
         emit(3,     "byte[] __strbuf = null;");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
 
             make_accessor(lm, "this", accessor);
 
@@ -485,7 +485,7 @@ int emit_csharp(lcmgen_t *lcm)
                 if (pinfo != NULL)
                     emit_continue("%s", pinfo->storage);
                 else
-                    emit_continue("%s", make_fqn_csharp(lcm, lm->type->typename));
+                    emit_continue("%s", make_fqn_csharp(lcm, lm->type->lctypename));
 
                 for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                     lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
@@ -503,7 +503,7 @@ int emit_csharp(lcmgen_t *lcm)
             if (pinfo != NULL) 
                 freplace(f, pinfo->decode, accessor);
             else {
-                emit_continue("%s = %s._decodeRecursiveFactory(ins);", accessor, make_fqn_csharp(lcm, lm->type->typename));
+                emit_continue("%s = %s._decodeRecursiveFactory(ins);", accessor, make_fqn_csharp(lcm, lm->type->lctypename));
             }
             emit_end("");
 
@@ -523,8 +523,8 @@ int emit_csharp(lcmgen_t *lcm)
         emit(3,"%s outobj = new %s();", classname, classname);
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = g_ptr_array_index(lr->members, member);
-            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->typename);
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+            primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
             make_accessor(lm, "", accessor);
 
             // allocate an array if necessary
@@ -535,7 +535,7 @@ int emit_csharp(lcmgen_t *lcm)
                 if (pinfo != NULL)
                     emit_continue("%s", pinfo->storage);
                 else
-                    emit_continue("%s", make_fqn_csharp(lcm, lm->type->typename));
+                    emit_continue("%s", make_fqn_csharp(lcm, lm->type->lctypename));
 
                 for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                     lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
