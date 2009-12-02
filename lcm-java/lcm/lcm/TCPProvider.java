@@ -6,10 +6,15 @@ import java.util.*;
 import java.util.regex.*;
 import java.nio.*;
 
-/** LCM provider for the tcp: URL. All messages are sent to a central
+/** LCM provider for the tcpq: URL. All messages are sent to a central
  * "hub" process (that must be started separately), which will relay
  * the messages to all other processes. TCPService is an
  * implementation of the hub process.
+ *
+ * The tcpq:// protocol is NOT suitable for real-time or high-bandwidth
+ * traffic.  It is specifically designed for playing back a log file in a 
+ * post-processing context (i.e., play back the log as fast as possible, but
+ * without dropping anything).
  **/
 public class TCPProvider implements Provider
 {
@@ -39,7 +44,7 @@ public class TCPProvider implements Provider
 	    inetAddr = InetAddress.getByName(addrport[0]);
 	    inetPort = Integer.valueOf(addrport[1]);
 	} else {
-	    System.out.println("TCPProvider: Don't know how to parse "+up.get("network", DEFAULT_NETWORK));
+	    System.err.println("TCPProvider: Don't know how to parse "+up.get("network", DEFAULT_NETWORK));
 	    System.exit(-1);
 	}
 
@@ -150,7 +155,7 @@ public class TCPProvider implements Provider
 		    serverVersion = ins.readInt();
 		    
 		} catch (IOException ex) {
-		    System.out.println("lcm.TCPProvider: Unable to connect to "+inetAddr+":"+inetPort);
+		    System.err.println("lcm.TCPProvider: Unable to connect to "+inetAddr+":"+inetPort);
 		    safeSleep(500);
 
 		    // try connecting again.

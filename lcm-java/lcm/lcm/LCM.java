@@ -50,7 +50,7 @@ public class LCM
 	    
 	    if (protocol.equals("udpm"))
 		providers.add(new UDPMulticastProvider(this, up));
-	    else if (protocol.equals("tcp"))
+	    else if (protocol.equals("tcpq"))
 		providers.add(new TCPProvider(this, up));
 	    else if (protocol.equals("file"))
 		providers.add(new LogFileProvider(this, up));
