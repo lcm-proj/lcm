@@ -103,7 +103,7 @@ namespace LCM.LCM
                 {
                     providers.Add(new UDPMulticastProvider(this, up));
                 }
-                else if (protocol.Equals("tcp"))
+                else if (protocol.Equals("tcpq"))
                 {
                     providers.Add(new TCPProvider(this, up));
                 }/*

@@ -17,7 +17,7 @@ namespace LCM.Examples
 
             try
             {
-                lcm = new LCM.LCM(new string[] { "tcp://127.0.0.1:7700" });
+                lcm = new LCM.LCM(new string[] { "tcpq://127.0.0.1:7700" });
 
                 lcm.SubscribeAll(new SimpleSubscriber());
 

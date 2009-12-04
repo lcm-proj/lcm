@@ -6,10 +6,19 @@ using System.Threading;
 
 namespace LCM.LCM
 {	
-	/// <summary>LCM provider for the tcp: URL. All messages are sent to a central
+	/// <summary>
+    /// LCM provider for the tcp: URL. All messages are sent to a central
 	/// "hub" process (that must be started separately), which will relay
 	/// the messages to all other processes. TCPService is an
-	/// implementation of the hub process.</summary>
+    /// implementation of the hub process.
+    /// 
+    /// The tcpq:// protocol is NOT suitable for real-time or high-bandwidth
+    /// traffic.  It is specifically designed for playing back a log file in a
+    /// post-processing context (i.e., play back the log as fast as possible, but
+    /// without dropping anything).
+    /// 
+    /// The .NET implementation is functionally equal to the Java version.
+    /// </summary>
 	public class TCPProvider : Provider
 	{
         /* Variables */
@@ -231,7 +240,7 @@ namespace LCM.LCM
 					}
 					catch (System.IO.IOException)
 					{
-                        System.Console.Out.WriteLine("LCM.TCPProvider: Unable to connect to " + provider.inetAddr + ":" + provider.inetPort);
+                        Console.Error.WriteLine("LCM.TCPProvider: Unable to connect to " + provider.inetAddr + ":" + provider.inetPort);
 						TCPProvider.SafeSleep(500);
 						
 						// try connecting again.
