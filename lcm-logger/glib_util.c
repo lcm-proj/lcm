@@ -154,8 +154,9 @@ signal_pipe_glib_quit_on_kill ()
     signal_pipe_add_signal (SIGINT);
     signal_pipe_add_signal (SIGTERM);
     signal_pipe_add_signal (SIGKILL);
-    signal_pipe_add_signal (SIGHUP);
-
+#ifndef WIN32
+    signal_pipe_add_signal (SIGHUP);			// Crashes under Windows
+#endif
     return signal_pipe_attach_glib (spgqok_handler, _mainloop);
 }
 

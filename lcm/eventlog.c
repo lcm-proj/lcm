@@ -20,6 +20,12 @@
 lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode)
 {
     assert(!strcmp(mode, "r") || !strcmp(mode, "w"));
+    if(*mode == 'w') 
+        mode = "wb";
+    else if(*mode == 'r')
+        mode = "rb";
+    else
+        return NULL;
 
     lcm_eventlog_t *l = (lcm_eventlog_t*) calloc(1, sizeof(lcm_eventlog_t));
 
