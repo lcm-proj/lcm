@@ -200,9 +200,15 @@ int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
 /**
  * lcm_handle:
  *
- * waits for and dispatches the next incoming message
+ * waits for and dispatches the next incoming message.
  *
  * Message handlers are invoked in the order registered.
+ *
+ * This function waits indefinitely.  If you want timeout behavior, (e.g., wait
+ * 100ms for a message) then consider using lcm_get_fileno() together with
+ * select() or poll()
+ *
+ * Returns: 0 normally, or a negative number when something has failed.
  */
 LCM_API_FUNCTION
 int lcm_handle (lcm_t *lcm);
