@@ -27,4 +27,5 @@ liblcminclude_HEADERS = \
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = lcm.pc
-EXTRA_DIST = lcm.pc.in
+EXTRA_DIST = lcm.pc.in \
+			 lcm.vcproj

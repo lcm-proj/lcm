@@ -23,4 +23,12 @@ lcm_logfilter_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la
 
 #man_MANS = lcm-example.1 lcm-sink.1 lcm-source.1 lcm-tester.1
 
-EXTRA_DIST = lcm-example.1 lcm-sink.1 lcm-source.1 lcm-tester.1
+EXTRA_DIST = lcm-example.1 \
+			 lcm-sink.1 \
+			 lcm-source.1 \
+			 lcm-tester.1 \
+			 lcm-tester.vcproj \
+			 lcm-sink.vcproj \
+			 lcm-logfilter.vcproj \
+			 lcm-example.vcproj \
+			 lcm-source.vcproj

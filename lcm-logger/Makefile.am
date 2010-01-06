@@ -10,4 +10,7 @@ lcm_logplayer_LDADD = ../lcm/liblcm.la
 
 man_MANS = lcm-logger.1 lcm-logplayer.1
 
-EXTRA_DIST = lcm-logger.1 lcm-logplayer.1
+EXTRA_DIST = lcm-logger.1 \
+			 lcm-logplayer.1 \
+			 lcm-logger.vcproj \
+			 lcm-logplayer.vcproj

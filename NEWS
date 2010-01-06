@@ -1,3 +1,15 @@
+Jan 6, 2010
+===========
+
+ Release 0.4:
+
+ This release introduces experimental support for Microsft Visual C++, provided
+ by Randy Sybel.  The LCM C bindings and examples should now compile with MSVC.
+ Bug reports and patches are greatly appreciated.
+
+ There are also a number of bugfixes in the Java port.  See the changelog for
+ details.
+
 Aug 14, 2009
 ============
 

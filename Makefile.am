@@ -5,6 +5,6 @@ if WITH_EXAMPLES
 SUBDIRS += examples
 endif
 
-#EXTRA_DIST = @PACKAGE@.spec
+EXTRA_DIST = WinSpecific
 ACLOCAL_AMFLAGS = -I m4
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc

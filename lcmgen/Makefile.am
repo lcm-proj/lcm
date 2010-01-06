@@ -19,4 +19,5 @@ lcm_gen_LDADD = $(GLIB_LIBS)
 
 man_MANS = lcm-gen.1
 
-EXTRA_DIST = lcm-gen.1
+EXTRA_DIST = lcm-gen.1 \
+			 lcmgen.vcproj
