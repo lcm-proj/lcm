@@ -1294,54 +1294,88 @@ _setup_recv_thread (lcm_udpm_t *lcm)
 }
 
 #ifdef __linux__
-#include <sys/ioctl.h>
-#include <net/if.h>
+static inline int _parse_inaddr(const char *addr_str, struct in_addr *addr)
+{
+    char buf[] = {
+        '0', 'x',
+        addr_str[6], addr_str[7],
+        addr_str[4], addr_str[5],
+        addr_str[2], addr_str[3],
+        addr_str[0], addr_str[1],
+        0
+    };
+    return inet_aton(buf, addr);
+}
 
 static void
-linux_check_network_interfaces(void)
+linux_check_routing_table(struct in_addr lcm_mcaddr)
 {
+    FILE *fp = fopen("/proc/net/route", "r");
+    if(!fp) {
+        perror("Unable to open routing table (fopen)");
+        return;
+    }
+
+    // read and ignore the first line of the routing table file
     char buf[1024];
-    struct ifconf ifc;
-
-    int fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if(fd < 0) {
-        perror("socket");
+    if(!fgets(buf, sizeof(buf), fp)) {
+        perror("Unable to read routing table (fgets)");
+        fclose(fp);
         return;
     }
 
-    /* Query available interfaces. */
-    ifc.ifc_len = sizeof(buf);
-    ifc.ifc_buf = buf;
-    if(ioctl(fd, SIOCGIFCONF, &ifc) < 0) {
-        perror("ioctl(SIOCGIFCONF)");
-        return;
-    }
+    // each line is a routing table entry
+    while(!feof(fp)) {
+        memset(buf, 0, sizeof(buf));
+        if(!fgets(buf, sizeof(buf)-1, fp))
+            break;
+        gchar **words = g_strsplit(buf, "\t", 0);
 
-    /* Iterate through the list of interfaces. */
-    struct ifreq *ifr = ifc.ifc_req;
-    int n_interfaces = ifc.ifc_len / sizeof(struct ifreq);
-    int have_non_loopback = 0;
-    for(int i = 0; i < n_interfaces; i++) {
-        struct ifreq *item = &ifr[i];
+        // each line should have 11 words
+        int nwords;
+        for(nwords=0; words[nwords] != NULL; nwords++);
+        if(nwords != 11) {
+            g_strfreev(words); 
+            fclose(fp);
+            fprintf(stderr, "Unable to parse routing table!  Strange format.");
+            return;
+        }
 
-        struct sockaddr_in * sa = (struct sockaddr_in*)&item->ifr_addr;
-        int is_loopback = (ntohl(sa->sin_addr.s_addr) >> 24) == 127;
-        if(!is_loopback)
-            have_non_loopback++;
+        // destination is 2nd word, netmask is 8th word
+        struct in_addr dest, mask;
+        if(!_parse_inaddr(words[1], &dest) || !_parse_inaddr(words[7], &mask)) {
+            fprintf(stderr, "Unable to parse routing table!");
+            g_strfreev(words); 
+            fclose(fp);
+            return;
+        }
+        g_strfreev(words);
+
+//        fprintf(stderr, "checking route (%s/%X)\n", inet_ntoa(dest), ntohl(mask.s_addr));
+
+        // does this routing table entry match the LCM URL?
+        if((lcm_mcaddr.s_addr & mask.s_addr) == (dest.s_addr & mask.s_addr)) {
+            // yes, so there is a valid multicast route
+            fclose(fp);
+            return;
+        }
     }
-    if(!have_non_loopback) {
-        fprintf(stderr, 
-"LCM requires at least one configured and running non-loopback network\n"
-"interface and a valid multicast route.  If this is a Linux computer and is\n"
+    fclose(fp);
+
+    // if we get here, then none of the routing table entries matched the 
+    // LCM destination URL.
+    fprintf(stderr, 
+"\nNo route to %s\n\n"
+"LCM requires a valid multicast route.  If this is a Linux computer and is\n"
 "simply not connected to a network, the following commands are usually\n"
 "sufficient as a temporary solution:\n"
 "\n"
-"   sudo ifconfig eth0 192.168.99.99\n"
-"   sudo route add default dev eth0\n"
+"   sudo ifconfig lo multicast\n"
+"   sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev lo\n"
 "\n"
 "For more information, visit:\n"
-"   http://lcm.googlecode.com/svn/www/reference/lcm/multicast-setup.html\n\n");
-    }
+"   http://lcm.googlecode.com/svn/www/reference/lcm/multicast-setup.html\n\n",
+inet_ntoa(lcm_mcaddr));
 }
 #endif
 
@@ -1403,19 +1437,11 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
         perror ("connect");
         lcm_udpm_destroy (lcm);
 #ifdef __linux__
-        linux_check_network_interfaces();
+        linux_check_routing_table(lcm->dest_addr.sin_addr);
 #endif
         return NULL;
     }
     shutdown(testfd, SHUT_RDWR);
-
-//    // set multicast transmit interface
-//    if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_MULTICAST_IF,
-//                (char *) &params.local_iface, sizeof (params.local_iface)) < 0) {
-//        perror ("setsockopt(IPPROTO_IP, IP_MULTICAST_IF)");
-//        lcm_udpm_destroy (lcm);
-//        return NULL;
-//    }
 
     // create a transmit socket
     //
