@@ -337,6 +337,16 @@ _sockaddr_in_equal (const void * a, const void *b)
            a_addr->sin_family      == b_addr->sin_family;
 }
 
+static int
+_close_socket(int fd)
+{
+#ifdef WIN32
+    return closesocket(testfd);
+#else
+    return close(fd);
+#endif
+}
+
 static void
 _destroy_recv_parts (lcm_udpm_t *lcm)
 {
@@ -359,7 +369,7 @@ _destroy_recv_parts (lcm_udpm_t *lcm)
     }
 
     if (lcm->recvfd >= 0) {
-        shutdown(lcm->recvfd, SHUT_RDWR);
+        _close_socket(lcm->recvfd);
         lcm->recvfd = -1;
     }
 
@@ -389,7 +399,7 @@ lcm_udpm_destroy (lcm_udpm_t *lcm)
     _destroy_recv_parts (lcm);
 
     if (lcm->sendfd >= 0)
-        shutdown(lcm->sendfd, SHUT_RDWR);
+        _close_socket(lcm->sendfd);
 
     lcm_internal_pipe_close(lcm->notify_pipe[0]);
     lcm_internal_pipe_close(lcm->notify_pipe[1]);
@@ -1441,7 +1451,7 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 #endif
         return NULL;
     }
-    shutdown(testfd, SHUT_RDWR);
+    _close_socket(testfd);
 
     // create a transmit socket
     //
