@@ -4,6 +4,7 @@
 #include <assert.h>
 #ifndef WIN32
 #include <sys/time.h>
+#include <sys/select.h>
 #else
 #include <WinPorting.h>
 #include <Winsock2.h>

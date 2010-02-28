@@ -15,6 +15,7 @@
 #include <netdb.h>
 #include <sys/time.h>
 #include <sys/poll.h>
+#include <sys/select.h>
 #endif
 
 #ifdef SO_TIMESTAMP
