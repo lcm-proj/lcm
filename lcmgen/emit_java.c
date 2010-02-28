@@ -90,7 +90,7 @@ const char *make_fqn(lcmgen_t *lcm, const char *type_name)
     if (strchr(type_name, '.')!=NULL)
         return type_name;
 
-    if (!jdefaultpkg_warned) {
+    if (!jdefaultpkg_warned && !getopt_was_specified(lcm->gopt, "jdefaultpkg")) {
         printf("Notice: enclosing LCM types without package into java namespace '%s'.\n", getopt_get_string(lcm->gopt, "jdefaultpkg"));
         jdefaultpkg_warned = 1;
     }
@@ -104,7 +104,7 @@ const char *make_fqn(lcmgen_t *lcm, const char *type_name)
 static void freplace(FILE *f, const char *haystack, const char *replace1)
 {
     int len = strlen(haystack);
-    
+
     for (int pos = 0; pos < len; pos++)
     {
         if (haystack[pos]=='#')
@@ -121,7 +121,7 @@ static void make_accessor(lcm_member_t *lm, const char *obj, char *s)
     s[0] = 0;
 
     pos += sprintf(s, "%s%s%s", obj, obj[0]==0 ? "" : ".", lm->membername);
-    for (int d = 0 ; d < ndim; d++) 
+    for (int d = 0 ; d < ndim; d++)
         pos += sprintf(&s[pos],"[%c]", 'a'+d);
 }
 
@@ -129,20 +129,20 @@ int emit_java(lcmgen_t *lcm)
 {
     GHashTable *type_table = g_hash_table_new(g_str_hash, g_str_equal);
 
-    g_hash_table_insert(type_table, "byte",   prim("byte",  
-                                             "# = ins.readByte();",  
+    g_hash_table_insert(type_table, "byte",   prim("byte",
+                                             "# = ins.readByte();",
                                              "outs.writeByte(#);"));
-    g_hash_table_insert(type_table, "int8_t",   prim("byte",  
-                                               "# = ins.readByte();",  
+    g_hash_table_insert(type_table, "int8_t",   prim("byte",
+                                               "# = ins.readByte();",
                                                "outs.writeByte(#);"));
-    g_hash_table_insert(type_table, "int16_t",  prim("short", 
-                                               "# = ins.readShort();", 
+    g_hash_table_insert(type_table, "int16_t",  prim("short",
+                                               "# = ins.readShort();",
                                                "outs.writeShort(#);"));
-    g_hash_table_insert(type_table, "int32_t",  prim("int",   
-                                               "# = ins.readInt();",   
+    g_hash_table_insert(type_table, "int32_t",  prim("int",
+                                               "# = ins.readInt();",
                                                "outs.writeInt(#);"));
-    g_hash_table_insert(type_table, "int64_t",  prim("long",  
-                                               "# = ins.readLong();",  
+    g_hash_table_insert(type_table, "int64_t",  prim("long",
+                                               "# = ins.readLong();",
                                                "outs.writeLong(#);"));
     g_hash_table_insert(type_table, "string",   prim("String",
                                                "__strbuf = new byte[ins.readInt()-1]; ins.readFully(__strbuf); ins.readByte(); # = new String(__strbuf, \"UTF-8\");",
@@ -156,14 +156,14 @@ int emit_java(lcmgen_t *lcm)
     g_hash_table_insert(type_table, "double",   prim("double",
                                                "# = ins.readDouble();",
                                                "outs.writeDouble(#);"));
-    
+
     //////////////////////////////////////////////////////////////
     // ENUMS
     for (unsigned int en = 0; en < g_ptr_array_size(lcm->enums); en++) {
         lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index(lcm->enums, en);
-        
+
         const char *classname = make_fqn(lcm, le->enumname->lctypename);
-        char *path = sprintfalloc("%s%s%s.java", 
+        char *path = sprintfalloc("%s%s%s.java",
                                   getopt_get_string(lcm->gopt, "jpath"),
                                   strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
                                   dots_to_slashes(classname));
@@ -196,12 +196,12 @@ int emit_java(lcmgen_t *lcm)
 
         for (unsigned int v = 0; v < g_ptr_array_size(le->values); v++) {
             lcm_enum_value_t *lev = (lcm_enum_value_t *) g_ptr_array_index(le->values, v);
-            emit(1, "public static final int %-16s = %i;", 
+            emit(1, "public static final int %-16s = %i;",
                     lev->valuename, lev->value);
         }
         emit(0," ");
 
-        emit(1,"public %s(int value) { this.value = value; }", 
+        emit(1,"public %s(int value) { this.value = value; }",
                 le->enumname->shortname);
         emit(0," ");
 
@@ -259,13 +259,13 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "}");
         fclose(f);
     }
-    
+
     for (unsigned int st = 0; st < g_ptr_array_size(lcm->structs); st++) {
         lcm_struct_t *lr = (lcm_struct_t *) g_ptr_array_index(lcm->structs, st);
 
         const char *classname = make_fqn(lcm, lr->structname->lctypename);
-        char *path = sprintfalloc("%s%s%s.java", 
-                                  getopt_get_string(lcm->gopt, "jpath"), 
+        char *path = sprintfalloc("%s%s%s.java",
+                                  getopt_get_string(lcm->gopt, "jpath"),
                                   strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
                                   dots_to_slashes(classname));
 
@@ -288,7 +288,7 @@ int emit_java(lcmgen_t *lcm)
             emit(0, "package %s;", lr->structname->package);
         else
             emit(0, "package %s;", getopt_get_string(lcm->gopt, "jdefaultpkg"));
-        
+
         emit(0, " ");
         emit(0, "import java.io.*;");
         emit(0, "import java.util.*;");
@@ -301,7 +301,7 @@ int emit_java(lcmgen_t *lcm)
             primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
 
             emit_start(1, "public ");
-            
+
             if (pinfo==NULL)  {
                 emit_continue("%s", make_fqn(lcm, lm->type->lctypename));
             } else {
@@ -330,9 +330,9 @@ int emit_java(lcmgen_t *lcm)
             emit_start(2, "%s = new ", lm->membername);
             if (pinfo != NULL)
                 emit_continue("%s", pinfo->storage);
-            else 
+            else
                 emit_continue("%s", make_fqn(lcm, lm->type->lctypename));
-      
+
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
                 emit_continue("[%s]", dim->size);
@@ -423,13 +423,13 @@ int emit_java(lcmgen_t *lcm)
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
                 emit(2+i, "for (int %c = 0; %c < %s; %c++) {", 'a'+i, 'a'+i, dim->size, 'a'+i);
             }
-            
+
             emit_start(2 + g_ptr_array_size(lm->dimensions),"");
             if (pinfo != NULL)
                 freplace(f, pinfo->encode, accessor);
             else
                 freplace(f, "#._encodeRecursive(outs);", accessor);
-            emit_end(" ");                
+            emit_end(" ");
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 emit(2 + g_ptr_array_size(lm->dimensions) - 1, "}");
@@ -466,7 +466,7 @@ int emit_java(lcmgen_t *lcm)
         emit(0," ");
 
         emit(1,"public void _decodeRecursive(DataInput ins) throws IOException");
-        emit(1,"{");        
+        emit(1,"{");
         emit(2,     "byte[] __strbuf = null;");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
@@ -495,9 +495,9 @@ int emit_java(lcmgen_t *lcm)
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
                 emit(2+i, "for (int %c = 0; %c < %s; %c++) {", 'a'+i, 'a'+i, dim->size, 'a'+i);
             }
-            
+
             emit_start(2 + g_ptr_array_size(lm->dimensions),"");
-            if (pinfo != NULL) 
+            if (pinfo != NULL)
                 freplace(f, pinfo->decode, accessor);
             else {
                 emit_continue("%s = %s._decodeRecursiveFactory(ins);", accessor, make_fqn(lcm, lm->type->lctypename));
@@ -548,7 +548,7 @@ int emit_java(lcmgen_t *lcm)
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
                 emit(2+i, "for (int %c = 0; %c < %s; %c++) {", 'a'+i, 'a'+i, dim->size, 'a'+i);
             }
-            
+
             if (pinfo != NULL) {
 
                 emit_start(2+g_ptr_array_size(lm->dimensions), "outobj.%s", lm->membername);
@@ -556,13 +556,13 @@ int emit_java(lcmgen_t *lcm)
                     emit_continue("[%c]", 'a'+i);
                 }
                 emit_continue(" = this.%s", lm->membername);
-                
+
                 for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                     emit_continue("[%c]", 'a'+i);
                 }
 
                 emit_end(";");
-                
+
             } else {
                 emit_continue("outobj.%s = this.%s.copy();", accessor, accessor);
             }
@@ -582,9 +582,9 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "}\n");
         fclose(f);
     }
- 
+
 /* XXX unfinished
-   
+
     hashtable_iterator_t *hit = hashtable_iterator_create(type_table);
     hashtable_entry_t *entry;
     while ((entry = hashtable_iterator_next(hit)) != NULL) {
