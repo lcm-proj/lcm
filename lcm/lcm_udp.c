@@ -342,7 +342,7 @@ static int
 _close_socket(int fd)
 {
 #ifdef WIN32
-    return closesocket(testfd);
+    return closesocket(fd);
 #else
     return close(fd);
 #endif
