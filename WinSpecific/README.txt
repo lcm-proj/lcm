@@ -32,3 +32,4 @@ compatibility to the UNIX pipe() functions.
 All of the test cases in liblcm-test build and run properly. They even run cross-platform, from Windows to
 Linux and reverse.
 
+When writing programs that use LCM (but are not internal to LCM), add "WinSpecific/include" to your include path.
