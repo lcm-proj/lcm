@@ -14,10 +14,13 @@ was C++. The project files reflect this, so there should be nothing additional t
 However, please note that .C files created by lcmgen will most likely need to be compiled as C++ under
 VS 2005.
 
-For the Visual Studio build we require an installation of Glib, with header files, libraries and DLLs.
+For the Visual Studio build we require an installation of GLib, with header files, libraries and DLLs.
 We built with version glib-2.20.5, although we don't have any revision requirements that we know of.
-The Glib DLLs will need to be somewhere on the system path, or the glib\bin folder will need to be
+The GLib DLLs will need to be somewhere on the system path, or the glib\bin folder will need to be
 added to the PATH environment variable.
+
+GLib for Windows can be obtained at:  http://www.gtk.org/download-windows.html
+Be sure to download both the "Binaries" and the "Dev" zip files.
 
 The Visual Studio build requires an environment variable GLIB_PATH, which expects to find headers
 in $(GLIB_PATH)\include\glib-2.0 and libraries in $(GLIB_PATH)\lib.
