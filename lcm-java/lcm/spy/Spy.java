@@ -74,7 +74,7 @@ public class Spy
 	jif.setVisible(true);
 	jdp.add(jif);
 
-	if(null == lcmurl) 
+	if(null == lcmurl)
 	    lcm = new LCM();
 	else
 	    lcm = new LCM(lcmurl);
@@ -91,13 +91,13 @@ public class Spy
 		    channelTableModel.fireTableDataChanged();
 		}
 	    });
-	
+
 	channelTable.addMouseListener(new MouseAdapter()
 	    {
 		public void mouseClicked(MouseEvent e)
 		{
 		    int mods=e.getModifiersEx();
-		    
+
 		    if (e.getButton()==3)
 			{
 			    showPopupMenu(e);
@@ -138,7 +138,7 @@ public class Spy
 	    System.out.println(" "+plugin);
 	}
     }
-    
+
     class PluginClassVisitor implements ClassDiscoverer.ClassVisitor
     {
 	public void classFound(String jar, Class cls)
@@ -165,11 +165,12 @@ public class Spy
 		cd.viewerFrame.dispose();
 		cd.viewer = null;
 	    }
-			    
+
 	if (cd.viewer == null) {
 	    cd.viewerFrame = new JInternalFrame(cd.name, true, true);
 
 	    cd.viewer = new ObjectPanel(cd.name);
+        cd.viewer.setObject(cd.last);
 
 	    //	cd.viewer = new ObjectViewer(cd.name, cd.cls, null);
 	    cd.viewerFrame.setLayout(new BorderLayout());
@@ -235,7 +236,7 @@ public class Spy
 
 	public String getColumnName(int col)
 	{
-	    switch (col) 
+	    switch (col)
 		{
 		case 0:
 		    return "Channel";
@@ -300,12 +301,13 @@ public class Spy
 		cd.hz_max_interval = Math.max(cd.hz_max_interval, interval);
 		cd.hz_bytes += msg_size;
 		cd.last_utime = utime;
-		
+
 		cd.nreceived++;
 
 		o = cd.cls.getConstructor(DataInput.class).newInstance(dins);
+        cd.last = o;
 
-		if (cd.viewer != null) 
+		if (cd.viewer != null)
 		    cd.viewer.setObject(o);
 
 	    } catch (NullPointerException ex) {
@@ -339,7 +341,7 @@ public class Spy
 
 	public void run()
 	{
-	    while (true) 
+	    while (true)
 		{
 		    long utime = utime_now();
 
@@ -351,9 +353,9 @@ public class Spy
 				    cd.hz_last_nreceived = cd.nreceived;
 				    long dutime = utime - cd.hz_last_utime;
 				    cd.hz_last_utime = utime;
-				    
+
 				    cd.hz = diff_recv / (dutime/1000000.0);
-				    
+
 				    cd.min_interval = cd.hz_min_interval;
 				    cd.max_interval = cd.hz_max_interval;
 				    cd.hz_min_interval = 9999;
