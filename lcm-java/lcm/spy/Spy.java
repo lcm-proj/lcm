@@ -181,6 +181,7 @@ public class Spy
 	    cd.viewerFrame.setVisible(true);
 	} else {
 	    cd.viewerFrame.setVisible(true);
+        cd.viewerFrame.moveToFront();
 	}
     }
 
