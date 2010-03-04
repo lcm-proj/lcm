@@ -10,6 +10,6 @@ public interface SpyPlugin
     public boolean canHandle(long fingerprint);
 
     /** Return an action suitable for adding to a popup menu that will
-     display a viewer for the given channel. **/
+        display a viewer for the given channel. **/
     public Action getAction(JDesktopPane jdp, ChannelData cd);
 }

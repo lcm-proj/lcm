@@ -2,12 +2,12 @@ package lcm.lcm;
 
 /** A provider implements a communications modality for LC. (I.e., a
     URL handler.)
-    
+
     The provider should call LC.receiveMessage() upon receipt of a
     message. LC.receiveMessage() is thread-safe and can be called from
     any thread.
 
- **/
+**/
 public interface Provider
 {
     /**

@@ -11,14 +11,14 @@ public class ClassDiscoverer
 {
     public static void findClasses(ClassVisitor visitor)
     {
-	String ps = System.getProperty("path.separator");
+        String ps = System.getProperty("path.separator");
 
-	// In order to correctly handle types that reference other
-	// types whose definitions are in another JAR file, create a
-	// big "master" classpath that contains everything we might
-	// want to load.
-	String cp = System.getenv("CLASSPATH")+ ps +System.getProperty("java.class.path");
-	findClasses(cp, visitor);
+        // In order to correctly handle types that reference other
+        // types whose definitions are in another JAR file, create a
+        // big "master" classpath that contains everything we might
+        // want to load.
+        String cp = System.getenv("CLASSPATH")+ ps +System.getProperty("java.class.path");
+        findClasses(cp, visitor);
     }
 
     /** Given a colon-delimited list of jar files, iterate over the
@@ -27,89 +27,89 @@ public class ClassDiscoverer
      **/
     public static void findClasses(String cp, ClassVisitor visitor)
     {
-	if (cp == null)
-	    return;
+        if (cp == null)
+            return;
 
-	String ps = System.getProperty("path.separator");
-	String[] items = cp.split(ps);
+        String ps = System.getProperty("path.separator");
+        String[] items = cp.split(ps);
 
-	// Create a class loader that has access to the whole class path.
-	URLClassLoader cldr;
-	try {
-	    URL[] urls = new URL[items.length];
-	    for (int i = 0; i < items.length; i++)
-		urls[i] = new File(items[i]).toURL();
-	    
-	    cldr = new URLClassLoader(urls);
-	} catch (IOException ex) {
-	    System.out.println("ClassDiscoverer ERR: "+ex);
-	    return;
-	}
+        // Create a class loader that has access to the whole class path.
+        URLClassLoader cldr;
+        try {
+            URL[] urls = new URL[items.length];
+            for (int i = 0; i < items.length; i++)
+                urls[i] = new File(items[i]).toURL();
 
-	for (int i = 0; i < items.length; i++) {
-	    
-	    String item = items[i];
+            cldr = new URLClassLoader(urls);
+        } catch (IOException ex) {
+            System.out.println("ClassDiscoverer ERR: "+ex);
+            return;
+        }
 
-	    if (!item.endsWith(".jar") || !(new File(item).exists()))
-		continue;
+        for (int i = 0; i < items.length; i++) {
 
-	    try {
-		JarFile jf = new JarFile(item);
-		
-		for (Enumeration<JarEntry> e = jf.entries() ; e.hasMoreElements() ;) {
+            String item = items[i];
 
-		    JarEntry je = e.nextElement();
+            if (!item.endsWith(".jar") || !(new File(item).exists()))
+                continue;
 
-		    String n = je.getName();
+            try {
+                JarFile jf = new JarFile(item);
 
-		    // skip private classes?
-		    //		    if (n.contains("$"))
-		    //			continue;
+                for (Enumeration<JarEntry> e = jf.entries() ; e.hasMoreElements() ;) {
 
-		    if (n.endsWith(".class")) {
+                    JarEntry je = e.nextElement();
 
-			// convert the path into a class name
-			String cn = n.substring(0, n.length()-6);
-			cn = cn.replace('/', '.');
-			cn = cn.replace('\\', '.');
+                    String n = je.getName();
 
-			// try loading that class
-			try {
-			    Class cls = cldr.loadClass(cn);
+                    // skip private classes?
+                    //		    if (n.contains("$"))
+                    //			continue;
 
-			    if (cls == null)
-				continue;
+                    if (n.endsWith(".class")) {
 
-			    visitor.classFound(item, cls);
+                        // convert the path into a class name
+                        String cn = n.substring(0, n.length()-6);
+                        cn = cn.replace('/', '.');
+                        cn = cn.replace('\\', '.');
 
-			} catch (Throwable ex) {
-			    System.out.println("ClassDiscoverer: "+ex);
-			    System.out.println("                 jar: "+item);
-			    System.out.println("                 class: "+n);
-			}
-		    }
-		}
-		
-	    } catch(IOException ioe) {
-		System.out.println("Error extracting "+items[i]);
-	    }
-	}
+                        // try loading that class
+                        try {
+                            Class cls = cldr.loadClass(cn);
+
+                            if (cls == null)
+                                continue;
+
+                            visitor.classFound(item, cls);
+
+                        } catch (Throwable ex) {
+                            System.out.println("ClassDiscoverer: "+ex);
+                            System.out.println("                 jar: "+item);
+                            System.out.println("                 class: "+n);
+                        }
+                    }
+                }
+
+            } catch(IOException ioe) {
+                System.out.println("Error extracting "+items[i]);
+            }
+        }
     }
 
     public interface ClassVisitor
     {
-	public void classFound(String jarfile, Class cls);
+        public void classFound(String jarfile, Class cls);
     }
 
     // Just list every class that we can find!
     public static void main(String args[])
     {
-	ClassVisitor cv = new ClassVisitor() {
-		public void classFound(String jarfile, Class cls) {
-		    System.out.printf("%-30s %s\n", jarfile, cls);
-		}
+        ClassVisitor cv = new ClassVisitor() {
+            public void classFound(String jarfile, Class cls) {
+                System.out.printf("%-30s %s\n", jarfile, cls);
+            }
 	    };
 
-	ClassDiscoverer.findClasses(cv);
+        ClassDiscoverer.findClasses(cv);
     }
 }

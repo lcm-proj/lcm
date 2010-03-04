@@ -21,10 +21,10 @@ import static java.awt.GridBagConstraints.*;
 /** A GUI implementation of a log player allowing seeking. **/
 public class LogPlayer extends JComponent
 {
-    static 
+    static
     {
-	System.setProperty("java.net.preferIPv4Stack", "true");
-	System.out.println("LC: Disabling IPV6 support");
+        System.setProperty("java.net.preferIPv4Stack", "true");
+        System.out.println("LC: Disabling IPV6 support");
     }
 
     Log log;
@@ -63,105 +63,105 @@ public class LogPlayer extends JComponent
 
     interface QueuedEvent
     {
-	public void execute(LogPlayer lp);
+        public void execute(LogPlayer lp);
     }
 
     class QueueThread extends Thread
     {
-	public void run()
-	{
-	    while (true) {
-		try {
-		    QueuedEvent qe = events.take();
-		    qe.execute(LogPlayer.this);
-		} catch (InterruptedException ex) {
-		}
-	    }
-	}
+        public void run()
+        {
+            while (true) {
+                try {
+                    QueuedEvent qe = events.take();
+                    qe.execute(LogPlayer.this);
+                } catch (InterruptedException ex) {
+                }
+            }
+        }
     }
 
     /** We have events coming from all over the place: the UI, UDP
-	events, callbacks from the scrubbers. To keep things sanely
-	thread-safe, all of these things simply queue events which are
-	processed in-order. doStop, doPlay, doStep, do(Anything) can
-	only be called from the queue thread.
+        events, callbacks from the scrubbers. To keep things sanely
+        thread-safe, all of these things simply queue events which are
+        processed in-order. doStop, doPlay, doStep, do(Anything) can
+        only be called from the queue thread.
     **/
     class PlayPauseEvent implements QueuedEvent
     {
-	boolean toggle = false;
-	boolean playstate;
+        boolean toggle = false;
+        boolean playstate;
 
-	public PlayPauseEvent()
-	{
-	    this.toggle = true;
-	}
+        public PlayPauseEvent()
+        {
+            this.toggle = true;
+        }
 
-	public PlayPauseEvent(boolean playstate)
-	{
-	    this.playstate = playstate;
-	}
+        public PlayPauseEvent(boolean playstate)
+        {
+            this.playstate = playstate;
+        }
 
-	public void execute(LogPlayer lp)
-	{
-	    if (toggle) 
-		{
-		    if (player!=null)
-			doStop();
-		    else
-			doPlay();
-		}
-	    else
-		{
-		    if (playstate)
-			doPlay();
-		    else
-			doStop();
-		}
-	}
+        public void execute(LogPlayer lp)
+        {
+            if (toggle)
+            {
+                if (player!=null)
+                    doStop();
+                else
+                    doPlay();
+            }
+            else
+            {
+                if (playstate)
+                    doPlay();
+                else
+                    doStop();
+            }
+        }
     }
 
     // seek, preserving the current play/pause state
     class SeekEvent implements QueuedEvent
     {
-	double pos;
+        double pos;
 
-	public SeekEvent(double pos)
-	{
-	    this.pos = pos;
-	}
+        public SeekEvent(double pos)
+        {
+            this.pos = pos;
+        }
 
-	public void execute(LogPlayer lp)
-	{
-	    boolean player_was_running = (player != null);
+        public void execute(LogPlayer lp)
+        {
+            boolean player_was_running = (player != null);
 
-	    if (player_was_running)
-		doStop();
+            if (player_was_running)
+                doStop();
 
-	    doSeek(pos);
+            doSeek(pos);
 
-	    if (player_was_running)
-		doPlay();
-	}
+            if (player_was_running)
+                doPlay();
+        }
     }
 
     class StepEvent implements QueuedEvent
     {
-	public void execute(LogPlayer lp)
-	{
-	    doStep();
-	}
+        public void execute(LogPlayer lp)
+        {
+            doStep();
+        }
     }
 
     class Filter implements Comparable<Filter>
     {
-	String inchannel;
-	String outchannel;
-	boolean enabled = true;
+        String inchannel;
+        String outchannel;
+        boolean enabled = true;
 
-	public int compareTo(Filter f)
-	{
-	    return inchannel.compareTo(f.inchannel);
-	}
+        public int compareTo(Filter f)
+        {
+            return inchannel.compareTo(f.inchannel);
+        }
     }
 
     FilterTableModel filterTableModel = new FilterTableModel();
@@ -183,262 +183,262 @@ public class LogPlayer extends JComponent
     // faster/slower would be better as semi-log.
     static final double slowerSpeed(double v)
     {
-	return v/2;
+        return v/2;
     }
 
     static final double fasterSpeed(double v)
     {
-	return v*2;
+        return v*2;
     }
 
     void setSpeed(double v)
     {
-	speedLabel.setText(""+v);
-	speed = v;
+        speedLabel.setText(""+v);
+        speed = v;
     }
 
     public LogPlayer(String lcmurl) throws IOException
     {
-	setLayout(new GridBagLayout());
-	GridBagConstraints gbc = new GridBagConstraints();
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
 
-	Insets insets = new Insets(0,0,0,0);
-	int row = 0;
+        Insets insets = new Insets(0,0,0,0);
+        int row = 0;
 
-	logName.setText("No log loaded");
-	logName.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        logName.setText("No log loaded");
+        logName.setFont(new Font("SansSerif", Font.PLAIN, 10));
 
-	timeLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
-	posLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
-	actualSpeedLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        timeLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        posLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        actualSpeedLabel.setFont(new Font("SansSerif", Font.PLAIN, 10));
 
-	fasterButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, getBackground(), false)));
-	fasterButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.magenta, getBackground(), false)));
-	fasterButton.setPressedIcon(new ImageIcon(makeArrowImage(Color.red, getBackground(), false)));
-	fasterButton.setBorderPainted(false);
-	fasterButton.setContentAreaFilled(false);
-	// Borders keep appearing when the buttons are pressed. Not sure why.
-	//fasterButton.setBorder(null); //new javax.swing.border.EmptyBorder(0,0,0,0));
+        fasterButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, getBackground(), false)));
+        fasterButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.magenta, getBackground(), false)));
+        fasterButton.setPressedIcon(new ImageIcon(makeArrowImage(Color.red, getBackground(), false)));
+        fasterButton.setBorderPainted(false);
+        fasterButton.setContentAreaFilled(false);
+        // Borders keep appearing when the buttons are pressed. Not sure why.
+        //fasterButton.setBorder(null); //new javax.swing.border.EmptyBorder(0,0,0,0));
 
-	slowerButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, getBackground(), true)));
-	slowerButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.magenta, getBackground(), true)));
-	slowerButton.setPressedIcon(new ImageIcon(makeArrowImage(Color.red, getBackground(), true)));
-	slowerButton.setBorderPainted(false);
-	slowerButton.setContentAreaFilled(false);
+        slowerButton = new JButton(new ImageIcon(makeArrowImage(Color.blue, getBackground(), true)));
+        slowerButton.setRolloverIcon(new ImageIcon(makeArrowImage(Color.magenta, getBackground(), true)));
+        slowerButton.setPressedIcon(new ImageIcon(makeArrowImage(Color.red, getBackground(), true)));
+        slowerButton.setBorderPainted(false);
+        slowerButton.setContentAreaFilled(false);
 
-	Font buttonFont = new Font("SansSerif", Font.PLAIN, 10);
-	fasterButton.setFont(buttonFont);
-	slowerButton.setFont(buttonFont);
-	playButton.setFont(buttonFont);
-	stepButton.setFont(buttonFont);
+        Font buttonFont = new Font("SansSerif", Font.PLAIN, 10);
+        fasterButton.setFont(buttonFont);
+        slowerButton.setFont(buttonFont);
+        playButton.setFont(buttonFont);
+        stepButton.setFont(buttonFont);
 
-	JPanel p = new JPanel();
-	p.setLayout(new GridLayout(1,3,0,0));
-	p.add(slowerButton);
-	p.add(speedLabel);
-	p.add(fasterButton);
-	//                         x  y    w          h  fillx   filly   anchor     fill        insets,                  ix,   iy
-	add(logName,
-	    new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       insets,                  0,    0));
+        JPanel p = new JPanel();
+        p.setLayout(new GridLayout(1,3,0,0));
+        p.add(slowerButton);
+        p.add(speedLabel);
+        p.add(fasterButton);
+        //                         x  y    w          h  fillx   filly   anchor     fill        insets,                  ix,   iy
+        add(logName,
+            new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       insets,                  0,    0));
 
-	add(playButton,           
-	    new GridBagConstraints(1, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
-	add(stepButton,
-	    new GridBagConstraints(2, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
+        add(playButton,
+            new GridBagConstraints(1, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
+        add(stepButton,
+            new GridBagConstraints(2, row, 1,         1, 0.0,    0.0,    CENTER,    NONE,       insets,                  0,    0));
 
-	add(p,           
-	    new GridBagConstraints(3, row, REMAINDER, 1, 0.0,    0.0,    EAST,      NONE,       insets,                  0,    0));
-	row++;
+        add(p,
+            new GridBagConstraints(3, row, REMAINDER, 1, 0.0,    0.0,    EAST,      NONE,       insets,                  0,    0));
+        row++;
 
-	add(js,
-	    new GridBagConstraints(0, row, REMAINDER, 1, 1.0,    0.0,    CENTER,    HORIZONTAL, new Insets(0, 5, 0, 5),  0,    0));
-	row++;
+        add(js,
+            new GridBagConstraints(0, row, REMAINDER, 1, 1.0,    0.0,    CENTER,    HORIZONTAL, new Insets(0, 5, 0, 5),  0,    0));
+        row++;
 
-	add(timeLabel,            
-	    new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       new Insets(0, 10, 0, 0), 0,    0));
-	add(actualSpeedLabel,            
-	    new GridBagConstraints(1, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       new Insets(0, 10, 0, 0), 0,    0));
-	add(posLabel,             
-	    new GridBagConstraints(3, row, 1,         1, 0.0,    0.0,    EAST,      NONE,       new Insets(0,0, 0, 10),  0,    0));
-	row++;
+        add(timeLabel,
+            new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       new Insets(0, 10, 0, 0), 0,    0));
+        add(actualSpeedLabel,
+            new GridBagConstraints(1, row, 1,         1, 0.0,    0.0,    WEST,      NONE,       new Insets(0, 10, 0, 0), 0,    0));
+        add(posLabel,
+            new GridBagConstraints(3, row, 1,         1, 0.0,    0.0,    EAST,      NONE,       new Insets(0,0, 0, 10),  0,    0));
+        row++;
 
-	add(new JScrollPane(filterTable),
-	    new GridBagConstraints(0, row, REMAINDER, 1, 1.0,    1.0,    CENTER,    BOTH,       new Insets(0,0, 0, 0),   0,    0));
-	row++;
+        add(new JScrollPane(filterTable),
+            new GridBagConstraints(0, row, REMAINDER, 1, 1.0,    1.0,    CENTER,    BOTH,       new Insets(0,0, 0, 0),   0,    0));
+        row++;
 
-	/// spacers
+        /// spacers
 
-	add(Box.createHorizontalStrut(90),
-	    new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    WEST,    NONE,       insets,                  0,    0));
-	add(Box.createHorizontalStrut(100),           
-	    new GridBagConstraints(1, 0,   1,         1, 0.0,    0.0,    WEST,    NONE,       insets,                  0,    0));
+        add(Box.createHorizontalStrut(90),
+            new GridBagConstraints(0, row, 1,         1, 0.0,    0.0,    WEST,    NONE,       insets,                  0,    0));
+        add(Box.createHorizontalStrut(100),
+            new GridBagConstraints(1, 0,   1,         1, 0.0,    0.0,    WEST,    NONE,       insets,                  0,    0));
 
-	///////////////////////////
-	row++;
-	JPanel stepPanel = new JPanel(new BorderLayout());
-	stepPanel.add(new JLabel("Channel Prefix: "), BorderLayout.WEST);
-	stepPanel.add(stepChannelField, BorderLayout.CENTER);
+        ///////////////////////////
+        row++;
+        JPanel stepPanel = new JPanel(new BorderLayout());
+        stepPanel.add(new JLabel("Channel Prefix: "), BorderLayout.WEST);
+        stepPanel.add(stepChannelField, BorderLayout.CENTER);
 
         JButton toggleAllButton = new JButton("Toggle Selected");
         toggleAllButton.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-                    int[] rowIndices = filterTable.getSelectedRows();
-                    for (int i = 0; i < rowIndices.length; ++i) {
-                        Filter f = filters.get(rowIndices[i]);
-                        f.enabled = !f.enabled;
-                    }
-                    filterTableModel.fireTableDataChanged();
-                    for (int i = 0; i < rowIndices.length; ++i) {
-                        filterTable.addRowSelectionInterval(rowIndices[i],
-                                                            rowIndices[i]);
-                    }
-		}});
+            public void actionPerformed(ActionEvent e) {
+                int[] rowIndices = filterTable.getSelectedRows();
+                for (int i = 0; i < rowIndices.length; ++i) {
+                    Filter f = filters.get(rowIndices[i]);
+                    f.enabled = !f.enabled;
+                }
+                filterTableModel.fireTableDataChanged();
+                for (int i = 0; i < rowIndices.length; ++i) {
+                    filterTable.addRowSelectionInterval(rowIndices[i],
+                                                        rowIndices[i]);
+                }
+            }});
         add(toggleAllButton,
             new GridBagConstraints(0, row, 2, 1, 0.0, 0.0, CENTER, NONE,
                                    insets, 0, 0));
 
-	add(stepPanel,
-	    new GridBagConstraints(2, row, REMAINDER, 1, 1.0,    0.0,    CENTER,    HORIZONTAL, new Insets(0, 5, 0, 5),  0,    0));
-	//	position.addChangeListener(new MyChangeListener());
-	setPlaying(false);
+        add(stepPanel,
+            new GridBagConstraints(2, row, REMAINDER, 1, 1.0,    0.0,    CENTER,    HORIZONTAL, new Insets(0, 5, 0, 5),  0,    0));
+        //	position.addChangeListener(new MyChangeListener());
+        setPlaying(false);
 
-	fasterButton.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    setSpeed(fasterSpeed(speed));
-		}});
-	slowerButton.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    setSpeed(slowerSpeed(speed));
-		}});
+        fasterButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setSpeed(fasterSpeed(speed));
+            }});
+        slowerButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                setSpeed(slowerSpeed(speed));
+            }});
 
-	playButton.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    events.offer(new PlayPauseEvent());
-		}});
- 
-	stepButton.addActionListener(new ActionListener() {
-		public void actionPerformed(ActionEvent e) {
-		    events.offer(new StepEvent());
-		}
+        playButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                events.offer(new PlayPauseEvent());
+            }});
+
+        stepButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                events.offer(new StepEvent());
+            }
 	    });
-				     
-	if(null == lcmurl)
-	    lcm = new LCM();
-	else
-	    lcm = new LCM(lcmurl);
 
-	logName.addMouseListener(new MouseAdapter() {
-		public void mouseClicked(MouseEvent e) {
-		    if (e.getClickCount()==2)
-			openDialog();
-		}
+        if(null == lcmurl)
+            lcm = new LCM();
+        else
+            lcm = new LCM(lcmurl);
+
+        logName.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount()==2)
+                    openDialog();
+            }
 	    });
-	timeLabel.addMouseListener(new MouseAdapter() {
-	    public void mouseClicked(MouseEvent e) {
-		show_absolute_time = ! show_absolute_time;
-	    }
-	});
+        timeLabel.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                show_absolute_time = ! show_absolute_time;
+            }
+        });
 
-	js.set(0);
-	js.addScrubberListener(new MyScrubberListener());
+        js.set(0);
+        js.addScrubberListener(new MyScrubberListener());
 
-	filterTable.getColumnModel().getColumn(2).setMaxWidth(50);
-	playButton.setEnabled(false);
+        filterTable.getColumnModel().getColumn(2).setMaxWidth(50);
+        playButton.setEnabled(false);
 
-	new UDPThread().start();
-	new QueueThread().start();
+        new UDPThread().start();
+        new QueueThread().start();
     }
 
     class MyScrubberListener implements JScrubberListener
     {
-	public void scrubberMovedByUser(JScrubber js, double x)
-	{
-	    events.offer(new SeekEvent(x));
-	}
+        public void scrubberMovedByUser(JScrubber js, double x)
+        {
+            events.offer(new SeekEvent(x));
+        }
 
-	public void scrubberPassedRepeat(JScrubber js, double from_pos, double to_pos)
-	{
-	    events.offer(new SeekEvent(to_pos));
-	}
+        public void scrubberPassedRepeat(JScrubber js, double from_pos, double to_pos)
+        {
+            events.offer(new SeekEvent(to_pos));
+        }
 
-	public void scrubberExportRegion(JScrubber js, double p0, double p1)
-	{
-	    System.out.printf("Export %15f %15f\n", p0, p1);
+        public void scrubberExportRegion(JScrubber js, double p0, double p1)
+        {
+            System.out.printf("Export %15f %15f\n", p0, p1);
 
             String outpath = getOutputFileFromDialog();
             if (outpath == null)
-              return;
+                return;
 
-	    System.out.println("Exporting to "+outpath);
-	    try {
-		Log inlog = new Log(log.getPath(), "r");
-		Log outlog = new Log(outpath, "rw");
+            System.out.println("Exporting to "+outpath);
+            try {
+                Log inlog = new Log(log.getPath(), "r");
+                Log outlog = new Log(outpath, "rw");
 
-		inlog.seekPositionFraction(p0);
-		while (inlog.getPositionFraction() < p1) {
-		    Log.Event e = inlog.readNext();
+                inlog.seekPositionFraction(p0);
+                while (inlog.getPositionFraction() < p1) {
+                    Log.Event e = inlog.readNext();
                     Filter f = filterMap.get(e.channel);
                     if (f != null && f.enabled)
                         outlog.write(e);
-		}
-		inlog.close();
-		outlog.close();
-		System.out.printf("Done!\n");
+                }
+                inlog.close();
+                outlog.close();
+                System.out.printf("Done!\n");
 
-	    } catch (IOException ex) {
-		System.out.println("Exception: "+ex);
-	    }
-	}
+            } catch (IOException ex) {
+                System.out.println("Exception: "+ex);
+            }
+        }
     }
 
     // remote control via UDP packets
     class UDPThread extends Thread
     {
-	public void run()
-	{
-	    DatagramSocket sock;
-	    DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
+        public void run()
+        {
+            DatagramSocket sock;
+            DatagramPacket packet = new DatagramPacket(new byte[1024], 1024);
 
-	    try {
-		sock = new DatagramSocket(53261, Inet4Address.getByName("127.0.0.1"));
-	    } catch (SocketException ex) {
-		System.out.println("Exception: "+ex);
-		return;
-	    } catch (UnknownHostException ex) {
-		System.out.println("Exception: "+ex);
-		return;
-	    }
+            try {
+                sock = new DatagramSocket(53261, Inet4Address.getByName("127.0.0.1"));
+            } catch (SocketException ex) {
+                System.out.println("Exception: "+ex);
+                return;
+            } catch (UnknownHostException ex) {
+                System.out.println("Exception: "+ex);
+                return;
+            }
 
-	    while (true) 
-		{
-		    try {
-			sock.receive(packet);
-			String cmd = new String(packet.getData(), 0, packet.getLength());
-			cmd = cmd.trim();
+            while (true)
+            {
+                try {
+                    sock.receive(packet);
+                    String cmd = new String(packet.getData(), 0, packet.getLength());
+                    cmd = cmd.trim();
 
-			if (cmd.equals("PLAYPAUSETOGGLE")) {
-			    events.offer(new PlayPauseEvent());
-			} else if (cmd.equals("STEP")) {
-			    events.offer(new StepEvent());
-			} else if (cmd.equals("FASTER")) {
-			    setSpeed(fasterSpeed(speed));
-			} else if (cmd.equals("SLOWER")) {
-			    setSpeed(slowerSpeed(speed));
-			} else if (cmd.startsWith("BACK")) {
-			    double seconds = Double.parseDouble(cmd.substring(4));
-			    double pos = log.getPositionFraction() - seconds/total_seconds;
-			    events.offer(new SeekEvent(pos));
-			} else if (cmd.startsWith("FORWARD")) {
-			    double seconds = Double.parseDouble(cmd.substring(7));
-			    double pos = log.getPositionFraction() + seconds/total_seconds;
-			    events.offer(new SeekEvent(pos));
-			} else {
-			    System.out.println("Unknown remote command: "+cmd);
-			}
-		    } catch (IOException ex) {
-		    }
-		}
-	}
+                    if (cmd.equals("PLAYPAUSETOGGLE")) {
+                        events.offer(new PlayPauseEvent());
+                    } else if (cmd.equals("STEP")) {
+                        events.offer(new StepEvent());
+                    } else if (cmd.equals("FASTER")) {
+                        setSpeed(fasterSpeed(speed));
+                    } else if (cmd.equals("SLOWER")) {
+                        setSpeed(slowerSpeed(speed));
+                    } else if (cmd.startsWith("BACK")) {
+                        double seconds = Double.parseDouble(cmd.substring(4));
+                        double pos = log.getPositionFraction() - seconds/total_seconds;
+                        events.offer(new SeekEvent(pos));
+                    } else if (cmd.startsWith("FORWARD")) {
+                        double seconds = Double.parseDouble(cmd.substring(7));
+                        double pos = log.getPositionFraction() + seconds/total_seconds;
+                        events.offer(new SeekEvent(pos));
+                    } else {
+                        System.out.println("Unknown remote command: "+cmd);
+                    }
+                } catch (IOException ex) {
+                }
+            }
+        }
     }
 
     String getOutputFileFromDialog()
@@ -452,132 +452,132 @@ public class LogPlayer extends JComponent
 
     void openDialog()
     {
-	doStop();
-	int res = jfc.showOpenDialog(this);
-	if (res != JFileChooser.APPROVE_OPTION)
-	    return;
-	
-	try {
-	    setLog(jfc.getSelectedFile().getPath());
-	} catch (IOException ex) {
-	    System.out.println("Exception: "+ex);
-	}
+        doStop();
+        int res = jfc.showOpenDialog(this);
+        if (res != JFileChooser.APPROVE_OPTION)
+            return;
+
+        try {
+            setLog(jfc.getSelectedFile().getPath());
+        } catch (IOException ex) {
+            System.out.println("Exception: "+ex);
+        }
     }
 
     void savePreferences() throws IOException
     {
-	if (currentLogPath == null)
-	    return;
+        if (currentLogPath == null)
+            return;
 
-	String path = currentLogPath+".jlp";
+        String path = currentLogPath+".jlp";
 
-	FileWriter fouts = new FileWriter(path);
-	BufferedWriter outs = new BufferedWriter(fouts);
+        FileWriter fouts = new FileWriter(path);
+        BufferedWriter outs = new BufferedWriter(fouts);
 
-	ArrayList<JScrubber.Bookmark> bookmarks = js.getBookmarks();
-	for (JScrubber.Bookmark b : bookmarks) {
-	    String type = "PLAIN";
-	    if (b.type == JScrubber.BOOKMARK_LREPEAT)
-		type = "LREPEAT";
-	    if (b.type == JScrubber.BOOKMARK_RREPEAT)
-		type = "RREPEAT";
-	    outs.write("BOOKMARK "+type+" "+b.position+"\n");
-	}
+        ArrayList<JScrubber.Bookmark> bookmarks = js.getBookmarks();
+        for (JScrubber.Bookmark b : bookmarks) {
+            String type = "PLAIN";
+            if (b.type == JScrubber.BOOKMARK_LREPEAT)
+                type = "LREPEAT";
+            if (b.type == JScrubber.BOOKMARK_RREPEAT)
+                type = "RREPEAT";
+            outs.write("BOOKMARK "+type+" "+b.position+"\n");
+        }
 
-	outs.write("ZOOMFRAC "+js.getZoomFraction()+"\n");
+        outs.write("ZOOMFRAC "+js.getZoomFraction()+"\n");
 
-	for (Filter f : filters) {
-	    outs.write("CHANNEL " + f.inchannel+" "+f.outchannel+" "+f.enabled+"\n");
-	}
-	outs.close();
-	fouts.close();
+        for (Filter f : filters) {
+            outs.write("CHANNEL " + f.inchannel+" "+f.outchannel+" "+f.enabled+"\n");
+        }
+        outs.close();
+        fouts.close();
     }
 
     void loadPreferences(String path) throws IOException
     {
-	BufferedReader ins;
+        BufferedReader ins;
 
-	js.clearBookmarks();
-	filterMap.clear();
-	filters.clear();
+        js.clearBookmarks();
+        filterMap.clear();
+        filters.clear();
 
-	try {
-	    ins = new BufferedReader(new FileReader(path));
-	} catch (FileNotFoundException ex) {
-	    // no error; just a no-op
-	    return;
-	}
+        try {
+            ins = new BufferedReader(new FileReader(path));
+        } catch (FileNotFoundException ex) {
+            // no error; just a no-op
+            return;
+        }
 
-	String line;
-	while ((line = ins.readLine()) != null) {
-	    String toks[] = line.split("\\s+");
+        String line;
+        while ((line = ins.readLine()) != null) {
+            String toks[] = line.split("\\s+");
 
-	    if (toks[0].equals("BOOKMARK") && toks.length==3) {
-		int type = JScrubber.BOOKMARK_PLAIN;
-		if (toks[1].equals("RREPEAT"))
-		    type = JScrubber.BOOKMARK_RREPEAT;
-		if (toks[1].equals("LREPEAT"))
-		    type = JScrubber.BOOKMARK_LREPEAT;
+            if (toks[0].equals("BOOKMARK") && toks.length==3) {
+                int type = JScrubber.BOOKMARK_PLAIN;
+                if (toks[1].equals("RREPEAT"))
+                    type = JScrubber.BOOKMARK_RREPEAT;
+                if (toks[1].equals("LREPEAT"))
+                    type = JScrubber.BOOKMARK_LREPEAT;
 
-		js.addBookmark(type, Double.parseDouble(toks[2]));
-	    }
-	    if (toks[0].equals("CHANNEL") && toks.length==4) {
-		Filter f = filterMap.get(toks[1]);
-		if (f == null) {
-		    f = new Filter();
-		    f.inchannel = toks[1];
-		    f.outchannel = toks[1];
-		    filterMap.put(toks[1], f);
-		    filters.add(f);
-		}
-		f.outchannel = toks[2];
-		f.enabled = Boolean.parseBoolean(toks[3]);
-	    }
-	    if (toks[0].equals("ZOOMFRAC"))
-		js.setZoomFraction(Double.parseDouble(toks[1]));
-	}
+                js.addBookmark(type, Double.parseDouble(toks[2]));
+            }
+            if (toks[0].equals("CHANNEL") && toks.length==4) {
+                Filter f = filterMap.get(toks[1]);
+                if (f == null) {
+                    f = new Filter();
+                    f.inchannel = toks[1];
+                    f.outchannel = toks[1];
+                    filterMap.put(toks[1], f);
+                    filters.add(f);
+                }
+                f.outchannel = toks[2];
+                f.enabled = Boolean.parseBoolean(toks[3]);
+            }
+            if (toks[0].equals("ZOOMFRAC"))
+                js.setZoomFraction(Double.parseDouble(toks[1]));
+        }
 
-	filterTableModel.fireTableDataChanged();
+        filterTableModel.fireTableDataChanged();
     }
 
     void setLog(String path) throws IOException
     {
-	if (currentLogPath != null)
-	    savePreferences();
+        if (currentLogPath != null)
+            savePreferences();
 
-	currentLogPath = path;
-	log = new Log(path, "r");
-	logName.setText(new File(path).getName());
+        currentLogPath = path;
+        log = new Log(path, "r");
+        logName.setText(new File(path).getName());
 
-	try {
-	    Log.Event e = log.readNext();
-	    timeOffset = e.utime;
-	    playButton.setEnabled(true);
+        try {
+            Log.Event e = log.readNext();
+            timeOffset = e.utime;
+            playButton.setEnabled(true);
 
-	    log.seekPositionFraction(.10);
-	    Log.Event e10 = log.readNext();
+            log.seekPositionFraction(.10);
+            Log.Event e10 = log.readNext();
 
-	    log.seekPositionFraction(.90);
-	    Log.Event e90 = log.readNext();
+            log.seekPositionFraction(.90);
+            Log.Event e90 = log.readNext();
 
-	    total_seconds = (e90.utime - e10.utime)/1000000.0 / 0.8;
-	    System.out.printf("Total seconds: %f\n", total_seconds);
+            total_seconds = (e90.utime - e10.utime)/1000000.0 / 0.8;
+            System.out.printf("Total seconds: %f\n", total_seconds);
 
-	    log.seekPositionFraction(0);
+            log.seekPositionFraction(0);
 
-	} catch (IOException ex) {
-	    System.out.println("exception: "+ex);
-	}
+        } catch (IOException ex) {
+            System.out.println("exception: "+ex);
+        }
 
-	loadPreferences(path+".jlp");
-	doPlay();
-   }
+        loadPreferences(path+".jlp");
+        doPlay();
+    }
 
     void setPlaying(boolean t)
     {
-	playButton.setText(t ? "Pause" : "Play");
+        playButton.setText(t ? "Pause" : "Play");
 
-	stepButton.setEnabled(!t);
+        stepButton.setEnabled(!t);
     }
 
     // the player can stop automatically on error or EOF; we thus have
@@ -587,61 +587,61 @@ public class LogPlayer extends JComponent
     // We protect these two with 'sync'.
     void doStop()
     {
-	PlayerThread pptr;
+        PlayerThread pptr;
 
-	synchronized(sync) {
-	    if (player == null)
-		return;
+        synchronized(sync) {
+            if (player == null)
+                return;
 
-	    pptr = player;
-	    pptr.requestStop();
-	}
+            pptr = player;
+            pptr.requestStop();
+        }
 
-	try {
-	    pptr.join();
-	} catch (InterruptedException ex) {
-	    System.out.println("Exception: "+ex);
-	}
+        try {
+            pptr.join();
+        } catch (InterruptedException ex) {
+            System.out.println("Exception: "+ex);
+        }
     }
 
     void doPlay()
     {
-	if (player != null)
-	    return;
-	
-	player = new PlayerThread();
-	player.start();
+        if (player != null)
+            return;
+
+        player = new PlayerThread();
+        player.start();
     }
 
     void doStep()
     {
-	if (player != null)
-	    return;
-	
-	player = new PlayerThread(stepChannelField.getText());
-	player.start();
+        if (player != null)
+            return;
+
+        player = new PlayerThread(stepChannelField.getText());
+        player.start();
     }
 
     void doSeek(double ratio)
     {
-	assert (player == null);
+        assert (player == null);
 
-	if (ratio < 0)
-	    ratio = 0;
-	if (ratio > 1)
-	    ratio = 1;
+        if (ratio < 0)
+            ratio = 0;
+        if (ratio > 1)
+            ratio = 1;
 
-	try {
-	    log.seekPositionFraction(ratio);
-	    Log.Event e = log.readNext();
-	    log.seekPositionFraction(ratio);
-	    js.set(log.getPositionFraction());
+        try {
+            log.seekPositionFraction(ratio);
+            Log.Event e = log.readNext();
+            log.seekPositionFraction(ratio);
+            js.set(log.getPositionFraction());
 
-	    lastSystemTime = 0; // reset log-play statistics.
-	    updateDisplay(e);
-	} catch (IOException ex) {
-	    System.out.println("exception: "+ex);
-	}
+            lastSystemTime = 0; // reset log-play statistics.
+            updateDisplay(e);
+        } catch (IOException ex) {
+            System.out.println("exception: "+ex);
+        }
     }
 
     long lastEventTime;
@@ -649,342 +649,342 @@ public class LogPlayer extends JComponent
 
     void updateDisplay(Log.Event e)
     {
-	if (show_absolute_time) {
-	    java.text.SimpleDateFormat df = 
-		new java.text.SimpleDateFormat("yyyy.MM.dd HH:mm:ss.S z");
-	    Date timestamp = new Date(e.utime / 1000);
-	    timeLabel.setText(df.format(timestamp));
-	} else {
-	    timeLabel.setText(String.format("%.3f s", (e.utime - timeOffset)/1000000.0));
-	}
-	posLabel.setText(""+e.eventNumber);
+        if (show_absolute_time) {
+            java.text.SimpleDateFormat df =
+                new java.text.SimpleDateFormat("yyyy.MM.dd HH:mm:ss.S z");
+            Date timestamp = new Date(e.utime / 1000);
+            timeLabel.setText(df.format(timestamp));
+        } else {
+            timeLabel.setText(String.format("%.3f s", (e.utime - timeOffset)/1000000.0));
+        }
+        posLabel.setText(""+e.eventNumber);
 
-	long systemTime = System.currentTimeMillis();
-	double dt = (systemTime - lastSystemTime)/1000.0;
-	if (dt > 0.5) {
-	    double actualSpeed = (e.utime - lastEventTime) / 1000000.0 / dt;
-	    lastEventTime = e.utime;
-	    lastSystemTime = systemTime;
-	    
-	    actualSpeedLabel.setText(String.format("%.2f x", actualSpeed));
-	}
+        long systemTime = System.currentTimeMillis();
+        double dt = (systemTime - lastSystemTime)/1000.0;
+        if (dt > 0.5) {
+            double actualSpeed = (e.utime - lastEventTime) / 1000000.0 / dt;
+            lastEventTime = e.utime;
+            lastSystemTime = systemTime;
+
+            actualSpeedLabel.setText(String.format("%.2f x", actualSpeed));
+        }
     }
 
     class PlayerThread extends Thread
     {
-	boolean stopflag = false;
-	String stopOnChannel;
+        boolean stopflag = false;
+        String stopOnChannel;
 
-	public PlayerThread()
-	{
-	}
+        public PlayerThread()
+        {
+        }
 
-	public PlayerThread(String stopOnChannel)
-	{
-	    this.stopOnChannel = stopOnChannel;
-	}
+        public PlayerThread(String stopOnChannel)
+        {
+            this.stopOnChannel = stopOnChannel;
+        }
 
-	public void requestStop()
-	{
-	    stopflag = true;
-	}
+        public void requestStop()
+        {
+            stopflag = true;
+        }
 
-	public void run()
-	{
-	    long lastTime = 0;
-	    long lastDisplayTime = 0;
-	    long localOffset = 0;
-	    long logOffset = 0;
-	    long last_e_utime = 0;
+        public void run()
+        {
+            long lastTime = 0;
+            long lastDisplayTime = 0;
+            long localOffset = 0;
+            long logOffset = 0;
+            long last_e_utime = 0;
 
-	    double lastspeed = 0;
+            double lastspeed = 0;
 
-	    synchronized (sync) {
-		setPlaying(true);
-	    }
+            synchronized (sync) {
+                setPlaying(true);
+            }
 
-	    try {
-		while (!stopflag) 
-		    {
-			Log.Event e = log.readNext();
+            try {
+                while (!stopflag)
+                {
+                    Log.Event e = log.readNext();
 
-			if (speed != lastspeed) {
-			    logOffset = e.utime;
-			    localOffset = System.nanoTime()/1000;
-			    lastspeed = speed;
-			}
+                    if (speed != lastspeed) {
+                        logOffset = e.utime;
+                        localOffset = System.nanoTime()/1000;
+                        lastspeed = speed;
+                    }
 
-			long logRelativeTime = (long) (e.utime - logOffset);
-			long clockRelativeTime = System.nanoTime()/1000 - localOffset;
+                    long logRelativeTime = (long) (e.utime - logOffset);
+                    long clockRelativeTime = System.nanoTime()/1000 - localOffset;
 
-			long speed_scale = (long) (speed*16.0);
-			long waitTime = logRelativeTime - speed_scale*clockRelativeTime/16;
+                    long speed_scale = (long) (speed*16.0);
+                    long waitTime = logRelativeTime - speed_scale*clockRelativeTime/16;
 
-			last_e_utime = e.utime;
+                    last_e_utime = e.utime;
 
-			try {
-			    long waitms = waitTime / 1000;
+                    try {
+                        long waitms = waitTime / 1000;
 
-			    // We might have a very long wait, but
-			    // only sleep for relatively short amounts
-			    // of time so that we remain responsive to
-			    // seek/speed changes.
-			    while (waitms > 0 && !stopflag) {
-				long thiswaitms = Math.min(50, waitms);
+                        // We might have a very long wait, but
+                        // only sleep for relatively short amounts
+                        // of time so that we remain responsive to
+                        // seek/speed changes.
+                        while (waitms > 0 && !stopflag) {
+                            long thiswaitms = Math.min(50, waitms);
 
-				Thread.sleep(thiswaitms);
-				waitms -= thiswaitms;
-			    }
-			} catch (InterruptedException ex) {
-			    System.out.println("Interrupted");
-			}
+                            Thread.sleep(thiswaitms);
+                            waitms -= thiswaitms;
+                        }
+                    } catch (InterruptedException ex) {
+                        System.out.println("Interrupted");
+                    }
 
-			// During the sleep, other threads might have
-			// run that have asked us to stop (a
-			// jscrubber.userset in particular); recheck
-			// the stop flag before we blindly proceed.
-			// (This ameliorates but does not solve an
-			// intrinsic race condition)
-			if (stopflag)
-			    break;
+                    // During the sleep, other threads might have
+                    // run that have asked us to stop (a
+                    // jscrubber.userset in particular); recheck
+                    // the stop flag before we blindly proceed.
+                    // (This ameliorates but does not solve an
+                    // intrinsic race condition)
+                    if (stopflag)
+                        break;
 
-			Filter f = filterMap.get(e.channel);
-			if (f == null) {
-			    f = new Filter();
-			    f.inchannel = e.channel;
-			    f.outchannel = e.channel;
-			    filterMap.put(f.inchannel, f);
-			    filters.add(f);
-			    Collections.sort(filters);
-			    filterTableModel.fireTableDataChanged();
-			}
+                    Filter f = filterMap.get(e.channel);
+                    if (f == null) {
+                        f = new Filter();
+                        f.inchannel = e.channel;
+                        f.outchannel = e.channel;
+                        filterMap.put(f.inchannel, f);
+                        filters.add(f);
+                        Collections.sort(filters);
+                        filterTableModel.fireTableDataChanged();
+                    }
 
-			if (f.enabled && f.outchannel.length() > 0)
-			    lcm.publish(f.outchannel, e.data, 0, e.data.length);
+                    if (f.enabled && f.outchannel.length() > 0)
+                        lcm.publish(f.outchannel, e.data, 0, e.data.length);
 
-			js.set(log.getPositionFraction());
+                    js.set(log.getPositionFraction());
 
-			// redraw labels no faster than 10 Hz
-			long curTime = System.currentTimeMillis();
-			if (curTime - lastDisplayTime > 100) {
-			    updateDisplay(e);
-			    lastDisplayTime = curTime;
-			}
+                    // redraw labels no faster than 10 Hz
+                    long curTime = System.currentTimeMillis();
+                    if (curTime - lastDisplayTime > 100) {
+                        updateDisplay(e);
+                        lastDisplayTime = curTime;
+                    }
 
-			if (stopOnChannel != null && e.channel.startsWith(stopOnChannel)) {
-			    stopflag = true;
-			    break;
-			}
-		    }
-	    } catch (EOFException ex) {
-		stopflag = true;
-	    } catch (IOException ex) {
-		System.out.println("Exception: "+ex);
-		stopflag = true;
-	    }
+                    if (stopOnChannel != null && e.channel.startsWith(stopOnChannel)) {
+                        stopflag = true;
+                        break;
+                    }
+                }
+            } catch (EOFException ex) {
+                stopflag = true;
+            } catch (IOException ex) {
+                System.out.println("Exception: "+ex);
+                stopflag = true;
+            }
 
-	    synchronized (sync) {
-		setPlaying(false);
-		player = null;
-	    }
-	}
+            synchronized (sync) {
+                setPlaying(false);
+                player = null;
+            }
+        }
 
     }
 
     class FilterTableModel extends AbstractTableModel
     {
-	public int getRowCount()
-	{
-	    return filters.size();
-	}
+        public int getRowCount()
+        {
+            return filters.size();
+        }
 
-	public int getColumnCount()
-	{
-	    return 3;
-	}
+        public int getColumnCount()
+        {
+            return 3;
+        }
 
-	public String getColumnName(int column)
-	{
-	    switch(column)
-		{
-		case 0:
-		    return "Log channel";
-		case 1:
-		    return "Playback channel";
-		case 2:
-		    return "Enable";
-		}
-	    return "??";
-	}
+        public String getColumnName(int column)
+        {
+            switch(column)
+            {
+                case 0:
+                    return "Log channel";
+                case 1:
+                    return "Playback channel";
+                case 2:
+                    return "Enable";
+            }
+            return "??";
+        }
 
-	public Class getColumnClass(int column)
-	{
-	    switch (column)
-		{
-		case 0:
-		case 1:
-		    return String.class;
-		case 2:
-		    return Boolean.class;
-		}
-	    
-	    return null;
-	}
+        public Class getColumnClass(int column)
+        {
+            switch (column)
+            {
+                case 0:
+                case 1:
+                    return String.class;
+                case 2:
+                    return Boolean.class;
+            }
 
-	public Object getValueAt(int row, int column)
-	{
-	    Filter f = filters.get(row);
-	    switch(column)
-		{
-		case 0:
-		    return f.inchannel;
-		case 1:
-		    return f.outchannel;
-		case 2:
-		    return f.enabled;
-		}
-	    return "??";
-	}
+            return null;
+        }
 
-	public boolean isCellEditable(int row, int column)
-	{
-	    return (column==1) || (column==2);
-	}
+        public Object getValueAt(int row, int column)
+        {
+            Filter f = filters.get(row);
+            switch(column)
+            {
+                case 0:
+                    return f.inchannel;
+                case 1:
+                    return f.outchannel;
+                case 2:
+                    return f.enabled;
+            }
+            return "??";
+        }
 
-	public void setValueAt(Object v, int row, int column)
-	{
-	    Filter f = filters.get(row);
+        public boolean isCellEditable(int row, int column)
+        {
+            return (column==1) || (column==2);
+        }
 
-	    if (column == 1)
-		f.outchannel = (String) v;
-	    if (column == 2)
-		f.enabled = (Boolean) v;
-	}
+        public void setValueAt(Object v, int row, int column)
+        {
+            Filter f = filters.get(row);
+
+            if (column == 1)
+                f.outchannel = (String) v;
+            if (column == 2)
+                f.enabled = (Boolean) v;
+        }
     }
 
     static LogPlayer p;
 
     public static void usage()
     {
-	System.err.println("usage: lcm-spy [options]");
-	System.err.println("");
-	System.err.println("lcm-logplayer-gui is the Lightweight Communications and Marshalling");
-	System.err.println("log playback tool.  It provides a graphical user interface for playing logfiles");
-	System.err.println("recorded with lcm-logger.  Features include random access, different playback ");
-	System.err.println("speeds, channel suppression and remapping, and more.");
-	System.err.println("");
-	System.err.println("Options:");
-	System.err.println("  -l, --lcm-url=URL      Use the specified LCM URL");
-	System.err.println("  -h, --help             Shows this help text and exits");
-	System.err.println("");
-	System.exit(1);
+        System.err.println("usage: lcm-spy [options]");
+        System.err.println("");
+        System.err.println("lcm-logplayer-gui is the Lightweight Communications and Marshalling");
+        System.err.println("log playback tool.  It provides a graphical user interface for playing logfiles");
+        System.err.println("recorded with lcm-logger.  Features include random access, different playback ");
+        System.err.println("speeds, channel suppression and remapping, and more.");
+        System.err.println("");
+        System.err.println("Options:");
+        System.err.println("  -l, --lcm-url=URL      Use the specified LCM URL");
+        System.err.println("  -h, --help             Shows this help text and exits");
+        System.err.println("");
+        System.exit(1);
     }
 
     public static void main(String args[])
     {
-	JFrame f;
+        JFrame f;
 
-	// check if the JRE is supplied by gcj, and warn the user if it is.
-	if(System.getProperty("java.vendor").indexOf("Free Software Foundation") >= 0) {
-	    System.err.println("WARNING: Detected gcj. The LCM log player is not known to work well with gcj.");
-	    System.err.println("         The Sun JRE is recommended.");
-	}
+        // check if the JRE is supplied by gcj, and warn the user if it is.
+        if(System.getProperty("java.vendor").indexOf("Free Software Foundation") >= 0) {
+            System.err.println("WARNING: Detected gcj. The LCM log player is not known to work well with gcj.");
+            System.err.println("         The Sun JRE is recommended.");
+        }
 
-	String lcmurl = null;
-	int optind;
-	for(optind=0; optind<args.length; optind++) {
-	    String c = args[optind];
-	    if(c.equals("-h") || c.equals("--help")) {
-		usage();
-	    } else if(c.equals("-l") || c.equals("--lcm-url") || c.startsWith("--lcm-url=")) {
-		String optarg = null;
-		if(c.startsWith("--lcm-url=")) {
-		    optarg=c.split("=")[1];
-		} else if(optind < args.length) {
-		    optind++;
-		    optarg = args[optind];
-		}
-		if(null == optarg) {
-		    usage();
-		} else {
-		    lcmurl = optarg;
-		}
-	    } else {
-		break;
-	    }
-	}
+        String lcmurl = null;
+        int optind;
+        for(optind=0; optind<args.length; optind++) {
+            String c = args[optind];
+            if(c.equals("-h") || c.equals("--help")) {
+                usage();
+            } else if(c.equals("-l") || c.equals("--lcm-url") || c.startsWith("--lcm-url=")) {
+                String optarg = null;
+                if(c.startsWith("--lcm-url=")) {
+                    optarg=c.split("=")[1];
+                } else if(optind < args.length) {
+                    optind++;
+                    optarg = args[optind];
+                }
+                if(null == optarg) {
+                    usage();
+                } else {
+                    lcmurl = optarg;
+                }
+            } else {
+                break;
+            }
+        }
 
-	try {
-	    p = new LogPlayer(lcmurl);
-	    f = new JFrame("LogPlayer");
-	    f.setLayout(new BorderLayout());
-	    f.add(p, BorderLayout.CENTER);
-	    f.pack();
-	    f.setSize(f.getWidth(),300);
-	    f.setVisible(true);
+        try {
+            p = new LogPlayer(lcmurl);
+            f = new JFrame("LogPlayer");
+            f.setLayout(new BorderLayout());
+            f.add(p, BorderLayout.CENTER);
+            f.pack();
+            f.setSize(f.getWidth(),300);
+            f.setVisible(true);
 
-	    f.addWindowListener(new WindowAdapter() {
-		    public void windowClosing(WindowEvent e) {
-			try {
-			    p.savePreferences();
-			} catch (IOException ex) {
-			    System.out.println("Couldn't save preferences: "+ex);
-			}
-			System.exit(0);
-		    }});
-	    
-	    if (optind < args.length)
-		p.setLog(args[optind]);
-	    else
-		p.openDialog();
+            f.addWindowListener(new WindowAdapter() {
+                public void windowClosing(WindowEvent e) {
+                    try {
+                        p.savePreferences();
+                    } catch (IOException ex) {
+                        System.out.println("Couldn't save preferences: "+ex);
+                    }
+                    System.exit(0);
+                }});
 
-	} catch (IOException ex) {
-	    System.out.println("Exception: "+ex);
-	}
+            if (optind < args.length)
+                p.setLog(args[optind]);
+            else
+                p.openDialog();
+
+        } catch (IOException ex) {
+            System.out.println("Exception: "+ex);
+        }
     }
 
     static BufferedImage makeArrowImage(Color fillColor, Color backgroundColor, boolean flip)
     {
-	int height = 18, width = 18;
-	BufferedImage im = new BufferedImage(width,height, BufferedImage.TYPE_INT_ARGB);
-	
-	Graphics2D g = im.createGraphics();
-	g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        int height = 18, width = 18;
+        BufferedImage im = new BufferedImage(width,height, BufferedImage.TYPE_INT_ARGB);
 
-	//	g.setColor(backgroundColor);
+        Graphics2D g = im.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-	g.setColor(new Color(0,0,0,0));
-	//	g.setColor(new Color(0,0,255,128));
-	g.fillRect(0,0,width,height);
+        //	g.setColor(backgroundColor);
 
-	if (flip) {
-	    g.translate(width-1, height/2);
-	    g.scale(-height/2, height/2);
-	} else {
-	    g.translate(0, height/2);
-	    g.scale(height/2, height/2);
-	}
+        g.setColor(new Color(0,0,0,0));
+        //	g.setColor(new Color(0,0,255,128));
+        g.fillRect(0,0,width,height);
 
-	g.setStroke(new BasicStroke(0f));
-	GeneralPath gp = new GeneralPath();
-	gp.moveTo(0,-1);
-	gp.lineTo(1,0);
-	gp.lineTo(0,1);
-	gp.lineTo(0,-1);
+        if (flip) {
+            g.translate(width-1, height/2);
+            g.scale(-height/2, height/2);
+        } else {
+            g.translate(0, height/2);
+            g.scale(height/2, height/2);
+        }
 
-	g.setColor(fillColor);
-	g.fill(gp);
-	g.setColor(Color.black);
-	//	g.draw(gp);
+        g.setStroke(new BasicStroke(0f));
+        GeneralPath gp = new GeneralPath();
+        gp.moveTo(0,-1);
+        gp.lineTo(1,0);
+        gp.lineTo(0,1);
+        gp.lineTo(0,-1);
 
-	g.translate(.75, 0);
+        g.setColor(fillColor);
+        g.fill(gp);
+        g.setColor(Color.black);
+        //	g.draw(gp);
 
-	g.setColor(fillColor);
-	g.fill(gp);
-	g.setColor(Color.black);
-	//	g.draw(gp);
+        g.translate(.75, 0);
 
-	return im;
+        g.setColor(fillColor);
+        g.fill(gp);
+        g.setColor(Color.black);
+        //	g.draw(gp);
+
+        return im;
     }
 
 }
