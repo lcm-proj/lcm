@@ -1324,7 +1324,7 @@ linux_check_routing_table(struct in_addr lcm_mcaddr)
     FILE *fp = fopen("/proc/net/route", "r");
     if(!fp) {
         perror("Unable to open routing table (fopen)");
-        return;
+        goto show_route_cmds;
     }
 
     // read and ignore the first line of the routing table file
@@ -1332,7 +1332,7 @@ linux_check_routing_table(struct in_addr lcm_mcaddr)
     if(!fgets(buf, sizeof(buf), fp)) {
         perror("Unable to read routing table (fgets)");
         fclose(fp);
-        return;
+        goto show_route_cmds;
     }
 
     // each line is a routing table entry
@@ -1349,7 +1349,7 @@ linux_check_routing_table(struct in_addr lcm_mcaddr)
             g_strfreev(words); 
             fclose(fp);
             fprintf(stderr, "Unable to parse routing table!  Strange format.");
-            return;
+            goto show_route_cmds;
         }
 
         // destination is 2nd word, netmask is 8th word
@@ -1358,7 +1358,7 @@ linux_check_routing_table(struct in_addr lcm_mcaddr)
             fprintf(stderr, "Unable to parse routing table!");
             g_strfreev(words); 
             fclose(fp);
-            return;
+            goto show_route_cmds;
         }
         g_strfreev(words);
 
@@ -1373,6 +1373,7 @@ linux_check_routing_table(struct in_addr lcm_mcaddr)
     }
     fclose(fp);
 
+show_route_cmds:
     // if we get here, then none of the routing table entries matched the 
     // LCM destination URL.
     fprintf(stderr, 
