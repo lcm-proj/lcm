@@ -1,1836 +1,745 @@
+2010-03-13  edwinolson
+
+	* [r449] lcmgen/tokenize.c: tokenizer.c: catch EOF during string
+	  literal
+
+2010-03-13  ashuang
+
+	* [r448] lcm-java/lcm-logplayer-gui.1, lcm-java/lcm-spy.1,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm-logplayer.1,
+	  lcmgen/lcm-gen.1, liblcm-test/lcm-example.1,
+	  liblcm-test/lcm-sink.1, liblcm-test/lcm-source.1,
+	  liblcm-test/lcm-tester.1: remove manpage-specific GFDL copyright
+	  notices.
+
+2010-03-04  edwinolson
+
+	* [r447] examples/java/example_t_demo/Listener.java,
+	  examples/java/example_t_demo/SendMessage.java,
+	  examples/java/temperature_demo_java/TemperatureDisplay.java,
+	  examples/java/temperature_demo_java/TemperatureTransmit.java,
+	  lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/LCMDataInputStream.java,
+	  lcm-java/lcm/lcm/LCMDataOutputStream.java,
+	  lcm-java/lcm/lcm/LogFileProvider.java,
+	  lcm-java/lcm/lcm/MessageAggregator.java,
+	  lcm-java/lcm/lcm/Provider.java,
+	  lcm-java/lcm/lcm/TCPProvider.java,
+	  lcm-java/lcm/lcm/TCPService.java,
+	  lcm-java/lcm/lcm/UDPMulticastProvider.java,
+	  lcm-java/lcm/lcm/URLParser.java,
+	  lcm-java/lcm/logging/JScrubber.java,
+	  lcm-java/lcm/logging/Log.java,
+	  lcm-java/lcm/logging/LogDiagnostic.java,
+	  lcm-java/lcm/logging/LogPlayer.java,
+	  lcm-java/lcm/spy/LCMHandlerDatabase.java,
+	  lcm-java/lcm/spy/ObjectPanel.java, lcm-java/lcm/spy/Spy.java,
+	  lcm-java/lcm/spy/SpyPlugin.java,
+	  lcm-java/lcm/test/SlowLCMSubscriber.java,
+	  lcm-java/lcm/util/BufferedRandomAccessFile.java,
+	  lcm-java/lcm/util/ClassDiscoverer.java,
+	  lcm-java/lcm/util/ColorMapper.java,
+	  lcm-java/lcm/util/JImage.java,
+	  lcm-java/lcm/util/ParameterGUI.java,
+	  lcm-java/lcm/util/TableSorter.java: untabify all java sources,
+	  make conform to standard java whitespace style. No code changes
+
+2010-03-03  edwinolson
+
+	* [r446] lcm-java/lcm/spy/Spy.java: Make lcm-spy put frames in
+	  front when double clicked
+
+2010-03-02  edwinolson
+
+	* [r445] lcm-java/lcm/spy/ChannelData.java,
+	  lcm-java/lcm/spy/Spy.java: make lcm spy remember last message on
+	  each channel so that object panels open up immediately
+
+2010-03-02  ashuang
+
+	* [r444] WinSpecific/README.txt: update winspecific readme
+
+2010-03-01  ashuang
+
+	* [r443] WinSpecific/README.txt, WinSpecific/WindowsPorting.txt,
+	  WinSpecific/include, WinSpecific/include/inttypes.h,
+	  WinSpecific/include/lcm, WinSpecific/include/lcm/eventlog.h,
+	  WinSpecific/include/lcm/lcm.h,
+	  WinSpecific/include/lcm/lcm_coretypes.h,
+	  WinSpecific/include/stdint.h, WinSpecific/inttypes.h,
+	  WinSpecific/stdint.h, lcm-logger/lcm-logger.vcproj,
+	  lcm-logger/lcm-logplayer.vcproj, lcm/lcm.vcproj,
+	  lcmgen/lcmgen.vcproj, liblcm-test/lcm-example.vcproj,
+	  liblcm-test/lcm-logfilter.vcproj, liblcm-test/lcm-sink.vcproj,
+	  liblcm-test/lcm-source.vcproj, liblcm-test/lcm-tester.vcproj:
+	  simplify project include path requirements in Windows
+	* [r442] lcm/lcm_udp.c: windows closesocket bugfix
+
+2010-03-01  edwinolson
+
+	* [r441] lcm-java/lcm/lcm/LCMEncodable.java: expose recursive
+	  encode/decode methods for advanced users
+
+2010-02-28  ashuang
+
+	* [r440] lcm-python/pylcm.c, lcm/lcm_file.c, lcm/lcm_udp.c,
+	  liblcm-test/lcm-example.c: add #include <sys/select.h> where
+	  select is used (closes: #17)
+
+2010-02-28  edwinolson
+
+	* [r439] lcmgen/emit_java.c, lcmgen/getopt.c, lcmgen/getopt.h:
+	  inhibit lcmgen -j complaining about default pkg if one is
+	  specified on command line. Oh, and removing trailing
+	  whitespace... arg.
+
+2010-02-09  ashuang
+
+	* [r438] README, lcm/eventlog.h: update documentation
+
+2010-01-29  ashuang
+
+	* [r437] lcmgen/emit_c.c: add --c-no-pubsub cmdline option to
+	  lcm-gen
+
+2010-01-28  ashuang
+
+	* [r436] lcm/lcm_udp.c: fix leaking file descriptors: use close(),
+	  closesocket() instead of shutdown()
+
+2010-01-09  ashuang
+
+	* [r435] docs/reference/multicast-setup.sgml: update documentation
+	  for single host use
+	* [r434] lcm/lcm_udp.c: update linux error checking when no route
+	  available.
+
+2010-01-06  ashuang
+
+	* [r431] ChangeLog, Makefile.am, NEWS, configure.in,
+	  docs/release_checklist, lcm-logger/Makefile.am,
+	  lcm-python/setup.py, lcm/Makefile.am, lcmgen/Makefile.am,
+	  liblcm-test/Makefile.am: release 0.4.0
+
 2009-12-22  ashuang
 
-	* [r430]
-	  lcm/lcm.h:
-	  update
-	  documentation
+	* [r430] lcm/lcm.h: update documentation
 
 2009-12-04  ashuang
 
-	* [r428]
-	  lcm-logger/glib_util.c,
-	  lcm-logger/lcm_logger.c,
-	  lcm/eventlog.c:
-	  commit
-	  randy's
-	  latest
-	  patch
-	  (windows
-	  bugfixes)
+	* [r428] lcm-logger/glib_util.c, lcm-logger/lcm_logger.c,
+	  lcm/eventlog.c: commit randy's latest patch (windows bugfixes)
 
 2009-12-02  ashuang
 
-	* [r427]
-	  lcm-java/lcm/lcm/LCM.java,
-	  lcm-java/lcm/lcm/TCPProvider.java:
-	  "tcp://"
-	  -->
-	  "tcpq://"
-	  change
-	  a
-	  couple
-	  instances
-	  of
-	  System.out
-	  -->
-	  System.err
+	* [r427] lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/TCPProvider.java: "tcp://" --> "tcpq://" change
+	  a couple instances of System.out --> System.err
 
 2009-11-23  ashuang
 
-	* [r422]
-	  lcm-java/lcm/lcm/LCMDataOutputStream.java:
-	  restore
-	  accidental
-	  rollback
-	  of
-	  r420
+	* [r422] lcm-java/lcm/lcm/LCMDataOutputStream.java: restore
+	  accidental rollback of r420
 
 2009-11-16  ashuang
 
-	* [r421]
-	  WinSpecific,
-	  WinSpecific/LCM.sln,
-	  WinSpecific/WinLCM.cpp,
-	  WinSpecific/WinPorting.cpp,
-	  WinSpecific/WinPorting.h,
-	  WinSpecific/WindowsPorting.txt,
-	  WinSpecific/getopt,
-	  WinSpecific/getopt/getopt.c,
-	  WinSpecific/getopt/getopt.h,
+	* [r421] WinSpecific, WinSpecific/LCM.sln, WinSpecific/WinLCM.cpp,
+	  WinSpecific/WinPorting.cpp, WinSpecific/WinPorting.h,
+	  WinSpecific/WindowsPorting.txt, WinSpecific/getopt,
+	  WinSpecific/getopt/getopt.c, WinSpecific/getopt/getopt.h,
 	  WinSpecific/getopt/getopt.vcproj,
 	  WinSpecific/getopt/getopt_long.c,
-	  WinSpecific/getopt/getopt_long.h,
-	  WinSpecific/inttypes.h,
-	  WinSpecific/stdint.h,
-	  lcm-java/lcm/lcm/LCMDataOutputStream.java,
-	  lcm-logger/glib_util.c,
-	  lcm-logger/glib_util.h,
-	  lcm-logger/lcm-logger.vcproj,
-	  lcm-logger/lcm-logplayer.vcproj,
-	  lcm-logger/lcm_logger.c,
-	  lcm-logger/lcm_logplayer.c,
-	  lcm/dbg.h,
-	  lcm/eventlog.c,
-	  lcm/eventlog.h,
-	  lcm/ioutils.h,
-	  lcm/lcm.c,
-	  lcm/lcm.h,
-	  lcm/lcm.vcproj,
-	  lcm/lcm_file.c,
-	  lcm/lcm_internal.h,
-	  lcm/lcm_udp.c,
-	  lcm/ringbuffer.c,
-	  lcmgen/emit_c.c,
-	  lcmgen/emit_java.c,
-	  lcmgen/emit_python.c,
-	  lcmgen/getopt.c,
-	  lcmgen/lcmgen.c,
-	  lcmgen/lcmgen.h,
-	  lcmgen/lcmgen.vcproj,
-	  lcmgen/main.c,
-	  lcmgen/sprintfalloc.c,
-	  lcmgen/tokenize.c,
-	  liblcm-test/lcm-example.c,
-	  liblcm-test/lcm-example.vcproj,
-	  liblcm-test/lcm-logfilter.c,
-	  liblcm-test/lcm-logfilter.vcproj,
-	  liblcm-test/lcm-sink.c,
-	  liblcm-test/lcm-sink.vcproj,
-	  liblcm-test/lcm-source.c,
-	  liblcm-test/lcm-source.vcproj,
-	  liblcm-test/lcm-tester.c,
-	  liblcm-test/lcm-tester.vcproj:
-	  merge
-	  windows
-	  branch
-	  into
-	  trunk
+	  WinSpecific/getopt/getopt_long.h, WinSpecific/inttypes.h,
+	  WinSpecific/stdint.h, lcm-java/lcm/lcm/LCMDataOutputStream.java,
+	  lcm-logger/glib_util.c, lcm-logger/glib_util.h,
+	  lcm-logger/lcm-logger.vcproj, lcm-logger/lcm-logplayer.vcproj,
+	  lcm-logger/lcm_logger.c, lcm-logger/lcm_logplayer.c, lcm/dbg.h,
+	  lcm/eventlog.c, lcm/eventlog.h, lcm/ioutils.h, lcm/lcm.c,
+	  lcm/lcm.h, lcm/lcm.vcproj, lcm/lcm_file.c, lcm/lcm_internal.h,
+	  lcm/lcm_udp.c, lcm/ringbuffer.c, lcmgen/emit_c.c,
+	  lcmgen/emit_java.c, lcmgen/emit_python.c, lcmgen/getopt.c,
+	  lcmgen/lcmgen.c, lcmgen/lcmgen.h, lcmgen/lcmgen.vcproj,
+	  lcmgen/main.c, lcmgen/sprintfalloc.c, lcmgen/tokenize.c,
+	  liblcm-test/lcm-example.c, liblcm-test/lcm-example.vcproj,
+	  liblcm-test/lcm-logfilter.c, liblcm-test/lcm-logfilter.vcproj,
+	  liblcm-test/lcm-sink.c, liblcm-test/lcm-sink.vcproj,
+	  liblcm-test/lcm-source.c, liblcm-test/lcm-source.vcproj,
+	  liblcm-test/lcm-tester.c, liblcm-test/lcm-tester.vcproj: merge
+	  windows branch into trunk
 
 2009-11-13  edwinolson
 
-	* [r420]
-	  lcm-java/lcm/lcm/LCMDataOutputStream.java:
-	  fix
-	  lcmdataoutputstream
-	  bug
-	  in
-	  ensureSize
+	* [r420] lcm-java/lcm/lcm/LCMDataOutputStream.java: fix
+	  lcmdataoutputstream bug in ensureSize
 
 2009-10-21  ashuang
 
-	* [r411]
-	  lcm/lcm_udp.c:
-	  re-enable
-	  accidentally
-	  disabled
-	  self
-	  test
-	* [r410]
-	  lcm/lcm_udp.c:
-	  replace
-	  connect(),
-	  writev()
-	  with
-	  sendmsg
-	  experimenting
-	  with
-	  multicast
-	  on
-	  localhost
-	  interface
-	  (linux)
+	* [r411] lcm/lcm_udp.c: re-enable accidentally disabled self test
+	* [r410] lcm/lcm_udp.c: replace connect(), writev() with sendmsg
+	  experimenting with multicast on localhost interface (linux)
 
 2009-10-08  ashuang
 
-	* [r409]
-	  liblcm-test/lcm-tester.c:
-	  fix
-	  lcm-tester.c
-	  to
-	  more
-	  accurately
-	  report
-	  success
+	* [r409] liblcm-test/lcm-tester.c: fix lcm-tester.c to more
+	  accurately report success
 
 2009-09-30  ashuang
 
-	* [r408]
-	  lcm/lcm_file.c,
-	  lcm/lcm_internal.h,
-	  lcm/lcm_udp.c:
-	  add
-	  wrappers
-	  around
-	  POSIX
-	  pipe
-	  functions
-	  pipe ->
-	  lcm_internal_pipe_create
-	  write
-	  ->
-	  lcm_internal_pipe_write
-	  read ->
-	  lcm_internal_pipe_read
-	  close
-	  ->
-	  lcm_internal_pipe_close
+	* [r408] lcm/lcm_file.c, lcm/lcm_internal.h, lcm/lcm_udp.c: add
+	  wrappers around POSIX pipe functions pipe ->
+	  lcm_internal_pipe_create write -> lcm_internal_pipe_write read ->
+	  lcm_internal_pipe_read close -> lcm_internal_pipe_close
 
 2009-09-15  ashuang
 
-	* [r404]
-	  lcmgen/emit_java.c:
-	  lcm-gen
-	  -j:
-	  add
-	  automatically
-	  generated
-	  code
-	  warning
-	  comment
+	* [r404] lcmgen/emit_java.c: lcm-gen -j: add automatically
+	  generated code warning comment
 
 2009-09-14  ashuang
 
-	* [r403]
-	  examples/java/example_t_demo/clean.sh:
-	  fix
-	  typo
-	  in
-	  clean.sh
-	  script
+	* [r403] examples/java/example_t_demo/clean.sh: fix typo in
+	  clean.sh script
 
 2009-09-10  edwinolson
 
-	* [r402]
-	  lcm-java/lcm/spy/LCMHandlerDatabase.java,
+	* [r402] lcm-java/lcm/spy/LCMHandlerDatabase.java,
 	  lcm-java/lcm/spy/Spy.java,
-	  lcm-java/lcm/util/ClassDiscoverer.java:
-	  Make
-	  ClassDiscoverer
-	  more
-	  robust
-	  to
-	  exceptions
-	  by
-	  catching
-	  everything
-	  (including
+	  lcm-java/lcm/util/ClassDiscoverer.java: Make ClassDiscoverer more
+	  robust to exceptions by catching everything (including
 	  IncompatibleClassChangeError
 
 2009-09-08  edwinolson
 
-	* [r400]
-	  docs/reference/tutorial-java.sgml:
-	  one
-	  more
-	  tutorial
+	* [r400] docs/reference/tutorial-java.sgml: one more tutorial
 	  update
-	* [r398]
-	  docs/reference/tutorial-java.sgml:
-	  improve
-	  docs
-	  another
+	* [r398] docs/reference/tutorial-java.sgml: improve docs another
 	  hair
-	* [r397]
-	  docs/reference/tutorial-java.sgml:
-	  update
-	  java
-	  tutorial
-	  to
-	  reflect
-	  changes
-	  from
-	  a
-	  few
-	  releases
-	  back.
-	  oops.
+	* [r397] docs/reference/tutorial-java.sgml: update java tutorial to
+	  reflect changes from a few releases back. oops.
 
 2009-08-21  ashuang
 
-	* [r395]
-	  configure.in,
-	  lcm-python/Makefile.am,
-	  m4/ac_python_devel.m4,
-	  m4/python.m4:
-	  python
-	  build
-	  system: use
-	  automake
-	  macros
-	  from
-	  PyGTK
-	  project.
-	* [r394]
-	  lcm-java/lcm/lcm/MessageAggregator.java:
-	  Deque
-	  ->
+	* [r395] configure.in, lcm-python/Makefile.am,
+	  m4/ac_python_devel.m4, m4/python.m4: python build system: use
+	  automake macros from PyGTK project.
+	* [r394] lcm-java/lcm/lcm/MessageAggregator.java: Deque ->
 	  LinkedList
-	* [r393]
-	  lcm-java/lcm/lcm/LogFileProvider.java,
-	  lcm-java/lcm/lcm/MessageAggregator.java:
-	  MessageAggregator:
-	  use
-	  LinkedList
-	  instead
-	  of
-	  ArrayDeque
-	  for
-	  compatibility
-	  with
-	  Java
-	  1.5
-	  LogFileProvider:
-	  print
-	  exception
-	  stack
-	  trace
-	  when
-	  caught
+	* [r393] lcm-java/lcm/lcm/LogFileProvider.java,
+	  lcm-java/lcm/lcm/MessageAggregator.java: MessageAggregator: use
+	  LinkedList instead of ArrayDeque for compatibility with Java 1.5
+	  LogFileProvider: print exception stack trace when caught
 
 2009-08-14  ashuang
 
-	* [r387]
-	  ChangeLog,
-	  NEWS,
-	  configure.in:
-	  release
-	  0.3.1
+	* [r387] ChangeLog, NEWS, configure.in: release 0.3.1
 
 2009-07-28  edwinolson
 
-	* [r386]
-	  lcm-java/lcm/logging/Log.java,
-	  lcm-java/lcm/spy/ObjectPanel.java:
-	  lcm-spy:
-	  display
-	  byte
-	  arrays
-	  as
-	  characters
-	  too.
+	* [r386] lcm-java/lcm/logging/Log.java,
+	  lcm-java/lcm/spy/ObjectPanel.java: lcm-spy: display byte arrays
+	  as characters too.
 
 2009-07-28  ashuang
 
-	* [r385]
-	  lcm-java/lcm-logplayer-gui.1,
-	  lcm-java/lcm-spy.1,
-	  lcm-java/lcm/logging/LogPlayer.java,
-	  lcm-java/lcm/spy/Spy.java,
-	  lcm-logger/lcm-logger.1,
-	  lcm-logger/lcm-logplayer.1,
-	  lcm-logger/lcm_logger.c,
-	  lcm-logger/lcm_logplayer.c:
-	  boooooring
-	  meeting.
-	  add
-	  --lcm-url=URL
-	  cmd
-	  line
-	  option
-	  to
+	* [r385] lcm-java/lcm-logplayer-gui.1, lcm-java/lcm-spy.1,
+	  lcm-java/lcm/logging/LogPlayer.java, lcm-java/lcm/spy/Spy.java,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm-logplayer.1,
+	  lcm-logger/lcm_logger.c, lcm-logger/lcm_logplayer.c: boooooring
+	  meeting. add --lcm-url=URL cmd line option to
 	  lcm-{spy,logger,logplayer,logplayer-gui}
 
 2009-07-27  ashuang
 
-	* [r384]
-	  lcmgen/emit_python.c:
-	  emit_python
-	  bugfix: enable
-	  arrays
-	  of
+	* [r384] lcmgen/emit_python.c: emit_python bugfix: enable arrays of
 	  booleans
-	* [r383]
-	  lcm-python/Makefile.am:
-	  add
-	  setup.py
-	  to
-	  dist
-	* [r382]
-	  lcm-python/setup.py:
-	  update
-	  python
-	  distutils
-	  script
-	* [r381]
-	  m4/ac_python_devel.m4:
-	  python
-	  autoconf
-	  bugfix
+	* [r383] lcm-python/Makefile.am: add setup.py to dist
+	* [r382] lcm-python/setup.py: update python distutils script
+	* [r381] m4/ac_python_devel.m4: python autoconf bugfix
 
 2009-07-24  ashuang
 
-	* [r380]
-	  lcm-python/lcm/__init__.py,
-	  lcm-python/pylcm.c,
-	  lcm-python/pylcm_subscription.c:
-	  update
-	  lcm-python
-	  comment
-	  docs
+	* [r380] lcm-python/lcm/__init__.py, lcm-python/pylcm.c,
+	  lcm-python/pylcm_subscription.c: update lcm-python comment docs
 
 2009-07-22  edwinolson
 
-	* [r379]
-	  lcm-java/lcm/spy/ObjectPanel.java,
-	  lcm-java/lcm/spy/Spy.java:
-	  -
-	  make
-	  ObjectPanel
-	  scroll
-	  bar
-	  update
-	  when
-	  render
-	  size
-	  changes
-	  -
-	  slightly
-	  enlarge
-	  default
-	  object
-	  panel
-	  -
-	  allow
-	  collapsing
-	  sections
-	  via
-	  a
-	  click
-	  anywhere
-	  within
-	  the
+	* [r379] lcm-java/lcm/spy/ObjectPanel.java,
+	  lcm-java/lcm/spy/Spy.java: - make ObjectPanel scroll bar update
+	  when render size changes - slightly enlarge default object panel
+	  - allow collapsing sections via a click anywhere within the
 	  section
-	* [r378]
-	  lcm-java/lcm/spy/ObjectPanel.java,
-	  lcm-java/lcm/spy/Spy.java:
-	  *
-	  Make
-	  ObjectPanel
-	  public,
-	  per
-	  popular
+	* [r378] lcm-java/lcm/spy/ObjectPanel.java,
+	  lcm-java/lcm/spy/Spy.java: * Make ObjectPanel public, per popular
 	  request.
-	  *
-	  Make
-	  ObjectPanel
-	  easier
-	  to
-	  use
-	  by
-	  eliminating
-	  redundant
-	  cls
-	  field
-	  in
-	  constructor
-	  *
-	  Improve
-	  visual
-	  appearance
-	  of
-	  ObjectPanel
-	  by
-	  making
-	  static
-	  elements
-	  visually
-	  distinctive
-	  (italic)
+	  
+	  * Make ObjectPanel easier to use by eliminating redundant cls
+	  field in constructor
+	  
+	  * Improve visual appearance of ObjectPanel by making static
+	  elements visually distinctive (italic)
 
 2009-07-12  ashuang
 
-	* [r377]
-	  lcm-java/lcm/logging/LogPlayer.java,
-	  lcm-java/lcm/spy/Spy.java:
-	  lcm-spy,
-	  lcm-logplayer-gui:
-	  print
-	  warning
-	  to
-	  stderr
-	  if
-	  gcj
-	  is
-	  detected
-	  as
-	  JRE
+	* [r377] lcm-java/lcm/logging/LogPlayer.java,
+	  lcm-java/lcm/spy/Spy.java: lcm-spy, lcm-logplayer-gui: print
+	  warning to stderr if gcj is detected as JRE
 
 2009-07-09  ashuang
 
-	* [r376]
-	  examples/c/Makefile:
-	  make
-	  C
-	  example
-	  work
-	  in
-	  cygwin
+	* [r376] examples/c/Makefile: make C example work in cygwin
 
 2009-07-04  ashuang
 
-	* [r375]
-	  lcm-java:
-	  update
-	  svn:ignore
+	* [r375] lcm-java: update svn:ignore
 
 2009-07-03  ashuang
 
-	* [r374]
-	  configure.in:
-	  makefile
-	  bugfix
-	* [r373]
-	  examples/c/read_log.c:
-	  tweak
-	* [r372]
-	  examples/Makefile.am,
-	  examples/c,
-	  examples/c/Makefile,
-	  examples/c/read_log.c,
-	  examples/python/Makefile.am,
-	  examples/python/cleanup.sh,
-	  examples/python/gen-types.sh,
-	  examples/python/listener.py,
-	  examples/python/read-log.py:
-	  cleanup
-	  examples
-	  start
-	  adding
-	  examples
-	  to
-	  read
-	  from
-	  log
-	  file
+	* [r374] configure.in: makefile bugfix
+	* [r373] examples/c/read_log.c: tweak
+	* [r372] examples/Makefile.am, examples/c, examples/c/Makefile,
+	  examples/c/read_log.c, examples/python/Makefile.am,
+	  examples/python/cleanup.sh, examples/python/gen-types.sh,
+	  examples/python/listener.py, examples/python/read-log.py: cleanup
+	  examples start adding examples to read from log file
 
 2009-07-02  ashuang
 
-	* [r369]
-	  examples/java/example_t_demo/Listener.java,
+	* [r369] examples/java/example_t_demo/Listener.java,
 	  examples/java/temperature_demo_java/TemperatureDisplay.java,
 	  examples/java/temperature_demo_java/TemperatureTransmit.java:
-	  port
-	  examples
-	  to
-	  new
-	  Java
-	  API
+	  port examples to new Java API
 
 2009-06-30  ashuang
 
-	* [r368]
-	  lcm-java/Makefile.am:
-	  tweak
-	  lcm-java
-	  Makefile
+	* [r368] lcm-java/Makefile.am: tweak lcm-java Makefile
 
 2009-06-29  ashuang
 
-	* [r366]
-	  ChangeLog,
-	  NEWS,
-	  configure.in,
-	  lcm-java/lcm/spy/Spy.java:
-	  release
-	  0.3.0
+	* [r366] ChangeLog, NEWS, configure.in, lcm-java/lcm/spy/Spy.java:
+	  release 0.3.0
 
 2009-06-10  ashuang
 
-	* [r365]
-	  lcmgen/emit_java.c,
-	  lcmgen/emit_python.c:
-	  emit-java:
-	  fix
-	  some
-	  compile
-	  warnings
-	  emit-python:
-	  bugfix
-	  for
-	  decoding
-	  arrays
-	  of
+	* [r365] lcmgen/emit_java.c, lcmgen/emit_python.c: emit-java: fix
+	  some compile warnings emit-python: bugfix for decoding arrays of
 	  bytes
 
 2009-06-07  edwinolson
 
-	* [r364]
-	  lcm-java/lcm/spy/Spy.java:
-	  fix
-	  Spy
-	  to
-	  work
-	  with
-	  new
-	  java
-	  LCM
-	  types.
-	  (missed
-	  this
-	  in
-	  previous
-	  commit)
+	* [r364] lcm-java/lcm/spy/Spy.java: fix Spy to work with new java
+	  LCM types. (missed this in previous commit)
 
 2009-06-05  edwinolson
 
-	* [r363]
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm/lcm/LCM.java,
+	* [r363] lcm-java/Makefile.am, lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/LCMDataInputStream.java,
 	  lcm-java/lcm/lcm/LCMDataOutputStream.java,
 	  lcm-java/lcm/lcm/LCMEncodable.java,
 	  lcm-java/lcm/lcm/LCMSubscriber.java,
 	  lcm-java/lcm/lcm/MessageAggregator.java,
 	  lcm-java/lcm/lcm/UDPMulticastProvider.java,
-	  lcm-java/lcm/logging/LogPlayer.java,
-	  lcm-java/lcm/spy/Spy.java,
-	  lcmgen/emit_java.c:
-	  provide
-	  faster
-	  serialization
-	  classes
-	  for
-	  java.
-	  This
-	  requires
-	  minor
-	  source
-	  code
-	  changes
+	  lcm-java/lcm/logging/LogPlayer.java, lcm-java/lcm/spy/Spy.java,
+	  lcmgen/emit_java.c: provide faster serialization classes for
+	  java. This requires minor source code changes
 
 2009-05-27  ashuang
 
-	* [r362]
-	  lcm/lcm_udp.c:
-	  LCM
-	  warn
-	  on
-	  Linux
-	  if
-	  large
-	  packets
-	  are
-	  being
-	  received
-	  but
-	  kernel
-	  rbuf
-	  is
-	  small
+	* [r362] lcm/lcm_udp.c: LCM warn on Linux if large packets are
+	  being received but kernel rbuf is small
 
 2009-05-07  ashuang
 
-	* [r361]
-	  liblcm-test/lcm-logfilter.c:
-	  bugfix,
-	  add
-	  --invert.
+	* [r361] liblcm-test/lcm-logfilter.c: bugfix, add --invert.
 
 2009-05-07  edwinolson
 
-	* [r360]
-	  lcm-java/lcm/lcm/TCPProvider.java:
-	  make
-	  tcp
-	  provider
-	  use
-	  default
-	  port
-	  if
-	  not
-	  specified
+	* [r360] lcm-java/lcm/lcm/TCPProvider.java: make tcp provider use
+	  default port if not specified
 
 2009-04-15  ashuang
 
-	* [r358]
-	  ChangeLog,
-	  NEWS,
-	  configure.in:
-	  release
-	  0.2.2
+	* [r358] ChangeLog, NEWS, configure.in: release 0.2.2
 
 2009-04-14  ashuang
 
-	* [r357]
-	  lcm-logger/lcm_logger.c:
-	  logger
-	  bugfix
-	  (that
-	  was
-	  stupid)
-	* [r356]
-	  lcm-python/lcm/__init__.py:
-	  lcm-python
-	  remove
-	  pure
-	  python
-	  log
-	  class,
-	  add
-	  some
-	  comment
-	  docs
-	* [r355]
-	  lcm-logger/lcm_logger.c:
-	  logger
-	  fix
-	  memory
-	  queue
-	  size
-	  counting
-	  bug
+	* [r357] lcm-logger/lcm_logger.c: logger bugfix (that was stupid)
+	* [r356] lcm-python/lcm/__init__.py: lcm-python remove pure python
+	  log class, add some comment docs
+	* [r355] lcm-logger/lcm_logger.c: logger fix memory queue size
+	  counting bug
 
 2009-04-03  ashuang
 
-	* [r354]
-	  lcm/lcm.c:
-	  switch
-	  back
-	  to
-	  POSIX
-	  regex
-	  for
-	  now...
-	  GRegex
-	  is
-	  too
-	  new
-	  (only
-	  since
-	  Aug,
-	  2007)
+	* [r354] lcm/lcm.c: switch back to POSIX regex for now... GRegex is
+	  too new (only since Aug, 2007)
 
 2009-04-02  ashuang
 
-	* [r353]
-	  lcm/lcm.c:
-	  fix
-	  memory
-	  leak
-	* [r352]
-	  lcmgen/emit_python.c:
-	  emit_python
-	  bugfix
+	* [r353] lcm/lcm.c: fix memory leak
+	* [r352] lcmgen/emit_python.c: emit_python bugfix
 
 2009-03-31  ashuang
 
-	* [r349]
-	  lcm/lcm_file.c:
-	  lcm_file write
-	  mode
-	  bugfix
+	* [r349] lcm/lcm_file.c: lcm_file write mode bugfix
 
 2009-03-30  ashuang
 
-	* [r348]
-	  lcmgen/emit_python.c:
-	  emit_python:
-	  enum
-	  bugfix
-	* [r347]
-	  lcmgen/emit_python.c:
-	  emit_python:
-	  encode/decode
-	  the
-	  last
-	  dimension
-	  all
-	  at
-	  once
-	  if
-	  possible
-	* [r346]
-	  lcmgen/emit_python.c:
-	  emit_python: populate
-	  __init__.py
-	  with
-	  module
-	  imports
+	* [r348] lcmgen/emit_python.c: emit_python: enum bugfix
+	* [r347] lcmgen/emit_python.c: emit_python: encode/decode the last
+	  dimension all at once if possible
+	* [r346] lcmgen/emit_python.c: emit_python: populate __init__.py
+	  with module imports
 
 2009-03-29  ashuang
 
-	* [r345]
-	  configure.in,
-	  examples/Makefile.am,
-	  examples/c,
-	  examples/c/Makefile,
-	  examples/c/Makefile.am:
-	  convert
-	  C
-	  example
-	  to
-	  use
-	  a
-	  standard
-	  Makefile...
-	  arguably
-	  more
-	  useful
-	  as
-	  an
-	  example
+	* [r345] configure.in, examples/Makefile.am, examples/c,
+	  examples/c/Makefile, examples/c/Makefile.am: convert C example to
+	  use a standard Makefile... arguably more useful as an example
 
 2009-03-27  ashuang
 
-	* [r344]
-	  lcm-logger/lcm_logger.c:
-	  bugfix
-	* [r343]
-	  lcm-logger/lcm_logger.c:
-	  logger
-	  verbose
-	  when
-	  unable
-	  to
-	  log
+	* [r344] lcm-logger/lcm_logger.c: bugfix
+	* [r343] lcm-logger/lcm_logger.c: logger verbose when unable to log
 
 2009-03-25  ashuang
 
-	* [r342]
-	  lcm/Makefile.am:
-	  remove
-	  AM_CFLAGS
-	  from
-	  Makefile.am
-	* [r341]
-	  configure.in:
-	  autoconf
-	  set
-	  AM_CFLAGS
-	  instead
-	  of
-	  CFLAGS
-	* [r340]
-	  docs/reference:
-	  update
-	  svn:ignore
+	* [r342] lcm/Makefile.am: remove AM_CFLAGS from Makefile.am
+	* [r341] configure.in: autoconf set AM_CFLAGS instead of CFLAGS
+	* [r340] docs/reference: update svn:ignore
 
 2009-03-23  ashuang
 
-	* [r339]
-	  lcm-python/pylcm.c:
-	  update
-	  python
-	  regex
-	  doc
-	* [r338]
-	  lcm/lcm_udp.c:
-	  lcm_udp:
-	  fix
-	  some
-	  gcc
-	  warnings
-	  about
-	  unused
-	  return
-	  values
-	* [r337]
-	  lcm-logger/lcm_logplayer.c,
-	  lcm/lcm.c,
-	  lcm/lcm.h,
-	  liblcm-test/lcm-logfilter.c:
-	  C/Python: switch
-	  from
-	  POSIX
-	  extended
-	  regular
-	  expressions
-	  to
-	  GLib
-	  regular
-	  expressions.
-	* [r336]
-	  lcm/lcm.h:
-	  some
-	  documentation
-	  for
-	  log
-	  file
-	  provider
-	  write
+	* [r339] lcm-python/pylcm.c: update python regex doc
+	* [r338] lcm/lcm_udp.c: lcm_udp: fix some gcc warnings about unused
+	  return values
+	* [r337] lcm-logger/lcm_logplayer.c, lcm/lcm.c, lcm/lcm.h,
+	  liblcm-test/lcm-logfilter.c: C/Python: switch from POSIX extended
+	  regular expressions to GLib regular expressions.
+	* [r336] lcm/lcm.h: some documentation for log file provider write
 	  mode
-	* [r335]
-	  lcm-java/lcm/lcm/LogFileProvider.java:
-	  add
-	  write
-	  mode
-	  to
-	  Java
-	  file
-	  provider
-	* [r334]
-	  lcm/lcm.c,
-	  lcm/lcm_file.c:
-	  add
-	  write
-	  mode
-	  to
-	  LCM
-	  file
-	  provider
-	  (abe
-	  bachrach)
+	* [r335] lcm-java/lcm/lcm/LogFileProvider.java: add write mode to
+	  Java file provider
+	* [r334] lcm/lcm.c, lcm/lcm_file.c: add write mode to LCM file
+	  provider (abe bachrach)
 
 2009-03-21  ashuang
 
-	* [r333]
-	  lcmgen/emit_python.c:
-	  emit_python: consolidate
-	  calls
-	  to
-	  struct.unpack
-	  when
-	  possible use
-	  --lazy
-	  flag
+	* [r333] lcmgen/emit_python.c: emit_python: consolidate calls to
+	  struct.unpack when possible use --lazy flag
 
 2009-03-19  ashuang
 
-	* [r332]
-	  lcmgen/emit_c.c:
-	  emit_c: append
-	  "LL"
-	  to
-	  int64_t
-	  constants
+	* [r332] lcmgen/emit_c.c: emit_c: append "LL" to int64_t constants
 
 2009-02-23  edwinolson
 
-	* [r331]
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm/lcm/TCPProvider.java,
-	  lcm-java/lcm/lcm/TCPService.java:
-	  TCPProvider
-	  enhancements
+	* [r331] lcm-java/Makefile.am, lcm-java/lcm/lcm/TCPProvider.java,
+	  lcm-java/lcm/lcm/TCPService.java: TCPProvider enhancements
 
 2009-02-17  ashuang
 
-	* [r330]
-	  ChangeLog,
-	  NEWS,
-	  configure.in:
-	  release
-	  0.2.1
-	* [r329]
-	  lcm-logger/lcm_logger.c:
-	  fix
-	  major
-	  regression
-	  in
-	  logger
+	* [r330] ChangeLog, NEWS, configure.in: release 0.2.1
+	* [r329] lcm-logger/lcm_logger.c: fix major regression in logger
 
 2009-02-14  ashuang
 
-	* [r323]
-	  ChangeLog,
-	  NEWS,
-	  configure.in,
-	  examples/types/example_list_t.lcm:
-	  release
-	  0.2.0
-	* [r322]
-	  lcm-java,
-	  lcm-java/lcm/lcm/LCM.java,
+	* [r323] ChangeLog, NEWS, configure.in,
+	  examples/types/example_list_t.lcm: release 0.2.0
+	* [r322] lcm-java, lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/LCMEncodable.java,
 	  lcm-java/lcm/lcm/LCMSubscriber.java,
 	  lcm-java/lcm/lcm/MessageAggregator.java,
-	  lcm-java/lcm/logging/Log.java,
-	  lcm-java/make-javadocs.sh:
-	  java
+	  lcm-java/lcm/logging/Log.java, lcm-java/make-javadocs.sh: java
 	  documentation
 
 2009-02-13  ashuang
 
-	* [r321]
-	  lcm-java/lcm/lcm/MessageAggregator.java:
-	  another
-	  bugfix
-	* [r320]
-	  examples/matlab/sendmessage.m,
-	  lcm-java/lcm/lcm/MessageAggregator.java:
-	  MessageAggregator
-	  tweaks
-	* [r319]
-	  configure.in:
-	  configure.in
-	  bugfixes
-	* [r318]
-	  lcm-java/lcm/lcm/MessageAggregator.java:
-	  bugfix,
-	  add
+	* [r321] lcm-java/lcm/lcm/MessageAggregator.java: another bugfix
+	* [r320] examples/matlab/sendmessage.m,
+	  lcm-java/lcm/lcm/MessageAggregator.java: MessageAggregator tweaks
+	* [r319] configure.in: configure.in bugfixes
+	* [r318] lcm-java/lcm/lcm/MessageAggregator.java: bugfix, add
 	  javadoc
-	* [r317]
-	  examples/Makefile.am,
-	  examples/java/Makefile.am,
+	* [r317] examples/Makefile.am, examples/java/Makefile.am,
 	  examples/java/example_t_demo,
 	  examples/java/example_t_demo/Makefile.am,
 	  examples/java/example_t_demo/build.sh,
-	  examples/java/example_t_demo/clean.sh,
-	  examples/lcm-spy,
-	  examples/lcm-spy/buildjar.sh,
-	  examples/lcm-spy/runspy.sh,
-	  examples/matlab,
-	  examples/matlab/README,
-	  examples/matlab/addjars.m,
-	  examples/matlab/buildjar.sh,
-	  examples/matlab/listener.m,
-	  examples/matlab/sendmessage.m,
-	  examples/python,
-	  examples/python/Makefile.am,
-	  examples/python/send-message.py,
-	  examples/types/Makefile.am,
-	  examples/types/example_list_t.lcm,
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm/lcm/MessageAggregator.java,
-	  lcm-matlab,
-	  lcmgen/Makefile.am,
-	  lcmgen/emit_matlab.c,
-	  lcmgen/main.c:
-	  -
-	  add
-	  lcm.lcm.MessageAggregator
-	  class
-	  to
-	  make
-	  lcm-java
-	  easier
-	  to
-	  use
-	  in
-	  MATLAB
-	  -
-	  remove
-	  lcmgen/emit_matlab,
-	  LCM
-	  mex
-	  bindings. obsoleted
-	  by
-	  java
-	  api
-	  change.
-	  -
-	  add
-	  matlab
-	  examples
-	  -
-	  add
-	  lcm-spy
-	  examples
-	  -
-	  add
-	  example_list_t
-	  as
-	  example
-	  of
-	  compound
-	  type
-	* [r316]
-	  lcmgen/emit_java.c:
-	  emit_java:
-	  add
-	  <type_t>(byte[]
-	  data)
-	  decode
-	  constructor
-	  for
-	  easier
-	  decoding
-	  of
-	  log
-	  data.
+	  examples/java/example_t_demo/clean.sh, examples/lcm-spy,
+	  examples/lcm-spy/buildjar.sh, examples/lcm-spy/runspy.sh,
+	  examples/matlab, examples/matlab/README,
+	  examples/matlab/addjars.m, examples/matlab/buildjar.sh,
+	  examples/matlab/listener.m, examples/matlab/sendmessage.m,
+	  examples/python, examples/python/Makefile.am,
+	  examples/python/send-message.py, examples/types/Makefile.am,
+	  examples/types/example_list_t.lcm, lcm-java/Makefile.am,
+	  lcm-java/lcm/lcm/MessageAggregator.java, lcm-matlab,
+	  lcmgen/Makefile.am, lcmgen/emit_matlab.c, lcmgen/main.c: - add
+	  lcm.lcm.MessageAggregator class to make lcm-java easier to use in
+	  MATLAB - remove lcmgen/emit_matlab, LCM mex bindings. obsoleted
+	  by java api change. - add matlab examples - add lcm-spy examples
+	  - add example_list_t as example of compound type
+	* [r316] lcmgen/emit_java.c: emit_java: add <type_t>(byte[] data)
+	  decode constructor for easier decoding of log data.
 
 2009-02-12  ashuang
 
-	* [r315]
-	  lcm-logger/lcm_logger.c,
-	  lcm-logger/lcm_logplayer.c:
-	  getopt
-	  returns
-	  int,
-	  not
-	  char
-	  (fix
-	  for
-	  arm
-	  et
-	  al)
+	* [r315] lcm-logger/lcm_logger.c, lcm-logger/lcm_logplayer.c:
+	  getopt returns int, not char (fix for arm et al)
 
 2009-02-07  edwinolson
 
-	* [r314]
-	  lcm-java/lcm/lcm/LCM.java,
+	* [r314] lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/TCPProvider.java,
-	  lcm-java/lcm/lcm/TCPService.java,
-	  lcm-java/lcm/test,
-	  lcm-java/lcm/test/SlowLCMSubscriber.java:
-	  add
-	  lossless/ordered
+	  lcm-java/lcm/lcm/TCPService.java, lcm-java/lcm/test,
+	  lcm-java/lcm/test/SlowLCMSubscriber.java: add lossless/ordered
 	  TCPProvider
 
 2009-02-05  ashuang
 
-	* [r313]
-	  Makefile.am,
-	  configure.in:
-	  add
-	  --without-examples
-	  configure
-	  option.
-	* [r312]
-	  configure.in:
-	  python
-	  build
-	  bugfix
-	* [r311]
-	  liblcm-test/lcm-seq_check.c:
-	  remove
-	  cruft
-	* [r310]
-	  lcm-logger/glib_util.c,
-	  lcm-logger/glib_util.h,
-	  lcm-logger/lcm-logger.1,
-	  lcm-logger/lcm_logger.c,
-	  liblcm-test/Makefile.am,
-	  liblcm-test/lcm-source.c:
-	  multithread
-	  lcm-logger,
-	  add
-	  memory
-	  buffer
-	  for
-	  unwritten
-	  packets
-	  allow
-	  lcm-source
-	  to
-	  transmit
-	  large
-	  packets
-	* [r309]
-	  lcm-python/lcm/__init__.py:
-	  python
-	  eventlog
-	  bugfix
+	* [r313] Makefile.am, configure.in: add --without-examples
+	  configure option.
+	* [r312] configure.in: python build bugfix
+	* [r311] liblcm-test/lcm-seq_check.c: remove cruft
+	* [r310] lcm-logger/glib_util.c, lcm-logger/glib_util.h,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c,
+	  liblcm-test/Makefile.am, liblcm-test/lcm-source.c: multithread
+	  lcm-logger, add memory buffer for unwritten packets allow
+	  lcm-source to transmit large packets
+	* [r309] lcm-python/lcm/__init__.py: python eventlog bugfix
 
 2009-02-04  ashuang
 
-	* [r308]
-	  configure.in:
-	  add
-	  --without-java
-	  and
-	  --without-python
-	  options
-	  to
-	  configure
-	  script
+	* [r308] configure.in: add --without-java and --without-python
+	  options to configure script
 
 2009-02-02  edwinolson
 
-	* [r307]
-	  lcm-java/lcm/lcm/LCM.java:
-	  add
-	  untested
-	  LCM.unsubscribe()
-	  method
-	  to
-	  java
-	  implementation.
-	  Based
-	  on
-	  code
-	  from
-	  Matt
-	  Antone
+	* [r307] lcm-java/lcm/lcm/LCM.java: add untested LCM.unsubscribe()
+	  method to java implementation. Based on code from Matt Antone
 
 2009-02-02  ashuang
 
-	* [r306]
-	  lcmgen/emit_java.c:
-	  fix
-	  bug
-	  14. emit_java
-	  needs
-	  to
-	  append
-	  'L'
-	  for
-	  const
-	  int64_t
+	* [r306] lcmgen/emit_java.c: fix bug 14. emit_java needs to append
+	  'L' for const int64_t
 
 2009-02-01  ashuang
 
-	* [r305]
-	  lcm-matlab/+lcm/LCM.m:
-	  docs
-	* [r304]
-	  lcm-matlab/+lcm,
-	  lcm-matlab/+lcm/EventLog.m,
-	  lcm-matlab/+lcm/LCM.m,
-	  lcm-matlab/lcm_create.m,
-	  lcm-matlab/lcm_destroy.m,
-	  lcm-matlab/lcm_eventlog.m,
-	  lcm-matlab/lcm_get_fileno.m,
-	  lcm-matlab/lcm_get_messages.m,
-	  lcm-matlab/lcm_publish.m,
-	  lcm-matlab/lcm_subscribe.m,
-	  lcm-matlab/lcm_unsubscribe.m,
-	  lcm-matlab/testlcm.m:
-	  convert
-	  lcm
-	  to
-	  class,
-	  put
-	  in
-	  package
-	* [r303]
-	  lcm-matlab,
-	  lcm-matlab/Makefile,
-	  lcm-matlab/lcm_build_mex.m,
-	  lcm-matlab/lcm_create.m,
-	  lcm-matlab/lcm_destroy.m,
-	  lcm-matlab/lcm_eventlog.m,
-	  lcm-matlab/lcm_get_fileno.m,
-	  lcm-matlab/lcm_get_messages.m,
-	  lcm-matlab/lcm_mex.c,
-	  lcm-matlab/lcm_mex.m,
-	  lcm-matlab/lcm_publish.m,
-	  lcm-matlab/lcm_subscribe.m,
-	  lcm-matlab/lcm_unsubscribe.m,
-	  lcm-matlab/testlcm.m:
-	  add
-	  some
-	  experimental
-	  MEX
-	  bindings
+	* [r305] lcm-matlab/+lcm/LCM.m: docs
+	* [r304] lcm-matlab/+lcm, lcm-matlab/+lcm/EventLog.m,
+	  lcm-matlab/+lcm/LCM.m, lcm-matlab/lcm_create.m,
+	  lcm-matlab/lcm_destroy.m, lcm-matlab/lcm_eventlog.m,
+	  lcm-matlab/lcm_get_fileno.m, lcm-matlab/lcm_get_messages.m,
+	  lcm-matlab/lcm_publish.m, lcm-matlab/lcm_subscribe.m,
+	  lcm-matlab/lcm_unsubscribe.m, lcm-matlab/testlcm.m: convert lcm
+	  to class, put in package
+	* [r303] lcm-matlab, lcm-matlab/Makefile,
+	  lcm-matlab/lcm_build_mex.m, lcm-matlab/lcm_create.m,
+	  lcm-matlab/lcm_destroy.m, lcm-matlab/lcm_eventlog.m,
+	  lcm-matlab/lcm_get_fileno.m, lcm-matlab/lcm_get_messages.m,
+	  lcm-matlab/lcm_mex.c, lcm-matlab/lcm_mex.m,
+	  lcm-matlab/lcm_publish.m, lcm-matlab/lcm_subscribe.m,
+	  lcm-matlab/lcm_unsubscribe.m, lcm-matlab/testlcm.m: add some
+	  experimental MEX bindings
 
 2009-01-31  ashuang
 
-	* [r302]
-	  lcmgen/emit_matlab.c:
-	  add
-	  a
-	  transpose
-	* [r301]
-	  lcmgen/Makefile.am,
-	  lcmgen/emit_matlab.c,
-	  lcmgen/emit_python.c,
-	  lcmgen/main.c:
-	  lcmgen: add
-	  MATLAB
-	  2008
-	  support. encode/decode
-	  only,
-	  no
-	  publish/subscribe
+	* [r302] lcmgen/emit_matlab.c: add a transpose
+	* [r301] lcmgen/Makefile.am, lcmgen/emit_matlab.c,
+	  lcmgen/emit_python.c, lcmgen/main.c: lcmgen: add MATLAB 2008
+	  support. encode/decode only, no publish/subscribe
 
 2009-01-19  ashuang
 
-	* [r300]
-	  lcmgen/emit_python.c:
-	  emit
-	  python
-	  minor
-	  bugfixes
+	* [r300] lcmgen/emit_python.c: emit python minor bugfixes
 
 2009-01-19  edwinolson
 
-	* [r299]
-	  lcm-java/Makefile.am:
-	  Make
-	  java
-	  build
-	  1.5
-	  version
-	  classes
-	  so
-	  the
-	  resulting
-	  .jar
-	  will
-	  be
-	  maximially
-	  compatible
-	  with
-	  other
+	* [r299] lcm-java/Makefile.am: Make java build 1.5 version classes
+	  so the resulting .jar will be maximially compatible with other
 	  systems
 
 2009-01-10  edwinolson
 
-	* [r298]
-	  lcm-java/lcm/util/ClassDiscoverer.java:
-	  better
-	  handle
-	  windows
-	  path
-	  separator
+	* [r298] lcm-java/lcm/util/ClassDiscoverer.java: better handle
+	  windows path separator
 
 2009-01-02  ashuang
 
-	* [r297]
-	  lcm-python/pylcm.c:
-	  remove
-	  extraneous
-	  printf
-	  in
-	  python
-	  lcm
+	* [r297] lcm-python/pylcm.c: remove extraneous printf in python lcm
 
 2008-12-23  edwinolson
 
-	* [r296]
-	  lcm-java/lcm/logging/LogPlayer.java:
-	  logplayer-gui:
-	  fix
-	  race
-	  WRT
-	  single-stepping.
-	  improve
-	  cosmetics
-	  of
-	  faster/slower
+	* [r296] lcm-java/lcm/logging/LogPlayer.java: logplayer-gui: fix
+	  race WRT single-stepping. improve cosmetics of faster/slower
 	  buttons
 
 2008-12-17  ashuang
 
-	* [r295]
-	  docs/reference/multicast-setup.sgml,
-	  docs/reference/tutorial-c.sgml,
-	  lcm/lcm.h:
-	  minor
-	  documentation
+	* [r295] docs/reference/multicast-setup.sgml,
+	  docs/reference/tutorial-c.sgml, lcm/lcm.h: minor documentation
 	  updates
 
 2008-12-11  ashuang
 
-	* [r294]
-	  lcm/lcm_udp.c:
-	  Make
-	  a
-	  commonly
-	  triggered
-	  error
-	  message
-	  a
-	  bit
-	  more
-	  friendly
-	  on
-	  Linux
-	  systems.
-	  If
-	  a
-	  UDP
-	  LCM
-	  socket
-	  cannot
-	  be
-	  created
-	  and
-	  there
-	  are
-	  no
-	  non-loopback
-	  network
-	  interfaces
-	  available,
-	  then
-	  print
-	  the
-	  suggested
-	  commands
-	  for
-	  temporarily
-	  assigning
-	  a
-	  192.168.x.x
-	  address
-	  and
-	  setting
-	  up
-	  a
-	  routing
-	  table.
+	* [r294] lcm/lcm_udp.c: Make a commonly triggered error message a
+	  bit more friendly on Linux systems. If a UDP LCM socket cannot be
+	  created and there are no non-loopback network interfaces
+	  available, then print the suggested commands for temporarily
+	  assigning a 192.168.x.x address and setting up a routing table.
 
 2008-11-10  ashuang
 
-	* [r293]
-	  ChangeLog,
-	  NEWS,
-	  configure.in,
-	  examples/java/Makefile.am,
-	  examples/java/example_t_demo/Makefile.am:
-	  prepare
-	  for
-	  0.1.1
+	* [r293] ChangeLog, NEWS, configure.in, examples/java/Makefile.am,
+	  examples/java/example_t_demo/Makefile.am: prepare for 0.1.1
 	  release
-	* [r292]
-	  lcm-java/lcm/lcm/LCM.java,
+	* [r292] lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/LogFileProvider.java,
 	  lcm-java/lcm/lcm/UDPMulticastProvider.java,
-	  lcm-java/lcm/lcm/URLParser.java:
-	  Java
-	  --
-	  change
-	  default
-	  TTL
-	  back
-	  to
-	  0. replace
-	  System.out
-	  with
-	  System.err
+	  lcm-java/lcm/lcm/URLParser.java: Java -- change default TTL back
+	  to 0. replace System.out with System.err
 
 2008-11-06  edwinolson
 
-	* [r291]
-	  lcm-java/lcm/lcm/UDPMulticastProvider.java:
-	  update
-	  spelling
-	  of
-	  LC
+	* [r291] lcm-java/lcm/lcm/UDPMulticastProvider.java: update
+	  spelling of LC
 
 2008-11-02  ashuang
 
-	* [r290]
-	  lcm/eventlog.h:
-	  lcm_eventlog_t
-	  ->
-	  change
-	  uint8_t*
-	  to
-	  void*
+	* [r290] lcm/eventlog.h: lcm_eventlog_t -> change uint8_t* to void*
 
 2008-10-30  edwinolson
 
-	* [r289]
-	  lcmgen/emit_java.c:
-	  actually
-	  fix
-	  serious
-	  java
-	  copy()
-	  bug
+	* [r289] lcmgen/emit_java.c: actually fix serious java copy() bug
 
 2008-10-28  edwinolson
 
-	* [r288]
-	  examples/java/example_t_demo/Makefile.am,
-	  lcmgen/emit_java.c,
-	  lcmgen/main.c:
-	  fix
-	  serious
-	  bug
-	  in
-	  emit_java
-	  for
-	  lcm.copy().
-	  emit
-	  a
-	  warning
-	  when
-	  using
-	  jdefaultpkg.
-	  fix
-	  java
-	  example_t
-	  build
+	* [r288] examples/java/example_t_demo/Makefile.am,
+	  lcmgen/emit_java.c, lcmgen/main.c: fix serious bug in emit_java
+	  for lcm.copy(). emit a warning when using jdefaultpkg. fix java
+	  example_t build
 
 2008-10-27  edwinolson
 
-	* [r287]
-	  lcm-java/lcm/lcm/UDPMulticastProvider.java:
-	  make
-	  java
-	  LCM
-	  default
-	  TTL
-	  the
-	  same
-	  as
-	  C...
-	  1.
-	  add
-	  warnings.
+	* [r287] lcm-java/lcm/lcm/UDPMulticastProvider.java: make java LCM
+	  default TTL the same as C... 1. add warnings.
 
 2008-10-21  edwinolson
 
-	* [r286]
-	  docs/reference/tutorial-java.sgml:
-	  add
-	  docs
-	  for
-	  lcm-gen
+	* [r286] docs/reference/tutorial-java.sgml: add docs for lcm-gen
 	  change
-	* [r285]
-	  examples/java/example_t_demo/Listener.java,
+	* [r285] examples/java/example_t_demo/Listener.java,
 	  examples/java/example_t_demo/Makefile.am,
 	  examples/java/example_t_demo/SendMessage.java,
-	  lcmgen/emit_java.c:
-	  add
-	  default
-	  java
-	  package
-	  name
-	  if
-	  lcm
-	  class
-	  has
-	  no
-	  package
+	  lcmgen/emit_java.c: add default java package name if lcm class
+	  has no package
 
 2008-10-17  ashuang
 
-	* [r284]
-	  liblcm-test/lcm-logfilter.c:
-	  add
-	  -s,
-	  -e
-	  options
-	  to
+	* [r284] liblcm-test/lcm-logfilter.c: add -s, -e options to
 	  lcm-logfilter
 
 2008-10-08  ashuang
 
-	* [r283]
-	  lcm/lcm.c,
-	  lcm/lcm.h,
-	  lcm/lcm_internal.h,
-	  lcm/lcm_udp.c,
-	  liblcm-test/lcm-example.c,
-	  liblcm-test/lcm-sink.c:
-	  change
-	  uint8_t*
-	  to
-	  void*
-	  in
-	  lcm_recv_buf
-	  and
-	  lcm_publish
+	* [r283] lcm/lcm.c, lcm/lcm.h, lcm/lcm_internal.h, lcm/lcm_udp.c,
+	  liblcm-test/lcm-example.c, liblcm-test/lcm-sink.c: change
+	  uint8_t* to void* in lcm_recv_buf and lcm_publish
 
 2008-09-08  ashuang
 
-	* [r282]
-	  lcm-logger/glib_util.c,
-	  lcm-logger/glib_util.h,
-	  lcm-logger/lcm-logger.1,
-	  lcm-logger/lcm_logger.c:
-	  lcm-logger:
-	  add
-	  option
-	  to
-	  log
-	  only
-	  channels
-	  matching
-	  a
-	  regex
+	* [r282] lcm-logger/glib_util.c, lcm-logger/glib_util.h,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c: lcm-logger: add
+	  option to log only channels matching a regex
 
 2008-09-07  ashuang
 
-	* [r281]
-	  liblcm-test,
-	  liblcm-test/Makefile.am,
-	  liblcm-test/lcm-logfilter.c:
-	  add
-	  lcm-logfilter
-	  to
-	  liblcm-test
+	* [r281] liblcm-test, liblcm-test/Makefile.am,
+	  liblcm-test/lcm-logfilter.c: add lcm-logfilter to liblcm-test
 
 2008-09-04  ashuang
 
-	* [r280]
-	  lcm/eventlog.c,
-	  lcm/lcm_file.c:
-	  C: Modify
-	  "file://"
-	  provider
-	  so
-	  that
-	  lcm_handle
-	  returns
-	  -1
-	  on
-	  EOF. Suppress
-	  warning
-	  messages
-	  when
-	  event
-	  numbers
-	  in
-	  a
-	  logfile
-	  are
-	  not consecutive
+	* [r280] lcm/eventlog.c, lcm/lcm_file.c: C: Modify "file://"
+	  provider so that lcm_handle returns -1 on EOF. Suppress warning
+	  messages when event numbers in a logfile are not consecutive
 
 2008-08-29  ashuang
 
-	* [r272]
-	  lcm-java/lcm-logplayer-gui.1,
-	  lcm-java/lcm-spy.1,
-	  lcm-logger/lcm-logger.1,
-	  lcm-logger/lcm-logplayer.1,
-	  lcmgen/lcm-gen.1:
-	  update
-	  debian
-	  packaging
-	  tweak
-	  manpages
-	  to
-	  appease
-	  lintian
-	* [r269]
-	  ChangeLog,
-	  NEWS,
-	  configure.in,
-	  examples/java/Makefile.am,
-	  lcm/lcm.h:
-	  prepare
-	  for
-	  0.1.0
-	  release
-	* [r268]
-	  lcm-java/lcm/lcm/LCM.java,
+	* [r272] lcm-java/lcm-logplayer-gui.1, lcm-java/lcm-spy.1,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm-logplayer.1,
+	  lcmgen/lcm-gen.1: update debian packaging tweak manpages to
+	  appease lintian
+	* [r269] ChangeLog, NEWS, configure.in, examples/java/Makefile.am,
+	  lcm/lcm.h: prepare for 0.1.0 release
+	* [r268] lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/LogFileProvider.java,
 	  lcm-java/lcm/lcm/Provider.java,
-	  lcm-java/lcm/lcm/UDPMulticastProvider.java:
-	  add
-	  close
-	  method
-	  to
-	  Java
-	  LCM
-	* [r267]
-	  docs/reference/lcm-type-ref.sgml:
-	  spellcheck
+	  lcm-java/lcm/lcm/UDPMulticastProvider.java: add close method to
+	  Java LCM
+	* [r267] docs/reference/lcm-type-ref.sgml: spellcheck
 
 2008-08-28  edwinolson
 
-	* [r266]
-	  docs/reference/lcm-type-ref.sgml:
-	  more
-	  type
-	  reference
-	  documentation.
-	  If
-	  others
-	  will
-	  do
-	  a
-	  quick
-	  proof-read,
-	  I
-	  think
-	  we
-	  can
-	  proceed
-	  with
-	  a
-	  release.
+	* [r266] docs/reference/lcm-type-ref.sgml: more type reference
+	  documentation. If others will do a quick proof-read, I think we
+	  can proceed with a release.
 
 2008-08-27  edwinolson
 
-	* [r264]
-	  examples/types/exampleconst_t.lcm,
-	  lcmgen/lcmgen.c:
-	  extend
-	  const
-	  syntax
-	  to
-	  allow:
-	  const
-	  <type>
-	  (<name>
-	  =
-	  <value>)+
-	  ;
-	  Also,
-	  added
-	  a
-	  simple
-	  example.
+	* [r264] examples/types/exampleconst_t.lcm, lcmgen/lcmgen.c: extend
+	  const syntax to allow:
+	  
+	  const <type> (<name> = <value>)+ ;
+	  
+	  Also, added a simple example.
 
 2008-08-27  ashuang
 
-	* [r263]
-	  lcmgen/emit_c.c,
-	  lcmgen/emit_java.c,
-	  lcmgen/emit_python.c,
-	  lcmgen/lcmgen.c,
-	  lcmgen/lcmgen.h:
-	  add
-	  const
-	  support
-	  to
-	  lcmgen. the
-	  following
-	  is
-	  now
-	  valid
-	  within
-	  a
-	  struct
-	  declaration: const
-	  <type>
-	  <name>
-	  =
-	  <value>;
-	  where <type>
-	  is
-	  one
-	  of
-	  "int8_t",
-	  "int16_t",
-	  "int32_t",
-	  "int64_t",
-	  "float",
-	  "double" <name>
-	  is
-	  an
-	  identifier
-	  starting
-	  with
-	  [a-zA-Z_]
-	  not
-	  the
-	  same
-	  as
-	  any
-	  other
-	  struct
-	  member
-	  or
-	  const
-	  name <value>
-	  is
-	  a
-	  literal
-	  value
-	  corresponding
-	  to
-	  the
-	  specified
-	  type
+	* [r263] lcmgen/emit_c.c, lcmgen/emit_java.c, lcmgen/emit_python.c,
+	  lcmgen/lcmgen.c, lcmgen/lcmgen.h: add const support to lcmgen.
+	  the following is now valid within a struct declaration: const
+	  <type> <name> = <value>;
+	  
+	  where <type> is one of "int8_t", "int16_t", "int32_t", "int64_t",
+	  "float", "double" <name> is an identifier starting with [a-zA-Z_]
+	  not the same as any other struct member or const name <value> is
+	  a literal value corresponding to the specified type
 
 2008-08-20  edwinolson
 
-	* [r262]
-	  docs/reference/lcm-type-ref.sgml,
-	  examples/java/example_t_demo/build.sh,
-	  lcmgen/emit_java.c:
-	  1.
-	  Additional
-	  documentation.
-	  2.
-	  committing
-	  previous
-	  java
-	  string
-	  decode
-	  fix.
-	  3.
-	  java
-	  demo
-	  build
-	  fix.
+	* [r262] docs/reference/lcm-type-ref.sgml,
+	  examples/java/example_t_demo/build.sh, lcmgen/emit_java.c: 1.
+	  Additional documentation. 2. committing previous java string
+	  decode fix. 3. java demo build fix.
 
 2008-08-12  edwinolson
 
-	* [r261]
-	  docs/reference/lcm-type-ref.sgml:
-	  LCM
-	  type
-	  specification
-	  work
-	  in
-	  progress
+	* [r261] docs/reference/lcm-type-ref.sgml: LCM type specification
+	  work in progress
 
 2008-08-11  ashuang
 
-	* [r260]
-	  docs/reference/lcm-type-ref.sgml,
-	  examples,
-	  examples/java,
-	  examples/java/Makefile.am,
-	  examples/java/example_t_demo,
-	  examples/python/listener.py,
-	  examples/python/send-message.py,
-	  lcm/lcm.h:
-	  fix
-	  bad
-	  sgml
-	  label
-	  fix
-	  lcm.h
-	  documentation
-	  fix
-	  java
-	  examples
-	  Makefile
-	  munge
-	  python
-	  example
-	  code
-	  formatting
+	* [r260] docs/reference/lcm-type-ref.sgml, examples, examples/java,
+	  examples/java/Makefile.am, examples/java/example_t_demo,
+	  examples/python/listener.py, examples/python/send-message.py,
+	  lcm/lcm.h: fix bad sgml label fix lcm.h documentation fix java
+	  examples Makefile munge python example code formatting
 
 2008-08-08  edwinolson
 
-	* [r259]
-	  configure.in,
-	  examples/java/Makefile,
+	* [r259] configure.in, examples/java/Makefile,
 	  examples/java/example_t_demo/Makefile.am,
-	  lcm-java/lcm/spy/Spy.java:
-	  make
-	  lcm-spy
-	  error
-	  column
-	  less
-	  scary
-	  sounding.
-	  fix
-	  build.
-	* [r258]
-	  docs/reference/lcm-docs.sgml,
-	  docs/reference/lcm-type-ref.sgml:
-	  begin
-	  lcm
-	  type
-	  specification
-	  reference.
-	  feel
-	  free
-	  to
-	  help
-	  fill
-	  this
-	  in...
-	* [r257]
-	  examples/java/Makefile,
-	  lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/spy/Spy.java: make lcm-spy error column less scary
+	  sounding. fix build.
+	* [r258] docs/reference/lcm-docs.sgml,
+	  docs/reference/lcm-type-ref.sgml: begin lcm type specification
+	  reference. feel free to help fill this in...
+	* [r257] examples/java/Makefile, lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/Provider.java,
-	  lcm-java/lcm/lcm/UDPMulticastProvider.java:
-	  improve
-	  comments
-	  on
-	  java
-	  classes.
-	  we
-	  still
-	  need
-	  to
-	  autogenerate
-	  and
-	  post
-	  the
-	  javadoc
+	  lcm-java/lcm/lcm/UDPMulticastProvider.java: improve comments on
+	  java classes. we still need to autogenerate and post the javadoc
 	  somewhere.
-	* [r256]
-	  examples/java/Listener.java,
-	  examples/java/Makefile.am,
-	  examples/java/SendMessage.java,
-	  examples/java/build.sh,
-	  examples/java/clean.sh,
-	  examples/java/example_t_demo,
+	* [r256] examples/java/Listener.java, examples/java/Makefile.am,
+	  examples/java/SendMessage.java, examples/java/build.sh,
+	  examples/java/clean.sh, examples/java/example_t_demo,
 	  examples/java/example_t_demo/Listener.java,
 	  examples/java/example_t_demo/Makefile.am,
 	  examples/java/example_t_demo/SendMessage.java,
@@ -1840,2888 +749,845 @@
 	  examples/java/temperature_demo_java/TemperatureDisplay.java,
 	  examples/java/temperature_demo_java/TemperatureTransmit.java,
 	  examples/java/temperature_demo_java/runme.sh,
-	  examples/java/temperature_demo_java/temperature_t.lcm:
-	  add
-	  java
-	  example,
-	  reorganize
-	  java
-	  examples
-	  a
-	  bit
-	* [r255]
-	  docs/reference/lcm-docs.sgml,
+	  examples/java/temperature_demo_java/temperature_t.lcm: add java
+	  example, reorganize java examples a bit
+	* [r255] docs/reference/lcm-docs.sgml,
 	  docs/reference/tutorial-c.sgml,
-	  docs/reference/tutorial-java.sgml:
-	  add
-	  java
-	  tutorial
+	  docs/reference/tutorial-java.sgml: add java tutorial
 
 2008-08-08  ashuang
 
-	* [r254]
-	  examples/c/send_message.c:
-	  remove
-	  transmit_only
-	  option
-	  from
-	  c
-	  example
+	* [r254] examples/c/send_message.c: remove transmit_only option
+	  from c example
 
 2008-08-07  ashuang
 
-	* [r253]
-	  lcm/lcm_udp.c:
-	  restore
-	  some
-	  backwards
-	  compatibility
-	  with
-	  older
-	  url
-	  init
-	  strings
-	  warn
-	  when
-	  transmit_only
-	  is
-	  used.
+	* [r253] lcm/lcm_udp.c: restore some backwards compatibility with
+	  older url init strings warn when transmit_only is used.
 
 2008-08-04  edwinolson
 
-	* [r252]
-	  lcm-java/lcm/util/ClassDiscoverer.java:
-	  fix
-	  lcm-spy
-	  when
-	  dealing
-	  with
-	  nested
-	  types
-	  whose
-	  definitions
-	  are
-	  found
-	  in
-	  separate
-	  jar
-	  files
+	* [r252] lcm-java/lcm/util/ClassDiscoverer.java: fix lcm-spy when
+	  dealing with nested types whose definitions are found in separate
+	  jar files
 
 2008-08-01  edwinolson
 
-	* [r251]
-	  lcmgen/emit_java.c:
-	  i
-	  bless
-	  the
-	  removal
-	  of
-	  the
-	  unnecessary
-	  import
-	  statements
+	* [r251] lcmgen/emit_java.c: i bless the removal of the unnecessary
+	  import statements
 
 2008-08-01  ashuang
 
-	* [r250]
-	  lcmgen/emit_java.c:
-	  lcmtypes
-	  that
-	  have
-	  members
-	  in
-	  a
-	  different
-	  package
-	  don't
-	  compile
-	  in
-	  java. applying
-	  jamoozy's
-	  suggested
-	  fix
-	  to
-	  remove
-	  bad
-	  import
-	  statements.
+	* [r250] lcmgen/emit_java.c: lcmtypes that have members in a
+	  different package don't compile in java. applying jamoozy's
+	  suggested fix to remove bad import statements.
 
 2008-07-30  ashuang
 
-	* [r249]
-	  lcm/lcm.c:
-	  add
-	  mutex
-	  to
-	  allow
-	  only
-	  one
-	  thread
-	  in
-	  lcm_handle
-	  at
-	  a
-	  time
+	* [r249] lcm/lcm.c: add mutex to allow only one thread in
+	  lcm_handle at a time
 
 2008-07-17  ashuang
 
-	* [r248]
-	  lcm/lcm_udp.c:
-	  lcm
-	  warnings
-	  should
-	  go
-	  to
-	  stderr,
-	  not
+	* [r248] lcm/lcm_udp.c: lcm warnings should go to stderr, not
 	  stdout
 
 2008-07-14  ashuang
 
-	* [r246]
-	  lcm-java/lcm/lcm/LCM.java,
-	  lcm/lcm.c:
-	  regression
-	  bugfixes
-	  from
-	  previous
-	  commit
+	* [r246] lcm-java/lcm/lcm/LCM.java, lcm/lcm.c: regression bugfixes
+	  from previous commit
 
 2008-07-10  ashuang
 
-	* [r245]
-	  docs/reference/tutorial-c.sgml:
-	  doc
-	  fix
-	* [r244]
-	  lcmgen/emit_java.c:
-	  change
-	  Java
-	  generated
-	  enum
-	  API
-	  to
-	  match
-	  python
-	* [r243]
-	  docs/reference/tutorial-c.sgml,
-	  examples/python/send-message.py,
-	  lcm-java/lcm/lcm/LCM.java,
+	* [r245] docs/reference/tutorial-c.sgml: doc fix
+	* [r244] lcmgen/emit_java.c: change Java generated enum API to
+	  match python
+	* [r243] docs/reference/tutorial-c.sgml,
+	  examples/python/send-message.py, lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/LogFileProvider.java,
 	  lcm-java/lcm/lcm/UDPMulticastProvider.java,
 	  lcm-java/lcm/lcm/URLParser.java,
-	  lcm-java/lcm/logging/LogPlayer.java,
-	  lcm-logger/lcm-logger.1,
-	  lcm-logger/lcm-logplayer.1,
-	  lcm-logger/lcm_logger.c,
-	  lcm-logger/lcm_logplayer.c,
-	  lcm/lcm.c,
-	  lcm/lcm.h,
-	  lcm/lcm_udp.c,
-	  liblcm-test/lcm-example.c,
-	  liblcm-test/lcm-seq_check.c,
-	  liblcm-test/lcm-source.c,
-	  liblcm-test/lcm-tester.c:
-	  implement
-	  LCM_DEFAULT_URL
-	  environment
-	  variable
-	  for
-	  C
-	  munge
-	  Java
-	  bindings
-	  for
-	  treatment
-	  of
-	  LCM
-	  URL
-	  more
-	  consistent
-	  with
-	  C
-	  bindings
-	  continue
-	  purge
-	  of
-	  transmit_only
-	  option
+	  lcm-java/lcm/logging/LogPlayer.java, lcm-logger/lcm-logger.1,
+	  lcm-logger/lcm-logplayer.1, lcm-logger/lcm_logger.c,
+	  lcm-logger/lcm_logplayer.c, lcm/lcm.c, lcm/lcm.h, lcm/lcm_udp.c,
+	  liblcm-test/lcm-example.c, liblcm-test/lcm-seq_check.c,
+	  liblcm-test/lcm-source.c, liblcm-test/lcm-tester.c: implement
+	  LCM_DEFAULT_URL environment variable for C munge Java bindings
+	  for treatment of LCM URL more consistent with C bindings continue
+	  purge of transmit_only option
 
 2008-07-09  ashuang
 
-	* [r242]
-	  lcm/lcm.c:
-	  minor
-	  bugfix
-	* [r241]
-	  lcm-java/lcm/lcm/LogFileProvider.java,
+	* [r242] lcm/lcm.c: minor bugfix
+	* [r241] lcm-java/lcm/lcm/LogFileProvider.java,
 	  lcm-java/lcm/lcm/Provider.java,
-	  lcm-java/lcm/lcm/UDPMulticastProvider.java:
-	  remove
-	  transmitonly
-	  option
-	  from
-	  Java
-	  API. reader
-	  thread
-	  now
-	  started
-	  lazily
-	* [r240]
-	  docs/reference/tutorial-c.sgml,
-	  lcm/lcm.c,
-	  lcm/lcm.h,
-	  lcm/lcm_file.c,
-	  lcm/lcm_internal.h,
-	  lcm/lcm_udp.c:
-	  remove
-	  transmit_only
-	  option
-	  from
-	  C
-	  API. LCM
-	  UDP
-	  implementation
-	  now
-	  allocates
-	  recv
-	  resources
-	  lazily
-	  --
-	  only
-	  when
-	  first
-	  subscription
-	  is
-	  made.
-	* [r239]
-	  lcm/lcm.c,
-	  lcm/lcm_file.c,
-	  lcm/lcm_internal.h,
-	  lcm/lcm_udp.c:
-	  refactor
-	  lcm
-	  provider
-	  instatiation
-	  so
-	  that
-	  LCM
-	  URL
-	  is
-	  only
-	  parsed
-	  once
-	  --
-	  in
-	  lcm_create
-	  --
-	  and
-	  not
-	  again
-	  in
-	  lcm_udp
-	  /
-	  lcm_file
-	* [r238]
-	  lcm/lcm.c:
-	  modify
-	  lcm_parse_url
-	  to
-	  accept
-	  a
-	  url
-	  with
-	  parameters
-	  but
-	  no
-	  provider. e.g.
-	  the
-	  following
-	  is
-	  now
-	  accepted:
+	  lcm-java/lcm/lcm/UDPMulticastProvider.java: remove transmitonly
+	  option from Java API. reader thread now started lazily
+	* [r240] docs/reference/tutorial-c.sgml, lcm/lcm.c, lcm/lcm.h,
+	  lcm/lcm_file.c, lcm/lcm_internal.h, lcm/lcm_udp.c: remove
+	  transmit_only option from C API. LCM UDP implementation now
+	  allocates recv resources lazily -- only when first subscription
+	  is made.
+	* [r239] lcm/lcm.c, lcm/lcm_file.c, lcm/lcm_internal.h,
+	  lcm/lcm_udp.c: refactor lcm provider instatiation so that LCM URL
+	  is only parsed once -- in lcm_create -- and not again in lcm_udp
+	  / lcm_file
+	* [r238] lcm/lcm.c: modify lcm_parse_url to accept a url with
+	  parameters but no provider. e.g. the following is now accepted:
 	  "?transmit_only=true"
 
 2008-07-01  ashuang
 
-	* [r236]
-	  lcm/lcm_udp.c:
-	  bugfix. lcm_udp
-	  don't
-	  try
-	  to
-	  allocate
-	  space
-	  from
-	  ringbuffer
-	  until
-	  select()
-	  indicates
-	  that
-	  new
-	  incoming
-	  data
-	  is
-	  ready. this
-	  also
-	  eliminates
-	  an
-	  infinite
-	  loop
-	  that
-	  occurs
-	  in
-	  lcm_destroy()
-	  when
-	  an
-	  lcm_t
-	  with
-	  a
-	  full
-	  ringbuffer
-	  is
-	  destroyed
-	  (recv_thread
-	  never
-	  terminates
-	  because
-	  of
-	  neverending
-	  attempt
-	  to
-	  allocate
-	  from
-	  ringbuffer).
-	* [r235]
-	  lcmgen/emit_java.c:
-	  change
-	  java
-	  enum
-	  value
-	  field
-	  from
-	  private
-	  to
-	  public
-	  so
-	  that
-	  raw
-	  numerical
-	  value
-	  is
-	  accessible.
-	* [r234]
-	  lcmgen/emit_java.c:
-	  apply
-	  andrew
-	  correa's
-	  changes
-	  to
-	  java
-	  enum
-	  emission
+	* [r236] lcm/lcm_udp.c: bugfix. lcm_udp don't try to allocate space
+	  from ringbuffer until select() indicates that new incoming data
+	  is ready. this also eliminates an infinite loop that occurs in
+	  lcm_destroy() when an lcm_t with a full ringbuffer is destroyed
+	  (recv_thread never terminates because of neverending attempt to
+	  allocate from ringbuffer).
+	* [r235] lcmgen/emit_java.c: change java enum value field from
+	  private to public so that raw numerical value is accessible.
+	* [r234] lcmgen/emit_java.c: apply andrew correa's changes to java
+	  enum emission
 
 2008-06-04  ashuang
 
-	* [r233]
-	  examples/java/Makefile.am:
-	  add
-	  -source
-	  5
-	  to
-	  examples
-	  java
+	* [r233] examples/java/Makefile.am: add -source 5 to examples java
 	  makefile
 
 2008-05-24  ashuang
 
-	* [r232]
-	  lcmgen/emit_c.c:
-	  add
-	  const
-	  char
-	  *
-	  <enum_type>_name
-	  (<enum_type>
-	  val);
-	  (tentative)
+	* [r232] lcmgen/emit_c.c: add const char * <enum_type>_name
+	  (<enum_type> val); (tentative)
 
 2008-05-08  ashuang
 
-	* [r231]
-	  lcm-java/Makefile.am:
-	  add
-	  JAVACFLAGS=-source
-	  5
+	* [r231] lcm-java/Makefile.am: add JAVACFLAGS=-source 5
 
 2008-05-06  ashuang
 
-	* [r230]
-	  lcmgen/emit_c.c:
-	  lcmgen:
-	  modify
-	  emit_c
-	  so
-	  that
-	  generated
-	  code
-	  is
-	  c++
-	  compatible
+	* [r230] lcmgen/emit_c.c: lcmgen: modify emit_c so that generated
+	  code is c++ compatible
 
 2008-05-05  ashuang
 
-	* [r227]
-	  ChangeLog,
-	  NEWS:
-	  update
-	  ChangeLog,
-	  NEWS
-	  preare
-	  for
-	  0.0.5
+	* [r227] ChangeLog, NEWS: update ChangeLog, NEWS preare for 0.0.5
 	  release
-	* [r226]
-	  NEWS,
-	  configure.in,
-	  lcm-python/lcm:
-	  update
-	  configure.in,
-	  NEWS
-	  in
-	  preparation
-	  for
-	  0.0.5
-	  release
+	* [r226] NEWS, configure.in, lcm-python/lcm: update configure.in,
+	  NEWS in preparation for 0.0.5 release
 
 2008-05-04  ashuang
 
-	* [r225]
-	  lcmgen/emit_python.c:
-	  fix
-	  python
-	  enum
-	  emission
-	  (was
-	  more
-	  or
-	  less
-	  completely
-	  broken)
+	* [r225] lcmgen/emit_python.c: fix python enum emission (was more
+	  or less completely broken)
 
 2008-05-01  edwinolson
 
-	* [r224]
-	  lcmgen/tokenize.c:
-	  untabify
-	* [r223]
-	  lcmgen/lcmgen.c,
-	  lcmgen/tokenize.c,
-	  lcmgen/tokenize.h:
-	  fix
-	  a
-	  regression
-	  in
-	  tokenizer
-	  where
-	  unget'd
-	  characters
-	  were
-	  not
-	  properly
-	  consumed
-	  at
-	  newlines.
-	  I
-	  got
-	  confused
-	  by
-	  variable
-	  names
-	  last
-	  time
-	  I
-	  tried
-	  to
-	  fix
-	  this
-	  code,
-	  so
-	  I've
-	  also
-	  attempted
-	  to
-	  name
-	  the
-	  internal
-	  variables
-	  of
-	  tokenizer
-	  to
-	  be
-	  a
-	  bit
-	  more
-	  obvious.
+	* [r224] lcmgen/tokenize.c: untabify
+	* [r223] lcmgen/lcmgen.c, lcmgen/tokenize.c, lcmgen/tokenize.h: fix
+	  a regression in tokenizer where unget'd characters were not
+	  properly consumed at newlines.
+	  
+	  I got confused by variable names last time I tried to fix this
+	  code, so I've also attempted to name the internal variables of
+	  tokenizer to be a bit more obvious.
 
 2008-04-24  edwinolson
 
-	* [r222]
-	  lcmgen/tokenize.c,
-	  lcmgen/tokenize.h:
-	  tokenizer:
-	  remove
-	  a
-	  redundant
-	  variable.
-	  (t->line_pos),
-	  add
-	  some
-	  comments
-	* [r221]
-	  lcmgen/tokenize.c:
-	  make
-	  tokenizer
-	  work
-	  when
-	  the
-	  last
-	  line
-	  is
-	  not
-	  newline
-	  terminated
+	* [r222] lcmgen/tokenize.c, lcmgen/tokenize.h: tokenizer: remove a
+	  redundant variable. (t->line_pos), add some comments
+	* [r221] lcmgen/tokenize.c: make tokenizer work when the last line
+	  is not newline terminated
 
 2008-04-20  edwinolson
 
-	* [r220]
-	  lcm-java/Makefile.am:
-	  Try
-	  to
-	  make
-	  JAR
-	  file
-	  only
-	  contain
-	  class
-	  files,
-	  by
-	  using
-	  build
-	  directory
+	* [r220] lcm-java/Makefile.am: Try to make JAR file only contain
+	  class files, by using build directory
 
 2008-04-19  edwinolson
 
-	* [r219]
-	  lcm-java/lcm-spy.1:
-	  update
-	  docs
-	  to
-	  reflect
-	  fact
-	  that
-	  lcm-spy
-	  reflection
-	  requires
-	  class
-	  files
-	  to
-	  be
-	  in
-	  .jar
-	  files,
-	  not
-	  as
-	  just
-	  raw
-	  .class
-	  files.
-	* [r218]
-	  liblcm-test/lcm-tester.c:
-	  Announce
-	  an
-	  expected
-	  failure
-	  in
+	* [r219] lcm-java/lcm-spy.1: update docs to reflect fact that
+	  lcm-spy reflection requires class files to be in .jar files, not
+	  as just raw .class files.
+	* [r218] liblcm-test/lcm-tester.c: Announce an expected failure in
 	  lcm-tester
-	* [r217]
-	  lcm-java/lcm/spy/Spy.java:
-	  make
-	  lcm-spy
-	  more
-	  robust
-	  to
-	  non-autogenerated
-	  lcm
-	  types
-	  in
-	  a
-	  better
-	  way
-	  than
-	  the
-	  previous
+	* [r217] lcm-java/lcm/spy/Spy.java: make lcm-spy more robust to
+	  non-autogenerated lcm types in a better way than the previous
 	  patch.
-	* [r216]
-	  lcm-java/lcm/spy/Spy.java:
-	  make
-	  lcspy
-	  more
-	  robust
-	  to
-	  receipt
-	  of
-	  non-lcm
-	  autogenerated
-	  types
+	* [r216] lcm-java/lcm/spy/Spy.java: make lcspy more robust to
+	  receipt of non-lcm autogenerated types
 
 2008-04-18  edwinolson
 
-	* [r214]
-	  lcm-java/lcm/lcm/LogFileProvider.java,
+	* [r214] lcm-java/lcm/lcm/LogFileProvider.java,
 	  lcm-java/lcm/logging/Log.java,
-	  lcm-java/lcm/logging/LogPlayer.java:
-	  Remove
-	  a
-	  DGC
-	  hack
-	  that
-	  skipped
-	  over
-	  log
-	  gaps
-	  >
-	  0.25
-	  seconds
+	  lcm-java/lcm/logging/LogPlayer.java: Remove a DGC hack that
+	  skipped over log gaps > 0.25 seconds
 
 2008-04-18  ashuang
 
-	* [r213]
-	  lcm/lcm_file.c:
-	  bugfix. timer_thread
-	  needs
-	  to
-	  write
-	  to
-	  notify
-	  if
-	  it
-	  doesn't
-	  sleep.
+	* [r213] lcm/lcm_file.c: bugfix. timer_thread needs to write to
+	  notify if it doesn't sleep.
 
 2008-04-17  ashuang
 
-	* [r211]
-	  docs/reference/multicast-setup.sgml,
-	  docs/reference/tutorial-c.sgml:
-	  update
-	  documentation
-	  for
+	* [r211] docs/reference/multicast-setup.sgml,
+	  docs/reference/tutorial-c.sgml: update documentation for
 	  net.core.rmem_default
 
 2008-04-01  ashuang
 
-	* [r208]
-	  configure.in:
-	  fix
-	  comments
-	  in
-	  configure.in
-	  (require
-	  glib
-	  >=
-	  2.0
-	  not
-	  >=
-	  2.8)
-	* [r207]
-	  m4/ac_python_devel.m4:
-	  fix
-	  VERSION
-	  bug
-	  in
-	  ac_python_devel.m4
-	  (affects
-	  OS
-	  X)
+	* [r208] configure.in: fix comments in configure.in (require glib
+	  >= 2.0 not >= 2.8)
+	* [r207] m4/ac_python_devel.m4: fix VERSION bug in
+	  ac_python_devel.m4 (affects OS X)
 
 2008-03-26  ashuang
 
-	* [r206]
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm-logplayer-gui.1,
-	  lcm-logger/Makefile.am,
-	  lcm-logger/lcm-logplayer.1,
-	  lcm-logger/lcm_logplayer.c,
-	  liblcm-test/Makefile.am:
-	  update
-	  manpages. add
-	  lcm-logplayer.1,
-	  lcm-logplayer-gui.1
-	* [r205]
-	  configure.in:
-	  debian
-	  package
-	  update
-	  to
-	  0.0.4
-	  get
-	  rid
-	  of
-	  libtool
-	  --silent
-	  (was
-	  screwing
-	  with
-	  rpath)
+	* [r206] lcm-java/Makefile.am, lcm-java/lcm-logplayer-gui.1,
+	  lcm-logger/Makefile.am, lcm-logger/lcm-logplayer.1,
+	  lcm-logger/lcm_logplayer.c, liblcm-test/Makefile.am: update
+	  manpages. add lcm-logplayer.1, lcm-logplayer-gui.1
+	* [r205] configure.in: debian package update to 0.0.4 get rid of
+	  libtool --silent (was screwing with rpath)
 
 2008-03-22  david.moore
 
-	* [r201]
-	  ChangeLog:
-	  Update
-	  ChangeLog
-	  for
-	  0.0.4
-	* [r200]
-	  examples/python/Makefile.am:
-	  Make
-	  sure
-	  python
-	  examples
-	  make
-	  it
-	  into
-	  the
-	  tarball
+	* [r201] ChangeLog: Update ChangeLog for 0.0.4
+	* [r200] examples/python/Makefile.am: Make sure python examples
+	  make it into the tarball
 
 2008-03-21  david.moore
 
-	* [r199]
-	  examples/c/Makefile.am,
-	  examples/python/Makefile.am:
-	  Fix
-	  examples
-	  Makefile.am
-	  so
-	  that
-	  'make
-	  distcheck'
-	  doesn't
-	  fail
-	  on
+	* [r199] examples/c/Makefile.am, examples/python/Makefile.am: Fix
+	  examples Makefile.am so that 'make distcheck' doesn't fail on
 	  0.0.4
-	* [r198]
-	  ChangeLog,
-	  NEWS,
-	  configure.in,
-	  docs/release_checklist:
-	  Prepare
-	  for
-	  0.0.4
-	  release
+	* [r198] ChangeLog, NEWS, configure.in, docs/release_checklist:
+	  Prepare for 0.0.4 release
 
 2008-03-20  ashuang
 
-	* [r197]
-	  lcm-logger/lcm_logplayer.c:
-	  update
-	  help
-	  text
-	  for
+	* [r197] lcm-logger/lcm_logplayer.c: update help text for
 	  lcm-logplayer
-	* [r196]
-	  liblcm-test/Makefile.am:
-	  change
-	  all
-	  liblcm-test
-	  programs
-	  from
-	  to
-	  noinst
-	* [r195]
-	  lcm-java,
-	  lcm-java/Makefile.am,
-	  liblcm-test/Makefile.am:
-	  rename
-	  lcm-jlogplayer
-	  -->
-	  lcm-logplayer-gui
-	  move
-	  lcm-example
-	  from
-	  bin_PROGRAMS
-	  -->
-	  noinst_PROGRAMS
+	* [r196] liblcm-test/Makefile.am: change all liblcm-test programs
+	  from to noinst
+	* [r195] lcm-java, lcm-java/Makefile.am, liblcm-test/Makefile.am:
+	  rename lcm-jlogplayer --> lcm-logplayer-gui move lcm-example from
+	  bin_PROGRAMS --> noinst_PROGRAMS
 
 2008-03-13  ashuang
 
-	* [r194]
-	  examples/java/Makefile.am,
-	  examples/python/Makefile.am,
-	  lcm/lcm_udp.c,
-	  m4/ac_python_devel.m4:
-	  more
-	  exercises
-	  in
-	  portability
-	  (FreeBSD
-	  reuseport,
-	  python)
-	* [r193]
-	  examples/c/Makefile.am,
-	  lcm/eventlog.c:
-	  FreeBSD
-	  6.2
-	  compatibility
-	  fixes.
-	* [r192]
-	  lcm-logger/lcm_logger.c,
-	  lcm/lcm_udp.c,
-	  lcmgen/emit_java.c,
-	  lcmgen/emit_python.c:
-	  remove
-	  usage
-	  of
-	  g_mkdir_with_parents,
-	  g_build_filenamev
-	  to
-	  make
-	  LCM
-	  compatible with
-	  GLib
-	  2.0.0
-	  add
-	  #ifdef
-	  around
-	  setsockopt(IPPROTO_IP,
-	  IP_MULTICAST_LOOP)
-	  for
-	  Solaris compatibility
-	  Java,
-	  Python,
-	  C
-	  tested
-	  on
-	  Solaris
-	  10
+	* [r194] examples/java/Makefile.am, examples/python/Makefile.am,
+	  lcm/lcm_udp.c, m4/ac_python_devel.m4: more exercises in
+	  portability (FreeBSD reuseport, python)
+	* [r193] examples/c/Makefile.am, lcm/eventlog.c: FreeBSD 6.2
+	  compatibility fixes.
+	* [r192] lcm-logger/lcm_logger.c, lcm/lcm_udp.c,
+	  lcmgen/emit_java.c, lcmgen/emit_python.c: remove usage of
+	  g_mkdir_with_parents, g_build_filenamev to make LCM compatible
+	  with GLib 2.0.0 add #ifdef around setsockopt(IPPROTO_IP,
+	  IP_MULTICAST_LOOP) for Solaris compatibility Java, Python, C
+	  tested on Solaris 10
 
 2008-03-08  david.moore
 
-	* [r190]
-	  lcm-logger,
-	  lcm-logger/Makefile.am,
-	  lcm-logger/lcm_logplayer.c:
-	  Add
-	  lcm_logplayer
-	* [r189]
-	  examples/c/listener.c:
-	  Fix
-	  spelling
-	  error
-	* [r188]
-	  lcm/lcm_udp.c:
-	  Change
-	  "#ifdef
-	  USE_SO_TIMESTAMP"
-	  to
-	  "#ifdef
+	* [r190] lcm-logger, lcm-logger/Makefile.am,
+	  lcm-logger/lcm_logplayer.c: Add lcm_logplayer
+	* [r189] examples/c/listener.c: Fix spelling error
+	* [r188] lcm/lcm_udp.c: Change "#ifdef USE_SO_TIMESTAMP" to "#ifdef
 	  SO_TIMESTAMP"
 
 2008-03-06  ashuang
 
-	* [r187]
-	  m4/lib_socket_nsl.m4:
-	  forgot
-	  to
-	  add
-	  lib_socket_nsl
-	  in
-	  previous
-	  commits
-	* [r186]
-	  configure.in,
-	  lcm/lcm_udp.c:
-	  portability
-	  patches
-	* [r185]
-	  configure.in,
-	  lcm/lcm_udp.c,
-	  lcmgen/emit_python.c,
-	  m4/ac_python_devel.m4:
-	  portability
-	  patches
-	* [r184]
-	  lcm/eventlog.c,
-	  lcm/lcm_file.c,
-	  lcm/lcm_udp.c:
-	  convert
-	  lcm
-	  to
-	  use
-	  GThread
-	  instead
-	  of
-	  pthread
+	* [r187] m4/lib_socket_nsl.m4: forgot to add lib_socket_nsl in
+	  previous commits
+	* [r186] configure.in, lcm/lcm_udp.c: portability patches
+	* [r185] configure.in, lcm/lcm_udp.c, lcmgen/emit_python.c,
+	  m4/ac_python_devel.m4: portability patches
+	* [r184] lcm/eventlog.c, lcm/lcm_file.c, lcm/lcm_udp.c: convert lcm
+	  to use GThread instead of pthread
 
 2008-03-05  ashuang
 
-	* [r183]
-	  lcm/lcm_udp.c:
-	  add
-	  ifdef
-	  around
-	  some
-	  iovec
-	  fields
-	  for
+	* [r183] lcm/lcm_udp.c: add ifdef around some iovec fields for
 	  portability
-	* [r182]
-	  configure.in,
-	  lcm/lcm_udp.c:
-	  configure.in
-	  bugfixes,
-	  portability
-	  updates
-	* [r181]
-	  NEWS,
-	  configure.in:
-	  update
-	  NEWS,
-	  configure.in
-	  for
-	  0.0.3
+	* [r182] configure.in, lcm/lcm_udp.c: configure.in bugfixes,
+	  portability updates
+	* [r181] NEWS, configure.in: update NEWS, configure.in for 0.0.3
 	  release
 
 2008-03-05  edwinolson
 
-	* [r180]
-	  lcm-java/lcm/util/ClassDiscoverer.java:
-	  fix
-	  null
-	  ptr
-	  exception
-	  if
-	  no
-	  classpath
-	  env
-	  var
+	* [r180] lcm-java/lcm/util/ClassDiscoverer.java: fix null ptr
+	  exception if no classpath env var
 
 2008-03-04  ashuang
 
-	* [r179]
-	  lcm/lcm_udp.c:
-	  lcm_udp
-	  read
-	  thread
-	  use
-	  pipe
-	  instead
-	  of
+	* [r179] lcm/lcm_udp.c: lcm_udp read thread use pipe instead of
 	  pthread_cancel
 
 2008-03-02  ashuang
 
-	* [r173]
-	  NEWS:
-	  update
-	  NEWS
-	  for
-	  0.0.2
-	  release
-	* [r172]
-	  docs/reference/intro.sgml:
-	  minor
-	  doc
-	  edits
-	* [r171]
-	  lcm/lcm.h:
-	  update
-	  lcm_create
-	  comment
-	  docs
-	* [r170]
-	  docs/reference/lcm-sections.txt,
+	* [r173] NEWS: update NEWS for 0.0.2 release
+	* [r172] docs/reference/intro.sgml: minor doc edits
+	* [r171] lcm/lcm.h: update lcm_create comment docs
+	* [r170] docs/reference/lcm-sections.txt,
 	  docs/reference/multicast-setup.sgml,
-	  docs/reference/tutorial-c.sgml:
-	  update
-	  C
-	  tutorial
-	  and
-	  multicast
+	  docs/reference/tutorial-c.sgml: update C tutorial and multicast
 	  setup
 
 2008-02-29  ashuang
 
-	* [r169]
-	  lcm-python/pylcm.c:
-	  fix
-	  python
-	  regression
-	  part
-	  2
-	* [r168]
-	  lcm-python/pylcm.c:
-	  fix
-	  python
-	  regression
-	* [r167]
-	  examples/c/send_message.c:
-	  fix
-	  comments
-	* [r163]
-	  lcm-python/pylcm.c:
-	  documentation
-	  tweaks
+	* [r169] lcm-python/pylcm.c: fix python regression part 2
+	* [r168] lcm-python/pylcm.c: fix python regression
+	* [r167] examples/c/send_message.c: fix comments
+	* [r163] lcm-python/pylcm.c: documentation tweaks
 
 2008-02-28  ashuang
 
-	* [r160]
-	  lcm-python/epydoc.cfg,
-	  lcm-python/lcm/__init__.py,
-	  lcm-python/pylcm.c,
-	  lcm-python/pylcm_subscription.c:
-	  more
-	  python
+	* [r160] lcm-python/epydoc.cfg, lcm-python/lcm/__init__.py,
+	  lcm-python/pylcm.c, lcm-python/pylcm_subscription.c: more python
 	  documentatin
-	* [r159]
-	  lcm-python/epydoc.cfg,
-	  lcm-python/lcm/__init__.py,
-	  lcm-python/module.c,
-	  lcm-python/pylcm.c,
-	  lcm-python/pylcm_subscription.c:
-	  python
-	  documentation
-	* [r153]
-	  configure.in,
-	  examples/Makefile.am,
-	  examples/c/Makefile.am,
-	  examples/c/listener.c,
-	  examples/c/send_message.c,
-	  examples/java,
-	  examples/java/Listener.java,
-	  examples/java/Makefile.am,
-	  examples/java/SendMessage.java,
-	  examples/java/build.sh,
-	  examples/java/clean.sh,
-	  examples/python,
-	  examples/python/Makefile.am,
-	  lcm-java/Makefile.am,
-	  lcm/Makefile.am,
-	  lcm/lcm_udp.c:
-	  prepare
-	  for
-	  0.0.2
-	  release
-	  add
-	  java
-	  examples
-	  Makefile.am
-	  fixes
-	* [r152]
-	  lcm-java/Makefile.am,
-	  lcm-java/build:
-	  hopefully
-	  fix
-	  java
-	  clean
-	  build
-	* [r151]
-	  examples/python/example_t.py:
-	  remove
-	  autogenerated
-	  example_t.py
-	  file
+	* [r159] lcm-python/epydoc.cfg, lcm-python/lcm/__init__.py,
+	  lcm-python/module.c, lcm-python/pylcm.c,
+	  lcm-python/pylcm_subscription.c: python documentation
+	* [r153] configure.in, examples/Makefile.am,
+	  examples/c/Makefile.am, examples/c/listener.c,
+	  examples/c/send_message.c, examples/java,
+	  examples/java/Listener.java, examples/java/Makefile.am,
+	  examples/java/SendMessage.java, examples/java/build.sh,
+	  examples/java/clean.sh, examples/python,
+	  examples/python/Makefile.am, lcm-java/Makefile.am,
+	  lcm/Makefile.am, lcm/lcm_udp.c: prepare for 0.0.2 release add
+	  java examples Makefile.am fixes
+	* [r152] lcm-java/Makefile.am, lcm-java/build: hopefully fix java
+	  clean build
+	* [r151] examples/python/example_t.py: remove autogenerated
+	  example_t.py file
 
 2008-02-26  ashuang
 
-	* [r150]
-	  lcmgen/lcm-gen.1:
-	  update
-	  lcm-gen.1
-	  manpage
-	  to
-	  reflect
-	  ed's
-	  wiki
-	  page
-	  changes
+	* [r150] lcmgen/lcm-gen.1: update lcm-gen.1 manpage to reflect ed's
+	  wiki page changes
 
 2008-02-24  edwinolson
 
-	* [r149]
-	  lcm-java/lcm/lcm/LogFileProvider.java,
+	* [r149] lcm-java/lcm/lcm/LogFileProvider.java,
 	  lcm-java/lcm/logging/Log.java,
-	  lcm-java/lcm/logging/LogPlayer.java:
-	  make
-	  java
-	  logfileprovider
-	  verbose
-	  mode
-	  more
-	  useful.
-	  Rename
-	  a
-	  badly-named
-	  API.
+	  lcm-java/lcm/logging/LogPlayer.java: make java logfileprovider
+	  verbose mode more useful. Rename a badly-named API.
 
 2008-02-22  ashuang
 
-	* [r147]
-	  lcm-java/build:
-	  add
-	  build
-	  directory
-	  to
-	  java
-	  so
-	  clean
-	  build
-	  doesn't
-	  barf
-	* [r146]
-	  lcm-java/lcm-spy.1:
-	  update
-	  man
-	  page
-	  for
-	  lcm-spy
-	* [r143]
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm-spy.1,
-	  lcm-logger/lcm-logger.1,
-	  lcm-logger/lcm_logger.c,
-	  lcm/lcm.c,
-	  lcm/lcm.h:
-	  rename
-	  -u,
-	  --url
-	  options
-	  of
-	  lcm-logger
-	  to
-	  -p,
-	  --provider
-	  change
-	  argument
-	  of
-	  lcm_create
-	  from
-	  const
-	  char
-	  *url
-	  to
-	  const
-	  char
-	  *provider
-	  add
-	  stub
-	  for
-	  lcm-spy
-	  man
-	  page
-	* [r142]
-	  lcm-logger/lcm-logger.1:
-	  typo
-	  in
-	  manpage
-	* [r141]
-	  lcm-logger/lcm-logger.1,
-	  lcm-logger/lcm_logger.c:
-	  change
-	  command
-	  line
-	  arguments
-	  of
-	  lcm-logger
-	  to
-	  make
-	  it
-	  more
-	  intuitive.
-	  Update
-	  lcm-logger
-	  man
-	  page
-	* [r137]
-	  lcm-logger/Makefile.am,
-	  lcm-logger/lcm-logger.1,
-	  lcm-logger/lcm_logger.c:
-	  add
-	  lcm-logger
-	  manpage
-	  add
-	  -u/--url
-	  option
-	  to
-	  lcm-logger
-	* [r135]
-	  lcm-java,
-	  lcmgen,
-	  lcmgen/Makefile.am,
-	  lcmgen/lcm-gen.1,
-	  lcmgen/lcmgen.1:
-	  renamed
-	  lcmgen
-	  ->
-	  lcm-gen
-	* [r131]
-	  lcm-java/Makefile.am:
-	  increase
-	  memory
-	  footprint
-	  of
+	* [r147] lcm-java/build: add build directory to java so clean build
+	  doesn't barf
+	* [r146] lcm-java/lcm-spy.1: update man page for lcm-spy
+	* [r143] lcm-java/Makefile.am, lcm-java/lcm-spy.1,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c, lcm/lcm.c,
+	  lcm/lcm.h: rename -u, --url options of lcm-logger to -p,
+	  --provider change argument of lcm_create from const char *url to
+	  const char *provider add stub for lcm-spy man page
+	* [r142] lcm-logger/lcm-logger.1: typo in manpage
+	* [r141] lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c: change
+	  command line arguments of lcm-logger to make it more intuitive.
+	  Update lcm-logger man page
+	* [r137] lcm-logger/Makefile.am, lcm-logger/lcm-logger.1,
+	  lcm-logger/lcm_logger.c: add lcm-logger manpage add -u/--url
+	  option to lcm-logger
+	* [r135] lcm-java, lcmgen, lcmgen/Makefile.am, lcmgen/lcm-gen.1,
+	  lcmgen/lcmgen.1: renamed lcmgen -> lcm-gen
+	* [r131] lcm-java/Makefile.am: increase memory footprint of
 	  lcm-jlogplayer
-	* [r130]
-	  lcm-java/Makefile.am:
-	  change
-	  lcm-java
-	  so
-	  that
-	  .class
-	  files
-	  get
-	  built
-	  to
-	  separate
-	  "build/"
-	  dir
+	* [r130] lcm-java/Makefile.am: change lcm-java so that .class files
+	  get built to separate "build/" dir
 
 2008-02-22  edwinolson
 
-	* [r129]
-	  lcm-java/lcm/spy/Spy.java:
-	  table
-	  sorter
-	  fix
-	* [r128]
+	* [r129] lcm-java/lcm/spy/Spy.java: table sorter fix
+	* [r128] lcm-java/lcm/spy/LCMHandlerDatabase.java,
+	  lcm-java/lcm/util/ClassDiscoverer.java: make error messages a bit
+	  more informative
+	* [r127] lcm-java/Makefile.am, lcm-java/lcm/spy/ChannelData.java,
 	  lcm-java/lcm/spy/LCMHandlerDatabase.java,
-	  lcm-java/lcm/util/ClassDiscoverer.java:
-	  make
-	  error
-	  messages
-	  a
-	  bit
-	  more
-	  informative
-	* [r127]
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm/spy/ChannelData.java,
-	  lcm-java/lcm/spy/LCMHandlerDatabase.java,
-	  lcm-java/lcm/spy/Spy.java,
-	  lcm-java/lcm/spy/SpyPlugin.java,
-	  lcm-java/lcm/util/ClassDiscoverer.java:
-	  Make
-	  LCM
-	  types
-	  actually
-	  automagically
-	  get
-	  discovered,
-	  and
-	  same
-	  with
-	  SpyPlugins
+	  lcm-java/lcm/spy/Spy.java, lcm-java/lcm/spy/SpyPlugin.java,
+	  lcm-java/lcm/util/ClassDiscoverer.java: Make LCM types actually
+	  automagically get discovered, and same with SpyPlugins
 
 2008-02-17  edwinolson
 
-	* [r123]
-	  lcm-java/lcm/logging/LogDiagnostic.java,
+	* [r123] lcm-java/lcm/logging/LogDiagnostic.java,
 	  lcm-java/lcm/logging/LogPlayer.java,
-	  lcm-java/lcm/spy/LCMHandlerDatabase.java:
-	  More
-	  renaming-related
-	  stuff.
-	  We
-	  need
-	  to
-	  figure
-	  out
-	  why
-	  clean
-	  builds
-	  don't
-	  actually
-	  do
-	  clean
-	  builds
-	  of
-	  the
-	  java
-	  tree.
+	  lcm-java/lcm/spy/LCMHandlerDatabase.java: More renaming-related
+	  stuff. We need to figure out why clean builds don't actually do
+	  clean builds of the java tree.
 
 2008-02-16  edwinolson
 
-	* [r122]
-	  lcmgen/emit_java.c:
-	  update
-	  emit_java
-	  to
-	  include
+	* [r122] lcmgen/emit_java.c: update emit_java to include
 	  LCMEncodable
-	* [r121]
-	  lcm-java/Makefile.am,
+	* [r121] lcm-java/Makefile.am, lcm-java/lcm/spy/ChannelData.java,
+	  lcm-java/lcm/spy/LCMHandlerDatabase.java,
+	  lcm-java/lcm/spy/ObjectPanel.java, lcm-java/lcm/spy/Spy.java,
+	  lcm-java/lcm/spy/SpyPlugin.java: lcspy back in as lcm.spy
+	* [r120] lcm-java/lcm/lcspy, lcm-java/lcm/spy,
 	  lcm-java/lcm/spy/ChannelData.java,
 	  lcm-java/lcm/spy/LCMHandlerDatabase.java,
-	  lcm-java/lcm/spy/ObjectPanel.java,
-	  lcm-java/lcm/spy/Spy.java,
-	  lcm-java/lcm/spy/SpyPlugin.java:
-	  lcspy
-	  back
-	  in
-	  as
-	  lcm.spy
-	* [r120]
-	  lcm-java/lcm/lcspy,
-	  lcm-java/lcm/spy,
-	  lcm-java/lcm/spy/ChannelData.java,
-	  lcm-java/lcm/spy/LCMHandlerDatabase.java,
-	  lcm-java/lcm/spy/LCSpy.java,
-	  lcm-java/lcm/spy/LCSpyPlugin.java,
-	  lcm-java/lcm/spy/ObjectPanel.java:
-	  more
-	  rename
-	* [r119]
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm/lcspy/LCMSpy.java,
+	  lcm-java/lcm/spy/LCSpy.java, lcm-java/lcm/spy/LCSpyPlugin.java,
+	  lcm-java/lcm/spy/ObjectPanel.java: more rename
+	* [r119] lcm-java/Makefile.am, lcm-java/lcm/lcspy/LCMSpy.java,
 	  lcm-java/lcm/lcspy/LCMSpyPlugin.java,
 	  lcm-java/lcm/lcspy/LCSpy.java,
-	  lcm-java/lcm/lcspy/LCSpyPlugin.java:
-	  why
-	  do
-	  renames
-	  in
-	  svn
-	  suck
-	  so
-	  much?
-	* [r118]
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcspy/LCSpyPlugin.java: why do renames in svn suck
+	  so much?
+	* [r118] lcm-java/Makefile.am, lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/LogFileProvider.java,
 	  lcm-java/lcm/lcm/UDPMulticastProvider.java,
-	  lcm-java/lcm/lcm/URLParser.java:
-	  rename
-	  complete
-	* [r117]
-	  lcm-java/lcm/lcm/LC.java,
-	  lcm-java/lcm/lcm/LCEncodable.java,
-	  lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/URLParser.java: rename complete
+	* [r117] lcm-java/lcm/lcm/LC.java,
+	  lcm-java/lcm/lcm/LCEncodable.java, lcm-java/lcm/lcm/LCM.java,
 	  lcm-java/lcm/lcm/LCMEncodable.java,
 	  lcm-java/lcm/lcm/LCMSubscriber.java,
-	  lcm-java/lcm/lcm/LCSubscriber.java:
-	  rename
-	  part
-	  3
-	* [r116]
-	  lcm-java/lcm/lcm/LC.java,
+	  lcm-java/lcm/lcm/LCSubscriber.java: rename part 3
+	* [r116] lcm-java/lcm/lcm/LC.java,
 	  lcm-java/lcm/lcm/LCSubscriber.java,
-	  lcm-java/lcm/lcm/Provider.java:
-	  rename
-	  part
-	  2
-	* [r115]
-	  lcm-java/lcm/lc,
-	  lcm-java/lcm/lcm:
-	  begin
-	  lc->lcm
-	  rename
-	* [r114]
-	  lcm-java/lcm/util/BufferedRandomAccessFile.java:
-	  make
-	  sure
-	  EOF
-	  exception
-	  is
-	  thrown
-	  at
-	  EOF,
-	  and
-	  rename
-	  a
-	  shadow-prone
+	  lcm-java/lcm/lcm/Provider.java: rename part 2
+	* [r115] lcm-java/lcm/lc, lcm-java/lcm/lcm: begin lc->lcm rename
+	* [r114] lcm-java/lcm/util/BufferedRandomAccessFile.java: make sure
+	  EOF exception is thrown at EOF, and rename a shadow-prone
 	  variable
 
 2008-02-15  edwinolson
 
-	* [r113]
-	  lcm-java/lcm/lc/URLParser.java:
-	  URLParser:
-	  was
-	  being
-	  way
-	  too
-	  retentive
-	  about
-	  what
-	  a
-	  legal
-	  path
-	  could
-	  be
+	* [r113] lcm-java/lcm/lc/URLParser.java: URLParser: was being way
+	  too retentive about what a legal path could be
 
 2008-02-14  ashuang
 
-	* [r112]
-	  bootstrap.sh:
-	  add
-	  bootstrap.sh
-	  script
+	* [r112] bootstrap.sh: add bootstrap.sh script
 
 2008-02-12  ashuang
 
-	* [r111]
-	  lcm-logger/lcm_logger.c,
-	  lcm-python/pyeventlog.c,
-	  lcm/eventlog.h:
-	  log
-	  char*
-	  ->
-	  uint8_t*
-	* [r110]
-	  lcm-python/pylcm.c,
-	  lcm/lcm.c,
-	  lcm/lcm.h,
-	  lcm/lcm_coretypes.h,
-	  lcm/lcm_internal.h,
-	  lcm/lcm_udp.c,
-	  lcmgen/emit_c.c,
-	  liblcm-test/lcm-example.c,
-	  liblcm-test/lcm-source.c,
-	  liblcm-test/lcm-tester.c:
-	  change
-	  char*data
-	  to
-	  uint8_t*data
-	  in
-	  lcm_publish
-	  make
-	  lcmgen-generated
-	  C
-	  code
-	  C99
-	  compliant
-	* [r109]
-	  examples/c/listener.c,
-	  lcm-logger/lcm_logger.c,
-	  lcm-python/pylcm.c,
-	  lcm/lcm.c,
-	  lcm/lcm.h,
-	  lcm/lcm_file.c,
-	  lcm/lcm_internal.h,
-	  lcm/lcm_udp.c,
-	  lcmgen/emit_c.c,
-	  liblcm-test/lcm-example.c,
-	  liblcm-test/lcm-seq_check.c,
-	  liblcm-test/lcm-sink.c,
-	  liblcm-test/lcm-tester.c:
-	  remove
-	  channel
-	  from,
-	  add
-	  lcm_t*
-	  to
-	  --
-	  lcm_recv_buf_t
-	  add
-	  const
-	  char
-	  *
-	  channel
-	  param
-	  to
-	  lcm_handler_t
-	  add
-	  const
-	  lcm_recv_buf_t
-	  *
-	  rbuf
-	  param
-	  to
-	  generated
-	  *_handler_t
-	  add
-	  code
-	  documentation
-	  to
-	  lcm_create
+	* [r111] lcm-logger/lcm_logger.c, lcm-python/pyeventlog.c,
+	  lcm/eventlog.h: log char* -> uint8_t*
+	* [r110] lcm-python/pylcm.c, lcm/lcm.c, lcm/lcm.h,
+	  lcm/lcm_coretypes.h, lcm/lcm_internal.h, lcm/lcm_udp.c,
+	  lcmgen/emit_c.c, liblcm-test/lcm-example.c,
+	  liblcm-test/lcm-source.c, liblcm-test/lcm-tester.c: change
+	  char*data to uint8_t*data in lcm_publish make lcmgen-generated C
+	  code C99 compliant
+	* [r109] examples/c/listener.c, lcm-logger/lcm_logger.c,
+	  lcm-python/pylcm.c, lcm/lcm.c, lcm/lcm.h, lcm/lcm_file.c,
+	  lcm/lcm_internal.h, lcm/lcm_udp.c, lcmgen/emit_c.c,
+	  liblcm-test/lcm-example.c, liblcm-test/lcm-seq_check.c,
+	  liblcm-test/lcm-sink.c, liblcm-test/lcm-tester.c: remove channel
+	  from, add lcm_t* to -- lcm_recv_buf_t add const char * channel
+	  param to lcm_handler_t add const lcm_recv_buf_t * rbuf param to
+	  generated *_handler_t add code documentation to lcm_create
 
 2008-02-11  ashuang
 
-	* [r108]
-	  examples/c/listener.c,
-	  lcm-logger/lcm_logger.c,
-	  lcm-python/pylcm.c,
-	  lcm/lcm.h,
-	  lcm/lcm_udp.c,
-	  lcmgen/emit_c.c,
-	  liblcm-test/lcm-example.c,
-	  liblcm-test/lcm-seq_check.c,
-	  liblcm-test/lcm-sink.c,
-	  liblcm-test/lcm-tester.c:
-	  remove
-	  return
-	  type
-	  from
-	  lcm_handler_t
-	  and
-	  generated
-	  *_handler_t
+	* [r108] examples/c/listener.c, lcm-logger/lcm_logger.c,
+	  lcm-python/pylcm.c, lcm/lcm.h, lcm/lcm_udp.c, lcmgen/emit_c.c,
+	  liblcm-test/lcm-example.c, liblcm-test/lcm-seq_check.c,
+	  liblcm-test/lcm-sink.c, liblcm-test/lcm-tester.c: remove return
+	  type from lcm_handler_t and generated *_handler_t
 
 2008-02-09  ashuang
 
-	* [r107]
-	  configure.in,
-	  examples/Makefile.am,
-	  examples/c,
-	  examples/c/Makefile.am,
-	  examples/c/listener.c,
-	  examples/c/send_message.c,
-	  examples/java,
-	  examples/listener.c,
-	  examples/python,
-	  examples/python/Makefile.am,
-	  examples/python/example_t.py,
-	  examples/python/listener.py,
-	  examples/python/send-message.py,
-	  examples/send_message.c,
-	  examples/types/Makefile.am,
-	  lcm-java,
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm-java.pc.in,
-	  lcm/lcm_udp.c:
-	  don't
-	  try
-	  to
-	  be
-	  so
-	  clever
-	  with
-	  lcm_frag
-	  buf
-	  add
-	  lcm-java.pc.in
-	  for
-	  using
-	  `pkg-config
-	  --variable=classpath
-	  lcm-java`
-	  add
-	  python
-	  examples,
-	  reorganize
-	  examples
-	  directory
-	* [r106]
-	  lcm/lcm_udp.c:
-	  lcm
-	  don't
-	  use
-	  GSlice
-	* [r105]
-	  lcm-python/pylcm.c,
-	  lcm-python/pylcm_subscription.c:
-	  lcm-python
-	  code
-	  cleanup
-	* [r104]
-	  lcm-python/Makefile.am,
-	  lcm-python/module.c,
-	  lcm-python/pylcm.c,
-	  lcm-python/pylcm.h,
-	  lcm-python/pylcm_subscription.c,
-	  lcm-python/pylcm_subscription.h:
-	  modify
-	  lcm-python
-	  to
-	  not
-	  use
-	  lcm_unsubscribe_by_func
-	* [r103]
-	  lcmgen/emit_python.c:
-	  more
-	  emit_python
-	  bugfixes
-	* [r102]
-	  lcmgen/emit_c.c,
-	  lcmgen/emit_python.c:
-	  reduce
-	  verbiage
-	  in
-	  lcmgen,
-	  emit_python
-	  bugfix
-	* [r101]
-	  configure.in,
-	  lcm-python/Makefile.am,
-	  lcmgen/lcmgen.c:
-	  lcmgen
-	  hash
-	  computation
-	  for
-	  enum
-	  now
-	  depends
-	  only
-	  on
-	  shortname,
-	  not
-	  fully
-	  qualified
-	  name
+	* [r107] configure.in, examples/Makefile.am, examples/c,
+	  examples/c/Makefile.am, examples/c/listener.c,
+	  examples/c/send_message.c, examples/java, examples/listener.c,
+	  examples/python, examples/python/Makefile.am,
+	  examples/python/example_t.py, examples/python/listener.py,
+	  examples/python/send-message.py, examples/send_message.c,
+	  examples/types/Makefile.am, lcm-java, lcm-java/Makefile.am,
+	  lcm-java/lcm-java.pc.in, lcm/lcm_udp.c: don't try to be so clever
+	  with lcm_frag buf add lcm-java.pc.in for using `pkg-config
+	  --variable=classpath lcm-java` add python examples, reorganize
+	  examples directory
+	* [r106] lcm/lcm_udp.c: lcm don't use GSlice
+	* [r105] lcm-python/pylcm.c, lcm-python/pylcm_subscription.c:
+	  lcm-python code cleanup
+	* [r104] lcm-python/Makefile.am, lcm-python/module.c,
+	  lcm-python/pylcm.c, lcm-python/pylcm.h,
+	  lcm-python/pylcm_subscription.c, lcm-python/pylcm_subscription.h:
+	  modify lcm-python to not use lcm_unsubscribe_by_func
+	* [r103] lcmgen/emit_python.c: more emit_python bugfixes
+	* [r102] lcmgen/emit_c.c, lcmgen/emit_python.c: reduce verbiage in
+	  lcmgen, emit_python bugfix
+	* [r101] configure.in, lcm-python/Makefile.am, lcmgen/lcmgen.c:
+	  lcmgen hash computation for enum now depends only on shortname,
+	  not fully qualified name
 
 2008-02-06  edwinolson
 
-	* [r100]
-	  lcm-java/lcm/lc/URLParser.java:
-	  urlparser:
-	  accept
-	  1
-	  as
+	* [r100] lcm-java/lcm/lc/URLParser.java: urlparser: accept 1 as
 	  true
-	* [r99]
-	  lcm-java/lcm/lc/LogFileProvider.java:
-	  java
-	  lc:
-	  compute
-	  and
-	  display
-	  log
-	  playback
-	  rate.
-	* [r98]
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm/lc/LC.java,
+	* [r99] lcm-java/lcm/lc/LogFileProvider.java: java lc: compute and
+	  display log playback rate.
+	* [r98] lcm-java/Makefile.am, lcm-java/lcm/lc/LC.java,
 	  lcm-java/lcm/lc/LogFileProvider.java,
-	  lcm-java/lcm/lc/URLParser.java:
-	  java
-	  LC:
-	  support
-	  file:///
+	  lcm-java/lcm/lc/URLParser.java: java LC: support file:///
 	  provider
 
 2008-02-04  david.moore
 
-	* [r97]
-	  lcm/lcm.c,
-	  lcm/lcm.h,
-	  liblcm-test/lcm-example.c,
-	  liblcm-test/lcm-source.c,
-	  liblcm-test/lcm-tester.c:
-	  Remove
+	* [r97] lcm/lcm.c, lcm/lcm.h, liblcm-test/lcm-example.c,
+	  liblcm-test/lcm-source.c, liblcm-test/lcm-tester.c: Remove
 	  lcm_unsubscribe_by_func
-	* [r96]
-	  lcm/lcm_file.c:
-	  Use
-	  local
-	  time
-	  for
-	  the
-	  log
-	  provider
-	  timestamp,
-	  not
-	  the
-	  logged
-	  time
-	* [r95]
-	  configure.in,
-	  lcm-logger/glib_util.h,
-	  lcm/eventlog.h,
-	  lcmgen/getopt.h:
-	  Fix
-	  warnings
-	  on
-	  Mac
-	  OS
-	* [r94]
-	  lcm/lcm_udp.c:
-	  Fix
-	  type
-	  in
-	  timestamp
-	  code
-	* [r93]
-	  lcm/lcm_udp.c:
-	  Use
-	  SO_TIMESTAMP
-	  for
-	  more
-	  accurate
-	  timestamps
-	  of
-	  UDP
-	  reception
+	* [r96] lcm/lcm_file.c: Use local time for the log provider
+	  timestamp, not the logged time
+	* [r95] configure.in, lcm-logger/glib_util.h, lcm/eventlog.h,
+	  lcmgen/getopt.h: Fix warnings on Mac OS
+	* [r94] lcm/lcm_udp.c: Fix type in timestamp code
+	* [r93] lcm/lcm_udp.c: Use SO_TIMESTAMP for more accurate
+	  timestamps of UDP reception
 
 2008-02-04  edwinolson
 
-	* [r92]
-	  lcm-java/lcm/lcspy/LCMHandlerDatabase.java:
-	  LCMHanderDatabase:
-	  make
-	  detection
-	  of
-	  lcm
-	  types
-	  more
-	  generous
+	* [r92] lcm-java/lcm/lcspy/LCMHandlerDatabase.java:
+	  LCMHanderDatabase: make detection of lcm types more generous
 
 2008-02-03  david.moore
 
-	* [r91]
-	  lcm/Makefile.am,
-	  lcm/lcm.c,
-	  lcm/lcm_file.c:
-	  Added
-	  the
-	  LCM
-	  log
-	  file
-	  provider
+	* [r91] lcm/Makefile.am, lcm/lcm.c, lcm/lcm_file.c: Added the LCM
+	  log file provider
 
 2008-01-29  ashuang
 
-	* [r90]
-	  lcm/lcm.c:
-	  if
-	  LCM
-	  URL
-	  is
-	  NULL
-	  or
-	  empty
-	  string,
-	  then
-	  default
-	  to
-	  "udpm://"
+	* [r90] lcm/lcm.c: if LCM URL is NULL or empty string, then default
+	  to "udpm://"
 
 2008-01-28  david.moore
 
-	* [r89]
-	  lcm-python/pylcm.c,
-	  lcm/Makefile.am,
-	  lcm/lcm.c,
-	  lcm/lcm.h,
-	  lcm/lcm_internal.h,
-	  lcm/lcm_udp.c,
-	  lcm/lcm_udp.h,
-	  liblcm-test/lcm-example.c,
-	  liblcm-test/lcm-tester.c:
-	  Refactor
-	  C
-	  version
-	  of
-	  LCM
-	  to
-	  allow
-	  multiple
-	  backends
+	* [r89] lcm-python/pylcm.c, lcm/Makefile.am, lcm/lcm.c, lcm/lcm.h,
+	  lcm/lcm_internal.h, lcm/lcm_udp.c, lcm/lcm_udp.h,
+	  liblcm-test/lcm-example.c, liblcm-test/lcm-tester.c: Refactor C
+	  version of LCM to allow multiple backends
 
 2008-01-26  ashuang
 
-	* [r85]
-	  lcm/lcm_udp.c:
-	  missed
-	  a
-	  line...
-	* [r84]
-	  Makefile.am,
-	  lcm-python/pylcm.c:
-	  updated
-	  lcm-python
-	  for
-	  new
-	  lcm
-	  API
-	* [r83]
-	  lcm/lcm_udp.c:
-	  lcm
-	  defaults
-	  to
-	  udpm://
-	  if
-	  no
-	  url
-	  specified
-	* [r82]
-	  lcmgen/emit_c.c:
-	  modify
-	  emit_c
-	  so
-	  that
-	  enum
-	  definitions
-	  are
-	  properly
-	  prefixed
-	  with
-	  package
-	  and
-	  type
-	  name
-	  e.g.
-	  "package
-	  foo;
-	  enum
-	  bar_t
-	  {
-	  ABC,
-	  DEF,
-	  GHI
-	  }"
-	  now
-	  emits:
-	  enum
-	  {
-	  FOO_BAR_T_ABC,
-	  FOO_BAR_T_DEF,
-	  FOO_BAR_T_GHI
-	  };
-	* [r81]
-	  lcm/lcm_udp.c:
-	  remove
-	  verbiage
-	* [r80]
-	  lcm/lcm_udp.c:
-	  fix
-	  memory
-	  leak
-	* [r79]
-	  Makefile.am,
-	  examples/listener.c,
-	  examples/send_message.c,
-	  lcm-logger/lcm_logger.c,
-	  lcm/lcm_udp.c,
-	  lcm/lcm_udp.h,
-	  liblcm-test/lcm-example.c,
-	  liblcm-test/lcm-seq_check.c,
-	  liblcm-test/lcm-sink.c,
-	  liblcm-test/lcm-source.c,
-	  liblcm-test/lcm-tester.c:
-	  disable
-	  lcm-python
-	  change
-	  lcm
-	  C
-	  API remove
-	  lcm_params_t,
-	  lcm_init(),
-	  lcm_params_init_defaults(), lcm_get_params() add
-	  url
-	  parameter
-	  to
-	  lcm_create()
+	* [r85] lcm/lcm_udp.c: missed a line...
+	* [r84] Makefile.am, lcm-python/pylcm.c: updated lcm-python for new
+	  lcm API
+	* [r83] lcm/lcm_udp.c: lcm defaults to udpm:// if no url specified
+	* [r82] lcmgen/emit_c.c: modify emit_c so that enum definitions are
+	  properly prefixed with package and type name
+	  
+	  e.g. "package foo; enum bar_t { ABC, DEF, GHI }" now emits: enum
+	  { FOO_BAR_T_ABC, FOO_BAR_T_DEF, FOO_BAR_T_GHI };
+	* [r81] lcm/lcm_udp.c: remove verbiage
+	* [r80] lcm/lcm_udp.c: fix memory leak
+	* [r79] Makefile.am, examples/listener.c, examples/send_message.c,
+	  lcm-logger/lcm_logger.c, lcm/lcm_udp.c, lcm/lcm_udp.h,
+	  liblcm-test/lcm-example.c, liblcm-test/lcm-seq_check.c,
+	  liblcm-test/lcm-sink.c, liblcm-test/lcm-source.c,
+	  liblcm-test/lcm-tester.c: disable lcm-python change lcm C API
+	  remove lcm_params_t, lcm_init(), lcm_params_init_defaults(),
+	  lcm_get_params() add url parameter to lcm_create()
 
 2008-01-26  edwinolson
 
-	* [r78]
-	  lcm-java/lcm/lc/UDPMulticastProvider.java,
-	  lcm-java/lcm/logging/LogPlayer.java:
-	  duh,
-	  readonly/transmitonly
-	  brain
-	  fart
-	* [r77]
-	  lcm-java/Makefile.am,
-	  lcm-java/lcm/lc/LC.java,
+	* [r78] lcm-java/lcm/lc/UDPMulticastProvider.java,
+	  lcm-java/lcm/logging/LogPlayer.java: duh, readonly/transmitonly
+	  brain fart
+	* [r77] lcm-java/Makefile.am, lcm-java/lcm/lc/LC.java,
 	  lcm-java/lcm/lc/Provider.java,
 	  lcm-java/lcm/lc/UDPMulticastProvider.java,
 	  lcm-java/lcm/lc/URLParser.java,
 	  lcm-java/lcm/logging/LogPlayer.java,
-	  lcm-java/lcm/util/BufferedRandomAccessFile.java:
-	  experimental
-	  LC
+	  lcm-java/lcm/util/BufferedRandomAccessFile.java: experimental LC
 	  refactoring
 
 2008-01-24  ashuang
 
-	* [r76]
-	  lcmgen/emit_python.c:
-	  fix
-	  python
-	  hash
-	  computation
+	* [r76] lcmgen/emit_python.c: fix python hash computation
 
 2008-01-23  edwinolson
 
-	* [r75]
-	  lcmgen/emit_java.c:
-	  make
-	  emit_java
-	  automatically
-	  create
+	* [r75] lcmgen/emit_java.c: make emit_java automatically create
 	  directories
 
 2008-01-22  edwinolson
 
-	* [r72]
-	  lcm-java/lcm/lc/LC.java,
+	* [r72] lcm-java/lcm/lc/LC.java,
 	  lcm-java/lcm/logging/JScrubber.java,
-	  lcm-java/lcm/util/BufferedRandomAccessFile.java:
-	  first
-	  round
-	  of
-	  java
-	  LogPlayer
-	  performance
-	  work
-	* [r71]
-	  lcm-java/lcm/logging/LogPlayer.java:
-	  Logplayer
-	  cosmetic
+	  lcm-java/lcm/util/BufferedRandomAccessFile.java: first round of
+	  java LogPlayer performance work
+	* [r71] lcm-java/lcm/logging/LogPlayer.java: Logplayer cosmetic
 
 2008-01-22  david.moore
 
-	* [r70]
-	  lcm/lcm_udp.c:
-	  Fix
-	  UDP
-	  buffer
-	  size
-	  error
-	  message
-	* [r69]
-	  lcm-java/Makefile.am:
-	  Fix
-	  the
-	  java
-	  wrapper
-	  scripts
-	* [r68]
-	  docs/reference/intro.sgml:
-	  Fix
-	  doc
-	  typo
+	* [r70] lcm/lcm_udp.c: Fix UDP buffer size error message
+	* [r69] lcm-java/Makefile.am: Fix the java wrapper scripts
+	* [r68] docs/reference/intro.sgml: Fix doc typo
 
 2008-01-22  edwinolson
 
-	* [r67]
-	  lcm-java/lcm/logging/Log.java,
+	* [r67] lcm-java/lcm/logging/Log.java,
 	  lcm-java/lcm/logging/LogPlayer.java,
-	  lcm-java/lcm/util/BufferedRandomAccessFile.java:
-	  jlogplayer
-	  bug
-	  fix,
-	  cosmetic
-	  fixes
-	* [r66]
-	  lcm-java/build.xml,
-	  lcm-java/lcm/lc/LC.java,
+	  lcm-java/lcm/util/BufferedRandomAccessFile.java: jlogplayer bug
+	  fix, cosmetic fixes
+	* [r66] lcm-java/build.xml, lcm-java/lcm/lc/LC.java,
 	  lcm-java/lcm/logging/JScrubber.java,
 	  lcm-java/lcm/logging/Log.java,
-	  lcm-java/lcm/logging/LogPlayer.java:
-	  logplayer
-	  cleanups/bug-proofing/gui
-	  improvements
-	* [r65]
-	  docs/reference/intro.sgml:
-	  add
-	  comments/content
-	  to
+	  lcm-java/lcm/logging/LogPlayer.java: logplayer
+	  cleanups/bug-proofing/gui improvements
+	* [r65] docs/reference/intro.sgml: add comments/content to
 	  intro.sgml
 
 2008-01-22  david.moore
 
-	* [r64]
-	  docs/reference/tutorial-c.sgml:
-	  Grammar
-	  fix
+	* [r64] docs/reference/tutorial-c.sgml: Grammar fix
 
 2008-01-21  david.moore
 
-	* [r61]
-	  lcm-java,
-	  liblcm-test:
-	  Update
-	  svn:ignore
-	* [r60]
-	  NEWS,
-	  README,
-	  docs/release_checklist:
-	  Update
-	  docs
-	  for
-	  0.0.1
+	* [r61] lcm-java, liblcm-test: Update svn:ignore
+	* [r60] NEWS, README, docs/release_checklist: Update docs for 0.0.1
 	  release
-	* [r59]
-	  lcm-java/Makefile.am:
-	  Fix
-	  'make
-	  dist'
-	  for
-	  java
-	  scripts
-	* [r58]
-	  Makefile.am,
-	  docs/reference/Makefile.am,
-	  gtk-doc.make:
-	  Fix
-	  'make
-	  dist'
-	  for
-	  gtk-doc
-	* [r57]
-	  examples/Makefile.am,
-	  examples/types/Makefile.am,
-	  lcm-logger/Makefile.am,
-	  lcm-logger/glib_util.h,
-	  lcm-logger/lcm_logger.c,
-	  lcm/lcm.pc.in:
-	  Make
-	  sure
-	  include
-	  file
-	  is
-	  always
-	  lcm/lcm.h
+	* [r59] lcm-java/Makefile.am: Fix 'make dist' for java scripts
+	* [r58] Makefile.am, docs/reference/Makefile.am, gtk-doc.make: Fix
+	  'make dist' for gtk-doc
+	* [r57] examples/Makefile.am, examples/types/Makefile.am,
+	  lcm-logger/Makefile.am, lcm-logger/glib_util.h,
+	  lcm-logger/lcm_logger.c, lcm/lcm.pc.in: Make sure include file is
+	  always lcm/lcm.h
 
 2008-01-21  ashuang
 
-	* [r56]
-	  docs/reference/multicast-setup.sgml:
-	  split
-	  multicast
-	  setup
-	  into
-	  sections
-	* [r55]
-	  docs/reference/multicast-setup.sgml:
-	  added
-	  doc
-	  section
-	  on
-	  kernel
-	  UDP
-	  buffer
-	  sizing
-	* [r54]
-	  lcm/dbg.h,
-	  lcm/lcm_udp.c:
-	  changed
-	  DBG
-	  env
-	  var
-	  to
-	  LCM_DBG
-	  added
-	  warning
-	  message
-	  if
-	  user
-	  requests
-	  UDP
-	  receive
-	  buffer
-	  size
-	  and
-	  gets
-	  something
-	  smaller.
+	* [r56] docs/reference/multicast-setup.sgml: split multicast setup
+	  into sections
+	* [r55] docs/reference/multicast-setup.sgml: added doc section on
+	  kernel UDP buffer sizing
+	* [r54] lcm/dbg.h, lcm/lcm_udp.c: changed DBG env var to LCM_DBG
+	  added warning message if user requests UDP receive buffer size
+	  and gets something smaller.
 
 2008-01-20  ashuang
 
-	* [r53]
-	  Makefile.am,
-	  configure.in,
-	  m4macros,
-	  m4macros/Makefile.am,
-	  m4macros/README,
-	  m4macros/lcm.m4:
-	  add
-	  m4
-	  macros
-	  for
-	  autotoolized
-	  programs
-	  to
-	  use
-	  for
-	  testing
-	  and
-	  linking
-	  against
-	  lcm
-	* [r52]
-	  lcmgen-test/types/canbus_list_t.lcm,
-	  lcmgen-test/types/canbus_t.lcm,
-	  lcmgen/emit_c.c:
-	  another
-	  get_hash
-	  bugfix
-	  fix
-	  some
-	  test
-	  types
-	* [r51]
-	  lcmgen/emit_c.c:
-	  bugfix
-	  in
-	  get_hash
-	* [r50]
-	  lcmgen/emit_c.c:
-	  change
-	  *_get_hash()
-	  to
-	  *_get_hash(void)
-	* [r49]
-	  lcmgen/emit_c.c:
-	  fixed
-	  emit_c
-	  handling
-	  of
-	  types
-	  with
-	  packages. introduced
-	  many
-	  memory
-	  leaks
+	* [r53] Makefile.am, configure.in, m4macros, m4macros/Makefile.am,
+	  m4macros/README, m4macros/lcm.m4: add m4 macros for autotoolized
+	  programs to use for testing and linking against lcm
+	* [r52] lcmgen-test/types/canbus_list_t.lcm,
+	  lcmgen-test/types/canbus_t.lcm, lcmgen/emit_c.c: another get_hash
+	  bugfix fix some test types
+	* [r51] lcmgen/emit_c.c: bugfix in get_hash
+	* [r50] lcmgen/emit_c.c: change *_get_hash() to *_get_hash(void)
+	* [r49] lcmgen/emit_c.c: fixed emit_c handling of types with
+	  packages. introduced many memory leaks
 
 2008-01-18  david.moore
 
-	* [r48]
-	  docs/reference/lcm-docs.sgml:
-	  Added
-	  authors
-	* [r47]
-	  docs/reference/lcm-docs.sgml,
-	  docs/reference/quickstart-c.sgml,
-	  docs/reference/tutorial-c.sgml:
-	  Rename
-	  quickstart
-	  guide
-	  to
-	  tutorial
-	* [r46]
-	  lcm/lcm_udp.c:
-	  Show
-	  default
-	  port
-	  in
-	  addition
-	  to
-	  default
-	  IP
-	* [r45]
-	  docs/reference/intro.sgml,
-	  docs/reference/multicast-setup.sgml:
-	  More
-	  documentation
+	* [r48] docs/reference/lcm-docs.sgml: Added authors
+	* [r47] docs/reference/lcm-docs.sgml,
+	  docs/reference/quickstart-c.sgml, docs/reference/tutorial-c.sgml:
+	  Rename quickstart guide to tutorial
+	* [r46] lcm/lcm_udp.c: Show default port in addition to default IP
+	* [r45] docs/reference/intro.sgml,
+	  docs/reference/multicast-setup.sgml: More documentation
 
 2008-01-17  david.moore
 
-	* [r44]
-	  docs/reference/intro.sgml,
-	  docs/reference/lcm-docs.sgml,
+	* [r44] docs/reference/intro.sgml, docs/reference/lcm-docs.sgml,
 	  docs/reference/multicast-setup.sgml,
-	  docs/reference/quickstart-c.sgml,
-	  examples,
-	  examples/Makefile.am,
-	  examples/listener.c,
-	  examples/send_message.c,
-	  examples/types/example_t.lcm:
-	  More
-	  work
-	  on
-	  the
-	  docs
-	  and
-	  examples
-	* [r43]
-	  docs/reference/lcm-docs.sgml,
-	  docs/reference/quickstart-c.sgml:
-	  Progress
-	  on
-	  the
-	  tutorial
+	  docs/reference/quickstart-c.sgml, examples, examples/Makefile.am,
+	  examples/listener.c, examples/send_message.c,
+	  examples/types/example_t.lcm: More work on the docs and examples
+	* [r43] docs/reference/lcm-docs.sgml,
+	  docs/reference/quickstart-c.sgml: Progress on the tutorial
 
 2008-01-16  ashuang
 
-	* [r42]
-	  lcm-java/Makefile.am:
-	  add
-	  lcspy
-	  to
-	  bin_PROGRAMS
-	* [r41]
-	  configure.in,
-	  lcm-java,
-	  lcm-java/Makefile.am,
-	  lcm-java/gen-lcmtypes.sh,
-	  lcm-python/lcm/__init__.py,
-	  lcmgen/emit_python.c,
-	  liblcm-test/Makefile.am,
-	  liblcm-test/lcm-example.1,
-	  liblcm-test/lcm-example.c,
-	  liblcm-test/lcm-seq_check.c,
-	  liblcm-test/lcm-sink.1,
-	  liblcm-test/lcm-sink.c,
-	  liblcm-test/lcm-source.1,
-	  liblcm-test/lcm-source.c,
-	  liblcm-test/lcm-tester.1,
-	  liblcm-test/lcm-tester.c,
-	  liblcm-test/lcm_example.1,
-	  liblcm-test/lcm_example.c,
-	  liblcm-test/lcm_seq_check.c,
-	  liblcm-test/lcm_sink.1,
-	  liblcm-test/lcm_sink.c,
-	  liblcm-test/lcm_source.1,
-	  liblcm-test/lcm_source.c,
-	  liblcm-test/lcm_tester.1,
-	  liblcm-test/lcm_tester.c:
-	  autoconf
-	  packaging
-	  updates. java
-	  enabled
-	  and
-	  installed
-	  now...
+	* [r42] lcm-java/Makefile.am: add lcspy to bin_PROGRAMS
+	* [r41] configure.in, lcm-java, lcm-java/Makefile.am,
+	  lcm-java/gen-lcmtypes.sh, lcm-python/lcm/__init__.py,
+	  lcmgen/emit_python.c, liblcm-test/Makefile.am,
+	  liblcm-test/lcm-example.1, liblcm-test/lcm-example.c,
+	  liblcm-test/lcm-seq_check.c, liblcm-test/lcm-sink.1,
+	  liblcm-test/lcm-sink.c, liblcm-test/lcm-source.1,
+	  liblcm-test/lcm-source.c, liblcm-test/lcm-tester.1,
+	  liblcm-test/lcm-tester.c, liblcm-test/lcm_example.1,
+	  liblcm-test/lcm_example.c, liblcm-test/lcm_seq_check.c,
+	  liblcm-test/lcm_sink.1, liblcm-test/lcm_sink.c,
+	  liblcm-test/lcm_source.1, liblcm-test/lcm_source.c,
+	  liblcm-test/lcm_tester.1, liblcm-test/lcm_tester.c: autoconf
+	  packaging updates. java enabled and installed now...
 
 2008-01-02  edwinolson
 
-	* [r40]
-	  gtk-doc.make:
-	  add
-	  missing
-	  gtk-doc.make
+	* [r40] gtk-doc.make: add missing gtk-doc.make
 
 2008-01-02  david.moore
 
-	* [r39]
-	  Makefile.am,
-	  configure.in,
-	  docs,
-	  docs/Makefile.am,
-	  docs/reference,
-	  docs/reference/Makefile.am,
-	  docs/reference/lcm-docs.sgml,
-	  docs/reference/lcm-sections.txt,
-	  examples,
-	  examples/Makefile.am,
-	  examples/types,
-	  examples/types/Makefile.am,
-	  examples/types/example_t.lcm,
-	  lcm/eventlog.h,
-	  lcm/lcm_coretypes.h,
-	  lcm/lcm_udp.h,
-	  lcm/ringbuffer.h:
-	  Put
-	  in
-	  place
-	  the
-	  basic
-	  gtk-doc
-	  structure
+	* [r39] Makefile.am, configure.in, docs, docs/Makefile.am,
+	  docs/reference, docs/reference/Makefile.am,
+	  docs/reference/lcm-docs.sgml, docs/reference/lcm-sections.txt,
+	  examples, examples/Makefile.am, examples/types,
+	  examples/types/Makefile.am, examples/types/example_t.lcm,
+	  lcm/eventlog.h, lcm/lcm_coretypes.h, lcm/lcm_udp.h,
+	  lcm/ringbuffer.h: Put in place the basic gtk-doc structure
 
 2007-12-21  ashuang
 
-	* [r38]
-	  lcmgen/emit_python.c:
-	  lcmgen
-	  emit_python:
-	  create
-	  hierarchy
-	  of
-	  __init__.py
-	  files
-	  if
-	  necessary
-	* [r37]
-	  lcmgen/emit_python.c:
-	  emit_python
-	  stupid
-	  bugfix
-	  (don't
-	  strfreev
-	  until
-	  not
-	  needed
-	  anymore)
+	* [r38] lcmgen/emit_python.c: lcmgen emit_python: create hierarchy
+	  of __init__.py files if necessary
+	* [r37] lcmgen/emit_python.c: emit_python stupid bugfix (don't
+	  strfreev until not needed anymore)
 
 2007-12-19  ashuang
 
-	* [r36]
-	  .,
-	  Makefile.am,
-	  configure.in,
-	  lcm,
-	  lcm-logger/Makefile.am,
-	  lcm-python,
-	  lcm-python/Makefile.am,
-	  lcmgen/emit_c.c,
-	  liblcm,
-	  liblcm-test/Makefile.am,
-	  liblcm-test/lcm_example.c,
-	  liblcm-test/lcm_seq_check.c,
-	  liblcm-test/lcm_sink.c,
-	  liblcm-test/lcm_source.c,
-	  liblcm-test/lcm_tester.c,
-	  m4/ac_python_devel.m4:
-	  renamed
-	  liblcm
-	  directory
-	  to
-	  lcm
-	  autotoolized
-	  lcm-python
-	  expose
-	  *_decode_cleanup()
-	  in
-	  lcmgen-generated
-	  type
-	  header
-	  files
+	* [r36] ., Makefile.am, configure.in, lcm, lcm-logger/Makefile.am,
+	  lcm-python, lcm-python/Makefile.am, lcmgen/emit_c.c, liblcm,
+	  liblcm-test/Makefile.am, liblcm-test/lcm_example.c,
+	  liblcm-test/lcm_seq_check.c, liblcm-test/lcm_sink.c,
+	  liblcm-test/lcm_source.c, liblcm-test/lcm_tester.c,
+	  m4/ac_python_devel.m4: renamed liblcm directory to lcm
+	  autotoolized lcm-python expose *_decode_cleanup() in
+	  lcmgen-generated type header files
 
 2007-12-18  david.moore
 
-	* [r35]
-	  Makefile.am,
-	  configure.in,
-	  lcm-java,
-	  lcm-java/Makefile.am,
-	  lcm-java/build,
-	  lcm-java/lcm,
-	  lcm-java/lcm/lc,
-	  lcm-java/lcm/lcmtypes,
-	  lcm-java/lcm/lcspy,
+	* [r35] Makefile.am, configure.in, lcm-java, lcm-java/Makefile.am,
+	  lcm-java/build, lcm-java/lcm, lcm-java/lcm/lc,
+	  lcm-java/lcm/lcmtypes, lcm-java/lcm/lcspy,
 	  lcm-java/lcm/lcspy/LCSpy.java,
 	  lcm-java/lcm/lcspy/LaserPlugin.java,
 	  lcm-java/lcm/lcspy/RadarPluginRaw.java,
-	  lcm-java/lcm/lcspy/VideoPlugin.java,
-	  lcm-java/lcm/logging,
-	  lcm-java/lcm/util,
-	  lcm-java/src,
-	  lcmgen/Makefile.am:
-	  autotoolize
-	  the
-	  lcm-java
-	  build
+	  lcm-java/lcm/lcspy/VideoPlugin.java, lcm-java/lcm/logging,
+	  lcm-java/lcm/util, lcm-java/src, lcmgen/Makefile.am: autotoolize
+	  the lcm-java build
 
 2007-12-18  ashuang
 
-	* [r34]
-	  lcmgen/emit_python.c,
-	  liblcm/Makefile.am,
-	  liblcm/lc.c,
-	  liblcm/lc.h,
-	  liblcm/lcm.h,
-	  liblcm/lcm_udp.c,
-	  liblcm/lcm_udp.h:
-	  rename
-	  lc.[ch]
-	  to
-	  lcm_udp.[ch]
-	  lcmgen
-	  emit_python
-	  bugfix
-	  (don't
-	  barf
-	  on
-	  packageless
-	  types)
-	  remove
-	  lcm_create_and_init_or_die
-	* [r33]
-	  lcm-python/lcm/__init__.py,
-	  lcm-python/module.c,
-	  lcm-python/pyeventlog.c:
-	  add
-	  lcm-python
-	  eventlog
-	  wrapper
-	  back
-	  in
-	* [r32]
-	  lcmgen-test/types/lcmtest_t.lcm,
-	  lcmgen/emit_c.c:
-	  fix
-	  lcmgen
-	  to
-	  not
-	  require
-	  c99
-	  in
-	  generated
-	  C
-	  code
-	  for
-	  multidim
-	  arrays
-	  fix
-	  lcmgen
-	  include
-	  files
-	  in
-	  generated
-	  C
-	  code
-	  resurrected
-	  lcmtest_t.lcm
-	  from
-	  dgc
-	  trunk
+	* [r34] lcmgen/emit_python.c, liblcm/Makefile.am, liblcm/lc.c,
+	  liblcm/lc.h, liblcm/lcm.h, liblcm/lcm_udp.c, liblcm/lcm_udp.h:
+	  rename lc.[ch] to lcm_udp.[ch] lcmgen emit_python bugfix (don't
+	  barf on packageless types) remove lcm_create_and_init_or_die
+	* [r33] lcm-python/lcm/__init__.py, lcm-python/module.c,
+	  lcm-python/pyeventlog.c: add lcm-python eventlog wrapper back in
+	* [r32] lcmgen-test/types/lcmtest_t.lcm, lcmgen/emit_c.c: fix
+	  lcmgen to not require c99 in generated C code for multidim arrays
+	  fix lcmgen include files in generated C code resurrected
+	  lcmtest_t.lcm from dgc trunk
 
 2007-12-17  ashuang
 
-	* [r31]
-	  lcm-logger,
-	  lcm-logger/Makefile.am,
-	  lcm-python,
-	  lcmgen-test,
-	  lcmgen-test/types,
+	* [r31] lcm-logger, lcm-logger/Makefile.am, lcm-python,
+	  lcmgen-test, lcmgen-test/types,
 	  lcmgen-test/types/canbus_list_t.lcm,
-	  lcmgen-test/types/canbus_t.lcm,
-	  lcmgen-test/types/image_t.lcm,
-	  lcmgen-test/types/laser_t.lcm,
-	  lcmgen-test/types/pose_t.lcm,
-	  lcmgen/emit_c.c,
-	  lcmgen/lcm_lc.h,
-	  lcmgen/lcm_lib.h,
-	  liblcm-test,
-	  liblcm-test/lcm_tester.c,
-	  liblcm/Makefile.am,
-	  liblcm/lc.c,
-	  liblcm/lc.h,
-	  liblcm/lcm_coretypes.h,
-	  po/Makevars:
-	  modify
-	  lcmgen/emit_c
-	  for
-	  new
-	  naming
-	  convention
-	  move
-	  lcmgen/lcm_lib.h
-	  to
-	  liblcm/lcm_coretypes.h
-	  (until
-	  it's
-	  inlined
-	  in generated
-	  .c
-	  files)
-	  modify
-	  liblcm/lcm_coretypes.h
-	  to
-	  not
-	  require
-	  C99
-	  modify
-	  lcmgen/emit_c
-	  to
-	  not
-	  require
-	  C99
-	  in
-	  generated
-	  .c
-	  files
-	  update
-	  svn-ignore
-	  create
-	  lcmgen-test
-	  directory. should
-	  eventually
-	  contain
-	  unit
-	  tests
-	  for
-	  lcmgen
-	  added
-	  Ed,
-	  myself
-	  to
-	  po/Makevars
+	  lcmgen-test/types/canbus_t.lcm, lcmgen-test/types/image_t.lcm,
+	  lcmgen-test/types/laser_t.lcm, lcmgen-test/types/pose_t.lcm,
+	  lcmgen/emit_c.c, lcmgen/lcm_lc.h, lcmgen/lcm_lib.h, liblcm-test,
+	  liblcm-test/lcm_tester.c, liblcm/Makefile.am, liblcm/lc.c,
+	  liblcm/lc.h, liblcm/lcm_coretypes.h, po/Makevars: modify
+	  lcmgen/emit_c for new naming convention move lcmgen/lcm_lib.h to
+	  liblcm/lcm_coretypes.h (until it's inlined in generated .c files)
+	  modify liblcm/lcm_coretypes.h to not require C99 modify
+	  lcmgen/emit_c to not require C99 in generated .c files update
+	  svn-ignore create lcmgen-test directory. should eventually
+	  contain unit tests for lcmgen added Ed, myself to po/Makevars
 	  copyright
-	* [r30]
-	  lcm-logger/Makefile.am,
-	  lcm-logger/glib_util.c,
-	  lcm-logger/glib_util.h,
-	  lcm-logger/lcm_logger.c,
-	  lcm-python/eventlog.c,
-	  lcm-python/module.c,
-	  lcm-python/pyeventlog.c,
-	  lcm-python/pylc.c,
-	  lcm-python/pylc.h,
-	  lcm-python/pylcm.c,
-	  lcm-python/pylcm.h,
-	  lcm-python/setup.py,
-	  liblcm-test/Makefile.am,
-	  liblcm-test/lc_example.1,
-	  liblcm-test/lc_example.c,
-	  liblcm-test/lc_seq_check.c,
-	  liblcm-test/lc_sink.1,
-	  liblcm-test/lc_sink.c,
-	  liblcm-test/lc_source.1,
-	  liblcm-test/lc_source.c,
-	  liblcm-test/lc_tester.1,
-	  liblcm-test/lc_tester.c,
-	  liblcm-test/lcm_example.1,
-	  liblcm-test/lcm_example.c,
-	  liblcm-test/lcm_seq_check.c,
-	  liblcm-test/lcm_sink.1,
-	  liblcm-test/lcm_sink.c,
-	  liblcm-test/lcm_source.1,
-	  liblcm-test/lcm_source.c,
-	  liblcm-test/lcm_tester.1,
-	  liblcm-test/lcm_tester.c,
-	  liblcm/dbg.h,
-	  liblcm/lc.c,
-	  liblcm/lc.h,
-	  liblcm/ringbuffer.c,
-	  liblcm/ringbuffer.h:
-	  LC
-	  -->
-	  LCM
-	  rename. should
-	  have
-	  gotten
-	  most
-	  of
-	  them. renamed
-	  lc_t
-	  to
-	  lcm_t,
-	  try
-	  to
-	  remove
-	  all
-	  traces
-	  of
-	  original
-	  LC
-	  namespace updated
-	  liblcm
-	  and
-	  python
-	  bindings have
-	  not
-	  yet
-	  touched
-	  java
-	* [r29]
-	  Makefile.am,
-	  configure.in,
-	  lcm-logger/Makefile.am,
-	  lcm-logger/glib_util.c,
-	  lcm-logger/glib_util.h,
-	  lcm-logger/lcm_logger.c:
-	  fixed
-	  broken
-	  autotools
-	  scripts
-	  restored
-	  accidentally
-	  deleted
-	  logger
-	  files
-	* [r28]
-	  README,
-	  c,
-	  c_test,
-	  lcm-java,
-	  lcm-logger,
-	  lcm-logger/Makefile.am,
-	  lcm-logger/glib_util.c,
-	  lcm-logger/glib_util.h,
-	  lcm-logger/lcm_logger.c,
-	  lcm-python,
-	  lcmtypes,
-	  liblcm,
-	  liblcm-test,
-	  logger:
-	  reorganized
-	  directory
-	  structure
-	  (again)
-	  moved
-	  lcm-python
-	  into
-	  trunk
-	  moved
-	  lcm-java
-	  into
-	  trunk
-	  renamed
-	  trunk/c
-	  to
-	  trunk/liblcm
-	  renamed
-	  trunk/logger
-	  to
-	  trunk/lcm-logger
-	  renamed
-	  trunk/c_test
-	  to
-	  trunk/liblcm-test
-	* [r26]
-	  java:
-	  rename
-	  python-lcm
-	  to
-	  lcm-python
-	  move
-	  trunk/java
-	  to
-	  lcm-java
-	  add
-	  debian
-	  packaging
-	  directory
-	  structure,
-	  some
-	  skeleton
+	* [r30] lcm-logger/Makefile.am, lcm-logger/glib_util.c,
+	  lcm-logger/glib_util.h, lcm-logger/lcm_logger.c,
+	  lcm-python/eventlog.c, lcm-python/module.c,
+	  lcm-python/pyeventlog.c, lcm-python/pylc.c, lcm-python/pylc.h,
+	  lcm-python/pylcm.c, lcm-python/pylcm.h, lcm-python/setup.py,
+	  liblcm-test/Makefile.am, liblcm-test/lc_example.1,
+	  liblcm-test/lc_example.c, liblcm-test/lc_seq_check.c,
+	  liblcm-test/lc_sink.1, liblcm-test/lc_sink.c,
+	  liblcm-test/lc_source.1, liblcm-test/lc_source.c,
+	  liblcm-test/lc_tester.1, liblcm-test/lc_tester.c,
+	  liblcm-test/lcm_example.1, liblcm-test/lcm_example.c,
+	  liblcm-test/lcm_seq_check.c, liblcm-test/lcm_sink.1,
+	  liblcm-test/lcm_sink.c, liblcm-test/lcm_source.1,
+	  liblcm-test/lcm_source.c, liblcm-test/lcm_tester.1,
+	  liblcm-test/lcm_tester.c, liblcm/dbg.h, liblcm/lc.c, liblcm/lc.h,
+	  liblcm/ringbuffer.c, liblcm/ringbuffer.h: LC --> LCM rename.
+	  should have gotten most of them. renamed lc_t to lcm_t, try to
+	  remove all traces of original LC namespace updated liblcm and
+	  python bindings have not yet touched java
+	* [r29] Makefile.am, configure.in, lcm-logger/Makefile.am,
+	  lcm-logger/glib_util.c, lcm-logger/glib_util.h,
+	  lcm-logger/lcm_logger.c: fixed broken autotools scripts restored
+	  accidentally deleted logger files
+	* [r28] README, c, c_test, lcm-java, lcm-logger,
+	  lcm-logger/Makefile.am, lcm-logger/glib_util.c,
+	  lcm-logger/glib_util.h, lcm-logger/lcm_logger.c, lcm-python,
+	  lcmtypes, liblcm, liblcm-test, logger: reorganized directory
+	  structure (again) moved lcm-python into trunk moved lcm-java into
+	  trunk renamed trunk/c to trunk/liblcm renamed trunk/logger to
+	  trunk/lcm-logger renamed trunk/c_test to trunk/liblcm-test
+	* [r26] java: rename python-lcm to lcm-python move trunk/java to
+	  lcm-java add debian packaging directory structure, some skeleton
 	  files
 
 2007-12-13  ashuang
 
-	* [r25]
-	  c_test/lc_example.1,
-	  c_test/lc_sink.1,
-	  c_test/lc_source.1,
-	  c_test/lc_tester.1,
-	  lcmgen/Makefile.am,
-	  lcmgen/lcmgen.1:
-	  add
-	  man
-	  page
-	  for
-	  lcmgen
-	  update
-	  manpages
-	  in
-	  c_test
-	  (LC
-	  -->
-	  LCM)
-	* [r24]
-	  logger:
-	  update
-	  svn:ignore
-	* [r23]
-	  AUTHORS,
-	  Makefile.am,
-	  configure.in,
-	  logger,
-	  logger/Makefile.am,
-	  logger/glib_util.c,
-	  logger/glib_util.h,
-	  logger/lcm_logger.c:
-	  add
-	  logger
-	  (rename
-	  to
-	  lcm_logger)
-	* [r22]
-	  c,
-	  c/Makefile.am,
-	  c/eventlog.c,
-	  c/eventlog.h,
-	  c/ioutils.h,
-	  c/lc.pc.in,
-	  c/lcm.h,
-	  c/lcm.pc.in,
-	  c_test/Makefile.am,
-	  configure.in:
-	  add
-	  eventlog
-	  into
-	  trunk/c,
-	  prefix
-	  everything
-	  with
-	  lcm_
-	  (e.g.
-	  lcm_eventlog_t)
-	  rename
-	  liblc.so
-	  ->
-	  liblcm.so,
-	  change
-	  pkgconfig
-	  files,
-	  bundle
-	  eventlog
-	  in
-	  same
-	  library
-	  as
-	  lc
-	* [r20]
-	  c,
-	  c/Makefile.am,
-	  c/lc.pc.in,
-	  c/liblc.pc.in,
-	  configure.in,
-	  python:
-	  add
-	  python-lcm
-	  remove
-	  trunk/python
-	  directory
-	  (make
-	  python-lcm
-	  a
-	  separate
-	  release)
-	* [r19]
-	  Makefile.am,
-	  c,
-	  c/Makefile.am,
-	  c/dbg.h,
-	  c/lc.c,
-	  c/lc.h,
-	  c/liblc.pc.in,
-	  c/ringbuffer.c,
-	  c/ringbuffer.h,
-	  c_test,
-	  c_test/Makefile.am,
-	  c_test/lc_example.1,
-	  c_test/lc_example.c,
-	  c_test/lc_seq_check.c,
-	  c_test/lc_sink.1,
-	  c_test/lc_sink.c,
-	  c_test/lc_source.1,
-	  c_test/lc_source.c,
-	  c_test/lc_tester.1,
-	  c_test/lc_tester.c,
-	  configure.in:
-	  added
-	  C
-	  implementation
-	  of
-	  LC
-	  liblc
-	  files
-	  are
-	  in
-	  c/
-	  LC
-	  tests
-	  and
-	  example
-	  code
-	  are
-	  in
-	  c_test/
-	* [r18]
-	  lcmgen/Makefile,
-	  lcmgen/emit_python.c,
-	  lcmgen/main.c:
-	  remove
-	  lcmgen
-	  hand-generated
-	  Makefile -
-	  to
-	  generate
-	  Makefile
-	  from
-	  fresh
-	  svn
-	  checkout: $
-	  cd
-	  trunk $
-	  autoreconf
-	  -i $
-	  ./configure
-	  add
-	  namespacing
-	  support
-	  to
-	  emit_python
-	  fix
-	  typos
+	* [r25] c_test/lc_example.1, c_test/lc_sink.1, c_test/lc_source.1,
+	  c_test/lc_tester.1, lcmgen/Makefile.am, lcmgen/lcmgen.1: add man
+	  page for lcmgen update manpages in c_test (LC --> LCM)
+	* [r24] logger: update svn:ignore
+	* [r23] AUTHORS, Makefile.am, configure.in, logger,
+	  logger/Makefile.am, logger/glib_util.c, logger/glib_util.h,
+	  logger/lcm_logger.c: add logger (rename to lcm_logger)
+	* [r22] c, c/Makefile.am, c/eventlog.c, c/eventlog.h, c/ioutils.h,
+	  c/lc.pc.in, c/lcm.h, c/lcm.pc.in, c_test/Makefile.am,
+	  configure.in: add eventlog into trunk/c, prefix everything with
+	  lcm_ (e.g. lcm_eventlog_t) rename liblc.so -> liblcm.so, change
+	  pkgconfig files, bundle eventlog in same library as lc
+	* [r20] c, c/Makefile.am, c/lc.pc.in, c/liblc.pc.in, configure.in,
+	  python: add python-lcm remove trunk/python directory (make
+	  python-lcm a separate release)
+	* [r19] Makefile.am, c, c/Makefile.am, c/dbg.h, c/lc.c, c/lc.h,
+	  c/liblc.pc.in, c/ringbuffer.c, c/ringbuffer.h, c_test,
+	  c_test/Makefile.am, c_test/lc_example.1, c_test/lc_example.c,
+	  c_test/lc_seq_check.c, c_test/lc_sink.1, c_test/lc_sink.c,
+	  c_test/lc_source.1, c_test/lc_source.c, c_test/lc_tester.1,
+	  c_test/lc_tester.c, configure.in: added C implementation of LC
+	  liblc files are in c/ LC tests and example code are in c_test/
+	* [r18] lcmgen/Makefile, lcmgen/emit_python.c, lcmgen/main.c:
+	  remove lcmgen hand-generated Makefile - to generate Makefile from
+	  fresh svn checkout: $ cd trunk $ autoreconf -i $ ./configure add
+	  namespacing support to emit_python fix typos
 
 2007-12-06  ashuang
 
-	* [r17]
-	  .,
-	  ChangeLog,
-	  INSTALL,
-	  Makefile.am,
-	  NEWS,
-	  configure.in,
-	  lcmgen,
-	  lcmgen/Makefile,
-	  lcmgen/Makefile.am,
-	  m4,
-	  m4/Makefile.am,
-	  po,
-	  po/Makevars,
-	  po/POTFILES.in:
-	  first
-	  attempt
-	  at
-	  autotoolizing
+	* [r17] ., ChangeLog, INSTALL, Makefile.am, NEWS, configure.in,
+	  lcmgen, lcmgen/Makefile, lcmgen/Makefile.am, m4, m4/Makefile.am,
+	  po, po/Makevars, po/POTFILES.in: first attempt at autotoolizing
 	  lcmgen
 
 2007-12-05  edwinolson
 
-	* [r16]
-	  java/src/lcm/util/BufferedRandomAccessFile.java:
-	  silence
-	  deprecation
-	  warning
+	* [r16] java/src/lcm/util/BufferedRandomAccessFile.java: silence
+	  deprecation warning
 
 2007-12-03  edwinolson
 
-	* [r15]
-	  java/build.xml,
-	  lcmtypes/pose_t.lcm:
-	  add
-	  pose_t,
-	  fix
-	  logger
-	  in
-	  build.xml
-	* [r14]
-	  java/src/lcm/log,
-	  java/src/lcm/logging,
+	* [r15] java/build.xml, lcmtypes/pose_t.lcm: add pose_t, fix logger
+	  in build.xml
+	* [r14] java/src/lcm/log, java/src/lcm/logging,
 	  java/src/lcm/logging/JScrubber.java,
 	  java/src/lcm/logging/JScrubberListener.java,
 	  java/src/lcm/logging/Log.java,
 	  java/src/lcm/logging/LogDiagnostic.java,
-	  java/src/lcm/logging/LogPlayer.java:
-	  rename
-	* [r13]
-	  java/src/lcm/log/JScrubber.java,
+	  java/src/lcm/logging/LogPlayer.java: rename
+	* [r13] java/src/lcm/log/JScrubber.java,
 	  java/src/lcm/log/JScrubberListener.java,
-	  java/src/lcm/log/Log.java,
-	  java/src/lcm/log/LogDiagnostic.java,
-	  java/src/lcm/log/LogPlayer.java:
-	  temporary
-	* [r12]
-	  java/build.xml,
-	  java/gen-lcmtypes.sh,
+	  java/src/lcm/log/Log.java, java/src/lcm/log/LogDiagnostic.java,
+	  java/src/lcm/log/LogPlayer.java: temporary
+	* [r12] java/build.xml, java/gen-lcmtypes.sh,
 	  java/src/lcm/lcspy/LaserPlugin.java,
 	  java/src/lcm/lcspy/RadarPluginRaw.java,
 	  java/src/lcm/lcspy/VideoPlugin.java,
 	  java/src/lcm/log/LogDiagnostic.java,
-	  java/src/lcm/log/LogPlayer.java,
-	  lcmgen/emit_java.c,
-	  lcmgen/lcmgen.c,
-	  lcmgen/lcmgen.h,
-	  lcmgen/main.c,
-	  lcmtypes/canbus_list_t.lcm,
-	  lcmtypes/canbus_t.lcm,
-	  lcmtypes/image_t.lcm,
-	  lcmtypes/laser_t.lcm:
-	  get
-	  java
-	  build
-	  up
-	  and
+	  java/src/lcm/log/LogPlayer.java, lcmgen/emit_java.c,
+	  lcmgen/lcmgen.c, lcmgen/lcmgen.h, lcmgen/main.c,
+	  lcmtypes/canbus_list_t.lcm, lcmtypes/canbus_t.lcm,
+	  lcmtypes/image_t.lcm, lcmtypes/laser_t.lcm: get java build up and
 	  running
-	* [r11]
-	  lcmgen/emit_java.c,
-	  lcmgen/lcmgen.c:
-	  lcmgen
-	  java
-	  package
+	* [r11] lcmgen/emit_java.c, lcmgen/lcmgen.c: lcmgen java package
 	  support
-	* [r10]
-	  java/gen-lcmtypes.sh,
-	  java/src/lcm/lc/LC.java,
+	* [r10] java/gen-lcmtypes.sh, java/src/lcm/lc/LC.java,
 	  java/src/lcm/lc/LCEncodable.java,
 	  java/src/lcm/lc/LCSubscriber.java,
 	  java/src/lcm/lcspy/ChannelData.java,
@@ -4734,150 +1600,51 @@
 	  java/src/lcm/lcspy/VideoPlugin.java,
 	  java/src/lcm/log/JScrubber.java,
 	  java/src/lcm/log/JScrubberListener.java,
-	  java/src/lcm/log/Log.java,
-	  java/src/lcm/log/LogDiagnostic.java,
-	  java/src/lcm/log/LogPlayer.java,
-	  java/src/lcm/util,
+	  java/src/lcm/log/Log.java, java/src/lcm/log/LogDiagnostic.java,
+	  java/src/lcm/log/LogPlayer.java, java/src/lcm/util,
 	  java/src/lcm/util/BufferedRandomAccessFile.java,
 	  java/src/lcm/util/ColorMapper.java,
 	  java/src/lcm/util/JImage.java,
 	  java/src/lcm/util/ParameterGUI.java,
 	  java/src/lcm/util/ParameterListener.java,
-	  java/src/lcm/util/TableSorter.java,
-	  lcmgen/Makefile,
-	  lcmgen/emit_c.c,
-	  lcmgen/emit_java.c,
-	  lcmgen/lcm_lib.h,
-	  lcmgen/lcmgen.c,
-	  lcmgen/lcmgen.h,
-	  lcmgen/sprintfalloc.c,
-	  lcmgen/sprintfalloc.h,
-	  lcmtypes/laser_t.lcm:
-	  lcmgen
-	  working
-	  on
-	  namespace,
-	  importing
-	  more
-	  java
-	  stuff
+	  java/src/lcm/util/TableSorter.java, lcmgen/Makefile,
+	  lcmgen/emit_c.c, lcmgen/emit_java.c, lcmgen/lcm_lib.h,
+	  lcmgen/lcmgen.c, lcmgen/lcmgen.h, lcmgen/sprintfalloc.c,
+	  lcmgen/sprintfalloc.h, lcmtypes/laser_t.lcm: lcmgen working on
+	  namespace, importing more java stuff
 
 2007-12-01  edwinolson
 
-	* [r9]
-	  lcmgen/lcm_lib.h:
-	  make
-	  underlying
-	  hash
-	  of
-	  primitive
-	  types
+	* [r9] lcmgen/lcm_lib.h: make underlying hash of primitive types
 	  different
-	* [r8]
-	  lcmgen/Makefile,
-	  lcmgen/emit_c.c,
-	  lcmgen/emit_java.c,
-	  lcmgen/emit_python.c,
-	  lcmgen/lcmgen.c,
-	  lcmgen/lcmgen.h,
-	  lcmgen/main.c,
-	  lcmgen/tokenize.h:
-	  begin
-	  work
-	  to
-	  support
-	  namespaces
-	  in
-	  lcmgen
-	* [r7]
-	  README,
-	  java/build,
-	  java/build.xml,
-	  java/gen-lcmtypes.sh,
-	  java/src/lcm,
-	  java/src/lcm/lc,
-	  java/src/lcm/lcmtypes,
-	  java/src/lcm/lcspy,
-	  java/src/lcm/log:
-	  setting
-	  up
-	  tree
-	* [r6]
-	  branches,
-	  tags,
-	  trunk,
-	  www:
-	  reorganize
-	* [r5]
-	  java,
-	  trunk/java:
-	  reorganize
-	* [r4]
-	  AUTHORS,
-	  COPYING,
-	  README,
-	  c,
-	  docs,
-	  lcmgen,
-	  lcmtypes,
-	  python,
-	  trunk/AUTHORS,
-	  trunk/COPYING,
-	  trunk/README,
-	  trunk/docs,
-	  trunk/lcmgen,
-	  trunk/lcmtypes,
-	  trunk/python,
-	  trunk/src:
-	  reorganize
-	* [r3]
-	  trunk/README,
-	  trunk/java/src,
-	  trunk/lcmgen/Makefile,
-	  trunk/lcmgen/main.c,
-	  trunk/lcmgen/tokenize.c,
-	  trunk/lcmgen/tokenize.h,
-	  trunk/lcmtypes,
-	  trunk/lcmtypes/laser_t.lcm:
-	  some
-	  reorganization
-	* [r2]
-	  branches,
-	  tags,
-	  trunk,
-	  trunk/AUTHORS,
-	  trunk/COPYING,
-	  trunk/README,
-	  trunk/docs,
-	  trunk/java,
-	  trunk/lcmgen,
-	  trunk/lcmgen/Makefile,
-	  trunk/lcmgen/TODO,
-	  trunk/lcmgen/doc.txt,
-	  trunk/lcmgen/emit_c.c,
-	  trunk/lcmgen/emit_java.c,
-	  trunk/lcmgen/emit_python.c,
-	  trunk/lcmgen/getopt.c,
-	  trunk/lcmgen/getopt.h,
-	  trunk/lcmgen/lcm_lc.h,
-	  trunk/lcmgen/lcm_lib.h,
-	  trunk/lcmgen/lcmgen.h,
-	  trunk/lcmgen/main.c,
-	  trunk/lcmgen/tokenize.c,
-	  trunk/lcmgen/tokenize.h,
-	  trunk/python,
-	  trunk/src,
-	  www:
-	  initial
-	  commit
-	  of
-	  lcmgen
+	* [r8] lcmgen/Makefile, lcmgen/emit_c.c, lcmgen/emit_java.c,
+	  lcmgen/emit_python.c, lcmgen/lcmgen.c, lcmgen/lcmgen.h,
+	  lcmgen/main.c, lcmgen/tokenize.h: begin work to support
+	  namespaces in lcmgen
+	* [r7] README, java/build, java/build.xml, java/gen-lcmtypes.sh,
+	  java/src/lcm, java/src/lcm/lc, java/src/lcm/lcmtypes,
+	  java/src/lcm/lcspy, java/src/lcm/log: setting up tree
+	* [r6] branches, tags, trunk, www: reorganize
+	* [r5] java, trunk/java: reorganize
+	* [r4] AUTHORS, COPYING, README, c, docs, lcmgen, lcmtypes, python,
+	  trunk/AUTHORS, trunk/COPYING, trunk/README, trunk/docs,
+	  trunk/lcmgen, trunk/lcmtypes, trunk/python, trunk/src: reorganize
+	* [r3] trunk/README, trunk/java/src, trunk/lcmgen/Makefile,
+	  trunk/lcmgen/main.c, trunk/lcmgen/tokenize.c,
+	  trunk/lcmgen/tokenize.h, trunk/lcmtypes,
+	  trunk/lcmtypes/laser_t.lcm: some reorganization
+	* [r2] branches, tags, trunk, trunk/AUTHORS, trunk/COPYING,
+	  trunk/README, trunk/docs, trunk/java, trunk/lcmgen,
+	  trunk/lcmgen/Makefile, trunk/lcmgen/TODO, trunk/lcmgen/doc.txt,
+	  trunk/lcmgen/emit_c.c, trunk/lcmgen/emit_java.c,
+	  trunk/lcmgen/emit_python.c, trunk/lcmgen/getopt.c,
+	  trunk/lcmgen/getopt.h, trunk/lcmgen/lcm_lc.h,
+	  trunk/lcmgen/lcm_lib.h, trunk/lcmgen/lcmgen.h,
+	  trunk/lcmgen/main.c, trunk/lcmgen/tokenize.c,
+	  trunk/lcmgen/tokenize.h, trunk/python, trunk/src, www: initial
+	  commit of lcmgen
 
 2007-11-14  
 
-	* [r1]
-	  .:
-	  Initial
-	  directory
-	  structure.
+	* [r1] .: Initial directory structure.
 
