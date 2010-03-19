@@ -86,6 +86,8 @@ public class UDPMulticastProvider implements Provider
         }
     }
 
+    public void unsubscribe(String channel) { }
+
     public synchronized void close()
     {
         if (null != reader) {

@@ -42,9 +42,10 @@ public class TCPService
     public void relay(byte channel[], byte data[])
     {
         // synchronously send to all clients.
+        String chanstr = new String(channel);
         synchronized(clients) {
             for (ClientThread client : clients) {
-                client.send(channel, data);
+                client.send(chanstr, channel, data);
             }
         }
     }
@@ -75,6 +76,18 @@ public class TCPService
         DataInputStream ins;
         DataOutputStream outs;
 
+        class SubscriptionRecord
+        {
+            String  regex;
+            Pattern pat;
+            SubscriptionRecord(String regex) {
+                this.regex = regex;
+                this.pat = Pattern.compile(regex);
+            }
+        }
+
+        ArrayList<SubscriptionRecord> subscriptions = new ArrayList<SubscriptionRecord>();
+
         public ClientThread(Socket sock) throws IOException
         {
             this.sock = sock;
@@ -94,7 +107,6 @@ public class TCPService
                 while (true) {
                     int type = ins.readInt();
                     if (type == TCPProvider.MESSAGE_TYPE_PUBLISH) {
-
                         int channellen = ins.readInt();
                         byte channel[] = new byte[channellen];
                         ins.readFully(channel);
@@ -106,6 +118,22 @@ public class TCPService
                         TCPService.this.relay(channel, data);
 
                         bytesCount += channellen + datalen + 8;
+                    } else if(type == TCPProvider.MESSAGE_TYPE_SUBSCRIBE) {
+                        int channellen = ins.readInt();
+                        byte channel[] = new byte[channellen];
+                        ins.readFully(channel);
+                        subscriptions.add(new SubscriptionRecord(new String(channel)));
+                    } else if(type == TCPProvider.MESSAGE_TYPE_UNSUBSCRIBE) {
+                        int channellen = ins.readInt();
+                        byte channel[] = new byte[channellen];
+                        ins.readFully(channel);
+                        String re = new String(channel);
+                        for(int i=0, n=subscriptions.size(); i<n; i++) {
+                            if(subscriptions.get(i).regex.equals(re)) {
+                                subscriptions.remove(i);
+                                break;
+                            }
+                        }
                     }
                 }
             } catch (IOException ex) {
@@ -123,15 +151,20 @@ public class TCPService
             }
         }
 
-        public synchronized void send(byte channel[], byte data[])
+        public synchronized void send(String chanstr, byte channel[], byte data[])
         {
             try {
-                outs.writeInt(TCPProvider.MESSAGE_TYPE_PUBLISH);
-                outs.writeInt(channel.length);
-                outs.write(channel);
-                outs.writeInt(data.length);
-                outs.write(data);
-                outs.flush();
+                for(SubscriptionRecord sr : subscriptions) {
+                    if(sr.pat.matcher(chanstr).matches()) {
+                        outs.writeInt(TCPProvider.MESSAGE_TYPE_PUBLISH);
+                        outs.writeInt(channel.length);
+                        outs.write(channel);
+                        outs.writeInt(data.length);
+                        outs.write(data);
+                        outs.flush();
+                        return;
+                    }
+                }
             } catch (IOException ex) {
             }
         }

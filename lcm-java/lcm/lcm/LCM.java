@@ -167,7 +167,10 @@ public class LCM
     public void unsubscribe(String regex, LCMSubscriber sub) {
         if (this.closed) throw new IllegalStateException();
 
-        // TODO: need providers to unsubscribe?
+        synchronized(this) {
+            for (Provider p : providers)
+                p.unsubscribe (regex);
+        }
 
         // TODO: providers don't seem to use anything beyond first channel
 

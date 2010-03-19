@@ -31,6 +31,8 @@ public class TCPProvider implements Provider
     public static final int MAGIC_CLIENT = 0x287617fb; // first word sent by client
     public static final int VERSION = 0x0100;    // what version do we implement?
     public static final int MESSAGE_TYPE_PUBLISH = 1;
+    public static final int MESSAGE_TYPE_SUBSCRIBE = 2;
+    public static final int MESSAGE_TYPE_UNSUBSCRIBE = 3;
 
     public TCPProvider(LCM lcm, URLParser up) throws IOException
     {
@@ -64,9 +66,65 @@ public class TCPProvider implements Provider
         }
     }
 
+    private void sockWriteAndFlush(byte[] b)
+    {
+        // try to send message on socket. If the socket is not
+        // connected, we'll simply fail. The readerthread is
+        // responsible for maintaining a connection to the hub.
+        OutputStream sockOuts = reader.getOutputStream();
+        if (sockOuts != null) {
+            try {
+                sockOuts.write(b);
+                sockOuts.flush();
+            } catch (IOException ex) {
+            }
+        }
+    }
+
     public synchronized void subscribe(String channel)
     {
-        // to-do.
+        byte[] channel_bytes;
+        try {
+            channel_bytes = channel.getBytes("US-ASCII");
+        } catch(UnsupportedEncodingException ex) {
+            System.err.println("lcm.TCPProvider: Bad channel name" + channel);
+            return;
+        }
+
+        try {
+            ByteArrayOutputStream bouts = new ByteArrayOutputStream(channel.length() + 8);
+            DataOutputStream outs = new DataOutputStream(bouts);
+
+            outs.writeInt(MESSAGE_TYPE_SUBSCRIBE);
+            outs.writeInt(channel_bytes.length);
+            outs.write(channel_bytes, 0, channel_bytes.length);
+
+            sockWriteAndFlush(bouts.toByteArray());
+        } catch (IOException ex) {
+        }
+    }
+
+    public synchronized void unsubscribe(String channel)
+    {
+        byte[] channel_bytes;
+        try {
+            channel_bytes = channel.getBytes("US-ASCII");
+        } catch(UnsupportedEncodingException ex) {
+            System.err.println("lcm.TCPProvider: Bad channel name" + channel);
+            return;
+        }
+
+        try {
+            ByteArrayOutputStream bouts = new ByteArrayOutputStream(channel.length() + 8);
+            DataOutputStream outs = new DataOutputStream(bouts);
+
+            outs.writeInt(MESSAGE_TYPE_UNSUBSCRIBE);
+            outs.writeInt(channel_bytes.length);
+            outs.write(channel_bytes, 0, channel_bytes.length);
+
+            sockWriteAndFlush(bouts.toByteArray());
+        } catch (IOException ex) {
+        }
     }
 
     public synchronized void close()
@@ -107,19 +165,7 @@ public class TCPProvider implements Provider
         outs.writeInt(length);
         outs.write(data, offset, length);
 
-        byte[] b = bouts.toByteArray();
-
-        // try to send message on socket. If the socket is not
-        // connected, we'll simply fail. The readerthread is
-        // responsible for maintaining a connection to the hub.
-        OutputStream sockOuts = reader.getOutputStream();
-        if (sockOuts != null) {
-            try {
-                sockOuts.write(b);
-                sockOuts.flush();
-            } catch (IOException ex) {
-            }
-        }
+        sockWriteAndFlush(bouts.toByteArray());
     }
 
     class ReaderThread extends Thread

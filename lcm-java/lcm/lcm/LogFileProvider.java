@@ -71,6 +71,7 @@ public class LogFileProvider implements Provider
     }
 
     public synchronized void subscribe(String channel) { }
+    public void unsubscribe(String channel) { }
 
     public synchronized void close() {
         if (reader != null) {
