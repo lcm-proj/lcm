@@ -235,6 +235,26 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath=".\lcm_tcpq.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\lcm_udp.c"
 				>
 				<FileConfiguration

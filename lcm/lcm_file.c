@@ -329,12 +329,13 @@ void
 lcm_logprov_provider_init (GPtrArray * providers)
 {
 // Microsoft VS compiler issues. Can't do this statically
-	logprov_vtable.create     = lcm_logprov_create;
-    logprov_vtable.destroy    = lcm_logprov_destroy;
-    logprov_vtable.subscribe  = NULL;
-    logprov_vtable.publish    = lcm_logprov_publish;
-    logprov_vtable.handle     = lcm_logprov_handle;
-    logprov_vtable.get_fileno = lcm_logprov_get_fileno;
+	logprov_vtable.create      = lcm_logprov_create;
+    logprov_vtable.destroy     = lcm_logprov_destroy;
+    logprov_vtable.subscribe   = NULL;
+    logprov_vtable.unsubscribe = NULL;
+    logprov_vtable.publish     = lcm_logprov_publish;
+    logprov_vtable.handle      = lcm_logprov_handle;
+    logprov_vtable.get_fileno  = lcm_logprov_get_fileno;
 
 	logprov_info.name = "file";
     logprov_info.vtable = &logprov_vtable;

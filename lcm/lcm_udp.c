@@ -1516,12 +1516,13 @@ lcm_udpm_provider_init (GPtrArray * providers)
 {
 // Because of Microsoft Visual Studio compiler
 // difficulties, do this now, not statically
-    udpm_vtable.create     = lcm_udpm_create;
-    udpm_vtable.destroy    = lcm_udpm_destroy;
-    udpm_vtable.subscribe  = lcm_udpm_subscribe;
-    udpm_vtable.publish    = lcm_udpm_publish;
-    udpm_vtable.handle     = lcm_udpm_handle;
-    udpm_vtable.get_fileno = lcm_udpm_get_fileno;
+    udpm_vtable.create      = lcm_udpm_create;
+    udpm_vtable.destroy     = lcm_udpm_destroy;
+    udpm_vtable.subscribe   = lcm_udpm_subscribe;
+    udpm_vtable.unsubscribe = NULL;
+    udpm_vtable.publish     = lcm_udpm_publish;
+    udpm_vtable.handle      = lcm_udpm_handle;
+    udpm_vtable.get_fileno  = lcm_udpm_get_fileno;
 
     udpm_info.name = "udpm";
     udpm_info.vtable = &udpm_vtable;

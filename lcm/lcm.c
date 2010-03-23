@@ -57,10 +57,9 @@ struct map_callback_data
     lcm_subscription_t *h;
 };
 
-extern void
-lcm_udpm_provider_init (GPtrArray * providers);
-extern void
-lcm_logprov_provider_init (GPtrArray * providers);
+extern void lcm_udpm_provider_init (GPtrArray * providers);
+extern void lcm_logprov_provider_init (GPtrArray * providers);
+extern void lcm_tcpq_provider_init (GPtrArray * providers);
 
 lcm_t * 
 lcm_create (const char *url)
@@ -86,6 +85,7 @@ lcm_create (const char *url)
     // initialize the list of providers
     lcm_udpm_provider_init (providers);
     lcm_logprov_provider_init (providers);
+    lcm_tcpq_provider_init (providers);
     if (providers->len == 0) {
         fprintf (stderr, "Error: no LCM providers found\n");
         goto fail;
@@ -324,6 +324,10 @@ lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *h)
 
     // remove the handler from the master list
     int foundit = g_ptr_array_remove(lcm->handlers_all, h);
+
+    if (lcm->provider && lcm->vtable->unsubscribe) {
+        lcm->vtable->unsubscribe(lcm->provider, h->channel);
+    }
 
     if (foundit) {
         // remove the handler from all the lists in the hash table

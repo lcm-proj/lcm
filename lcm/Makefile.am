@@ -9,6 +9,7 @@ liblcm_la_SOURCES = \
 	lcm.h \
 	lcm_udp.c \
 	lcm_file.c \
+	lcm_tcpq.c \
 	ringbuffer.c \
 	ringbuffer.h \
 	eventlog.c \
