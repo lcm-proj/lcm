@@ -1,3 +1,12 @@
+??? ??, ????
+============
+
+ Release 0.4.2:
+
+ lcm-gen
+ - (Windows) generate lcm-gen.exe, not lcmgen.exe
+ - (Windows, Java) fix pathname bug
+
 Mar 11, 2010
 ============
 
