@@ -32,7 +32,7 @@ static char *dots_to_slashes(const char *s)
 
     for (char *t=p; *t!=0; t++)
         if (*t == '.')
-            *t = '/';
+            *t = G_DIR_SEPARATOR;
 
     return p;
 }
@@ -40,7 +40,9 @@ static char *dots_to_slashes(const char *s)
 static void make_dirs_for_file(const char *path)
 {
 #ifdef WIN32
-    g_mkdir_with_parents(path, 0755);
+    char *dirname = g_path_get_dirname(path);
+    g_mkdir_with_parents(dirname, 0755);
+    g_free(dirname);
 #else
     int len = strlen(path);
     for (int i = 0; i < len; i++) {
@@ -276,7 +278,7 @@ int emit_java(lcmgen_t *lcm)
             make_dirs_for_file(path);
 
         FILE *f = fopen(path, "w");
-        if (f==NULL)
+        if (f==NULL) 
             return -1;
 
         emit(0, "/* LCM type definition class file\n"
