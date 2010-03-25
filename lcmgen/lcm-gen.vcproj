@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="lcmgen"
+	Name="lcm-gen"
 	ProjectGUID="{4D2C4E6A-E658-480A-988A-B9CDF786D60F}"
-	RootNamespace="lcmgen"
+	RootNamespace="lcm-gen"
 	Keyword="Win32Proj"
 	>
 	<Platforms>

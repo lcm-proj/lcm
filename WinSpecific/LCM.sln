@@ -6,7 +6,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm", "..\lcm\lcm.vcproj", 
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcmgen", "..\lcmgen\lcmgen.vcproj", "{4D2C4E6A-E658-480A-988A-B9CDF786D60F}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm-gen", "..\lcmgen\lcm-gen.vcproj", "{4D2C4E6A-E658-480A-988A-B9CDF786D60F}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
