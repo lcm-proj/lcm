@@ -167,7 +167,7 @@ int emit_java(lcmgen_t *lcm)
         const char *classname = make_fqn(lcm, le->enumname->lctypename);
         char *path = sprintfalloc("%s%s%s.java",
                                   getopt_get_string(lcm->gopt, "jpath"),
-                                  strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
+                                  strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? G_DIR_SEPARATOR_S : "",
                                   dots_to_slashes(classname));
 
         if (!lcm_needs_generation(lcm, le->lcmfile, path))
@@ -268,7 +268,7 @@ int emit_java(lcmgen_t *lcm)
         const char *classname = make_fqn(lcm, lr->structname->lctypename);
         char *path = sprintfalloc("%s%s%s.java",
                                   getopt_get_string(lcm->gopt, "jpath"),
-                                  strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? "/" : "",
+                                  strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? G_DIR_SEPARATOR_S : "",
                                   dots_to_slashes(classname));
 
         if (!lcm_needs_generation(lcm, lr->lcmfile, path))
