@@ -21,7 +21,7 @@ Step 0:
   $ lcm-gen -j ../types/example_t.lcm
   Notice: enclosing LCM types without package into java namespace 'lcmtypes'.
 
-  $ javac lcmtypes/*.java
+  $ javac -cp /path/to/lcm.jar lcmtypes/*.java
 
   $ jar cf my_types.jar lcmtypes/*.class
 
