@@ -127,6 +127,25 @@ static void make_accessor(lcm_member_t *lm, const char *obj, char *s)
         pos += sprintf(&s[pos],"[%c]", 'a'+d);
 }
 
+static int struct_has_string_member(lcm_struct_t *lr) 
+{
+    for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+        if(!strcmp("string", lm->type->lctypename))
+            return 1;
+    }
+    return 0;
+}
+
+static const char * dim_size_prefix(const char *dim_size) {
+    char *eptr = NULL;
+    strtol(dim_size, &eptr, 0);
+    if(*eptr == '\0')
+        return "";
+    else
+        return "this.";
+}
+
 int emit_java(lcmgen_t *lcm)
 {
     GHashTable *type_table = g_hash_table_new(g_str_hash, g_str_equal);
@@ -413,7 +432,8 @@ int emit_java(lcmgen_t *lcm)
 
         emit(1,"public void _encodeRecursive(DataOutput outs) throws IOException");
         emit(1,"{");
-        emit(2, "byte[] __strbuf = null;");
+        if(struct_has_string_member(lr))
+            emit(2, "byte[] __strbuf = null;");
         char accessor[1024];
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
@@ -423,7 +443,8 @@ int emit_java(lcmgen_t *lcm)
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
-                emit(2+i, "for (int %c = 0; %c < %s; %c++) {", 'a'+i, 'a'+i, dim->size, 'a'+i);
+                emit(2+i, "for (int %c = 0; %c < %s%s; %c++) {", 
+                        'a'+i, 'a'+i, dim_size_prefix(dim->size), dim->size, 'a'+i);
             }
 
             emit_start(2 + g_ptr_array_size(lm->dimensions),"");
@@ -434,7 +455,7 @@ int emit_java(lcmgen_t *lcm)
             emit_end(" ");
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
-                emit(2 + g_ptr_array_size(lm->dimensions) - 1, "}");
+                emit(2 + g_ptr_array_size(lm->dimensions) - i - 1, "}");
             }
             emit(0," ");
         }
@@ -469,7 +490,8 @@ int emit_java(lcmgen_t *lcm)
 
         emit(1,"public void _decodeRecursive(DataInput ins) throws IOException");
         emit(1,"{");
-        emit(2,     "byte[] __strbuf = null;");
+        if(struct_has_string_member(lr))
+            emit(2, "byte[] __strbuf = null;");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
             primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
@@ -495,7 +517,8 @@ int emit_java(lcmgen_t *lcm)
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
-                emit(2+i, "for (int %c = 0; %c < %s; %c++) {", 'a'+i, 'a'+i, dim->size, 'a'+i);
+                emit(2+i, "for (int %c = 0; %c < %s%s; %c++) {", 
+                        'a'+i, 'a'+i, dim_size_prefix(dim->size), dim->size, 'a'+i);
             }
 
             emit_start(2 + g_ptr_array_size(lm->dimensions),"");
@@ -507,7 +530,7 @@ int emit_java(lcmgen_t *lcm)
             emit_end("");
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
-                emit(2 + g_ptr_array_size(lm->dimensions) - 1, "}");
+                emit(2 + g_ptr_array_size(lm->dimensions) - i - 1, "}");
             }
 
             emit(0," ");
@@ -548,7 +571,8 @@ int emit_java(lcmgen_t *lcm)
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
-                emit(2+i, "for (int %c = 0; %c < %s; %c++) {", 'a'+i, 'a'+i, dim->size, 'a'+i);
+                emit(2+i, "for (int %c = 0; %c < %s%s; %c++) {", 
+                        'a'+i, 'a'+i, dim_size_prefix(dim->size), dim->size, 'a'+i);
             }
 
             if (pinfo != NULL) {
@@ -570,7 +594,7 @@ int emit_java(lcmgen_t *lcm)
             }
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
-                emit(2 + g_ptr_array_size(lm->dimensions) - 1, "}");
+                emit(2 + g_ptr_array_size(lm->dimensions) - i - 1, "}");
             }
 
             emit(0," ");
