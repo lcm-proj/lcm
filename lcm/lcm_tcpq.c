@@ -22,7 +22,7 @@
 
 #define MAGIC_SERVER 0x287617fa      // first word sent by server
 #define MAGIC_CLIENT 0x287617fb      // first word sent by client
-#define VERSION 0x0100               // what version do we implement?
+#define PROTOCOL_VERSION 0x0100               // what version do we implement?
 #define MESSAGE_TYPE_PUBLISH     1
 #define MESSAGE_TYPE_SUBSCRIBE   2
 #define MESSAGE_TYPE_UNSUBSCRIBE 3
@@ -154,7 +154,7 @@ _connect_to_server(lcm_tcpq_t *self)
 	}
 
     if(_send_uint32(self->socket, MAGIC_CLIENT) ||
-       _send_uint32(self->socket, VERSION)) {
+       _send_uint32(self->socket, PROTOCOL_VERSION)) {
         goto fail;
     }
 
