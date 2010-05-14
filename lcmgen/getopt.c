@@ -194,7 +194,7 @@ int getopt_was_specified(getopt_t *gopt, const char *lname)
 {
    getopt_option_t *goo = (getopt_option_t*) g_hash_table_lookup(gopt->lopts, lname);
     if (goo == NULL)
-        return NULL;
+        return 0;
 
     return goo->was_specified;
 

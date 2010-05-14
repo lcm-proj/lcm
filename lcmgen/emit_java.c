@@ -139,7 +139,8 @@ static int struct_has_string_member(lcm_struct_t *lr)
 
 static const char * dim_size_prefix(const char *dim_size) {
     char *eptr = NULL;
-    strtol(dim_size, &eptr, 0);
+    long asdf = strtol(dim_size, &eptr, 0);
+    (void) asdf;  // suppress compiler warnings
     if(*eptr == '\0')
         return "";
     else
