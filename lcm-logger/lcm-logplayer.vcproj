@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\WinSpecific;..\lcm;..\WinSpecific\getopt;"
+				AdditionalIncludeDirectories="..\WinSpecific\include;..\WinSpecific\getopt;..\WinSpecific"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"

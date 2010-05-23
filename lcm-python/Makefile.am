@@ -1,4 +1,3 @@
-if HAVE_PYTHON
 INCLUDES = $(PYTHON_INCLUDES)
 pylcmexec_PYTHON = \
     lcm/__init__.py
@@ -20,7 +19,5 @@ _lcm_la_LDFLAGS = -module -avoid-version
 
 _lcm_la_LIBADD = ../lcm/liblcm.la
 _lcm_la_CFLAGS = -I$(top_srcdir)
-
-endif
 
 EXTRA_DIST = setup.py

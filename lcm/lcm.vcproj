@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\WinSpecific;&quot;$(GLIB_PATH)\include\glib-2.0&quot;;&quot;$(GLIB_PATH)\lib\glib-2.0\include&quot;"
+				AdditionalIncludeDirectories="..\WinSpecific;..\WinSpecific\include;&quot;$(GLIB_PATH)\include\glib-2.0&quot;;&quot;$(GLIB_PATH)\lib\glib-2.0\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -216,6 +216,26 @@
 			</File>
 			<File
 				RelativePath=".\lcm_file.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\lcm_tcpq.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"

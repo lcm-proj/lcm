@@ -74,10 +74,10 @@ static const char *map_type_name(const char *t)
 
 void setup_c_options(getopt_t *gopt)
 {
-//    getopt_add_bool   (gopt, 0, "clcfuncs",   0,        "Add LC publish/subscribe convenience function");
     getopt_add_string (gopt, 0, "c-cpath",    ".",      "Location for .c files");
     getopt_add_string (gopt, 0, "c-hpath",    ".",      "Location for .h files");
     getopt_add_string (gopt, 0, "cinclude",   "",       "Generated #include lines reference this folder");
+    getopt_add_bool   (gopt, 0, "c-no-pubsub",   0,     "Do not generate _publish and _subscribe functions");
 }
 
 /** Emit output that is common to every header file **/
@@ -92,9 +92,9 @@ static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
 //            getopt_get_string(lcm->gopt, "cinclude"),
 //            strlen(getopt_get_string(lcm->gopt, "cinclude"))>0 ? "/" : "");
 
-//    if( getopt_get_bool(lcm->gopt, "clcfuncs") ) {
+    if(!getopt_get_bool(lcm->gopt, "c-no-pubsub")) {
         fprintf(f, "#include <lcm/lcm.h>\n");
-//    }
+    }
     fprintf(f, "\n");
         
     fprintf(f, "#ifndef _%s_h\n", name);
@@ -189,7 +189,7 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     g_free(tn_upper);
 }
 
-static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
 {
     char *tn = ls->structname->lctypename;
     char *tn_ = dots_to_underscores(tn);
@@ -198,23 +198,25 @@ static void emit_header_prototypes(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"void %s_destroy(%s *p);", tn_, tn_);
     emit(0,"");
 
-//        if (getopt_get_bool(lcmgen->gopt, "clcfuncs")) {
-    emit(0,"typedef struct _%s_subscription_t %s_subscription_t;", tn_, tn_);
-    emit(0,"typedef void (*%s_handler_t)(const lcm_recv_buf_t *rbuf, \n"
-           "             const char *channel, const %s *msg, void *user);", 
-           tn_, tn_);
-    emit(0,"");
-    emit(0,"int %s_publish(lcm_t *lcm, const char *channel, const %s *p);", tn_, tn_);
-    emit(0,"%s_subscription_t* %s_subscribe (lcm_t *lcm, const char *channel, %s_handler_t f, void *userdata);", tn_, tn_, tn_);
-    emit(0,"int %s_unsubscribe(lcm_t *lcm, %s_subscription_t* hid);", tn_, tn_);
-    emit(0,"");
+    if (!getopt_get_bool(lcmgen->gopt, "c-no-pubsub")) {
+        emit(0,"typedef struct _%s_subscription_t %s_subscription_t;", tn_, tn_);
+        emit(0,"typedef void(*%s_handler_t)(const lcm_recv_buf_t *rbuf, \n"
+               "             const char *channel, const %s *msg, void *user);", 
+               tn_, tn_);
+        emit(0,"");
+        emit(0,"int %s_publish(lcm_t *lcm, const char *channel, const %s *p);", tn_, tn_);
+        emit(0,"%s_subscription_t* %s_subscribe(lcm_t *lcm, const char *channel, %s_handler_t f, void *userdata);", 
+                tn_, tn_, tn_);
+        emit(0,"int %s_unsubscribe(lcm_t *lcm, %s_subscription_t* hid);", tn_, tn_);
+        emit(0,"");
+    }
+
     emit(0,"int  %s_encode(void *buf, int offset, int maxlen, const %s *p);", tn_, tn_);
     emit(0,"int  %s_decode(const void *buf, int offset, int maxlen, %s *p);", tn_, tn_);
     emit(0,"int  %s_decode_cleanup(%s *p);", tn_, tn_);
     emit(0,"int  %s_encoded_size(const %s *p);", tn_, tn_);
     emit(0,"");
-// }
-//
+
     emit(0,"// LCM support functions. Users should not call these");
     emit(0,"int64_t __%s_get_hash(void);", tn_);
     emit(0,"int64_t __%s_hash_recursive(const __lcm_hash_ptr *p);", tn_);
@@ -939,10 +941,10 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *lr)
         emit_c_copy(lcmgen, f, lr);
         emit_c_destroy(lcmgen, f, lr);
         
-//        if( getopt_get_bool(lcmgen->gopt, "clcfuncs" ) ) {
+        if(!getopt_get_bool(lcmgen->gopt, "c-no-pubsub")) {
             emit_c_struct_publish(lcmgen, f, lr );
             emit_c_struct_subscribe(lcmgen, f, lr );
-//        }
+        }
         
         fclose(f);
     }

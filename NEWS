@@ -1,3 +1,57 @@
+??? ??, ????
+============
+
+ Release 0.4.2:
+
+ lcm-gen
+ - (Windows) generate lcm-gen.exe, not lcmgen.exe
+ - (Windows, Java) fix pathname bug
+
+Mar 11, 2010
+============
+
+ Release 0.4.1:
+
+ This is a bugfix and maintenance release.
+
+ Updated documentation for single host use, to describe how to use LCM over the
+ localhost interface.
+
+ C:
+ - fix leaking file descriptors
+ - fix OS/X compile bug for lcm-example (missing #include <sys/select.h>)
+ - simplify project include path requirements in Windows
+ - update error checking, messages for single host use (Linux)
+
+ Java:
+ - expose encode/decode methods for advanced users
+
+ lcm-gen:
+  - (C) add --c-no-pubsub command line option to lcm-gen to generate C language
+    bindings without a dependency on liblcm (useful if only the marshalling
+    aspect of LCM is desired).
+  - (Java) don't complain about default pkg if one is specified on cmd line.
+
+ lcm-spy:
+ - remember last message on each channel so that object panels open up
+   immediately.
+ - put frames in front when double clicked.
+
+ Other:
+ - remove manpage-specific GFDL copyright notices.
+
+Jan 6, 2010
+===========
+
+ Release 0.4.0:
+
+ This release introduces experimental support for Microsft Visual C++, provided
+ by Randy Sybel.  The LCM C bindings and examples should now compile with MSVC.
+ Bug reports and patches are greatly appreciated.
+
+ There are also a number of bugfixes in the Java port.  See the changelog for
+ details.
+
 Aug 14, 2009
 ============
 

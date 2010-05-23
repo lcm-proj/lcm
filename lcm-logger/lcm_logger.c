@@ -326,7 +326,7 @@ int main(int argc, char *argv[])
     if (! g_file_test (dirpart, G_FILE_TEST_IS_DIR)) {
         mkdir_with_parents (dirpart, 0755);
     }
-    free (dirpart);
+    g_free (dirpart);
 
     fprintf (stderr, "Opening log file \"%s\"\n", logger.fname);
 

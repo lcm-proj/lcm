@@ -100,7 +100,7 @@ int main(int argc, char **argv)
         memset(data, 0, packet_sz);
     }
 
-    lcm_t *lcm = lcm_create("udpm://239.255.76.67:7667?ttl=1");
+    lcm_t *lcm = lcm_create(NULL);
     if (! lcm) {
         fprintf(stderr, "couldn't allocate lcm_t\n");
         return 1;

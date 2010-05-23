@@ -1,13 +1,13 @@
 package lcm.lcm;
 
-/** A provider implements a communications modality for LC. (I.e., a
+/** A provider implements a communications modality for LCM. (I.e., a
     URL handler.)
-    
-    The provider should call LC.receiveMessage() upon receipt of a
-    message. LC.receiveMessage() is thread-safe and can be called from
+
+    The provider should call LCM.receiveMessage() upon receipt of a
+    message. LCM.receiveMessage() is thread-safe and can be called from
     any thread.
 
- **/
+**/
 public interface Provider
 {
     /**
@@ -23,6 +23,11 @@ public interface Provider
        with additional hosts.
     **/
     public void subscribe(String channel);
+
+    /**
+       unsubscribe() will be called when a channel subscription is cancelled.
+    **/
+    public void unsubscribe(String channel);
 
     /**
      * close() will be called when the application no longer requires the provider

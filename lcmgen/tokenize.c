@@ -18,7 +18,7 @@ static const char op_chars[] = "!~<>=&|^%*+=/";
 
 static char unescape(char c)
 {
-    switch (c) 
+    switch (c)
     {
     case 'n':
         return 10;
@@ -67,7 +67,7 @@ void tokenize_destroy(tokenize_t *t)
     free(t);
 }
 
-/** get the next character, counting line numbers, and columns. **/ 
+/** get the next character, counting line numbers, and columns. **/
 int tokenize_next_char(tokenize_t *t)
 {
     // return an unget() char if one is stored
@@ -80,9 +80,9 @@ int tokenize_next_char(tokenize_t *t)
 
         return t->current_char;
     }
-    
+
     // otherwise, get a character from the input stream
-    
+
     // read the next line if we're out of data
     if (t->buffer_column == t->buffer_len) {
         // reminder: fgets will store the newline in the buffer.
@@ -92,7 +92,7 @@ int tokenize_next_char(tokenize_t *t)
         t->buffer_line++;
         t->buffer_column = 0;
     }
-    
+
     t->current_char = t->buffer[t->buffer_column];
     t->current_line = t->buffer_line;
     t->current_column = t->buffer_column;
@@ -128,7 +128,7 @@ int tokenize_next_internal(tokenize_t *t)
 skip_white:
     c = tokenize_next_char(t);
 
-    if (c == EOF) 
+    if (c == EOF)
         return EOF;
 
     if (isspace(c))
@@ -167,7 +167,10 @@ skip_white:
                 return -2;
 
             c = tokenize_next_char(t);
-            
+
+            if (c == EOF)
+                goto end_tok;
+
             if (escape) {
                 escape = 0;
                 c = unescape(c);
@@ -207,7 +210,7 @@ in_tok:
         return -2;
 
     t->token[pos++] = c;
-    
+
     if (strchr(single_char_toks,c)!=NULL)
         goto end_tok;
 
@@ -217,7 +220,7 @@ in_tok:
         tokenize_ungetc(t, c);
         goto end_tok;
     }
-    
+
     if (!isspace(c) && c != EOF)
         goto in_tok;
 

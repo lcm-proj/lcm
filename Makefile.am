@@ -1,10 +1,17 @@
-SUBDIRS = m4 lcm liblcm-test lcmgen lcm-logger lcm-java lcm-python \
-	docs po m4macros
+SUBDIRS = m4 lcm liblcm-test lcmgen lcm-logger docs po m4macros
+
+if HAVE_JAVA
+SUBDIRS += lcm-java
+endif
+
+if HAVE_PYTHON
+SUBDIRS += lcm-python
+endif
 
 if WITH_EXAMPLES
 SUBDIRS += examples
 endif
 
-#EXTRA_DIST = @PACKAGE@.spec
+EXTRA_DIST = WinSpecific
 ACLOCAL_AMFLAGS = -I m4
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc

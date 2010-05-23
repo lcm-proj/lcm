@@ -13,8 +13,10 @@ struct getopt_option
 
 	char *help;
 	int type;
-	
+
 	int spacer;
+
+    int was_specified; // did the user actually specify this option (as opposed to a default value)?
 };
 
 typedef struct getopt getopt_t;
@@ -42,5 +44,6 @@ char *getopt_get_string(getopt_t *gopt, const char *lname);
 int getopt_get_int(getopt_t *gopt, const char *lname);
 int getopt_get_bool(getopt_t *gopt, const char *lname);
 
+int getopt_was_specified(getopt_t *gopt, const char *lname);
 
 #endif

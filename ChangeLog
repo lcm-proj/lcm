@@ -1,3 +1,238 @@
+2010-03-13  edwinolson
+
+	* [r449] lcmgen/tokenize.c: tokenizer.c: catch EOF during string
+	  literal
+
+2010-03-13  ashuang
+
+	* [r448] lcm-java/lcm-logplayer-gui.1, lcm-java/lcm-spy.1,
+	  lcm-logger/lcm-logger.1, lcm-logger/lcm-logplayer.1,
+	  lcmgen/lcm-gen.1, liblcm-test/lcm-example.1,
+	  liblcm-test/lcm-sink.1, liblcm-test/lcm-source.1,
+	  liblcm-test/lcm-tester.1: remove manpage-specific GFDL copyright
+	  notices.
+
+2010-03-04  edwinolson
+
+	* [r447] examples/java/example_t_demo/Listener.java,
+	  examples/java/example_t_demo/SendMessage.java,
+	  examples/java/temperature_demo_java/TemperatureDisplay.java,
+	  examples/java/temperature_demo_java/TemperatureTransmit.java,
+	  lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/LCMDataInputStream.java,
+	  lcm-java/lcm/lcm/LCMDataOutputStream.java,
+	  lcm-java/lcm/lcm/LogFileProvider.java,
+	  lcm-java/lcm/lcm/MessageAggregator.java,
+	  lcm-java/lcm/lcm/Provider.java,
+	  lcm-java/lcm/lcm/TCPProvider.java,
+	  lcm-java/lcm/lcm/TCPService.java,
+	  lcm-java/lcm/lcm/UDPMulticastProvider.java,
+	  lcm-java/lcm/lcm/URLParser.java,
+	  lcm-java/lcm/logging/JScrubber.java,
+	  lcm-java/lcm/logging/Log.java,
+	  lcm-java/lcm/logging/LogDiagnostic.java,
+	  lcm-java/lcm/logging/LogPlayer.java,
+	  lcm-java/lcm/spy/LCMHandlerDatabase.java,
+	  lcm-java/lcm/spy/ObjectPanel.java, lcm-java/lcm/spy/Spy.java,
+	  lcm-java/lcm/spy/SpyPlugin.java,
+	  lcm-java/lcm/test/SlowLCMSubscriber.java,
+	  lcm-java/lcm/util/BufferedRandomAccessFile.java,
+	  lcm-java/lcm/util/ClassDiscoverer.java,
+	  lcm-java/lcm/util/ColorMapper.java,
+	  lcm-java/lcm/util/JImage.java,
+	  lcm-java/lcm/util/ParameterGUI.java,
+	  lcm-java/lcm/util/TableSorter.java: untabify all java sources,
+	  make conform to standard java whitespace style. No code changes
+
+2010-03-03  edwinolson
+
+	* [r446] lcm-java/lcm/spy/Spy.java: Make lcm-spy put frames in
+	  front when double clicked
+
+2010-03-02  edwinolson
+
+	* [r445] lcm-java/lcm/spy/ChannelData.java,
+	  lcm-java/lcm/spy/Spy.java: make lcm spy remember last message on
+	  each channel so that object panels open up immediately
+
+2010-03-02  ashuang
+
+	* [r444] WinSpecific/README.txt: update winspecific readme
+
+2010-03-01  ashuang
+
+	* [r443] WinSpecific/README.txt, WinSpecific/WindowsPorting.txt,
+	  WinSpecific/include, WinSpecific/include/inttypes.h,
+	  WinSpecific/include/lcm, WinSpecific/include/lcm/eventlog.h,
+	  WinSpecific/include/lcm/lcm.h,
+	  WinSpecific/include/lcm/lcm_coretypes.h,
+	  WinSpecific/include/stdint.h, WinSpecific/inttypes.h,
+	  WinSpecific/stdint.h, lcm-logger/lcm-logger.vcproj,
+	  lcm-logger/lcm-logplayer.vcproj, lcm/lcm.vcproj,
+	  lcmgen/lcmgen.vcproj, liblcm-test/lcm-example.vcproj,
+	  liblcm-test/lcm-logfilter.vcproj, liblcm-test/lcm-sink.vcproj,
+	  liblcm-test/lcm-source.vcproj, liblcm-test/lcm-tester.vcproj:
+	  simplify project include path requirements in Windows
+	* [r442] lcm/lcm_udp.c: windows closesocket bugfix
+
+2010-03-01  edwinolson
+
+	* [r441] lcm-java/lcm/lcm/LCMEncodable.java: expose recursive
+	  encode/decode methods for advanced users
+
+2010-02-28  ashuang
+
+	* [r440] lcm-python/pylcm.c, lcm/lcm_file.c, lcm/lcm_udp.c,
+	  liblcm-test/lcm-example.c: add #include <sys/select.h> where
+	  select is used (closes: #17)
+
+2010-02-28  edwinolson
+
+	* [r439] lcmgen/emit_java.c, lcmgen/getopt.c, lcmgen/getopt.h:
+	  inhibit lcmgen -j complaining about default pkg if one is
+	  specified on command line. Oh, and removing trailing
+	  whitespace... arg.
+
+2010-02-09  ashuang
+
+	* [r438] README, lcm/eventlog.h: update documentation
+
+2010-01-29  ashuang
+
+	* [r437] lcmgen/emit_c.c: add --c-no-pubsub cmdline option to
+	  lcm-gen
+
+2010-01-28  ashuang
+
+	* [r436] lcm/lcm_udp.c: fix leaking file descriptors: use close(),
+	  closesocket() instead of shutdown()
+
+2010-01-09  ashuang
+
+	* [r435] docs/reference/multicast-setup.sgml: update documentation
+	  for single host use
+	* [r434] lcm/lcm_udp.c: update linux error checking when no route
+	  available.
+
+2010-01-06  ashuang
+
+	* [r431] ChangeLog, Makefile.am, NEWS, configure.in,
+	  docs/release_checklist, lcm-logger/Makefile.am,
+	  lcm-python/setup.py, lcm/Makefile.am, lcmgen/Makefile.am,
+	  liblcm-test/Makefile.am: release 0.4.0
+
+2009-12-22  ashuang
+
+	* [r430] lcm/lcm.h: update documentation
+
+2009-12-04  ashuang
+
+	* [r428] lcm-logger/glib_util.c, lcm-logger/lcm_logger.c,
+	  lcm/eventlog.c: commit randy's latest patch (windows bugfixes)
+
+2009-12-02  ashuang
+
+	* [r427] lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/TCPProvider.java: "tcp://" --> "tcpq://" change
+	  a couple instances of System.out --> System.err
+
+2009-11-23  ashuang
+
+	* [r422] lcm-java/lcm/lcm/LCMDataOutputStream.java: restore
+	  accidental rollback of r420
+
+2009-11-16  ashuang
+
+	* [r421] WinSpecific, WinSpecific/LCM.sln, WinSpecific/WinLCM.cpp,
+	  WinSpecific/WinPorting.cpp, WinSpecific/WinPorting.h,
+	  WinSpecific/WindowsPorting.txt, WinSpecific/getopt,
+	  WinSpecific/getopt/getopt.c, WinSpecific/getopt/getopt.h,
+	  WinSpecific/getopt/getopt.vcproj,
+	  WinSpecific/getopt/getopt_long.c,
+	  WinSpecific/getopt/getopt_long.h, WinSpecific/inttypes.h,
+	  WinSpecific/stdint.h, lcm-java/lcm/lcm/LCMDataOutputStream.java,
+	  lcm-logger/glib_util.c, lcm-logger/glib_util.h,
+	  lcm-logger/lcm-logger.vcproj, lcm-logger/lcm-logplayer.vcproj,
+	  lcm-logger/lcm_logger.c, lcm-logger/lcm_logplayer.c, lcm/dbg.h,
+	  lcm/eventlog.c, lcm/eventlog.h, lcm/ioutils.h, lcm/lcm.c,
+	  lcm/lcm.h, lcm/lcm.vcproj, lcm/lcm_file.c, lcm/lcm_internal.h,
+	  lcm/lcm_udp.c, lcm/ringbuffer.c, lcmgen/emit_c.c,
+	  lcmgen/emit_java.c, lcmgen/emit_python.c, lcmgen/getopt.c,
+	  lcmgen/lcmgen.c, lcmgen/lcmgen.h, lcmgen/lcmgen.vcproj,
+	  lcmgen/main.c, lcmgen/sprintfalloc.c, lcmgen/tokenize.c,
+	  liblcm-test/lcm-example.c, liblcm-test/lcm-example.vcproj,
+	  liblcm-test/lcm-logfilter.c, liblcm-test/lcm-logfilter.vcproj,
+	  liblcm-test/lcm-sink.c, liblcm-test/lcm-sink.vcproj,
+	  liblcm-test/lcm-source.c, liblcm-test/lcm-source.vcproj,
+	  liblcm-test/lcm-tester.c, liblcm-test/lcm-tester.vcproj: merge
+	  windows branch into trunk
+
+2009-11-13  edwinolson
+
+	* [r420] lcm-java/lcm/lcm/LCMDataOutputStream.java: fix
+	  lcmdataoutputstream bug in ensureSize
+
+2009-10-21  ashuang
+
+	* [r411] lcm/lcm_udp.c: re-enable accidentally disabled self test
+	* [r410] lcm/lcm_udp.c: replace connect(), writev() with sendmsg
+	  experimenting with multicast on localhost interface (linux)
+
+2009-10-08  ashuang
+
+	* [r409] liblcm-test/lcm-tester.c: fix lcm-tester.c to more
+	  accurately report success
+
+2009-09-30  ashuang
+
+	* [r408] lcm/lcm_file.c, lcm/lcm_internal.h, lcm/lcm_udp.c: add
+	  wrappers around POSIX pipe functions pipe ->
+	  lcm_internal_pipe_create write -> lcm_internal_pipe_write read ->
+	  lcm_internal_pipe_read close -> lcm_internal_pipe_close
+
+2009-09-15  ashuang
+
+	* [r404] lcmgen/emit_java.c: lcm-gen -j: add automatically
+	  generated code warning comment
+
+2009-09-14  ashuang
+
+	* [r403] examples/java/example_t_demo/clean.sh: fix typo in
+	  clean.sh script
+
+2009-09-10  edwinolson
+
+	* [r402] lcm-java/lcm/spy/LCMHandlerDatabase.java,
+	  lcm-java/lcm/spy/Spy.java,
+	  lcm-java/lcm/util/ClassDiscoverer.java: Make ClassDiscoverer more
+	  robust to exceptions by catching everything (including
+	  IncompatibleClassChangeError
+
+2009-09-08  edwinolson
+
+	* [r400] docs/reference/tutorial-java.sgml: one more tutorial
+	  update
+	* [r398] docs/reference/tutorial-java.sgml: improve docs another
+	  hair
+	* [r397] docs/reference/tutorial-java.sgml: update java tutorial to
+	  reflect changes from a few releases back. oops.
+
+2009-08-21  ashuang
+
+	* [r395] configure.in, lcm-python/Makefile.am,
+	  m4/ac_python_devel.m4, m4/python.m4: python build system: use
+	  automake macros from PyGTK project.
+	* [r394] lcm-java/lcm/lcm/MessageAggregator.java: Deque ->
+	  LinkedList
+	* [r393] lcm-java/lcm/lcm/LogFileProvider.java,
+	  lcm-java/lcm/lcm/MessageAggregator.java: MessageAggregator: use
+	  LinkedList instead of ArrayDeque for compatibility with Java 1.5
+	  LogFileProvider: print exception stack trace when caught
+
+2009-08-14  ashuang
+
+	* [r387] ChangeLog, NEWS, configure.in: release 0.3.1
+
 2009-07-28  edwinolson
 
 	* [r386] lcm-java/lcm/logging/Log.java,

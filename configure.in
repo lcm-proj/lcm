@@ -1,14 +1,17 @@
 AC_PREREQ(2.50)
-AC_INIT(lcm/lcm.h)
-AM_CONFIG_HEADER(config.h)
+AC_INIT([lcm], 0.4.1)
+AC_CONFIG_SRCDIR([lcm/lcm.h])
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(lcm, 0.3.1)
+AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CC
 AM_PATH_GLIB_2_0(,,[AC_MSG_ERROR([LCM requires GLib >= 2.0])],gthread)
 AC_PATH_PROGS(JAR, [jar])
 AC_PATH_PROGS(JAVAC, [javac])
+
+dnl enable silent build if possible (automake >= 1.11)
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
 dnl ---------------------------------------------------------------------------
 dnl When making a release:
@@ -20,7 +23,7 @@ dnl  3. If the interface changes consist solely of additions, increment AGE.
 dnl  4. If the interface has removed or changed elements, set AGE to 0.
 dnl ---------------------------------------------------------------------------
 LIBLCM_AGE=0
-LIBLCM_REVISION=8
+LIBLCM_REVISION=10
 LIBLCM_CURRENT=1
 AC_SUBST(LIBLCM_AGE)
 AC_SUBST(LIBLCM_REVISION)

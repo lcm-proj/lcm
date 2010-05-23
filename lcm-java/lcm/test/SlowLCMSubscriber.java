@@ -9,25 +9,25 @@ public class SlowLCMSubscriber implements LCMSubscriber
 
     public SlowLCMSubscriber()
     {
-	try {
-	    lcm = new LCM("tcp://");
-	    lcm.subscribe(".*", this);
-	} catch (IOException ex) {
-	    System.out.println("Ex: "+ex);
-	}
+        try {
+            lcm = new LCM("tcp://");
+            lcm.subscribe(".*", this);
+        } catch (IOException ex) {
+            System.out.println("Ex: "+ex);
+        }
     }
 
     public void messageReceived(LCM lcm, String channel, DataInputStream ins)
     {
-	try {
-	    Thread.sleep(10);
-	} catch (InterruptedException ex) {
-	}
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException ex) {
+        }
     }
 
     public static void main(String args[])
     {
-	new SlowLCMSubscriber();
+        new SlowLCMSubscriber();
     }
 
 }

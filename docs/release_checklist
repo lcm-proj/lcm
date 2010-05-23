@@ -1,29 +1,30 @@
 1.  Update NEWS
 2.  Bump the version number in configure.in at the line:
-      AM_INIT_AUTOMAKE(libcam, x.y.z)
-3.  Update the AGE, REVISION, and CURRENT variables.  See configure.in
+      AM_INIT_AUTOMAKE(lcm, x.y.z)
+3.  Bump the version number in lcm-python/setup.py
+4.  Update the AGE, REVISION, and CURRENT variables.  See configure.in
       comments for details.
-4.  Run 'svn2cl --group-by-day --reparagraph -i' in the top-level dir to
+5.  Run 'svn2cl --group-by-day --reparagraph -i' in the top-level dir to
       generate the ChangeLog file.
-5.  After committing, check out a clean copy of the repository:
+6.  After committing, check out a clean copy of the repository:
       svn co https://lcm.googlecode.com/svn/trunk lcm-rel
-6.  gtkdocize --copy 
-7.  autoreconf -i
-8.  ./configure --enable-gtk-doc
-9.  make; make
-10. make distcheck
-11. Fix any errors that appear in step 10, and repeat as necessary.
-12. Take the resulting tarball, extract it, build it, install it, make sure
+7.  gtkdocize --copy 
+8.  autoreconf -i
+9.  ./configure --enable-gtk-doc
+10. make
+11. make distcheck
+12. Fix any errors that appear in step 10, and repeat as necessary.
+13. Take the resulting tarball, extract it, build it, install it, make sure
       the basic executables run.
-13. Upload the tarball to google code.
-14. Make sure the outstanding changes are commited to SVN.
-15. Create a tag:
+14. Upload the tarball to google code.
+15. Make sure the outstanding changes are commited to SVN.
+16. Create a tag:
       svn copy https://lcm.googlecode.com/svn/trunk https://lcm.googlecode.com/svn/tags/lcm_x_y_z
-16. Copy built docs to www directory:
+17. Copy built docs to www directory:
       cd docs
       make install prefix=/somewhere_temporary
       cp -r /somewhere_temporary/share/gtk-doc/html/lcm www/reference
-17. Update any mime types if necessary:
+18. Update any mime types if necessary:
       svn propset svn:mime-type text/html *.html
-18. Commit the docs
-19. Update the web site
+19. Commit the docs
+20. Update the web site
