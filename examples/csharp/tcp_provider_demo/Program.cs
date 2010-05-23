@@ -18,7 +18,8 @@ namespace LCM.Examples
             try
             {
                 lcm = new LCM.LCM(new string[] { "tcpq://127.0.0.1:7700" });
-
+                // allow the TCP provider reader to connect to the server before the subscription attempt
+                System.Threading.Thread.Sleep(500);
                 lcm.SubscribeAll(new SimpleSubscriber());
 
                 while (true)

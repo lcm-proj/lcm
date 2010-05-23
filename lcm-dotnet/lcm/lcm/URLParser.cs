@@ -144,7 +144,7 @@ namespace LCM.LCM
 			if (args.Length < 1)
 			{
 				string env = Environment.GetEnvironmentVariable("LCM_DEFAULT_URL");
-				if (null != env)
+				if (env != null)
                 {
 					u = new URLParser(env);
                 }

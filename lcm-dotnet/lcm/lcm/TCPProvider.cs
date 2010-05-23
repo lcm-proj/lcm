@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -35,6 +36,8 @@ namespace LCM.LCM
         internal const int MAGIC_CLIENT = 0x287617fb; // first word sent by client
         internal const int VERSION = 0x0100; // what version do we implement?
         internal const int MESSAGE_TYPE_PUBLISH = 1;
+        internal const int MESSAGE_TYPE_SUBSCRIBE = 2;
+        internal const int MESSAGE_TYPE_UNSUBSCRIBE = 3;
 
         /* Properties */
         public System.Net.IPAddress InetAddr
@@ -95,23 +98,105 @@ namespace LCM.LCM
 				}
 				catch (System.Exception ex)
 				{
-					System.Console.Error.WriteLine("Ex: " + ex);
+					Console.Error.WriteLine("Ex: " + ex);
 				}
 			}
 		}
-		
+
         /// <summary>
-        /// Dummy subscribe method
+        /// Try to send message on socket. If the socket is not
+        /// connected, we'll simply fail. The readerthread is
+        /// responsible for maintaining a connection to the hub.
+        /// </summary>
+        /// <param name="b">byte array to write</param>
+        private void SockWriteAndFlush(byte[] b)
+        {
+            Stream sockOuts = reader.OutputStream;
+            if (sockOuts != null)
+            {
+                try
+                {
+                    sockOuts.Write(b, 0, b.Length);
+                    sockOuts.Flush();
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        /// <summary>
+        /// Subscribe method
         /// </summary>
         /// <param name="channel">channel name</param>
 		public virtual void Subscribe(string channel)
 		{
 			lock (this)
-			{
-				// to-do.
+            {
+                byte[] channelBytes;
+                try
+                {
+                    channelBytes = System.Text.Encoding.GetEncoding("US-ASCII").GetBytes(channel);
+                }
+                catch (Exception)
+                {
+                    Console.Error.WriteLine("LCM.TCPProvider: Bad channel name " + channel);
+                    return;
+                }
+
+                try
+                {
+                    MemoryStream bouts = new MemoryStream(channel.Length + 8);
+                    BinaryWriter outs = new BinaryWriter(bouts);
+
+                    outs.Write(MESSAGE_TYPE_SUBSCRIBE);
+                    outs.Write(channelBytes.Length);
+                    outs.Write(channelBytes, 0, channelBytes.Length);
+
+                    SockWriteAndFlush(bouts.ToArray());
+                }
+                catch (IOException)
+                {
+                }
 			}
 		}
 		
+        /// <summary>
+        /// Unsubscribe method
+        /// </summary>
+        /// <param name="channel">channel name</param>
+        public void Unsubscribe(string channel)
+        {
+            lock (this)
+            {
+                byte[] channelBytes;
+                try
+                {
+                    channelBytes = System.Text.Encoding.GetEncoding("US-ASCII").GetBytes(channel);
+                }
+                catch (Exception)
+                {
+                    Console.Error.WriteLine("LCM.TCPProvider: Bad channel name " + channel);
+                    return;
+                }
+
+                try
+                {
+                    MemoryStream bouts = new MemoryStream(channel.Length + 8);
+                    BinaryWriter outs = new BinaryWriter(bouts);
+
+                    outs.Write(MESSAGE_TYPE_UNSUBSCRIBE);
+                    outs.Write(channelBytes.Length);
+                    outs.Write(channelBytes, 0, channelBytes.Length);
+
+                    SockWriteAndFlush(bouts.ToArray());
+                }
+                catch (IOException)
+                {
+                }
+            }
+        }
+
         /// <summary>
         /// Close the TCP provider
         /// </summary>
@@ -119,7 +204,7 @@ namespace LCM.LCM
 		{
 			lock (this)
 			{
-				if (null != reader)
+				if (reader != null)
 				{
 					reader.Close();
 
@@ -153,8 +238,8 @@ namespace LCM.LCM
 			
 			int payload_size = channelBytes.Length + length;
 			
-			System.IO.MemoryStream bouts = new System.IO.MemoryStream(length + channel.Length + 32);
-			System.IO.BinaryWriter outs = new System.IO.BinaryWriter(bouts);
+			MemoryStream bouts = new MemoryStream(length + channel.Length + 32);
+			BinaryWriter outs = new BinaryWriter(bouts);
 			
 			outs.Write(MESSAGE_TYPE_PUBLISH);
 			
@@ -164,36 +249,20 @@ namespace LCM.LCM
 			outs.Write(length);
 			outs.Write(data, offset, length);
 			
-			byte[] b = bouts.ToArray();
-			
-			// try to send message on socket. If the socket is not
-			// connected, we'll simply fail. The readerthread is
-			// responsible for maintaining a connection to the hub.
-			System.IO.Stream sockOuts = reader.OutputStream;
-			if (sockOuts != null)
-			{
-				try
-				{
-					sockOuts.Write(b, 0, b.Length);
-					sockOuts.Flush();
-				}
-				catch (System.IO.IOException)
-				{
-				}
-			}
+			SockWriteAndFlush(bouts.ToArray());
 		}
 
         private class ReaderThread
 		{
             private TcpClient sock;
-            private System.IO.BinaryReader ins;
-            private System.IO.Stream outs;
+            private BinaryReader ins;
+            private Stream outs;
             private bool exit = false;
             private int serverVersion;
             private Thread thread;
             private TCPProvider provider;
 
-            public System.IO.Stream OutputStream
+            public Stream OutputStream
 			{
 				get { return outs; }
 			}
@@ -221,13 +290,13 @@ namespace LCM.LCM
 					try
 					{
                         sock = new System.Net.Sockets.TcpClient(provider.inetAddr.ToString(), provider.inetPort);
-						System.IO.Stream _outs = sock.GetStream();
-						System.IO.BinaryWriter _douts = new System.IO.BinaryWriter(_outs);
+						Stream _outs = sock.GetStream();
+						BinaryWriter _douts = new BinaryWriter(_outs);
 						_douts.Write(TCPProvider.MAGIC_CLIENT);
 						_douts.Write(TCPProvider.VERSION);
 						_douts.Flush();
 						outs = _outs;
-						ins = new System.IO.BinaryReader(new System.IO.BufferedStream(sock.GetStream()));
+						ins = new BinaryReader(new BufferedStream(sock.GetStream()));
 						
 						int magic = ins.ReadInt32();
 						if (magic != TCPProvider.MAGIC_SERVER)
@@ -238,7 +307,7 @@ namespace LCM.LCM
 						
 						serverVersion = ins.ReadInt32();
 					}
-					catch (System.IO.IOException)
+					catch (IOException)
 					{
                         Console.Error.WriteLine("LCM.TCPProvider: Unable to connect to " + provider.inetAddr + ":" + provider.inetPort);
 						TCPProvider.SafeSleep(500);
@@ -265,7 +334,7 @@ namespace LCM.LCM
                             provider.lcm.ReceiveMessage(System.Text.Encoding.GetEncoding("US-ASCII").GetString(channel), data, 0, data.Length);
 						}
 					}
-					catch (System.IO.IOException)
+					catch (IOException)
 					{
 						// exit read loop so we'll create a new connection.
 					}
@@ -278,7 +347,7 @@ namespace LCM.LCM
 				{
 					sock.Close();
 				}
-				catch (System.IO.IOException)
+				catch (IOException)
 				{
 				}
 				
@@ -297,7 +366,7 @@ namespace LCM.LCM
             /// <param name="start">The starting index of the target array.</param>
             /// <param name="count">The maximum number of characters to read from the source Stream.</param>
             /// <returns>The number of characters read. The number will be less than or equal to count depending on the data available in the source Stream. Returns -1 if the end of the stream is reached.</returns>
-            private static int ReadInput(System.IO.Stream sourceStream, byte[] target, int start, int count)
+            private static int ReadInput(Stream sourceStream, byte[] target, int start, int count)
             {
                 // Returns 0 bytes if not enough space in target
                 if (target.Length == 0)

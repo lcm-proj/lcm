@@ -128,6 +128,14 @@ namespace LCM.LCM
 				}
 			}
 		}
+
+        /// <summary>
+        /// Unsubscribe from a channel
+        /// </summary>
+        /// <param name="channel">channel name</param>
+        public void Unsubscribe(String channel)
+        {
+        }
 		
         /// <summary>
         /// Call to close the provider
@@ -333,7 +341,7 @@ namespace LCM.LCM
                 fragBufs.Add(fbuf.from, fbuf);
 			}
 			
-			if (null == fbuf)
+			if (fbuf == null)
 			{
 				// TODO
 				return ;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -60,12 +61,14 @@ namespace LCM.LCM
         /// <param name="channel">channel name</param>
         /// <param name="data">data to be relayed</param>
 		public void Relay(byte[] channel, byte[] data)
-		{
+        {
+            string chanstr = System.Text.Encoding.GetEncoding("US-ASCII").GetString(channel);
+
 			lock (clients)
 			{
 				foreach (ClientThread client in clients)
 				{
-					client.Send(channel, data);
+					client.Send(chanstr, channel, data);
 				}
 			}
 		}
@@ -86,7 +89,7 @@ namespace LCM.LCM
 						clients.Add(client);
 					}
 				}
-				catch (System.IO.IOException)
+				catch (IOException)
 				{
 				}
 			}
@@ -96,17 +99,31 @@ namespace LCM.LCM
         {
             private TCPService service;
             private TcpClient sock;
-            private System.IO.BinaryReader ins;
-            private System.IO.BinaryWriter outs;
+            private BinaryReader ins;
+            private BinaryWriter outs;
             private Thread thread;
+
+            private class SubscriptionRecord
+            {
+                internal string regex;
+                internal Regex pat;
+
+                public SubscriptionRecord(string regex)
+                {
+                    this.regex = regex;
+                    this.pat = new Regex(regex);
+                }
+            }
+
+            List<SubscriptionRecord> subscriptions = new List<SubscriptionRecord>();
 
             public ClientThread(TCPService service, TcpClient sock)
             {
                 this.service = service;
                 this.sock = sock;
 
-                ins = new System.IO.BinaryReader(sock.GetStream());
-                outs = new System.IO.BinaryWriter(sock.GetStream());
+                ins = new BinaryReader(sock.GetStream());
+                outs = new BinaryWriter(sock.GetStream());
 
                 outs.Write(TCPProvider.MAGIC_SERVER);
                 outs.Write(TCPProvider.VERSION);
@@ -124,7 +141,7 @@ namespace LCM.LCM
 
             public void Run()
             {
-                // read messages until something bad happens.	    
+                // read messages until something bad happens.
                 try
                 {
                     while (true)
@@ -132,7 +149,6 @@ namespace LCM.LCM
                         int type = ins.ReadInt32();
                         if (type == TCPProvider.MESSAGE_TYPE_PUBLISH)
                         {
-
                             int channellen = ins.ReadInt32();
                             byte[] channel = new byte[channellen];
                             ReadInput(ins.BaseStream, channel, 0, channel.Length);
@@ -145,9 +161,34 @@ namespace LCM.LCM
 
                             service.bytesCount += channellen + datalen + 8;
                         }
+                        else if (type == TCPProvider.MESSAGE_TYPE_SUBSCRIBE)
+                        {
+                            int channellen = ins.ReadInt32();
+                            byte[] channel = new byte[channellen];
+                            ReadInput(ins.BaseStream, channel, 0, channel.Length);
+
+                            subscriptions.Add(new SubscriptionRecord(
+                                System.Text.Encoding.GetEncoding("US-ASCII").GetString(channel)));
+                        }
+                        else if (type == TCPProvider.MESSAGE_TYPE_UNSUBSCRIBE)
+                        {
+                            int channellen = ins.ReadInt32();
+                            byte[] channel = new byte[channellen];
+                            ReadInput(ins.BaseStream, channel, 0, channel.Length);
+
+                            string re = System.Text.Encoding.GetEncoding("US-ASCII").GetString(channel);
+                            for (int i = 0, n = subscriptions.Count; i < n; i++)
+                            {
+                                if (subscriptions[i].pat.IsMatch(re))
+                                {
+                                    subscriptions.RemoveAt(i);
+                                    break;
+                                }
+                            }
+                        }
                     }
                 }
-                catch (System.IO.IOException)
+                catch (IOException)
                 {
                 }
 
@@ -156,7 +197,7 @@ namespace LCM.LCM
                 {
                     sock.Close();
                 }
-                catch (System.IO.IOException)
+                catch (IOException)
                 {
                 }
 
@@ -166,20 +207,28 @@ namespace LCM.LCM
                 }
             }
 
-            public virtual void Send(byte[] channel, byte[] data)
+            public virtual void Send(string chanstr, byte[] channel, byte[] data)
             {
                 lock (this)
                 {
                     try
                     {
-                        outs.Write(TCPProvider.MESSAGE_TYPE_PUBLISH);
-                        outs.Write(channel.Length);
-                        outs.Write(channel);
-                        outs.Write(data.Length);
-                        outs.Write(data);
-                        outs.Flush();
+                        foreach (SubscriptionRecord sr in subscriptions)
+                        {
+                            if (sr.pat.IsMatch(chanstr))
+                            {
+                                outs.Write(TCPProvider.MESSAGE_TYPE_PUBLISH);
+                                outs.Write(channel.Length);
+                                outs.Write(channel);
+                                outs.Write(data.Length);
+                                outs.Write(data);
+                                outs.Flush();
+
+                                return;
+                            }
+                        }
                     }
-                    catch (System.IO.IOException)
+                    catch (IOException)
                     {
                     }
                 }
@@ -193,21 +242,27 @@ namespace LCM.LCM
 	        /// <param name="start">The starting index of the target array.</param>
 	        /// <param name="count">The maximum number of characters to read from the source Stream.</param>
 	        /// <returns>The number of characters read. The number will be less than or equal to count depending on the data available in the source Stream. Returns -1 if the end of the stream is reached.</returns>
-	        private static int ReadInput(System.IO.Stream sourceStream, byte[] target, int start, int count)
+	        private static int ReadInput(Stream sourceStream, byte[] target, int start, int count)
 	        {
 		        // Returns 0 bytes if not enough space in target
-		        if (target.Length == 0)
-			        return 0;
+                if (target.Length == 0)
+                {
+                    return 0;
+                }
 
 		        byte[] receiver = new byte[target.Length];
-		        int bytesRead   = sourceStream.Read(receiver, start, count);
+		        int bytesRead = sourceStream.Read(receiver, start, count);
 
 		        // Returns -1 if EOF
-		        if (bytesRead == 0)	
-			        return -1;
-                        
-		        for(int i = start; i < start + bytesRead; i++)
-			        target[i] = (byte) receiver[i];
+                if (bytesRead == 0)
+                {
+                    return -1;
+                }
+
+                for (int i = start; i < start + bytesRead; i++)
+                {
+                    target[i] = (byte) receiver[i];
+                }
                         
 		        return bytesRead;
 	        }

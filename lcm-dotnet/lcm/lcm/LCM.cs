@@ -262,6 +262,14 @@ namespace LCM.LCM
                 throw new SystemException();
             }
 			
+            lock (this)
+            {
+                foreach (Provider p in providers)
+                {
+                    p.Unsubscribe(regex);
+                }
+            }
+
 			// TODO: need providers to unsubscribe?
 			// TODO: providers don't seem to use anything beyond first channel
 			

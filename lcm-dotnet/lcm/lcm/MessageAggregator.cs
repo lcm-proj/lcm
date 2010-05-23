@@ -106,39 +106,36 @@ namespace LCM.LCM
 					queueDataSize -= m.Data.Length;
 					return m;
 				}
-            }
 
-            if (timeoutMs == 0)
-            {
-                return null;
-            }
-				
-			try
-			{
-                if (timeoutMs > 0)
+                if (timeoutMs == 0)
                 {
-                    System.Threading.Monitor.Wait(this, TimeSpan.FromMilliseconds(timeoutMs));
+                    return null;
                 }
-                else
-                {
-                    System.Threading.Monitor.Wait(this);
-                }
-					
-                lock (this)
-                {
-					if (messages.Count > 0)
-					{
-						Message m = messages.Dequeue();
-						queueDataSize -= m.Data.Length;
-						return m;
-					}
+    				
+			    try
+			    {
+                    if (timeoutMs > 0)
+                    {
+                        System.Threading.Monitor.Wait(this, TimeSpan.FromMilliseconds(timeoutMs));
+                    }
+                    else
+                    {
+                        System.Threading.Monitor.Wait(this);
+                    }
+
+				    if (messages.Count > 0)
+				    {
+					    Message m = messages.Dequeue();
+					    queueDataSize -= m.Data.Length;
+					    return m;
+				    }
 			    }
-			}
-			catch (System.Threading.ThreadInterruptedException)
-			{
-			}
-			
-			return null;
+			    catch (System.Threading.ThreadInterruptedException)
+			    {
+			    }
+    			
+			    return null;
+            }
 		}
 		
 		/// <summary> Retrieves the next message, waiting if necessary.</summary>

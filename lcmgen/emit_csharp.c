@@ -32,7 +32,7 @@ static char *dots_to_slashes(const char *s)
 
     for (char *t=p; *t!=0; t++)
         if (*t == '.')
-            *t = '/';
+            *t = G_DIR_SEPARATOR;
 
     return p;
 }
@@ -40,7 +40,9 @@ static char *dots_to_slashes(const char *s)
 static void make_dirs_for_file(const char *path)
 {
 #ifdef WIN32
-    g_mkdir_with_parents(path, 0755);
+    char *dirname = g_path_get_dirname(path);
+    g_mkdir_with_parents(dirname, 0755);
+    g_free(dirname);
 #else
     int len = strlen(path);
     for (int i = 0; i < len; i++) {
@@ -90,7 +92,7 @@ const char *make_fqn_csharp(lcmgen_t *lcm, const char *type_name)
     if (strchr(type_name, '.')!=NULL)
         return type_name;
 
-    if (!ndefaultpkg_warned) {
+    if (!ndefaultpkg_warned && !getopt_was_specified(lcm->gopt, "csharp-default-nsp")) {
         printf("Notice: enclosing LCM types without package into C#.NET namespace '%s'.\n", getopt_get_string(lcm->gopt, "csharp-default-nsp"));
         ndefaultpkg_warned = 1;
     }
@@ -123,6 +125,26 @@ static void make_accessor(lcm_member_t *lm, const char *obj, char *s)
     pos += sprintf(s, "%s%s%s", obj, obj[0]==0 ? "" : ".", lm->membername);
     for (int d = 0 ; d < ndim; d++) 
         pos += sprintf(&s[pos],"[%c]", 'a'+d);
+}
+
+static int struct_has_string_member(lcm_struct_t *lr) 
+{
+    for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+        if(!strcmp("string", lm->type->lctypename))
+            return 1;
+    }
+    return 0;
+}
+
+static const char * dim_size_prefix(const char *dim_size) {
+    char *eptr = NULL;
+    long asdf = strtol(dim_size, &eptr, 0);
+    (void) asdf;  // suppress compiler warnings
+    if(*eptr == '\0')
+        return "";
+    else
+        return "this.";
 }
 
 int emit_csharp(lcmgen_t *lcm)
@@ -165,7 +187,7 @@ int emit_csharp(lcmgen_t *lcm)
         const char *classname = make_fqn_csharp(lcm, le->enumname->lctypename);
         char *path = sprintfalloc("%s%s%s.cs", 
                                   getopt_get_string(lcm->gopt, "csharp-path"),
-                                  strlen(getopt_get_string(lcm->gopt, "csharp-path")) > 0 ? "/" : "",
+                                  strlen(getopt_get_string(lcm->gopt, "csharp-path")) > 0 ? G_DIR_SEPARATOR_S : "",
                                   dots_to_slashes(classname));
 
         if (!lcm_needs_generation(lcm, le->lcmfile, path))
@@ -375,7 +397,8 @@ int emit_csharp(lcmgen_t *lcm)
             emit(0, "");
 
         ///////////////// encode //////////////////
-        emit(2, "static %s() {",  lr->structname->shortname);
+        emit(2, "static %s()",  lr->structname->shortname);
+        emit(2, "{");
         emit(3, "LCM_FINGERPRINT = _hashRecursive(new List<String>());");
         emit(2, "}");
         emit(0, " ");
@@ -416,7 +439,8 @@ int emit_csharp(lcmgen_t *lcm)
 
         emit(2,"public void _encodeRecursive(BinaryWriter outs)");
         emit(2,"{");
-        emit(3, "byte[] __strbuf = null;");
+        if(struct_has_string_member(lr))
+            emit(3, "byte[] __strbuf = null;");
         char accessor[1024];
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
@@ -426,7 +450,8 @@ int emit_csharp(lcmgen_t *lcm)
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
-                emit(3+i, "for (int %c = 0; %c < %s; %c++) {", 'a'+i, 'a'+i, dim->size, 'a'+i);
+                emit(3+i, "for (int %c = 0; %c < %s%s; %c++) {", 
+                        'a'+i, 'a'+i, dim_size_prefix(dim->size), dim->size, 'a'+i);
             }
             
             emit_start(3 + g_ptr_array_size(lm->dimensions),"");
@@ -437,8 +462,9 @@ int emit_csharp(lcmgen_t *lcm)
             emit_end(" ");                
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
-                emit(3 + g_ptr_array_size(lm->dimensions) - 1, "}");
+                emit(3 + g_ptr_array_size(lm->dimensions) - i - 1, "}");
             }
+            emit(0," ");
         }
         emit(2,"}");
         emit(0," ");
@@ -469,8 +495,9 @@ int emit_csharp(lcmgen_t *lcm)
         emit(0," ");
 
         emit(2,"public void _decodeRecursive(BinaryReader ins)");
-        emit(2,"{");        
-        emit(3,     "byte[] __strbuf = null;");
+        emit(2,"{");
+        if(struct_has_string_member(lr))
+            emit(3, "byte[] __strbuf = null;");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
             primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
@@ -496,7 +523,8 @@ int emit_csharp(lcmgen_t *lcm)
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
-                emit(3+i, "for (int %c = 0; %c < %s; %c++) {", 'a'+i, 'a'+i, dim->size, 'a'+i);
+                emit(3+i, "for (int %c = 0; %c < %s%s; %c++) {", 
+                        'a'+i, 'a'+i, dim_size_prefix(dim->size), dim->size, 'a'+i);
             }
             
             emit_start(3 + g_ptr_array_size(lm->dimensions),"");
@@ -508,8 +536,10 @@ int emit_csharp(lcmgen_t *lcm)
             emit_end("");
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
-                emit(3 + g_ptr_array_size(lm->dimensions) - 1, "}");
+                emit(3 + g_ptr_array_size(lm->dimensions) - i - 1, "}");
             }
+
+            emit(0," ");
         }
 
         emit(2,"}");
@@ -547,7 +577,8 @@ int emit_csharp(lcmgen_t *lcm)
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
-                emit(3+i, "for (int %c = 0; %c < %s; %c++) {", 'a'+i, 'a'+i, dim->size, 'a'+i);
+                emit(3+i, "for (int %c = 0; %c < %s%s; %c++) {", 
+                        'a'+i, 'a'+i, dim_size_prefix(dim->size), dim->size, 'a'+i);
             }
             
             if (pinfo != NULL) {
@@ -569,7 +600,7 @@ int emit_csharp(lcmgen_t *lcm)
             }
 
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
-                emit(3 + g_ptr_array_size(lm->dimensions) - 1, "}");
+                emit(3 + g_ptr_array_size(lm->dimensions) - i - 1, "}");
             }
 
             emit(0," ");

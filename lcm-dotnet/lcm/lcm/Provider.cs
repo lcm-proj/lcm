@@ -3,12 +3,12 @@ using System;
 namespace LCM.LCM
 {
 	/// <summary>
-    /// A provider implements a communications modality for LC. (I.e., a
+    /// A provider implements a communications modality for LCM. (I.e., a
 	/// URL handler.)
 	/// </summary>
 	/// <summary>
     /// The provider should call LC.receiveMessage() upon receipt of a
-	/// message. LC.receiveMessage() is thread-safe and can be called from
+	/// message. LCM.receiveMessage() is thread-safe and can be called from
 	/// any thread.
 	/// </summary>
 	public interface Provider
@@ -31,7 +31,13 @@ namespace LCM.LCM
 		/// </summary>
         /// <param name="channel">channel name</param>
 		void Subscribe(string channel);
-		
+
+        /// <summary>
+        /// Unsubscribe() will be called when a channel subscription is cancelled.
+        /// </summary>
+        /// <param name="channel">channel name</param>
+        void Unsubscribe(string channel);
+
 		/// <summary>
         /// Close() will be called when the application no longer requires the provider
 		/// and wishes to free the resources used by the provider.  For example,

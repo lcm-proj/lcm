@@ -22,7 +22,10 @@ namespace LCM.Examples
 
                 lcm.SubscribeAll(new SimpleSubscriber());
 
-                while (true) { }
+                while (true)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                }
             }
             catch (Exception ex)
             {
