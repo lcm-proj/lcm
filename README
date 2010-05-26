@@ -1,12 +1,8 @@
----------------
+Lightweight Communications and Marshalling (LCM)
 
-lcmgen       - Parses LCM type specifications, generating language-specific
-               implementations
+LCM is a set of libraries and tools for interprocess communication.  It
+emphasizes simplicity in usage, exhibits high performance under heavy load, and 
+runs on a variety of programming languages and operating systems.
 
-lcm-logger   - Minimalist logging implementation.
-
-lcm          - C runtime implementation of LCM
-
-lcm-java     - Java runtime implementation of LCM, plus logging tools
-
-lcm-python   - Python runtime implementation of LCM
+Documentation can be found in the docs/ directory, or online at
+http://lcm.googlecode.com
