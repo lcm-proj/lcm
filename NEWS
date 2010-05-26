@@ -1,11 +1,36 @@
 ??? ??, ????
 ============
 
- Release 0.4.2:
+ Release 0.5.0:
 
- lcm-gen
- - (Windows) generate lcm-gen.exe, not lcmgen.exe
+ This release introduces experimental support for C# / .NET, provided by 
+ Jan Hrbáček.  Bug reports and patches are greatly appreciated.
+
+ This release also introduces a small python API change, and renames a program
+ in windows.  
+
+ Additional bugfixes are included.
+
+ Windows:
+ - Now builds lcm-gen.exe, not lcmgen.exe
+
+ .NET:
+ - The lcm-dotnet/ directory contains a publish-subscribe library for
+   .NET applications.
+ 
+ lcm-gen:
+ - (C#) A new set of options are available for generating C# bindings
+ - (Python) change __init__.py import statements.  If a package named 'proj'
+   contains the LCM type msg_t, then the __init__.py file now contains:
+     from msg_t import msg_t
+   and the recommended usage pattern is:
+     import proj
+     instance = proj.msg_t()
+   see googlecode issue #21
  - (Windows, Java) fix pathname bug
+
+ Other:
+ - minor build system bugfixes
 
 Mar 11, 2010
 ============
