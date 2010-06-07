@@ -3,7 +3,8 @@ using System.Collections.Generic;
 
 namespace LCM.LCM
 {	
-	/// <summary> Accumulates received LCM messages in a queue.
+	/// <summary>
+    /// Accumulates received LCM messages in a queue.
 	/// <p>
 	/// {@link LCM} normally delivers messages asynchronously by invoking the 
 	/// {@link LCMSubscriber#messageReceived messageReceived} 
@@ -16,15 +17,26 @@ namespace LCM.LCM
 	/// </summary>
 	public class MessageAggregator : LCMSubscriber
     {
-        /// <summary> A received message.</summary>
+        /// <summary>
+        /// A received message.
+        /// </summary>
         public class Message
         {
-            /// <summary> The raw data bytes of the message body.</summary>
+            /// <summary>
+            /// The raw data bytes of the message body.
+            /// </summary>
             public byte[] Data;
 
-            /// <summary> Channel on which the message was received.</summary>
+            /// <summary>
+            /// Channel on which the message was received.
+            /// </summary>
             public string Channel;
 
+            /// <summary>
+            /// Constructor.
+            /// </summary>
+            /// <param name="channel">channel name</param>
+            /// <param name="data">raw data</param>
             public Message(string channel, byte[] data)
             {
                 Data = data;
@@ -37,34 +49,40 @@ namespace LCM.LCM
         private long maxQueueDataSize = 100 * (1 << 20); // 100 megabytes
         private int maxQueueLength = Int32.MaxValue;
 		
-		/// <summary> Retrieves and sets the maximum amount of memory that will be used to store messages.
+		/// <summary>
+        /// Retrieves and sets the maximum amount of memory that will be used to store messages.
 		/// This is an alternative way to limit the messages stored by the
 		/// aggregator.  Messages are discarded oldest-first to ensure that the
 		/// total size of unretrieved messages stays under this limit.
 		/// </summary>
-		/// <param name="val">memory limit, in bytes.
-		/// </param>
+		/// <param name="val">memory limit, in bytes.</param>
 		public long MaxBufferSize
 		{
 			get { lock (this) { return maxQueueDataSize; } }
 			set { lock (this) { maxQueueDataSize = value; } }
 		}
 
-		/// <summary> Retrieves and sets the maximum number of unretrieved message that will be queued up by the aggregator.
-		/// Messages are discarded oldest-first to ensure that the number of unretrieved messages stays under this limit.</summary>
+		/// <summary>
+        /// Retrieves and sets the maximum number of unretrieved message that will be queued up by the aggregator.
+		/// Messages are discarded oldest-first to ensure that the number of unretrieved messages stays under this limit.
+        /// </summary>
 		public int MaxMessages
 		{
 			get { lock (this) { return maxQueueLength; } }
 			set { lock (this) { maxQueueLength = value; } }
         }
 
-        /// <summary> Returns the number of received messages waiting to be retrieved.</summary>
+        /// <summary>
+        /// The number of received messages waiting to be retrieved.
+        /// </summary>
         public int MessagesAvailable
         {
             get { lock (this) { return messages.Count; } }
         }
 
-		/// <summary>Internal method, called by LCM when a message is received.</summary>
+		/// <summary>
+        /// Internal method, called by LCM when a message is received.
+        /// </summary>
 		public void MessageReceived(LCM lcm, string channel, LCMDataInputStream dins)
 		{
 			lock (this)
@@ -91,10 +109,11 @@ namespace LCM.LCM
 			}
 		}
 		
-		/// <summary> Attempt to retrieve the next received LCM message.</summary>
+		/// <summary>
+        /// Attempt to retrieve the next received LCM message.
+        /// </summary>
 		/// <param name="timeout_ms">Max # of milliseconds to wait for a message.  If 0,
-		/// then don't wait. If less than 0, then wait indefinitely.
-		/// </param>
+		/// then don't wait. If less than 0, then wait indefinitely.</param>
 		/// <returns>a Message, or null if no message was received.</returns>
 		public Message GetNextMessage(long timeoutMs)
 		{
@@ -138,7 +157,9 @@ namespace LCM.LCM
             }
 		}
 		
-		/// <summary> Retrieves the next message, waiting if necessary.</summary>
+		/// <summary>
+        /// Retrieves the next message, waiting if necessary.
+        /// </summary>
 		public Message GetNextMessage()
 		{
 		    return GetNextMessage(-1);

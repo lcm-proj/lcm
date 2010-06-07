@@ -17,7 +17,7 @@ namespace LCM.LCM
 		}
 
         /// <summary>
-        /// Get the number of bytes that have been written to the buffer. *
+        /// Get the number of bytes that have been written to the buffer.
         /// </summary>
         public int Length
         {
@@ -116,7 +116,7 @@ namespace LCM.LCM
 		}
 		
 		/// <summary>
-        /// Write a zero-terminated string consisting of 8 bit characters. *
+        /// Write a zero-terminated string consisting of 8 bit characters.
         /// </summary>
 		public void WriteStringZ(string s)
 		{
@@ -162,7 +162,7 @@ namespace LCM.LCM
 		}
 		
 		/// <summary>
-        /// Makes a copy of the internal buffer. *
+        /// Makes a copy of the internal buffer.
         /// </summary>
 		public byte[] ToByteArray()
 		{

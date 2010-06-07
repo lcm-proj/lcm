@@ -26,7 +26,7 @@ namespace LCM.Server
             }
             catch (System.IO.IOException ex)
             {
-                Console.Out.WriteLine("Ex: " + ex);
+                Console.Error.WriteLine("Ex: " + ex);
             }
         }
     }

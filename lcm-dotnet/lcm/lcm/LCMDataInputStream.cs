@@ -3,7 +3,7 @@ using System;
 namespace LCM.LCM
 {	
 	/// <summary>
-    /// Will not throw EOF. *
+    /// Will not throw EOF.
     /// </summary>
 	public sealed class LCMDataInputStream : System.IO.BinaryReader
 	{
@@ -13,7 +13,7 @@ namespace LCM.LCM
         private int endpos; // index of byte after last valid byte
 
 		/// <summary>
-        /// Returns the internal buffer representation. *
+        /// Returns the internal buffer representation.
         /// </summary>
 		public byte[] Buffer
 		{
@@ -21,7 +21,7 @@ namespace LCM.LCM
 		}
 
 		/// <summary>
-        /// Returns the current position in the internal buffer representation. *
+        /// Returns the current position in the internal buffer representation.
         /// </summary>
 		public int BufferOffset
 		{
@@ -163,7 +163,7 @@ namespace LCM.LCM
 		}
 		
 		/// <summary>
-        /// Read a string of 8-bit characters terminated by a zero. The zero is consumed. *
+        /// Read a string of 8-bit characters terminated by a zero. The zero is consumed.
         /// </summary>
 		public string ReadStringZ()
 		{

@@ -7,7 +7,8 @@ using System.Threading;
 
 namespace LCM.LCM
 {
-	/// <summary>LCM provider for the udpm: URL. All messages are broadcast over a
+	/// <summary>
+    /// LCM provider for the udpm: URL. All messages are broadcast over a
 	/// pre-arranged UDP multicast address. Subscription operations are a
 	/// no-op, since all messages are always broadcast.
 	/// 
@@ -261,7 +262,7 @@ namespace LCM.LCM
 			}
 		}
 		
-		public void ReaderThreadRun()
+		private void ReaderThreadRun()
 		{
 			byte[] packetData;
             IPEndPoint from = new IPEndPoint(IPAddress.Any, 0);

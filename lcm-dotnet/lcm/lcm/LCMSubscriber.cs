@@ -3,7 +3,7 @@ using System;
 namespace LCM.LCM
 {
 	/// <summary>
-    /// A class which listens for messages on a particular channel. *
+    /// A class which listens for messages on a particular channel.
     /// </summary>
 	public interface LCMSubscriber
 	{

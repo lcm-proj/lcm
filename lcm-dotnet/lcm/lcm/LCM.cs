@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 namespace LCM.LCM
 {	
 	/// <summary>
-    /// Lightweight Communications and Marshalling C#.NET implementation *
+    /// Lightweight Communications and Marshalling C#.NET implementation
     /// </summary>
 	public class LCM
     {
@@ -55,7 +55,7 @@ namespace LCM.LCM
 		}
 
 		/// <summary>
-        /// Return the number of subscriptions. *
+        /// The number of subscriptions.
         /// </summary>
 		public int NumSubscriptions
 		{
@@ -239,7 +239,10 @@ namespace LCM.LCM
 			}
 		}
 		
-		/// <summary>A convenience function that subscribes to all LCM channels. *</summary>
+		/// <summary>
+        /// A convenience function that subscribes to all LCM channels.
+        /// </summary>
+        /// <param name="sub">subscribing object providing callback</param>
 		public void SubscribeAll(LCMSubscriber sub)
 		{
 			Subscribe(".*", sub);

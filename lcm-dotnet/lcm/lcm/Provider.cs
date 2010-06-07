@@ -5,10 +5,8 @@ namespace LCM.LCM
 	/// <summary>
     /// A provider implements a communications modality for LCM. (I.e., a
 	/// URL handler.)
-	/// </summary>
-	/// <summary>
     /// The provider should call LC.receiveMessage() upon receipt of a
-	/// message. LCM.receiveMessage() is thread-safe and can be called from
+	/// message. LCM.ReceiveMessage() is thread-safe and can be called from
 	/// any thread.
 	/// </summary>
 	public interface Provider
