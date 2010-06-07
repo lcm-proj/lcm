@@ -122,16 +122,20 @@ public class TCPService
                         int channellen = ins.readInt();
                         byte channel[] = new byte[channellen];
                         ins.readFully(channel);
-                        subscriptions.add(new SubscriptionRecord(new String(channel)));
+                        synchronized(subscriptions) {
+                            subscriptions.add(new SubscriptionRecord(new String(channel)));
+                        }
                     } else if(type == TCPProvider.MESSAGE_TYPE_UNSUBSCRIBE) {
                         int channellen = ins.readInt();
                         byte channel[] = new byte[channellen];
                         ins.readFully(channel);
                         String re = new String(channel);
-                        for(int i=0, n=subscriptions.size(); i<n; i++) {
-                            if(subscriptions.get(i).regex.equals(re)) {
-                                subscriptions.remove(i);
-                                break;
+                        synchronized(subscriptions) {
+                            for(int i=0, n=subscriptions.size(); i<n; i++) {
+                                if(subscriptions.get(i).regex.equals(re)) {
+                                    subscriptions.remove(i);
+                                    break;
+                                }
                             }
                         }
                     }
@@ -151,18 +155,20 @@ public class TCPService
             }
         }
 
-        public synchronized void send(String chanstr, byte channel[], byte data[])
+        public void send(String chanstr, byte channel[], byte data[])
         {
             try {
-                for(SubscriptionRecord sr : subscriptions) {
-                    if(sr.pat.matcher(chanstr).matches()) {
-                        outs.writeInt(TCPProvider.MESSAGE_TYPE_PUBLISH);
-                        outs.writeInt(channel.length);
-                        outs.write(channel);
-                        outs.writeInt(data.length);
-                        outs.write(data);
-                        outs.flush();
-                        return;
+                synchronized(subscriptions) {
+                    for(SubscriptionRecord sr : subscriptions) {
+                        if(sr.pat.matcher(chanstr).matches()) {
+                            outs.writeInt(TCPProvider.MESSAGE_TYPE_PUBLISH);
+                            outs.writeInt(channel.length);
+                            outs.write(channel);
+                            outs.writeInt(data.length);
+                            outs.write(data);
+                            outs.flush();
+                            return;
+                        }
                     }
                 }
             } catch (IOException ex) {
