@@ -167,8 +167,11 @@ namespace LCM.LCM
                             byte[] channel = new byte[channellen];
                             ReadInput(ins.BaseStream, channel, 0, channel.Length);
 
-                            subscriptions.Add(new SubscriptionRecord(
-                                System.Text.Encoding.GetEncoding("US-ASCII").GetString(channel)));
+                            lock (subscriptions)
+                            {
+                                subscriptions.Add(new SubscriptionRecord(
+                                    System.Text.Encoding.GetEncoding("US-ASCII").GetString(channel)));
+                            }
                         }
                         else if (type == TCPProvider.MESSAGE_TYPE_UNSUBSCRIBE)
                         {
@@ -177,12 +180,15 @@ namespace LCM.LCM
                             ReadInput(ins.BaseStream, channel, 0, channel.Length);
 
                             string re = System.Text.Encoding.GetEncoding("US-ASCII").GetString(channel);
-                            for (int i = 0, n = subscriptions.Count; i < n; i++)
+                            lock (subscriptions)
                             {
-                                if (subscriptions[i].pat.IsMatch(re))
+                                for (int i = 0, n = subscriptions.Count; i < n; i++)
                                 {
-                                    subscriptions.RemoveAt(i);
-                                    break;
+                                    if (subscriptions[i].pat.IsMatch(re))
+                                    {
+                                        subscriptions.RemoveAt(i);
+                                        break;
+                                    }
                                 }
                             }
                         }
@@ -209,9 +215,9 @@ namespace LCM.LCM
 
             public virtual void Send(string chanstr, byte[] channel, byte[] data)
             {
-                lock (this)
+                try
                 {
-                    try
+                    lock (subscriptions)
                     {
                         foreach (SubscriptionRecord sr in subscriptions)
                         {
@@ -228,9 +234,9 @@ namespace LCM.LCM
                             }
                         }
                     }
-                    catch (IOException)
-                    {
-                    }
+                }
+                catch (IOException)
+                {
                 }
             }
 
