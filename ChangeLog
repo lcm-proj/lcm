@@ -1,3 +1,107 @@
+2010-06-07  jan.hrbacek
+
+	* [r474] lcm-dotnet/lcm-server/Program.cs,
+	  lcm-dotnet/lcm/lcm/LCM.cs,
+	  lcm-dotnet/lcm/lcm/LCMDataInputStream.cs,
+	  lcm-dotnet/lcm/lcm/LCMDataOutputStream.cs,
+	  lcm-dotnet/lcm/lcm/LCMSubscriber.cs,
+	  lcm-dotnet/lcm/lcm/MessageAggregator.cs,
+	  lcm-dotnet/lcm/lcm/Provider.cs,
+	  lcm-dotnet/lcm/lcm/UDPMulticastProvider.cs: .NET port - minor
+	  changes, mostly in comments
+	* [r473] lcm-dotnet/lcm/lcm/TCPService.cs: fix race condition in
+	  TCPService, .NET port (issue #23)
+
+2010-06-07  ashuang
+
+	* [r472] lcm-java/lcm/lcm/TCPService.java: fix race condition in
+	  TCPService (issue #23)
+
+2010-05-26  ashuang
+
+	* [r471] NEWS, configure.in, lcm-python/setup.py, lcmgen/emit_c.c,
+	  lcmgen/emit_python.c: prepare for 0.5.0 release
+	* [r470] AUTHORS, README: update AUTHORS, README
+
+2010-05-26  jan.hrbacek
+
+	* [r469] ., examples/csharp, examples/csharp/example_t_demo,
+	  examples/csharp/lcm-csharp-examples.sln,
+	  examples/csharp/tcp_provider_demo, lcm-dotnet, lcm-dotnet/lcm,
+	  lcm-dotnet/lcm-dotnet.sln, lcm-dotnet/lcm-server,
+	  lcmgen/Makefile.am, lcmgen/emit_csharp.c, lcmgen/main.c: merge
+	  csharp branch into trunk
+
+2010-05-14  ashuang
+
+	* [r465] lcmgen/emit_java.c, lcmgen/getopt.c: fix some compiler
+	  warnings
+
+2010-05-11  ashuang
+
+	* [r464] configure.in, lcm/lcm_tcpq.c: enable silent build
+
+2010-05-10  ashuang
+
+	* [r463] lcmgen/emit_python.c: lcm-gen: change python __init__.py
+	  import statements import lcmtype_t --> from lcmtype_t import
+	  lcmtype_t see googlecode issue #21
+
+2010-04-21  ashuang
+
+	* [r462] lcmgen/emit_java.c: emit_java cleanup - use __strbuf var
+	  only if struct has string member - prefix dim->size with "this."
+	  for varlen arrays to prevent variable shadowing
+
+2010-04-16  ashuang
+
+	* [r461] examples/matlab/README, examples/matlab/buildjar.sh:
+	  update MATLAB example docs
+
+2010-03-27  ashuang
+
+	* [r459] lcmgen/emit_java.c: more lcm-egn Java pathname fixes for
+	  windows
+
+2010-03-25  ashuang
+
+	* [r458] Makefile.am, NEWS, lcm-java/Makefile.am,
+	  lcm-python/Makefile.am, lcmgen/Makefile.am: build system: move
+	  HAVE_PYTHON, HAVE_JAVA tests to main Makefile.am
+	  lcmgen/Makefile.am update EXTRA_DIST for renamed lcm-gen.vcproj
+	  update NEWS
+	* [r457] WinSpecific/LCM.sln, lcmgen/lcm-gen.vcproj,
+	  lcmgen/lcmgen.vcproj: windows: generate lcm-gen.exe, not
+	  lcmgen.exe
+	* [r456] lcmgen/emit_java.c: lcm-gen -j pathname bugfixes for
+	  windows
+
+2010-03-23  ashuang
+
+	* [r455] lcm/Makefile.am, lcm/lcm.c, lcm/lcm.vcproj,
+	  lcm/lcm_file.c, lcm/lcm_internal.h, lcm/lcm_tcpq.c,
+	  lcm/lcm_udp.c: add C tcpq provider
+	* [r454] liblcm-test/lcm-sink.c, liblcm-test/lcm-source.c: minor
+	  bugfixes to liblcm-test code
+
+2010-03-19  ashuang
+
+	* [r453] lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/LogFileProvider.java,
+	  lcm-java/lcm/lcm/Provider.java,
+	  lcm-java/lcm/lcm/TCPProvider.java,
+	  lcm-java/lcm/lcm/TCPService.java,
+	  lcm-java/lcm/lcm/UDPMulticastProvider.java: tcpq add
+	  publish/subscribe messages - service relays messages to
+	  subscribers only Ed: this commit did not happen (jedi hand wave)
+
+2010-03-15  ashuang
+
+	* [r451] ChangeLog, NEWS, configure.in, lcm-python/setup.py:
+	  release 0.4.1
+	* [r450] lcm/lcm_udp.c: show linux route commands when unable to
+	  read routing table
+
 2010-03-13  edwinolson
 
 	* [r449] lcmgen/tokenize.c: tokenizer.c: catch EOF during string

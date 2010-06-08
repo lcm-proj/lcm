@@ -12,6 +12,6 @@ if WITH_EXAMPLES
 SUBDIRS += examples
 endif
 
-EXTRA_DIST = WinSpecific
+EXTRA_DIST = WinSpecific lcm-dotnet
 ACLOCAL_AMFLAGS = -I m4
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc
