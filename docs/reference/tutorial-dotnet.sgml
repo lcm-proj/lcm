@@ -1,0 +1,278 @@
+<refentry id="tutorial-dotnet" revision="20 Jun 2010">
+<refmeta>
+  <refentrytitle>Tutorial for .NET</refentrytitle>
+</refmeta>
+
+<refnamediv>
+  <refname>Tutorial for .NET</refname>
+  <refpurpose>An example use case in C#.NET</refpurpose>
+</refnamediv>
+
+<refsect1>
+  <title>Introduction</title>
+    <para>
+      This tutorial will guide you through the basics of using LCM
+      .NET port. While the .NET port is basically a transcription of the
+      original Java library, it tries to be functionally equivalent
+      while maintaining C#.NET naming conventions and other platform
+      specifics. All sample code is written in C# (as well as the port
+      itself), but the principles are applicable to any of the languages
+      supported by the .NET Framework.
+    </para>
+    
+    <para>
+      The tutorial doesn't cover the very basics of the LCM (message
+      transmision principles, message definition format etc.) - please
+      see the rest of the documentation before further reading. 
+    </para>
+</refsect1>
+
+<refsect1>
+  <title>Generating C#.NET-specific message files</title>
+  
+  <para>
+    To demonstrate basic functionality, this tutorial will use the
+    same message format and application logic as the Java tutorial
+    to accent similarities and differences between Java and .NET
+    ports. Let's have the following type specification, saved to
+    a file named temperature_t.lcm:
+  </para>
+  <programlisting>
+struct temperature_t
+{
+  int64_t  utime;
+  double   deg_celsius;
+}  </programlisting>
+
+  <para>
+    In order to obtain C#.NET-specific handler class, we need to call
+    lcm-gen with the --csharp flag.
+  </para>
+
+  <para>
+    As with the Java tutorial, we will publish and subscribe to the
+    "HALLWAY_TEMPERATURE" channel.
+  </para>
+</refsect1>
+
+<refsect1>
+  <title>Initializing LCM</title>
+  <para>
+    There are at least two ways how to use the .NET port of LCM:
+  </para>
+  <itemizedlist>
+    <listitem>if you don't want to modify the library and just use it,
+      the simplest way is to build the library and copy resulting
+      lcm.dll to your application; you then need to add a reference
+      to it (Project -> Add Reference... -> Browse) and you are ready
+      to start communicating!</listitem>
+    <listitem>if you plan to do some changes to library source code,
+      the recommended way is to add library Visual Studio project
+      to your solution and reference it (Project -> Add Reference...
+      -> Projects)</listitem>
+  </itemizedlist>
+  
+  <para>
+    Main classes of the library are put in the LCM.LCM namespace
+    (while helper code is in LCM.Util). This results in quite funny
+    fully qualified name of the master class - LCM.LCM.LCM
+    (its constructor is even funnier - LCM.LCM.LCM.LCM() :-) ).
+    It's logical to use the 'using LCM.LCM' statement to shorten
+    calls to the library, but the naming scheme (chosen to agree
+    with the Java variant) makes it a little difficult - you cannot
+    use bare 'LCM' as class name - the compiler considers it to be
+    the namespace. Instead, you need to write LCM.LCM to denote the
+    main class.
+  </para>
+  
+  <para>
+    Generated message handlers are placed in the LCMTypes namespace
+    by default (you can change this by specifying lcm-gen option
+    --csharp-default-nsp).
+  </para>
+
+  <para>
+    LCM istself has a mechanism to maintain single instance of
+    the main class - static property LCM.Singleton:
+  </para>
+  <programlisting>
+LCM.LCM myLCM = LCM.LCM.Singleton;
+  </programlisting>
+
+  <para>
+    You can also instantiate the class and take care of the
+    object's singularity by yourself:
+  </para>
+  <programlisting>
+LCM.LCM myLCM = new LCM.LCM();
+  </programlisting>
+
+</refsect1>
+
+<refsect1>
+  <title>Publishing a message</title>
+  <para>
+    In order to use LCM types, you can either build an assembly containing
+    generated classes (needed when using LCM from other .NET language then
+    C#), or include the classes directly to application project.
+    Utilization of the generated classes is then straightforward:
+  </para>
+  <programlisting>
+temperature_t temp = new temperature_t();
+temp.utime = DateTime.Now.Ticks / 10;
+temp.deg_celsius = 25.0;
+
+myLCM.Publish("HALLWAY_TEMPERATURE", temp);
+  </programlisting>
+</refsect1>
+
+<refsect1>
+  <title>Subscribing to messages</title>
+  <para>
+    In order to receive messages, you have two options:
+  </para>
+  <itemizedlist>
+    <listitem>write a class implementing the LCMSubscriber interface
+      (just one handler-method MessageReceived) to assynchronously handle
+      incoming messages</listitem>
+    <listitem>use standard class MessageAggregator (that internally implements
+      LCMSubscriber interface) for synchronous blocking or not blocking
+      message delivery</listitem>
+  </itemizedlist>
+  
+  <programlisting>
+public class MySubscriber : LCM.LCMSubscriber
+{
+   public void MessageReceived(LCM.LCM lcm, string channel, LCM.LCMDataInputStream ins)
+   {
+      if (channel == "HALLWAY_TEMPERATURE") 
+      {
+         try
+         {
+            LCMTypes.temperature_t temp = new LCMTypes.temperature_t(ins);
+            Console.WriteLine("The temperature is: " + temp.deg_celsius);
+         }
+         catch (System.IO.IOException ex)
+         {
+            Console.Error.WriteLine("Error decoding temperature message: " + ex);
+         }
+      }
+   }
+}
+  </programlisting>
+
+  <para>
+    Either way, instantiated class must be passed to the LCM object
+    using the subscribe call:
+  </para>
+
+  <programlisting>
+myLCM.Subscribe("HALLWAY_TEMPERATURE", new MySubscriber());
+  </programlisting>
+</refsect1>
+
+<refsect1>
+  <title>Putting it all together</title>
+
+  <para>
+    Distribution of the LCM library includes a directory of examples.
+    One of them is a couple of programs implementing all described
+    features. Please go to examples/csharp/temperature_t_demo to
+    find Visual Studio project ready to be built.
+  </para>
+
+  <programlisting>
+using System;
+using LCM.LCM;
+using LCMTypes;
+
+namespace LCM.Examples
+{
+    class TemperatureTransmit
+    {
+        public static void Main(string[] args)
+        {
+            LCM.LCM myLCM = LCM.LCM.Singleton;
+
+            while (true)
+            {
+                try
+                {
+                    temperature_t temp = new temperature_t();
+                    temp.utime = DateTime.Now.Ticks / 10;
+                    temp.deg_celsius = 25.0 + 5 * Math.Sin(DateTime.Now.Ticks / 10000000.0);
+
+                    myLCM.Publish("HALLWAY_TEMPERATURE", temp);
+
+                    System.Threading.Thread.Sleep(1000);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Ex: " + ex);
+                }
+            }
+        }
+    }
+}
+  </programlisting>
+
+  <programlisting>
+using System;
+using LCM.LCM;
+using LCMTypes;
+
+namespace LCM.Examples
+{
+    class TemperatureDisplay : LCMSubscriber
+    {
+        public void MessageReceived(LCM.LCM lcm, string channel, LCMDataInputStream ins)
+        {
+            if (channel == "HALLWAY_TEMPERATURE")
+            {
+                try
+                {
+                    temperature_t temp = new temperature_t(ins);
+                    Console.WriteLine("The temperature is: " + temp.deg_celsius);
+                }
+                catch (System.IO.IOException ex)
+                {
+                    Console.Error.WriteLine("Error decoding temperature message: " + ex);
+                }
+            }
+        }
+
+        public static void Main(string[] args)
+        {
+            LCM.LCM myLCM;
+
+            try
+            {
+                myLCM = new LCM.LCM();
+
+                myLCM.Subscribe("HALLWAY_TEMPERATURE", new TemperatureDisplay());
+
+                while (true)
+                {
+                    System.Threading.Thread.Sleep(1000);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Ex: " + ex);
+                Environment.Exit(1);
+            }
+        }
+    }
+}
+  </programlisting>
+</refsect1>
+
+<refsect1>
+  <title>Conclusion</title>
+
+  <para>
+    The tutorial has provided a basic working demonstration of the LCM
+    library .NET port. For further information, please see the LCM documentation.
+  </para>
+</refsect1>
+</refentry>
