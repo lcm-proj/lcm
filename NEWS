@@ -1,3 +1,14 @@
+July 14, 2010
+=============
+
+ Release 0.5.1:
+
+ This is a bugfix release, affecting only the Windows port.
+
+ Windows:
+ Fix lcmgen Visual Studio project file - missing emit_csharp.c
+ Add a .NET tutorial and some some C# examples
+
 Jun 7, 2010
 ===========
 

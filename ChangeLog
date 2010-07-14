@@ -1,3 +1,26 @@
+2010-07-05  jan.hrbacek
+
+	* [r480] lcmgen/lcm-gen.vcproj: Fix Windows port lcmgen VS project
+	  file - missing emit_csharp.c
+
+2010-06-20  jan.hrbacek
+
+	* [r478] docs/reference/lcm-docs.sgml,
+	  docs/reference/tutorial-dotnet.sgml,
+	  examples/csharp/lcm-csharp-examples.sln,
+	  examples/csharp/temperature_t_demo,
+	  examples/csharp/temperature_t_demo/AssemblyInfo.cs,
+	  examples/csharp/temperature_t_demo/temperature_t.cs,
+	  examples/csharp/temperature_t_demo/temperature_t_display.cs,
+	  examples/csharp/temperature_t_demo/temperature_t_display.csproj,
+	  examples/csharp/temperature_t_demo/temperature_t_transmit.cs,
+	  examples/csharp/temperature_t_demo/temperature_t_transmit.csproj:
+	  .NET port basic tutorial + additional temperature_t examples
+
+2010-06-08  ashuang
+
+	* [r476] ChangeLog, Makefile.am, NEWS: release 0.5.0
+
 2010-06-07  jan.hrbacek
 
 	* [r474] lcm-dotnet/lcm-server/Program.cs,
