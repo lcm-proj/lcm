@@ -75,4 +75,7 @@ include $(top_srcdir)/gtk-doc.make
 
 # Other files to distribute
 # e.g. EXTRA_DIST += version.xml.in
-EXTRA_DIST += intro.sgml multicast-setup.sgml tutorial-c.sgml
+EXTRA_DIST += intro.sgml \
+			  multicast-setup.sgml \
+			  tutorial-c.sgml \
+			  tutorial-dotnet.sgml
