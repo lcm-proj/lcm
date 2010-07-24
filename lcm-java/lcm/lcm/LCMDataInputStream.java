@@ -127,6 +127,14 @@ public final class LCMDataInputStream implements DataInput
         pos += len;
     }
 
+    /** Writes chars as one byte per char, filling high byte with zero. **/
+    public void readFullyBytesAsChars(char c[]) throws IOException
+    {
+        needInput(c.length);
+        for (int i = 0; i < c.length; i++)
+            c[i] = (char) (buf[pos++]&0xff);
+    }
+
     public double readDouble() throws IOException
     {
         return Double.longBitsToDouble(readLong());

@@ -55,6 +55,14 @@ public final class LCMDataOutputStream implements DataOutput
         pos += len;
     }
 
+    /** Writes one byte per char **/
+    public void writeCharsAsBytes(char c[])
+    {
+        ensureSpace(c.length);
+        for (int i = 0; i < c.length; i++)
+            write(c[i]);
+    }
+
     public void write(int b)
     {
         ensureSpace(1);
