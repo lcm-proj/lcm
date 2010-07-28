@@ -17,18 +17,18 @@ namespace LCM.LCM
         /// Invoked by LCM.
         /// </summary>
 		/// <param name="outs">any data to be sent should be written to this output stream.</param>
-		void Encode(BinaryWriter outs);
+        void Encode(LCMDataOutputStream outs);
         
         /// <summary>
         /// Encode the data without the magic header. Most users will never use this function.
         /// </summary>
         /// <param name="outs"></param>
-        void _encodeRecursive(BinaryWriter outs);
+        void _encodeRecursive(LCMDataOutputStream outs);
 
         /// <summary>
         /// Decode the data without the magic header. Most users will never use this function.
         /// </summary>
         /// <param name="ins"></param>
-        void _decodeRecursive(BinaryReader ins);
+        void _decodeRecursive(LCMDataInputStream ins);
 	}
 }

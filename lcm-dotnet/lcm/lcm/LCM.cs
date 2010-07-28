@@ -279,7 +279,7 @@ namespace LCM.LCM
 			lock (subscriptions)
 			{	
 				// Find and remove subscriber from list
-                foreach (SubscriptionRecord sr in subscriptions)
+                foreach (SubscriptionRecord sr in subscriptions.ToArray())
                 {
                     if ((sub == null || sr.lcsub == sub) && (regex == null || sr.regex.Equals(regex)))
                     {
@@ -293,7 +293,7 @@ namespace LCM.LCM
                 {
                     if (subscriptionsMap.TryGetValue(channel, out srecs))
                     {
-                        foreach (SubscriptionRecord sr in srecs)
+                        foreach (SubscriptionRecord sr in srecs.ToArray())
                         {
 		                    if ((sub == null || sr.lcsub == sub) && (regex == null || sr.regex.Equals(regex)))
                             {

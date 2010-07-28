@@ -64,8 +64,10 @@ void setup_csharp_options(getopt_t *gopt)
 {
     getopt_add_string(gopt, 0,   "csharp-path",        "",                       "C#.NET file destination directory");
     getopt_add_bool(gopt, 0,     "csharp-mkdir",       1,                        "Make C#.NET source directories automatically");
+    getopt_add_bool(gopt, 0,     "csharp-strip-dirs",  0,						 "Do not generate folders for default and root namespace");
     getopt_add_string(gopt, 0,   "csharp-decl",        ": LCM.LCM.LCMEncodable", "String added to class declarations");
-    getopt_add_string(gopt, 0,   "csharp-default-nsp", "LCMTypes",               "Default C#.NET package if LCM type has no package");
+    getopt_add_string(gopt, 0,   "csharp-root-nsp",    "",						 "Root C#.NET namespace (wrapper) added before LCM package");
+    getopt_add_string(gopt, 0,   "csharp-default-nsp", "LCMTypes",               "Default C#.NET namespace if LCM type has no package");
 }
 
 typedef struct
@@ -89,15 +91,18 @@ static int ndefaultpkg_warned = 0;
 
 const char *make_fqn_csharp(lcmgen_t *lcm, const char *type_name)
 {
-    if (strchr(type_name, '.')!=NULL)
-        return type_name;
+    if (strchr(type_name, '.') != NULL)
+        return sprintfalloc("%s%s%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
+			(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."), type_name);
 
     if (!ndefaultpkg_warned && !getopt_was_specified(lcm->gopt, "csharp-default-nsp")) {
         printf("Notice: enclosing LCM types without package into C#.NET namespace '%s'.\n", getopt_get_string(lcm->gopt, "csharp-default-nsp"));
         ndefaultpkg_warned = 1;
     }
 
-    return sprintfalloc("%s.%s", getopt_get_string(lcm->gopt, "csharp-default-nsp"), type_name);
+	return sprintfalloc("%s%s%s.%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
+		(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."),
+		getopt_get_string(lcm->gopt, "csharp-default-nsp"), type_name);
 }
 
 /** # -> replace1
@@ -167,9 +172,9 @@ int emit_csharp(lcmgen_t *lcm)
                                                "# = ins.ReadInt64();",  
                                                "outs.Write(#);"));
     g_hash_table_insert(type_table, "string",   prim("String",
-                                               "__strbuf = new byte[ins.ReadInt()-1]; ins.ReadFully(__strbuf); ins.ReadByte(); # = System.Text.Encoding.GetEncoding(\"US-ASCII\").GetString(__strbuf);",
-                                               "__strbuf = System.Text.Encoding.GetEncoding(\"US-ASCII\").GetBytes(#); outs.Write(__strbuf.length+1); outs.Write(__strbuf, 0, __strbuf.length); outs.Write(0);"));
-    g_hash_table_insert(type_table, "boolean",  prim("boolean",
+                                               "__strbuf = new byte[ins.ReadInt32()-1]; ins.ReadFully(__strbuf); ins.ReadByte(); # = System.Text.Encoding.GetEncoding(\"US-ASCII\").GetString(__strbuf);",
+                                               "__strbuf = System.Text.Encoding.GetEncoding(\"US-ASCII\").GetBytes(#); outs.Write(__strbuf.Length+1); outs.Write(__strbuf, 0, __strbuf.Length); outs.Write(0);"));
+    g_hash_table_insert(type_table, "boolean",  prim("bool",
                                                "# = ins.ReadBoolean();",
                                                "outs.Write(#);"));
     g_hash_table_insert(type_table, "float",    prim("float",
@@ -188,7 +193,7 @@ int emit_csharp(lcmgen_t *lcm)
         char *path = sprintfalloc("%s%s%s.cs", 
                                   getopt_get_string(lcm->gopt, "csharp-path"),
                                   strlen(getopt_get_string(lcm->gopt, "csharp-path")) > 0 ? G_DIR_SEPARATOR_S : "",
-                                  dots_to_slashes(classname));
+								  dots_to_slashes((getopt_get_bool(lcm->gopt, "csharp-strip-dirs") ? le->enumname->lctypename : classname)));
 
         if (!lcm_needs_generation(lcm, le->lcmfile, path))
             continue;
@@ -207,9 +212,11 @@ int emit_csharp(lcmgen_t *lcm)
         emit(0, " ");
 
         if (strlen(le->enumname->package) > 0)
-            emit(0, "namespace %s", le->enumname->package);
+            emit(0, "namespace %s%s%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
+			(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."), le->enumname->package);
         else
-            emit(0, "namespace %s", getopt_get_string(lcm->gopt, "csharp-default-nsp"));
+            emit(0, "namespace %s%s%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
+			(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"));
 
         emit(0, "{");
         emit(1, "public sealed class %s %s", le->enumname->shortname, getopt_get_string(lcm->gopt, "csharp-decl"));
@@ -231,20 +238,20 @@ int emit_csharp(lcmgen_t *lcm)
         emit(2,"public int getValue() { return value; }");
         emit(0," ");
 
-        emit(2,"public void _encodeRecursive(BinaryWriter outs)");
+        emit(2,"public void _encodeRecursive(LCMDataOutputStream outs)");
         emit(2,"{");
         emit(3,"outs.WriteInt(this.value);");
         emit(2,"}");
         emit(0," ");
 
-        emit(2,"public void Encode(BinaryWriter outs)");
+        emit(2,"public void Encode(LCMDataOutputStream outs)");
         emit(2,"{");
         emit(3,"outs.Write((long) LCM_FINGERPRINT);");
         emit(3,"_encodeRecursive(outs);");
         emit(2,"}");
         emit(0," ");
 
-        emit(2,"public static %s _decodeRecursiveFactory(BinaryReader ins)", make_fqn_csharp(lcm, le->enumname->lctypename));
+        emit(2,"public static %s _decodeRecursiveFactory(LCMDataInputStream ins)", make_fqn_csharp(lcm, le->enumname->lctypename));
         emit(2,"{");
         emit(3,"%s o = new %s(0);", make_fqn_csharp(lcm, le->enumname->lctypename), make_fqn_csharp(lcm, le->enumname->lctypename));
         emit(3,"o._decodeRecursive(ins);");
@@ -252,13 +259,13 @@ int emit_csharp(lcmgen_t *lcm)
         emit(2,"}");
         emit(0," ");
 
-        emit(2,"public void _decodeRecursive(BinaryReader ins)");
+        emit(2,"public void _decodeRecursive(LCMDataInputStream ins)");
         emit(2,"{");
         emit(3,"this.value = ins.ReadInt();");
         emit(2,"}");
         emit(0," ");
 
-        emit(2,"public %s(BinaryReader ins)", le->enumname->shortname);
+        emit(2,"public %s(LCMDataInputStream ins)", le->enumname->shortname);
         emit(2,"{");
         emit(3,"ulong hash = (ulong) ins.ReadInt64();");
         emit(3,"if (hash != LCM_FINGERPRINT)");
@@ -291,7 +298,7 @@ int emit_csharp(lcmgen_t *lcm)
         char *path = sprintfalloc("%s%s%s.cs", 
                                   getopt_get_string(lcm->gopt, "csharp-path"), 
                                   strlen(getopt_get_string(lcm->gopt, "csharp-path")) > 0 ? "/" : "",
-                                  dots_to_slashes(classname));
+								  dots_to_slashes((getopt_get_bool(lcm->gopt, "csharp-strip-dirs") ? lr->structname->lctypename : classname)));
 
         if (!lcm_needs_generation(lcm, lr->lcmfile, path))
             continue;
@@ -315,9 +322,11 @@ int emit_csharp(lcmgen_t *lcm)
         emit(0, " ");
         
         if (strlen(lr->structname->package) > 0)
-            emit(0, "namespace %s", lr->structname->package);
+            emit(0, "namespace %s%s%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
+			(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."), lr->structname->package);
         else
-            emit(0, "namespace %s", getopt_get_string(lcm->gopt, "csharp-default-nsp"));
+            emit(0, "namespace %s%s%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
+			(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"));
 
         emit(0, "{");
         emit(1, "public sealed class %s %s", lr->structname->shortname, getopt_get_string(lcm->gopt, "csharp-decl"));
@@ -430,14 +439,14 @@ int emit_csharp(lcmgen_t *lcm)
 
         ///////////////// encode //////////////////
 
-        emit(2,"public void Encode(BinaryWriter outs)");
+        emit(2,"public void Encode(LCMDataOutputStream outs)");
         emit(2,"{");
         emit(3,"outs.Write((long) LCM_FINGERPRINT);");
         emit(3,"_encodeRecursive(outs);");
         emit(2,"}");
         emit(0," ");
 
-        emit(2,"public void _encodeRecursive(BinaryWriter outs)");
+        emit(2,"public void _encodeRecursive(LCMDataOutputStream outs)");
         emit(2,"{");
         if(struct_has_string_member(lr))
             emit(3, "byte[] __strbuf = null;");
@@ -477,7 +486,7 @@ int emit_csharp(lcmgen_t *lcm)
         emit(2, "}");
         emit(0, " ");
 
-        emit(2,"public %s(BinaryReader ins)", lr->structname->shortname);
+        emit(2,"public %s(LCMDataInputStream ins)", lr->structname->shortname);
         emit(2,"{");
         emit(3,"if ((ulong) ins.ReadInt64() != LCM_FINGERPRINT)");
         emit(4,     "throw new System.IO.IOException(\"LCM Decode error: bad fingerprint\");");
@@ -486,7 +495,7 @@ int emit_csharp(lcmgen_t *lcm)
         emit(2,"}");
         emit(0," ");
 
-        emit(2,"public static %s _decodeRecursiveFactory(BinaryReader ins)", make_fqn_csharp(lcm, lr->structname->lctypename));
+        emit(2,"public static %s _decodeRecursiveFactory(LCMDataInputStream ins)", make_fqn_csharp(lcm, lr->structname->lctypename));
         emit(2,"{");
         emit(3,"%s o = new %s();", make_fqn_csharp(lcm, lr->structname->lctypename), make_fqn_csharp(lcm, lr->structname->lctypename));
         emit(3,"o._decodeRecursive(ins);");
@@ -494,7 +503,7 @@ int emit_csharp(lcmgen_t *lcm)
         emit(2,"}");
         emit(0," ");
 
-        emit(2,"public void _decodeRecursive(BinaryReader ins)");
+        emit(2,"public void _decodeRecursive(LCMDataInputStream ins)");
         emit(2,"{");
         if(struct_has_string_member(lr))
             emit(3, "byte[] __strbuf = null;");
