@@ -486,6 +486,10 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
     
     if (!isalpha(t->token[0]) && t->token[0]!='_')
         parse_error(t, "invalid type name");
+
+    // A common mistake is use 'int' as a type instead of 'intN_t'
+    if(!strcmp(t->token, "int"))
+        semantic_warning(t, "int type should probably be int8_t, int16_t, int32_t, or int64_t");
     
     lt = lcm_typename_create(lcmgen, t->token);
 
