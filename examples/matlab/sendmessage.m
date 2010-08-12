@@ -1,6 +1,6 @@
 lc = lcm.lcm.LCM.getSingleton();
 
-msg = lcmtypes.example_t();
+msg = exlcm.example_t();
 
 msg.timestamp = 0;
 msg.position = [1  2  3];

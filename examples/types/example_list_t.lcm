@@ -1,3 +1,5 @@
+package exlcm;
+
 struct example_list_t
 {
     int32_t n;

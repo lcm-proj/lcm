@@ -9,8 +9,8 @@ lcmtypes=example_t
 
 # derive the file names of the .c, .h, and .o files corresponding
 # to the LCM types here
-lcm_c_h_files=$(lcmtypes:%=%.c) $(lcmtypes:%=%.h)
-lcm_obj_files=$(lcmtypes:%=%.o)
+lcm_c_h_files=$(lcmtypes:%=exlcm_%.c) $(lcmtypes:exlcm_%=%.h)
+lcm_obj_files=$(lcmtypes:%=exlcm_%.o)
 
 # compile the LCM types to a static library 
 all: libtypes.a listener send-message read-log
@@ -33,7 +33,7 @@ libtypes.a: $(lcm_obj_files)
 %.o: %.c %.h
 	gcc $(CFLAGS) -c $< 
 
-%.c %.h: ../types/%.lcm
+exlcm_%.c exlcm_%.h: ../types/%.lcm
 	lcm-gen -c $<
 
 clean:

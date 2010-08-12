@@ -2,6 +2,6 @@
 
 lcm-gen -j ../types/*.lcm
 
-javac -cp ../../lcm-java/lcm.jar lcmtypes/*.java
+javac -cp ../../lcm-java/lcm.jar exlcm/*.java
 
-jar cf my_types.jar lcmtypes/*.class
+jar cf my_types.jar exlcm/*.class
