@@ -324,7 +324,7 @@ void copy_recursive(lcmgen_t *lcm, lcm_member_t *lm, FILE *f, primitive_info_t *
     emit(2+depth, "}");
 }
 
-int emit_java(lcmgen_t *lcm)
+int emit_cpp(lcmgen_t *lcm)
 {
     GHashTable *type_table = g_hash_table_new(g_str_hash, g_str_equal);
 
