@@ -23,8 +23,11 @@ already exists.
 Automatically append a suffix to \fIFILE\fR such that the resulting filename
 does not already exist.  This option precludes -f.
 .TP
-.B \-c, \-\-channel
+.B \-c, \-\-channel=\fICHAN\fR
 Channel string to pass to lcm_subscribe. (default: ".*")
+.TP
+.B \-v, \-\-invert-channels
+Invert channels.  Log evertyhing that \fICHAN\fR does not match.
 .TP
 .B \-l, \-\-lcm\-url=\fIURL\fR
 Log messages on the specified LCM URL
@@ -32,7 +35,7 @@ Log messages on the specified LCM URL
 .B \-s, \-\-strftime
 Format \fIFILE\fR with strftime.
 .TP
-.B \-m \-\-max\-unwritten-mb K
+.B \-m, \-\-max\-unwritten-mb=\fISIZE\fR
 Maximum size of received but unwritten messages to store in memory before 
 dropping messages.  (default: 100 MB)
 .TP
