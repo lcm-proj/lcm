@@ -1,28 +1,26 @@
 #include <stdio.h>
 #include <assert.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <time.h>
+#include <getopt.h>
+#include <inttypes.h>
 
 #include <glib.h>
 
 #include <lcm/lcm.h>
 
 // GRegex was new in GLib 2.14.0
-//#if GLIB_CHECK_VERSION(2,14,0)
-//#define USE_GREGEX
-//#endif
+#if GLIB_CHECK_VERSION(2,14,0)
+#define USE_GREGEX
+#endif
 
 #ifdef WIN32
 #define USE_GREGEX
 #define __STDC_FORMAT_MACROS			// Enable integer types
 #include <WinPorting.h>
 #endif
-
-#include <getopt.h>
-#include <inttypes.h>
 
 #ifndef USE_GREGEX
 #include <regex.h>
