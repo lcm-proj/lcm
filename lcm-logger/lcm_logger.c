@@ -6,18 +6,27 @@
 #include <errno.h>
 #include <time.h>
 
+#include <glib.h>
+
+#include <lcm/lcm.h>
+
+// GRegex was new in GLib 2.14.0
+//#if GLIB_CHECK_VERSION(2,14,0)
+//#define USE_GREGEX
+//#endif
+
 #ifdef WIN32
+#define USE_GREGEX
 #define __STDC_FORMAT_MACROS			// Enable integer types
 #include <WinPorting.h>
 #endif
 
 #include <getopt.h>
-
 #include <inttypes.h>
 
-#include <glib.h>
-
-#include <lcm/lcm.h>
+#ifndef USE_GREGEX
+#include <regex.h>
+#endif
 
 #include "glib_util.h"
 
@@ -50,6 +59,14 @@ struct logger
     GThread *write_thread;
     GAsyncQueue *write_queue;
     GMutex * mutex;
+
+    // variables for inverted matching (e.g., logging all but some channels)
+    int invert_channels;
+#ifdef USE_GREGEX
+    GRegex * regex;
+#else
+    regex_t preg;
+#endif
 
     // these members controlled by mutex
     int64_t write_queue_size;
@@ -131,6 +148,16 @@ message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
     logger_t *logger = (logger_t*) u;
 
+    if(logger->invert_channels) {
+#ifdef USE_GREGEX
+        if(g_regex_match(logger->regex, channel, (GRegexMatchFlags) 0, NULL))
+            return;
+#else 
+        if(0 == regexec(&logger->preg, channel, 0, NULL, 0))
+            return;
+#endif
+    }
+
     int channellen = strlen(channel);
 
     // check if the backlog of unwritten messages is too big.  If so, then
@@ -195,6 +222,8 @@ static void usage ()
             "                             already exist.  This option precludes -f\n"
             "  -c, --channel=CHAN         Channel string to pass to lcm_subscribe.\n"
             "                             (default: \".*\")\n"
+            "  -v, --invert-channels      Invert channels.  Log everything that CHAN\n"
+            "                             does not match.\n"
             "  -l, --lcm-url=URL          Log messages on the specified LCM URL\n"
             "  -s, --strftime             Format FILE with strftime.\n" 
             "  -m, --max-unwritten-mb=SZ  Maximum size of received but unwritten\n"
@@ -213,15 +242,19 @@ int main(int argc, char *argv[])
     char logpath[PATH_MAX];
     memset (logpath, 0, sizeof (logpath));
 
+    logger_t logger;
+    memset (&logger, 0, sizeof (logger));
+
     // set some defaults
     int force = 0;
     int auto_increment = 0;
     int use_strftime = 0;
     char *chan_regex = strdup(".*");
     double max_write_queue_size_mb = DEFAULT_MAX_WRITE_QUEUE_SIZE_MB;
+    logger.invert_channels = 0;
 
     char *lcmurl = NULL;
-    char *optstring = "fic:shm:";
+    char *optstring = "fic:shm:v";
     int c;
     struct option long_opts[] = { 
         { "force", no_argument, 0, 'f' },
@@ -229,6 +262,7 @@ int main(int argc, char *argv[])
         { "channel", required_argument, 0, 'c' },
         { "strftime", required_argument, 0, 's' },
         { "lcm-url", required_argument, 0, 'l' },
+        { "invert-channels", no_argument, 0, 'v' },
         { "max-unwritten-mb", required_argument, 0, 'm' },
         { 0, 0, 0, 0 }
     };
@@ -252,6 +286,9 @@ int main(int argc, char *argv[])
             case 'l':
                 free(lcmurl);
                 lcmurl = strdup(optarg);
+                break;
+            case 'v':
+                logger.invert_channels = 1;
                 break;
             case 'm':
                 max_write_queue_size_mb = strtod(optarg, NULL);
@@ -281,8 +318,6 @@ int main(int argc, char *argv[])
     // initialize GLib threading
     g_thread_init(NULL);
 
-    logger_t logger;
-    memset (&logger, 0, sizeof (logger));
     logger.time0 = timestamp_now();
     logger.max_write_queue_size = (int64_t)(max_write_queue_size_mb * (1 << 20));
 
@@ -352,7 +387,30 @@ int main(int argc, char *argv[])
         return 1;
     }
     
-    lcm_subscribe(logger.lcm, chan_regex, message_handler, &logger);
+    if(logger.invert_channels) {
+        // if inverting the channels, subscribe to everything and invert on the
+        // callback
+        lcm_subscribe(logger.lcm, ".*", message_handler, &logger);
+        char *regexbuf = g_strdup_printf("^%s$", chan_regex);
+#ifdef USE_GREGEX
+        GError *rerr = NULL;
+        logger.regex = g_regex_new(regexbuf, (GRegexCompileFlags) 0, (GRegexMatchFlags) 0, &rerr);
+        if(rerr) {
+            fprintf(stderr, "%s\n", rerr->message);
+            return 1;
+        }
+#else
+        if (0 != regcomp (&logger.preg, regexbuf, REG_NOSUB | REG_EXTENDED)) {
+            fprintf(stderr, "bad regex!\n");
+            return 1;
+        }
+#endif
+        free(regexbuf);
+    } else {
+        // otherwise, let LCM handle the regex
+        lcm_subscribe(logger.lcm, chan_regex, message_handler, &logger);
+    }
+
     free(chan_regex);
 
     _mainloop = g_main_loop_new (NULL, FALSE);
@@ -385,6 +443,14 @@ int main(int argc, char *argv[])
         free(msg);
     }
     g_async_queue_unref(logger.write_queue);
+    
+    if(logger.invert_channels) {
+#ifdef USE_GREGEX
+        g_regex_unref(logger.regex);
+#else
+        regfree(&logger.preg);
+#endif
+    }
 
     return 0;
 }

@@ -7,9 +7,11 @@
 
 #include <glib.h>
 
-// It would be nice to use GRegex, but it's a bit new... only in GLib since
-// 2.14 (August, 2007)
-//
+// GRegex was new in GLib 2.14.0
+#if GLIB_CHECK_VERSION(2,14,0)
+#define USE_GREGEX
+#endif
+
 #ifdef WIN32
 #define USE_GREGEX
 #include <WinPorting.h>
