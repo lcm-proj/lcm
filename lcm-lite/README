@@ -1,0 +1,38 @@
+LCM Lite is a minimalist implementation of LCM designed to
+minimize external dependencies and memory usage, making it the
+easiest way to port LCM to a new platform, particularly
+resource-limited embedded platforms.
+
+There are two main differences between LCM-Lite and the standard
+LCM:
+
+1) The actual communications code must be provided by the
+user. (However, see lcmlite_posix for an example of how to provide
+this functionality for most POSIX systems). In short, you call an
+lcmlite function whenever an LCM UDP packet arrives, and you
+provide a function pointer that will transmit packets (which
+LCMLite will call as necessary).
+
+2) LCMLite itself does no runtime memory allocation; all memory
+structures are allocated either at compile time or by the
+caller. This means that the system does not need an implementation
+of malloc(), and that issues of memory fragmentation are avoided.
+
+Most of the memory is allocated with the lcmlite_t object. This can
+be too large for many stacks, so it is recommended to declare this
+as a static global variable. The memory footprint is determined by
+the defines in lcmlite.h.
+
+lcmlite.[ch]: Core lcm-lite implementation. See .h for
+              documentation. (No external dependencies).
+
+lcmlite_posix.c: Example application for POSIX systems.
+
+lcmlite_ios.[ch]: Example driver (but not application) for iOS systems.
+
+This code is not intended to be particularly usable as-is, since
+critical networking components must be provided. However, you can
+compile the POSIX example with:
+
+gcc -std=gnu99 lcmlite.c lcmlite_posix.c
+
