@@ -21,7 +21,7 @@ import java.lang.reflect.*;
 import lcm.lcm.*;
 
 /** Searches classpath for objects that implement LCSpyPlugin using reflection. **/
-class LCMHandlerDatabase
+public class LCMHandlerDatabase
 {
     HashMap<Long, Class> classes = new HashMap<Long, Class>();
 
