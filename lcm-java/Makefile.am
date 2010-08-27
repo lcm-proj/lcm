@@ -59,9 +59,9 @@ dist_noinst_JAVA = \
     lcm/logging/LogPlayer.java \
     lcm/spy/Spy.java \
     lcm/spy/SpyPlugin.java \
-    lcm/spy/LCMHandlerDatabase.java \
+    lcm/spy/LCMTypeDatabase.java \
     lcm/spy/ObjectPanel.java \
-    lcm/spy/ChannelData.java 
+    lcm/spy/ChannelData.java
 
 $(dist_noinst_JAVA): build
 
