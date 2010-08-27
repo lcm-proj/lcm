@@ -24,7 +24,7 @@ public class Spy
     LCM          lcm;
     JDesktopPane jdp;
 
-    LCMHandlerDatabase handlers;
+    LCMTypeDatabase handlers;
 
     HashMap<String,  ChannelData> channelMap = new HashMap<String, ChannelData>();
     ArrayList<ChannelData>        channelList = new ArrayList<ChannelData>();
@@ -52,7 +52,7 @@ public class Spy
         channelTableModel.setTableHeader(channelTable.getTableHeader());
         channelTableModel.setSortingStatus(0, TableSorter.ASCENDING);
 
-        handlers = new LCMHandlerDatabase();
+        handlers = new LCMTypeDatabase();
 
         TableColumnModel tcm = channelTable.getColumnModel();
         tcm.getColumn(0).setMinWidth(140);

@@ -21,11 +21,11 @@ import java.lang.reflect.*;
 import lcm.lcm.*;
 
 /** Searches classpath for objects that implement LCSpyPlugin using reflection. **/
-public class LCMHandlerDatabase
+public class LCMTypeDatabase
 {
     HashMap<Long, Class> classes = new HashMap<Long, Class>();
 
-    public LCMHandlerDatabase()
+    public LCMTypeDatabase()
     {
         ClassDiscoverer.findClasses(new MyClassVisitor());
         System.out.println("Found "+classes.size()+" LCM types");
