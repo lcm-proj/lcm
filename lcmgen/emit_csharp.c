@@ -173,7 +173,7 @@ int emit_csharp(lcmgen_t *lcm)
                                                "outs.Write(#);"));
     g_hash_table_insert(type_table, "string",   prim("String",
                                                "__strbuf = new byte[ins.ReadInt32()-1]; ins.ReadFully(__strbuf); ins.ReadByte(); # = System.Text.Encoding.GetEncoding(\"US-ASCII\").GetString(__strbuf);",
-                                               "__strbuf = System.Text.Encoding.GetEncoding(\"US-ASCII\").GetBytes(#); outs.Write(__strbuf.Length+1); outs.Write(__strbuf, 0, __strbuf.Length); outs.Write(0);"));
+                                               "__strbuf = System.Text.Encoding.GetEncoding(\"US-ASCII\").GetBytes(#); outs.Write(__strbuf.Length+1); outs.Write(__strbuf, 0, __strbuf.Length); outs.Write((byte) 0);"));
     g_hash_table_insert(type_table, "boolean",  prim("bool",
                                                "# = ins.ReadBoolean();",
                                                "outs.Write(#);"));
