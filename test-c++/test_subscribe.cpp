@@ -1,34 +1,40 @@
 #include "../lcm/lcm-c++.hpp"
 #include "example_t.hpp"
 
+struct AppData
+{
+    lcm::LCM* lcm;
+};
+
 void
-handler1(const lcm_recv_buf_t *rbuf, 
+handler1(const lcm_recv_buf_t* rbuf, 
 		std::string channel, 
-		const example_t *msg, 
-		lcm::LCM *lcm)
+		const example_t* msg, 
+		lcm::LCM* lcm)
 {
     printf("handler 1 -- data = %d\n", msg->data);
 }
 
 void
-handler2(const lcm_recv_buf_t *rbuf, 
+handler2(const lcm_recv_buf_t* rbuf, 
 		std::string channel, 
-		const example_t *msg, lcm::LCM *lcm)
+		const example_t* msg, AppData* appData)
 {
     printf("handler 2 -- data = %d\n", msg->data);
 }
 
-int main(int argc, char **argv)
+int main(int argc, char** argv)
 {
-    lcm::LCM *lcm = new lcm::LCM("");
+    AppData appData;
+    appData.lcm = new lcm::LCM("");
 
-    lcm->subscribe("channel1", handler1, lcm);
-    lcm->subscribe("channel2", handler2, lcm);
+    appData.lcm->subscribe("channel1", handler1, appData.lcm);
+    appData.lcm->subscribe("channel2", handler2, &appData);
 
     while(true) 
-        lcm->handle();
+        appData.lcm->handle();
 
-    delete lcm;
+    delete appData.lcm;
 
     return 0;
 }
