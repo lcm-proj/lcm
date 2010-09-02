@@ -1,25 +1,25 @@
 #include <sys/time.h>
 #include <time.h>
-#include "example_t.hpp"
+#include "example2_t.hpp"
 
-example_t::example_t()
+example2_t::example2_t()
 {
 }
 
 unsigned int
-example_t::getEncodedSize() const
+example2_t::getEncodedSize() const
 {
     return 4;
 }
 
 void 
-example_t::encode(void* buf, int offset, unsigned int maxlen) const
+example2_t::encode(void* buf, int offset, unsigned int maxlen) const
 {
     *(int*)((uint8_t*)buf + offset) = this->data;
 }
 
 int
-example_t::decode(const void *data, int offset, int max_data_len)
+example2_t::decode(const void *data, int offset, int max_data_len)
 {
     // decode data buffer here
     //
@@ -28,13 +28,13 @@ example_t::decode(const void *data, int offset, int max_data_len)
 }
 
 void 
-example_t::decodeCleanup()
+example2_t::decodeCleanup()
 {
     // cleanup resources allocated by decode
 }
 
 const char* 
-example_t::getTypeName()
+example2_t::getTypeName()
 {
-    return "example_t";
+    return "example2_t";
 }

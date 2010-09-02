@@ -1,14 +1,14 @@
-#ifndef __example_t_hpp__
-#define __example_t_hpp__
+#ifndef __example2_t_hpp__
+#define __example2_t_hpp__
 
 #include <inttypes.h>
 
-class example_t {
+class example2_t {
     public:
         int data;
 
 
-        example_t();
+        example2_t();
 
         unsigned int getEncodedSize() const;
         void encode(void* buf, int offset, unsigned int maxlen) const;

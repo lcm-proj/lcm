@@ -1,14 +1,14 @@
 
 all: test-publish test-subscribe
 
-test-publish: example_t.o test_publish.o 
+test-publish: example_t.o example2_t.o test-publish.o 
 	g++ -o $@ $^ -llcm
 
-test-subscribe: example_t.o test_subscribe.o 
+test-subscribe: example_t.o example2_t.o test-subscribe.o 
 	g++ -o $@ $^ -llcm
 
 %.o: %.cpp
-	g++ -Wall -c $^
+	g++ -g -Wall -c $^
 
 clean:
 	rm -f *.o
