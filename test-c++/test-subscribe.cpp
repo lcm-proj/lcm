@@ -13,7 +13,7 @@ class Handler :
     public:
         ~Handler() {}
 
-        void handleMessage(const lcm_recv_buf_t* rbuf,
+        void handleMessage(const lcm::ReceiveBuffer* rbuf,
                 std::string chan, 
                 const example_t* msg)
         {
@@ -23,7 +23,7 @@ class Handler :
 };
 
 void
-handlerFunction(const lcm_recv_buf_t* rbuf, 
+handlerFunction(const lcm::ReceiveBuffer* rbuf, 
 		 std::string channel, 
 		 const example2_t* msg, AppData* appData)
 {

@@ -19,7 +19,7 @@ class LCMTypedSubscription : public Subscription {
     friend class LCM;
     private:
         ContextClass context;
-        void (*handler)(const lcm_recv_buf_t *rbuf, std::string channel, 
+        void (*handler)(const ReceiveBuffer *rbuf, std::string channel, 
                 const MessageType*msg, ContextClass context);
         static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, 
                 void *user_data)
@@ -33,7 +33,12 @@ class LCMTypedSubscription : public Subscription {
                         MessageType::getTypeName());
                 return;
             }
-            subs->handler(rbuf, channel, &msg, subs->context);
+            const ReceiveBuffer rb = {
+                rbuf->data,
+                rbuf->data_size,
+                rbuf->recv_utime
+            };
+            subs->handler(&rb, channel, &msg, subs->context);
             msg.decodeCleanup();;
         }
 };
@@ -43,14 +48,19 @@ class LCMUntypedSubscription : public Subscription {
     friend class LCM;
     private:
         ContextClass context;
-        void (*handler)(const lcm_recv_buf_t *rbuf, std::string channel, 
+        void (*handler)(const ReceiveBuffer *rbuf, std::string channel, 
                 ContextClass context);
         static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, 
                 void *user_data)
         {
             typedef LCMUntypedSubscription<ContextClass> SubsClass;
             SubsClass *subs = static_cast<SubsClass *> (user_data);
-            subs->handler(rbuf, channel, subs->context);
+            const ReceiveBuffer rb = {
+                rbuf->data,
+                rbuf->data_size,
+                rbuf->recv_utime
+            };
+            subs->handler(&rb, channel, subs->context);
         }
 };
 
@@ -71,7 +81,12 @@ class LCMMHSubscription : public Subscription {
                         MessageType::getTypeName());
                 return;
             }
-            subs->handler->handleMessage(rbuf, channel, &msg);
+            const ReceiveBuffer rb = {
+                rbuf->data,
+                rbuf->data_size,
+                rbuf->recv_utime
+            };
+            subs->handler->handleMessage(&rb, channel, &msg);
             msg.decodeCleanup();
         }
 };
@@ -82,7 +97,7 @@ class LCMMHSubscription : public Subscription {
 // To use this, subclass MessageHandler<void>.  e.g.,
 //
 // class MyHandler : public MessageHandler<void> {
-//     public handleMessage(const lcm_recv_buf_t* rbuf, std::string chan,
+//     public handleMessage(const ReceiveBuffer* rbuf, std::string chan,
 //         void* msg_data) {
 //         printf("first byte of message: 0x%X\n", ((uint8_t*)rbuf)->data[0]);
 //     }
@@ -97,7 +112,12 @@ class LCMMHSubscription<void> : public Subscription {
         {
             LCMMHSubscription<void> *subs = 
                 static_cast<LCMMHSubscription<void> *>(user_data);
-            subs->handler->handleMessage(rbuf, channel, rbuf->data);
+            const ReceiveBuffer rb = {
+                rbuf->data,
+                rbuf->data_size,
+                rbuf->recv_utime
+            };
+            subs->handler->handleMessage(&rb, channel, rbuf->data);
         }
 };
 
@@ -169,7 +189,7 @@ LCM::subscribe(std::string channel, MessageHandler<MessageType>* handler)
 template <class MessageType, class ContextClass> 
 Subscription*
 LCM::subscribeFunction(std::string channel,
-        void (*handler)(const lcm_recv_buf_t *rbuf, 
+        void (*handler)(const ReceiveBuffer *rbuf, 
             std::string channel, 
             const MessageType *msg, ContextClass context),
         ContextClass context) {
@@ -186,7 +206,7 @@ LCM::subscribeFunction(std::string channel,
 template <class ContextClass> 
 Subscription*
 LCM::subscribeFunction(std::string channel,
-        void (*handler)(const lcm_recv_buf_t *rbuf, 
+        void (*handler)(const ReceiveBuffer *rbuf, 
                        std::string channel, 
                        ContextClass context),
         ContextClass context) {

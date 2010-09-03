@@ -16,12 +16,19 @@ namespace lcm {
 
 class Subscription;
 
-// TODO make wrappers around lcm_recv_buf_t, lcm_eventlog_t, lcm_eventlog_event_t
+/**
+ * Stores the raw bytes and timestamp of a received message.
+ */
+struct ReceiveBuffer {
+    void *data;
+    uint32_t data_size;
+    int64_t recv_utime;
+};
 
 template<class MessageType>
 class MessageHandler {
     public:
-        virtual void handleMessage(const lcm_recv_buf_t* rbuf,
+        virtual void handleMessage(const ReceiveBuffer* rbuf,
                 std::string channel, const MessageType* msg) = 0;
         virtual ~MessageHandler() {}
 };
@@ -56,7 +63,7 @@ class LCM {
          */
         template <class MessageType, class ContextClass> 
         Subscription* subscribeFunction(std::string channel,
-                void (*handler)(const lcm_recv_buf_t* rbuf, 
+                void (*handler)(const ReceiveBuffer* rbuf, 
                                 std::string channel, 
                                 const MessageType *msg, 
                                 ContextClass context),
@@ -68,7 +75,7 @@ class LCM {
          */
         template <class ContextClass>
         Subscription* subscribeFunction(std::string channel,
-                void (*handler)(const lcm_recv_buf_t* rbuf,
+                void (*handler)(const ReceiveBuffer* rbuf,
                                 std::string channel,
                                 ContextClass context),
                 ContextClass context);
@@ -78,6 +85,24 @@ class LCM {
 
         std::vector<Subscription*> subscriptions;
 };
+
+// TODO make wrappers around lcm_eventlog_t, lcm_eventlog_event_t
+
+//struct LogEvent {
+//    int64_t eventnum;
+//    int64_t timestamp;
+//    int32_t channellen;
+//    int32_t datalen;
+//    char* channel;
+//    void* data;
+//};
+//
+//class LCMLog {
+//    public:
+//
+//    private:
+//
+//};
 
 #define __lcm_cpp_impl_ok__
 #include "lcm-cpp-impl.hpp"
