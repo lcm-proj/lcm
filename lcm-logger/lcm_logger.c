@@ -113,8 +113,12 @@ write_thread(void *user_data)
             }
             free(reason);
             free(le);
-            continue;
-        };
+            if(errno == ENOSPC) {
+                exit(1);
+            } else {
+                continue;
+            }
+        }
 
         // bookkeeping, cleanup
         int64_t offset_utime = le->timestamp - logger->time0;
