@@ -5,7 +5,6 @@
 #include <errno.h>
 #include <time.h>
 #include <getopt.h>
-#include <inttypes.h>
 
 #include <glib.h>
 
@@ -21,6 +20,8 @@
 #define __STDC_FORMAT_MACROS			// Enable integer types
 #include <WinPorting.h>
 #endif
+
+#include <inttypes.h>
 
 #ifndef USE_GREGEX
 #include <regex.h>
