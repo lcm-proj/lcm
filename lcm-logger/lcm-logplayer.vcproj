@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\;..\WinSpecific;..\lcm;..\WinSpecific\getopt;"
+				AdditionalIncludeDirectories="..\WinSpecific\include;..\WinSpecific\getopt;..\WinSpecific"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
