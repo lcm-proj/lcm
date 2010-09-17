@@ -740,12 +740,13 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 
                     g_strstrip(buf);
                     char **words = g_strsplit(buf, " ", -1);
-                    if(!words[0] || !words[1] || strcmp(words[0], "import"))
+                    if(!words[0] || !words[1] || !words[2] || !words[3])
                         continue;
-
-                    char *module_name = strdup(words[1]);
-                    g_hash_table_insert(init_py_imports, module_name, 
-                            module_name);
+                    if(!strcmp(words[0], "from") && !strcmp(words[2], "import")) {
+                        char *module_name = strdup(words[1]);
+                        g_hash_table_insert(init_py_imports, module_name, 
+                                module_name);
+                    }
 
                     g_strfreev(words);
                 }
