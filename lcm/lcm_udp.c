@@ -16,6 +16,8 @@
 #include <sys/time.h>
 #include <sys/poll.h>
 #include <sys/select.h>
+
+typedef int SOCKET;
 #endif
 
 #ifdef SO_TIMESTAMP
@@ -28,7 +30,6 @@
 #include <Ws2tcpip.h>
 
 #define MSG_EXT_HDR
-
 #endif
 
 #include <glib.h>
@@ -142,8 +143,8 @@ struct _udpm_params_t {
 
 typedef struct _lcm_provider_t lcm_udpm_t;
 struct _lcm_provider_t {
-    int recvfd;
-    int sendfd;
+    SOCKET recvfd;
+    SOCKET sendfd;
     struct sockaddr_in dest_addr;
 
     lcm_t * lcm;
@@ -339,7 +340,7 @@ _sockaddr_in_equal (const void * a, const void *b)
 }
 
 static int
-_close_socket(int fd)
+_close_socket(SOCKET fd)
 {
 #ifdef WIN32
     return closesocket(fd);
@@ -699,7 +700,7 @@ udp_read_packet (lcm_udpm_t *lcm)
         FD_ZERO (&fds);
         FD_SET (lcm->recvfd, &fds);
         FD_SET (lcm->thread_msg_pipe[0], &fds);
-        int maxfd = MAX(lcm->recvfd, lcm->thread_msg_pipe[0]);
+        SOCKET maxfd = MAX(lcm->recvfd, lcm->thread_msg_pipe[0]);
 
         if (select (maxfd + 1, &fds, NULL, NULL, NULL) <= 0) { 
             perror ("udp_read_packet -- select:");
@@ -1442,7 +1443,7 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     lcm->dest_addr.sin_port = params.mc_port;
 
     // test connectivity
-    int testfd = socket (AF_INET, SOCK_DGRAM, 0);
+    SOCKET testfd = socket (AF_INET, SOCK_DGRAM, 0);
     if (connect (testfd, (struct sockaddr*) &lcm->dest_addr, 
                 sizeof (lcm->dest_addr)) < 0) {
 

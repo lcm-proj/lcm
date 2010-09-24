@@ -24,7 +24,7 @@ extern "C"
 // pointer and length in reversed positions.
 typedef struct iovec
 {
-    int         iov_len;
+    ULONG       iov_len;
     char        *iov_base;
 } iovec;
 
@@ -33,10 +33,10 @@ typedef struct msghdr
     sockaddr    *msg_name;
     int         msg_namelen;
     iovec       *msg_iov;
-    int         msg_iovlen;
+    ULONG       msg_iovlen;
     int         msg_controllen;
     char        *msg_control;
-    int         msg_flags;
+    ULONG       msg_flags;
 } msghdr;
 
 int inet_aton(const char *cp, struct in_addr *inp);
@@ -48,6 +48,6 @@ int	lcm_internal_pipe_close ( int fd );
 
 int fcntl (int fd, int flag1, ...);
 
-size_t recvmsg ( int s, struct msghdr *msg, int flags );
-size_t sendmsg ( int s, const struct msghdr *msg, int flags );
+size_t recvmsg ( SOCKET s, struct msghdr *msg, int flags );
+size_t sendmsg ( SOCKET s, const struct msghdr *msg, int flags );
 }

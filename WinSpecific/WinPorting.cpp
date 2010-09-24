@@ -165,9 +165,18 @@ int	status, flag2, SocOpt;
 	return 0;
 }
 
-size_t recvmsg ( int s, struct msghdr *msg, int flags )
+size_t recvmsg ( SOCKET s, struct msghdr *msg, int flags )
 {
 DWORD		nRead, status;
+
+	WSAMSG tmp_wsamsg;
+	tmp_wsamsg.name = msg->msg_name;
+	tmp_wsamsg.namelen = msg->msg_namelen;
+	tmp_wsamsg.lpBuffers = (LPWSABUF) msg->msg_iov;
+	tmp_wsamsg.dwBufferCount = msg->msg_iovlen;
+	tmp_wsamsg.Control.len = msg->msg_controllen;
+	tmp_wsamsg.Control.buf = msg->msg_control;
+	tmp_wsamsg.dwFlags = msg->msg_flags;
 
 	if ( WSARecvMsg == NULL )
 	{
@@ -184,10 +193,10 @@ DWORD		nRead, status;
 	}
 	if ( WSARecvMsg != NULL )
 	{
-		int status = WSARecvMsg ( (SOCKET) s, (LPWSAMSG) msg, &nRead, NULL, NULL );
+		int status = WSARecvMsg ( (SOCKET) s, &tmp_wsamsg, &nRead, NULL, NULL );
 		if ( status != 0 )
 		{
-			status = WSAGetLastError();
+			errno = WSAGetLastError();
 			return -1;
 		}
 		return nRead;
@@ -195,7 +204,7 @@ DWORD		nRead, status;
 	return -1;
 }
 
-size_t sendmsg ( int s, const struct msghdr *msg, int flags )
+size_t sendmsg ( SOCKET s, const struct msghdr *msg, int flags )
 {
 	DWORD		nWritten, status;
 	status = WSASendTo ( (SOCKET) s, (WSABUF *) msg->msg_iov, msg->msg_iovlen, 
