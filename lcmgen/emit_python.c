@@ -558,7 +558,13 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     emit (1, "def _get_hash_recursive(parents):");
     emit (2,     "if %s in parents: return 0", sn);
-    emit (2,     "newparents = parents + [%s]", sn);
+    for (unsigned int m = 0; m < ls->members->len; m++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
+        if (! lcm_is_primitive_type (lm->type->lctypename)) {
+            emit (2,     "newparents = parents + [%s]", sn);
+            break;
+        }
+    }
     emit_start (2, "tmphash = (0x%"PRIx64, ls->hash);
     for (unsigned int m = 0; m < ls->members->len; m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
