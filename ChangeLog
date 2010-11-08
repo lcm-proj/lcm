@@ -1,3 +1,156 @@
+2010-11-08  ashuang
+
+	* [r520] lcmgen/emit_python.c: emit_python generate valid code on
+	  empty LCM type
+
+2010-10-07  ashuang
+
+	* [r519] lcmgen/emit_python.c: emit_python: only emit new_parents
+	  in _get_hash_recursive if necessary
+
+2010-09-24  ashuang
+
+	* [r518] WinSpecific/WinPorting.cpp, WinSpecific/WinPorting.h,
+	  lcm/lcm_udp.c: portability fixes for 64-bit Windows.
+
+2010-09-17  ashuang
+
+	* [r517] lcmgen/emit_python.c: python fix __init__.py imports.
+	  Check for "from <msg> import <msg>" instead of "import <msg>"
+
+2010-09-13  jan.hrbacek
+
+	* [r516] liblcm-test/lcm-tester.vcproj: one more project setting
+	  modified
+
+2010-09-12  jan.hrbacek
+
+	* [r515] WinSpecific, WinSpecific/getopt, lcm, lcm-logger,
+	  lcm-logger/lcm-logger.vcproj, lcm-logger/lcm-logplayer.vcproj,
+	  lcm/lcm.vcproj, lcmgen, liblcm-test,
+	  liblcm-test/lcm-example.vcproj, liblcm-test/lcm-logfilter.vcproj,
+	  liblcm-test/lcm-sink.vcproj, liblcm-test/lcm-source.vcproj,
+	  liblcm-test/lcm-tester.vcproj: fix Release target project
+	  settings on Windows & update ignore patterns
+	* [r514] lcm-logger/lcm_logger.c: lcm_logger - move <inttypes.h>
+	  after #define __STDC_FORMAT_MACROS to fix int macro errors under
+	  Windows
+
+2010-09-09  jan.hrbacek
+
+	* [r513] lcmgen/emit_csharp.c: emit_csharp - fix string compare
+	  nonsense
+
+2010-09-09  ashuang
+
+	* [r512] lcmgen/emit_python.c: lcmgen: lock __init__.py
+
+2010-09-06  ashuang
+
+	* [r511] lcm-logger/lcm_logger.c: lcm-logger exit when disk full
+
+2010-08-30  jan.hrbacek
+
+	* [r508] lcmgen/emit_csharp.c: emit_csharp in lcm-gen - fix
+	  encoding string variables
+
+2010-08-27  edwinolson
+
+	* [r505] lcm-java/Makefile.am: Update Makefile to use
+	  LCMTypeDatabase
+	* [r504] lcm-java/lcm/spy/LCMHandlerDatabase.java,
+	  lcm-java/lcm/spy/LCMTypeDatabase.java, lcm-java/lcm/spy/Spy.java:
+	  rename LCMHandlerDatabase LCMTypeDatabase
+	* [r503] lcm-java/lcm/lcm/UDPMulticastProvider.java: LCM
+	  fragmentation: guard against receiving same fragment twice
+	* [r502] lcm-java/lcm/spy/LCMHandlerDatabase.java: Make
+	  LCMHandlerDatabase public
+
+2010-08-25  ashuang
+
+	* [r500] lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/LogFileProvider.java: java lcm.lcm.LCM: allow
+	  passing NULL or the empty string to the constructor to explicitly
+	  specify default LCM provider. java lcm.lcm.LogFileProvider:
+	  bugfix for write mode
+
+2010-08-24  edwinolson
+
+	* [r499] lcm-lite, lcm-lite/README, lcm-lite/lcmlite.c,
+	  lcm-lite/lcmlite.h, lcm-lite/lcmlite_ios.c,
+	  lcm-lite/lcmlite_ios.h, lcm-lite/lcmlite_posix.c: add lcm-lite
+	  implementation
+
+2010-08-12  ashuang
+
+	* [r497] examples/c, examples/c/Makefile, examples/c/listener.c,
+	  examples/c/read_log.c, examples/c/send_message.c,
+	  examples/java/example_t_demo,
+	  examples/java/example_t_demo/Listener.java,
+	  examples/java/example_t_demo/SendMessage.java,
+	  examples/java/example_t_demo/build.sh,
+	  examples/java/example_t_demo/clean.sh, examples/lcm-spy,
+	  examples/lcm-spy/buildjar.sh, examples/matlab,
+	  examples/matlab/buildjar.sh, examples/matlab/listener.m,
+	  examples/matlab/sendmessage.m, examples/python/cleanup.sh,
+	  examples/python/listener.py, examples/python/read-log.py,
+	  examples/python/send-message.py,
+	  examples/types/example_list_t.lcm, examples/types/example_t.lcm,
+	  examples/types/exampleconst_t.lcm: modify examples -- place LCM
+	  types in package "exlcm"
+	* [r494] lcm-logger/lcm_logger.c: enable GRegex in lcm-logger
+	* [r493] lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c,
+	  lcm/lcm.c: use GLib regexes if they're available. Add
+	  --invert-channels / -v flag to lcm-logger
+
+2010-08-05  ashuang
+
+	* [r490] lcm-java/lcm/test: remove java lcm.test.SlowLCMSubscriber
+
+2010-08-04  edwinolson
+
+	* [r488] lcmgen/emit_java.c: emit_java: two bug fixes. First, trust
+	  explicit array length field, not .length attribute. Second, fix
+	  copy which copied in the wrong direction
+	* [r487] lcmgen/emit_java.c: emit_java.c: in the previous
+	  implementation, it was legal for a variable length array to be
+	  null if its length was zero. When the arraycopy optimization was
+	  added, a null array would cause a NullPointerException. This
+	  patch restores the previous behavior.
+
+2010-08-02  ashuang
+
+	* [r486] lcmgen/lcmgen.c: lcmgen: warn if struct has 'int' member
+	  type instead of 'intN_t'
+
+2010-07-28  jan.hrbacek
+
+	* [r485] lcm-dotnet/lcm/lcm/LCM.cs,
+	  lcm-dotnet/lcm/lcm/LCMEncodable.cs, lcmgen/emit_csharp.c,
+	  lcmgen/lcm-gen.vcproj: Windows & .NET ports fixes: - lcm-gen VS
+	  Release configuration fix (needed to distribute lcm-gen to
+	  another machines without debug libs) - lcm-gen csharp emitter
+	  functionality update - add options --csharp-strip-dirs and
+	  --csharp-root-nsp - LCM.NET & lcm-gen csharp emitter - bool and
+	  string related fixes - LCM.NET - fix unsubscibe bug
+
+2010-07-24  edwinolson
+
+	* [r484] lcm-java/lcm/lcm/LCMDataInputStream.java,
+	  lcm-java/lcm/lcm/LCMDataOutputStream.java, lcmgen/emit_java.c:
+	  significant rewrite of lcm-gen emit_java to allow faster
+	  arraycopy in several instances.
+
+2010-07-19  ashuang
+
+	* [r482] docs/reference/Makefile.am: add tutorial-dotnet.sgml to
+	  Makefile
+
+2010-07-14  ashuang
+
+	* [r481] ChangeLog, NEWS, configure.in, lcm-python/setup.py:
+	  release 0.5.1
+
 2010-07-05  jan.hrbacek
 
 	* [r480] lcmgen/lcm-gen.vcproj: Fix Windows port lcmgen VS project
