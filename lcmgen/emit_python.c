@@ -453,6 +453,8 @@ static void
 emit_python_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(1, "def _encode_one(self, buf):");
+    if(!g_ptr_array_size(ls->members))
+        emit(2, "pass");
 
     GQueue *struct_fmt = g_queue_new ();
     GQueue *struct_members = g_queue_new ();
