@@ -114,8 +114,8 @@ nil_initializer_string(const lcm_typename_t *type)
     if (!strcmp(type->lctypename, "int16_t")) return "0";
     if (!strcmp(type->lctypename, "int32_t")) return "0";
     if (!strcmp(type->lctypename, "int64_t")) return "0";
-    if (!strcmp(type->lctypename, "float")) return "0";
-    if (!strcmp(type->lctypename, "double")) return "0";
+    if (!strcmp(type->lctypename, "float")) return "0.0";
+    if (!strcmp(type->lctypename, "double")) return "0.0";
     if (!strcmp(type->lctypename, "string")) return "\"\"";
     else return "None";
 }
