@@ -152,6 +152,12 @@ void lcm_destroy (lcm_t *lcm);
 /**
  * lcm_get_fileno:
  *
+ * Each LCM instance has a file descriptor that can be used to asynchronously
+ * receive notification when incoming messages have been received.  This file
+ * descriptor can typically be incorporated into an application event loop
+ * (e.g., GTK+, QT, etc.)  For an example using select(), see
+ * examples/c/listener-async.c
+ *
  * Returns: a file descriptor suitable for use with select, poll, etc.
  */
 LCM_API_FUNCTION
