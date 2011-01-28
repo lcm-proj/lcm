@@ -534,6 +534,25 @@ emit_python_encode (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 }
 
 static void
+emit_member_initializer(const lcmgen_t* lcm, FILE *f, lcm_member_t* lm, 
+        int dim_num)
+{
+    if(dim_num == lm->dimensions->len) {
+        fprintf(f, "%s", nil_initializer_string(lm->type));
+        return;
+    }
+    lcm_dimension_t *dim = 
+        (lcm_dimension_t *) g_ptr_array_index (lm->dimensions, dim_num);
+    if(dim->mode == LCM_VAR) {
+        fprintf(f, "[]");
+    } else {
+        fprintf(f, "[ ");
+        emit_member_initializer(lcm, f, lm, dim_num+1);
+        fprintf(f, " for dim%d in range(%s) ]", dim_num, dim->size);
+    }
+}
+
+static void
 emit_python_init (const lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
     fprintf(f, "    def __init__(self):\n");
@@ -542,11 +561,8 @@ emit_python_init (const lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
         fprintf(f, "        self.%s = ", lm->membername);
 
-        if( 0 == lm->dimensions->len ) {
-            fprintf(f, "%s\n", nil_initializer_string(lm->type));
-        } else {
-            fprintf(f, "[]\n");
-        }
+        emit_member_initializer(lcm, f, lm, 0);
+        fprintf(f, "\n");
     }
     if (0 == member) { fprintf(f, "        pass\n"); }
     fprintf(f, "\n");
