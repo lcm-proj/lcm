@@ -413,9 +413,8 @@ lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf, const char *channel)
     // now, call the handlers.
     for (int i = 0; i < nhandlers; i++) {
         lcm_subscription_t *h = (lcm_subscription_t *) g_ptr_array_index(handlers, i);
-        if (!h->marked_for_deletion) {
+        if (!h->marked_for_deletion && h->num_queued_messages > 0) {
             h->num_queued_messages--;
-            assert(h->num_queued_messages >= 0);
             int depth = g_static_rec_mutex_unlock_full (&lcm->mutex);
             h->handler (buf, channel, h->userdata);
             g_static_rec_mutex_lock_full (&lcm->mutex, depth);
@@ -490,6 +489,8 @@ lcm_parse_url (const char * url, char ** provider, char ** network,
 int 
 lcm_subscription_set_queue_capacity(lcm_subscription_t* handler, int num_messages)
 {
+    g_static_rec_mutex_lock(&lcm->mutex);
     handler->max_num_queued_messages = num_messages;
+    g_static_rec_mutex_unlock(&lcm->mutex);
     return 0;
 }
