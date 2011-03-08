@@ -25,7 +25,9 @@ char * lcm_ringbuf_alloc (lcm_ringbuf_t * ring, unsigned int len);
 void lcm_ringbuf_shrink_last(lcm_ringbuf_t *ring, const char *buf, 
         unsigned int len);
 
-double lcm_ringbuf_available(lcm_ringbuf_t *ring);
+unsigned int lcm_ringbuf_capacity(lcm_ringbuf_t *ring);
+
+unsigned int lcm_ringbuf_used(lcm_ringbuf_t *ring);
 
 /* 
  * Releases a previously-allocated chunk of the ring buffer.  Only the most

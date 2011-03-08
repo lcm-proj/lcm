@@ -224,7 +224,7 @@ lcm_logprov_get_fileno (lcm_logprov_t *lr)
 static int
 lcm_logprov_handle (lcm_logprov_t * lr)
 {
-lcm_recv_buf_t rbuf;
+    lcm_recv_buf_t rbuf;
 
     if (!lr->event)
         return -1;
