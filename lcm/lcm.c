@@ -31,6 +31,7 @@ struct _lcm_subscription_t {
     char             *channel;
     lcm_msg_handler_t  handler;
     void             *userdata;
+    lcm_t* lcm;
 #ifdef USE_GREGEX
     GRegex * regex;
 #else
@@ -278,6 +279,7 @@ lcm_subscription_t
     h->marked_for_deletion = 0;
     h->max_num_queued_messages = lcm->default_max_num_queued_messages;
     h->num_queued_messages = 0;
+    h->lcm = lcm;
 
     char *regexbuf = g_strdup_printf("^%s$", channel);
 #ifdef USE_GREGEX
@@ -487,10 +489,10 @@ lcm_parse_url (const char * url, char ** provider, char ** network,
 }
 
 int 
-lcm_subscription_set_queue_capacity(lcm_subscription_t* handler, int num_messages)
+lcm_subscription_set_queue_capacity(lcm_subscription_t* subs, int num_messages)
 {
-    g_static_rec_mutex_lock(&lcm->mutex);
-    handler->max_num_queued_messages = num_messages;
-    g_static_rec_mutex_unlock(&lcm->mutex);
+    g_static_rec_mutex_lock(&subs->lcm->mutex);
+    subs->max_num_queued_messages = num_messages;
+    g_static_rec_mutex_unlock(&subs->lcm->mutex);
     return 0;
 }

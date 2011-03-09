@@ -246,12 +246,13 @@ lcm_logprov_handle (lcm_logprov_t * lr)
         lr->next_clock_time = now;
 
 //    rbuf.channel = lr->event->channel,
-    rbuf.data = (uint8_t*) lr->event->data,
-    rbuf.data_size = lr->event->datalen,
-    rbuf.recv_utime = lr->next_clock_time,
-    rbuf.lcm = lr->lcm,
+    rbuf.data = (uint8_t*) lr->event->data;
+    rbuf.data_size = lr->event->datalen;
+    rbuf.recv_utime = lr->next_clock_time;
+    rbuf.lcm = lr->lcm;
 
-    lcm_dispatch_handlers (lr->lcm, &rbuf, lr->event->channel);
+    if(lcm_try_enqueue_message(lr->lcm, lr->event->channel))
+        lcm_dispatch_handlers (lr->lcm, &rbuf, lr->event->channel);
 
     int64_t prev_log_time = lr->event->timestamp;
     if (load_next_event (lr) < 0) {

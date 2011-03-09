@@ -337,7 +337,8 @@ lcm_tcpq_handle(lcm_tcpq_t * self)
     rbuf.recv_utime = timestamp_now();
     rbuf.lcm = self->lcm;
 
-    lcm_dispatch_handlers(self->lcm, &rbuf, self->recv_channel_buf);
+    if(lcm_try_enqueue_message(self->lcm, self->recv_channel_buf))
+        lcm_dispatch_handlers(self->lcm, &rbuf, self->recv_channel_buf);
     return 0;
 
 disconnected:
