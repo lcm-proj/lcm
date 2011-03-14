@@ -1154,6 +1154,11 @@ udpm_self_test (lcm_udpm_t *lcm)
 static int
 _setup_recv_thread (lcm_udpm_t *lcm)
 {
+    g_static_rec_mutex_lock(&lcm->mutex);
+    if(lcm->thread_created) {
+        g_static_rec_mutex_unlock(&lcm->mutex);
+        return 0;
+    }
     assert (!lcm->thread_created);
     dbg (DBG_LCM, "allocating resources for receiving messages\n");
 
@@ -1161,8 +1166,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     lcm->recvfd = socket (AF_INET, SOCK_DGRAM, 0);
     if (lcm->recvfd < 0) {
         perror ("allocating LCM recv socket");
-        _destroy_recv_parts (lcm);
-        return -1;
+        goto setup_recv_thread_fail;
     }
 
     struct sockaddr_in addr;
@@ -1178,8 +1182,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     if (setsockopt (lcm->recvfd, SOL_SOCKET, SO_REUSEADDR, 
             (char*)&opt, sizeof (opt)) < 0) {
         perror ("setsockopt (SOL_SOCKET, SO_REUSEADDR)");
-        _destroy_recv_parts (lcm);
-        return -1;
+        goto setup_recv_thread_fail;
     }
 
 #ifdef USE_REUSEPORT
@@ -1190,8 +1193,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     if (setsockopt (lcm->recvfd, SOL_SOCKET, SO_REUSEPORT, 
             (char*)&opt, sizeof (opt)) < 0) {
         perror ("setsockopt (SOL_SOCKET, SO_REUSEPORT)");
-        _destroy_recv_parts (lcm);
-        return -1;
+        goto setup_recv_thread_fail;
     }
 #endif
 
@@ -1249,8 +1251,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
 
     if (bind (lcm->recvfd, (struct sockaddr*)&addr, sizeof (addr)) < 0) {
         perror ("bind");
-        _destroy_recv_parts (lcm);
-        return -1;
+        goto setup_recv_thread_fail;
     }
 
     struct ip_mreq mreq;
@@ -1261,8 +1262,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     if (setsockopt (lcm->recvfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
             (char*)&mreq, sizeof (mreq)) < 0) {
         perror ("setsockopt (IPPROTO_IP, IP_ADD_MEMBERSHIP)");
-        _destroy_recv_parts (lcm);
-        return -1;
+        goto setup_recv_thread_fail;
     }
 
     lcm->inbufs_empty = lcm_buf_queue_new ();
@@ -1280,8 +1280,7 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     // setup a pipe for notifying the reader thread when to quit
     if(0 != lcm_internal_pipe_create(lcm->thread_msg_pipe)) {
         perror(__FILE__ " pipe(setup)");
-        _destroy_recv_parts (lcm);
-        return -1;
+        goto setup_recv_thread_fail;
     }
     fcntl (lcm->thread_msg_pipe[1], F_SETFL, O_NONBLOCK);
 
@@ -1289,20 +1288,25 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     lcm->read_thread = g_thread_create (recv_thread, lcm, TRUE, NULL);
     if (!lcm->read_thread) {
         fprintf (stderr, "Error: LCM failed to start reader thread\n");
-        _destroy_recv_parts (lcm);
-        return -1;
+        goto setup_recv_thread_fail;
     }
     lcm->thread_created = 1;
+    g_static_rec_mutex_unlock(&lcm->mutex);
 
     dbg (DBG_LCM, "LCM: conducting self test\n");
     if (udpm_self_test (lcm) < 0) {
         fprintf (stderr, "LCM self test failed!!\n"
                 "Check your routing tables and firewall settings\n");
-        _destroy_recv_parts (lcm);
-        return -1;
+        g_static_rec_mutex_lock(&lcm->mutex);
+        goto setup_recv_thread_fail;
     }
     dbg (DBG_LCM, "LCM: self test successful\n");
     return 0;
+
+setup_recv_thread_fail:
+    _destroy_recv_parts (lcm);
+    g_static_rec_mutex_unlock(&lcm->mutex);
+    return -1;
 }
 
 #ifdef __linux__
