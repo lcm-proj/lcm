@@ -49,6 +49,8 @@ typedef int SOCKET;
 
 #define LCM_SHORT_MESSAGE_MAX_SIZE 1400
 
+#define SELF_TEST_CHANNEL "LCM_SELF_TEST"
+
 // HUGE is not defined on cygwin as of 2008-03-05
 #ifndef HUGE
 #define HUGE 3.40282347e+38F
@@ -175,6 +177,13 @@ struct _lcm_provider_t {
 
     GStaticMutex transmit_lock; // so that only thread at a time can transmit
 
+    /* synchronization variables used only while allocating receive resources
+     */
+    int creating_read_thread;
+    GCond* create_read_thread_cond;
+    GMutex* create_read_thread_mutex;
+
+    /* other variables */
     GHashTable  *frag_bufs;
     uint32_t    frag_bufs_total_size;
     uint32_t    frag_bufs_max_total_size;
@@ -193,6 +202,8 @@ struct _lcm_provider_t {
 };
 
 static int _setup_recv_thread (lcm_udpm_t *lcm);
+
+static GStaticPrivate CREATE_READ_THREAD_PKEY = G_STATIC_PRIVATE_INIT;
 
 // utility functions
 
@@ -408,6 +419,10 @@ lcm_udpm_destroy (lcm_udpm_t *lcm)
 
     g_static_rec_mutex_free (&lcm->mutex);
     g_static_mutex_free (&lcm->transmit_lock);
+    if(lcm->create_read_thread_mutex) {
+        g_mutex_free(lcm->create_read_thread_mutex);
+        g_cond_free(lcm->create_read_thread_cond);
+    }
     free (lcm);
 }
 
@@ -872,16 +887,16 @@ recv_thread (void * user)
 static int 
 lcm_udpm_get_fileno (lcm_udpm_t *lcm)
 {
+    int status = _setup_recv_thread(lcm);
+    if(0 != status)
+        return -1;
     return lcm->notify_pipe[0];
 }
 
 static int
 lcm_udpm_subscribe (lcm_udpm_t *lcm, const char *channel)
 {
-    if (! lcm->thread_created) {
-        return _setup_recv_thread (lcm);
-    }
-    return 0;
+    return _setup_recv_thread (lcm);
 }
 
 static int 
@@ -1029,11 +1044,8 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
 {
     int status;
     char ch;
-
-    if (! lcm->thread_created) {
-        if (0 != _setup_recv_thread (lcm))
-            return -1;
-    }
+    if(0 != _setup_recv_thread (lcm))
+        return -1;
 
     /* Read one byte from the notify pipe.  This will block if no packets are
      * available yet and wake up when they are. */
@@ -1071,7 +1083,14 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
     rbuf.recv_utime = lcmb->recv_utime;
     rbuf.lcm = lcm->lcm;
 
-    lcm_dispatch_handlers (lcm->lcm, &rbuf, lcmb->channel_name);
+    if(lcm->creating_read_thread) {
+        // special case:  If we're creating the read thread and are in
+        // self-test mode, then only dispatch the self-test message.
+        if(!strcmp(lcmb->channel_name, SELF_TEST_CHANNEL))
+            lcm_dispatch_handlers (lcm->lcm, &rbuf, lcmb->channel_name);
+    } else {
+        lcm_dispatch_handlers (lcm->lcm, &rbuf, lcmb->channel_name);
+    }
 
     g_static_rec_mutex_lock (&lcm->mutex);
     if (lcmb->buf_from_ringbuf)
@@ -1099,12 +1118,12 @@ udpm_self_test (lcm_udpm_t *lcm)
     int success = 0;
     int status;
     // register a handler for the self test message
-    lcm_subscription_t *h = lcm_subscribe (lcm->lcm, "LCM_SELF_TEST", 
+    lcm_subscription_t *h = lcm_subscribe (lcm->lcm, SELF_TEST_CHANNEL, 
                                            self_test_handler, &success);
 
     // transmit a message
     char *msg = "lcm self test";
-    lcm_udpm_publish (lcm, "LCM_SELF_TEST", (uint8_t*)msg, strlen (msg));
+    lcm_udpm_publish (lcm, SELF_TEST_CHANNEL, (uint8_t*)msg, strlen (msg));
 
     // wait one second for message to be received
     GTimeVal now, endtime;
@@ -1117,7 +1136,7 @@ udpm_self_test (lcm_udpm_t *lcm)
     GTimeVal next_retransmit;
     _timeval_add (&now, &retransmit_interval, &next_retransmit);
 
-    int recvfd = lcm_udpm_get_fileno (lcm);
+    int recvfd = lcm->notify_pipe[0];
 
     do {
         GTimeVal selectto;
@@ -1129,7 +1148,7 @@ udpm_self_test (lcm_udpm_t *lcm)
 
         g_get_current_time(&now);
         if (_timeval_compare (&now, &next_retransmit) > 0) {
-            status = lcm_udpm_publish (lcm, "LCM_SELF_TEST", (uint8_t*)msg, 
+            status = lcm_udpm_publish (lcm, SELF_TEST_CHANNEL, (uint8_t*)msg, 
                     strlen (msg));
             _timeval_add (&now, &retransmit_interval, &next_retransmit);
         }
@@ -1155,11 +1174,46 @@ static int
 _setup_recv_thread (lcm_udpm_t *lcm)
 {
     g_static_rec_mutex_lock(&lcm->mutex);
-    if(lcm->thread_created) {
+
+    // some thread synchronization code to ensure that only one thread sets up the
+    // receive thread, and that all threads entering this function after the thread
+    // setup begins wait for it to finish.
+    if(lcm->creating_read_thread) {
+        // check if this thread is the one creating the receive thread.
+        // If so, just return.
+        if(g_static_private_get(&CREATE_READ_THREAD_PKEY)) {
+            g_static_rec_mutex_unlock(&lcm->mutex);
+            return 0;
+        }
+
+        // ugly bit with two mutexes because we can't use a GStaticRecMutex with a GCond
+        g_mutex_lock(lcm->create_read_thread_mutex);
+        g_static_rec_mutex_unlock(&lcm->mutex);
+
+        // wait for the thread creating the read thread to finish
+        while(lcm->creating_read_thread) {
+            g_cond_wait(lcm->create_read_thread_cond, lcm->create_read_thread_mutex);
+        }
+        g_mutex_unlock(lcm->create_read_thread_mutex);
+        g_static_rec_mutex_lock(&lcm->mutex);
+
+        // if we've gotten here, then either the read thread is created, or it
+        // was not possible to do so.  Figure out which happened, and return.
+        int result = lcm->thread_created ? 0 : -1;
+        g_static_rec_mutex_unlock(&lcm->mutex);
+        return result;
+    } else if(lcm->thread_created) {
         g_static_rec_mutex_unlock(&lcm->mutex);
         return 0;
     }
-    assert (!lcm->thread_created);
+
+    // no other thread is trying to create the read thread right now.  claim that task.
+    lcm->creating_read_thread = 1;
+    lcm->create_read_thread_mutex = g_mutex_new();
+    lcm->create_read_thread_cond = g_cond_new();
+    // mark this thread as the one creating the read thread
+    g_static_private_set(&CREATE_READ_THREAD_PKEY, GINT_TO_POINTER(1), NULL);
+
     dbg (DBG_LCM, "allocating resources for receiving messages\n");
 
     // allocate multicast socket
@@ -1293,15 +1347,28 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     lcm->thread_created = 1;
     g_static_rec_mutex_unlock(&lcm->mutex);
 
+    // conduct a self-test just to make sure everything is working.
     dbg (DBG_LCM, "LCM: conducting self test\n");
-    if (udpm_self_test (lcm) < 0) {
+    int self_test_results = udpm_self_test(lcm);
+    g_static_rec_mutex_lock(&lcm->mutex);
+
+    if (0 == self_test_results) {
+        dbg (DBG_LCM, "LCM: self test successful\n");
+    } else {
+        // self test failed.  destroy the read thread
         fprintf (stderr, "LCM self test failed!!\n"
                 "Check your routing tables and firewall settings\n");
-        g_static_rec_mutex_lock(&lcm->mutex);
-        goto setup_recv_thread_fail;
+        _destroy_recv_parts (lcm);
     }
-    dbg (DBG_LCM, "LCM: self test successful\n");
-    return 0;
+
+    // notify threads waiting for the read thread to be created
+    g_mutex_lock(lcm->create_read_thread_mutex);
+    lcm->creating_read_thread = 0;
+    g_cond_broadcast(lcm->create_read_thread_cond);
+    g_mutex_unlock(lcm->create_read_thread_mutex);
+    g_static_rec_mutex_unlock(&lcm->mutex);
+
+    return self_test_results;
 
 setup_recv_thread_fail:
     _destroy_recv_parts (lcm);
@@ -1426,6 +1493,12 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     lcm->frag_bufs_max_total_size = 1 << 24; // 16 megabytes
     lcm->max_n_frag_bufs = 1000;
 
+    // synchronization variables used when allocating receive resources
+    lcm->creating_read_thread = 0;
+    lcm->create_read_thread_mutex = NULL;
+    lcm->create_read_thread_cond = NULL;
+
+    // internal notification pipe
     if(0 != lcm_internal_pipe_create(lcm->notify_pipe)) {
         perror(__FILE__ " pipe(create)");
         g_hash_table_destroy(lcm->frag_bufs);
