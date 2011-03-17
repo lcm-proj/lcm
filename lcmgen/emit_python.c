@@ -180,7 +180,7 @@ _emit_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
         } else if (is_same_package (lm->type, ls->structname)) {
             emit (indent, "%s%s.%s._decode_one(buf)%s", accessor, sn, sn, sfx);
         } else {
-            emit (indent, "%s%s.%s._decode_one(buf)%s", accessor, tn, sn, sfx);
+            emit (indent, "%s%s._decode_one(buf)%s", accessor, tn, sfx);
         }
     }
 }
@@ -594,7 +594,7 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             } else if (is_same_package (lm->type, ls->structname)) {
                 emit_continue ("+ %s.%s.%s", msn, msn, ghr);
             } else {
-                emit_continue ("+ %s.%s.%s", lm->type->lctypename, msn, ghr);
+                emit_continue ("+ %s.%s", lm->type->lctypename, ghr);
             }
         }
     }
