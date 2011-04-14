@@ -465,7 +465,7 @@ public class Spy
             } else if(c.equals("-l") || c.equals("--lcm-url") || c.startsWith("--lcm-url=")) {
                 String optarg = null;
                 if(c.startsWith("--lcm-url=")) {
-                    optarg=c.split("=")[1];
+                    optarg=c.substring(10);
                 } else if(optind < args.length) {
                     optind++;
                     optarg = args[optind];
