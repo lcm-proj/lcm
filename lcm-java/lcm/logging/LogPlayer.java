@@ -418,6 +418,10 @@ public class LogPlayer extends JComponent
 
                     if (cmd.equals("PLAYPAUSETOGGLE")) {
                         events.offer(new PlayPauseEvent());
+                    } else if (cmd.equals("PLAY")) {
+                        events.offer(new PlayPauseEvent(true));
+                    } else if (cmd.equals("PAUSE")) {
+                        events.offer(new PlayPauseEvent(false));
                     } else if (cmd.equals("STEP")) {
                         events.offer(new StepEvent());
                     } else if (cmd.equals("FASTER")) {
