@@ -258,5 +258,6 @@ mkdir_with_parents (const char *path, int mode)
             i++; // skip the '/'
         }
     }
+    mkdir(path, mode);
 #endif
 }
