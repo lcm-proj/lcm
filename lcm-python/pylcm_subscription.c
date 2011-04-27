@@ -1,13 +1,51 @@
 #include "pylcm_subscription.h"
 
 PyDoc_STRVAR (_class_doc,
-"The LCMSubscription class is an opaque data structure used to represent\n\
-a single subscription of a message handler to an LCM channel.\n\
+"The LCMSubscription class represents a single subscription of a message\n\
+handler to an LCM channel.\n\
 \n\
 This class should never be instantiated by the programmer.\n\
 \n\
 @undocumented: __new__, __getattribute__, __init__\n\
 ");
+
+// =============== LCMSubscription class methods ==============
+
+static PyObject *
+_set_queue_capacity (PyLCMSubscriptionObject *sobj, PyObject *arg)
+{
+    int num_messages = PyInt_AsLong(arg);
+    if (num_messages == -1 && PyErr_Occurred())
+        return NULL;
+
+    int status;
+    Py_BEGIN_ALLOW_THREADS
+    status = lcm_subscription_set_queue_capacity (sobj->subscription, num_messages);
+    Py_END_ALLOW_THREADS
+
+    if (0 != status) {
+        PyErr_SetFromErrno (PyExc_IOError);
+        return NULL;
+    }
+
+    Py_RETURN_NONE;
+}
+PyDoc_STRVAR (pylcm_set_queue_capacity_doc,
+"set_queue_capacity(num_messages) -> None\n\
+Sets the maximum number of received but unhandled messages to queue for this\n\
+subscription.  If messages start arriving faster than they are handled, then\n\
+they will be discarded after more than this number start piling up.\n\
+\n\
+@param num_messages: Maximum number of messages to queue for this subscription.\n\
+A number less than or equal to zero indicates no limit (very dangerous!).\n\
+");
+
+static PyMethodDef _methods[] = {
+    { "set_queue_capacity", (PyCFunction)_set_queue_capacity, METH_O, pylcm_set_queue_capacity_doc },
+    { NULL, NULL }
+};
+
+// ==================== class administrative methods ====================
 
 static void
 _dealloc (PyLCMSubscriptionObject *s)
@@ -67,7 +105,7 @@ PyTypeObject pylcm_subscription_type = {
     0,                  /* tp_weaklistoffset */
     0,                  /* tp_iter */
     0,                  /* tp_iternext */
-    0,                  /* tp_methods */
+    _methods,           /* tp_methods */
     0,                  /* tp_members */
     0,                  /* tp_getset */
     0,                  /* tp_base */

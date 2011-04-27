@@ -10,19 +10,19 @@ all: listener \
 	send-message \
 	read-log 
 
-listener: listener.o exlcm_example_t.o
+listener: exlcm_example_t.o listener.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-listener-async: listener-async.o exlcm_example_t.o
+listener-async: exlcm_example_t.o listener-async.o 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-listener-glib: listener-glib.o exlcm_example_t.o
+listener-glib: exlcm_example_t.o listener-glib.o 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-send-message: send_message.o exlcm_example_t.o
+send-message: exlcm_example_t.o send_message.o 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-read-log: read_log.o exlcm_example_t.o
+read-log: exlcm_example_t.o read_log.o 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 # prevent auto-generated lcm .c/.h files from being deleted

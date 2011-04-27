@@ -40,7 +40,7 @@ typedef int SOCKET;
 #include "ringbuffer.h"
 
 
-#define LCM_RINGBUF_SIZE (1000*1024)
+#define LCM_RINGBUF_SIZE (200*1024)
 
 #define LCM_DEFAULT_RECV_BUFS 2000
 
@@ -106,8 +106,8 @@ typedef struct _lcm_buf {
 
     int   data_offset;       // offset to payload
     int   data_size;         // size of payload
-    int   buf_from_ringbuf;  // 1 if the data at buf is managed by the
-                             // ringbuffer, 0 if it's from malloc
+    lcm_ringbuf_t *ringbuf;  // the ringbuffer used to allocate buf.  NULL if
+                             // not allocated from ringbuf
 
     int   packet_size;       // total bytes received
     int   buf_size;          // bytes allocated 
@@ -190,9 +190,6 @@ struct _lcm_provider_t {
     uint32_t    max_n_frag_bufs;
 
     uint32_t     udp_rx;            // packets received and processed
-    uint32_t     udp_discarded_lcmb; // packets discarded because no lcmb
-    uint32_t     udp_discarded_buf; // packets discarded because no 
-                                    // ringbuf space
     uint32_t     udp_discarded_bad; // packets discarded because they were bad 
                                     // somehow
     double       udp_low_watermark; // least buffer available
@@ -315,13 +312,35 @@ lcm_buf_enqueue (lcm_buf_queue_t * q, lcm_buf_t * el)
 }
 
 static void
-lcm_buf_queue_free (lcm_buf_queue_t * q)
+lcm_buf_free_data(lcm_udpm_t *lcm, lcm_buf_t *lcmb) 
+{
+    if(!lcmb->buf)
+        return;
+    if (lcmb->ringbuf) {
+        lcm_ringbuf_dealloc (lcmb->ringbuf, lcmb->buf);
+
+        // if the packet was allocated from an obsolete and empty ringbuffer,
+        // then deallocate the old ringbuffer as well.
+        if(lcmb->ringbuf != lcm->ringbuf && !lcm_ringbuf_used(lcmb->ringbuf)) {
+            lcm_ringbuf_free(lcmb->ringbuf);
+            dbg(DBG_LCM, "Destroying unused orphan ringbuffer %p\n", lcmb->ringbuf);
+        }
+    } else {
+        free (lcmb->buf);
+    }
+    lcmb->buf = NULL;
+    lcmb->buf_size = 0;
+    lcmb->ringbuf = NULL;
+}
+
+static void
+lcm_buf_queue_free (lcm_udpm_t *lcm, lcm_buf_queue_t * q)
 {
     lcm_buf_t * el;
-
-    while ( (el = lcm_buf_dequeue (q)))
+    while ( (el = lcm_buf_dequeue (q))) {
+        lcm_buf_free_data(lcm, el);
         free (el);
-
+    }
     free (q);
 }
 
@@ -392,11 +411,11 @@ _destroy_recv_parts (lcm_udpm_t *lcm)
     }
 
     if (lcm->inbufs_empty) {
-        lcm_buf_queue_free (lcm->inbufs_empty);
+        lcm_buf_queue_free (lcm, lcm->inbufs_empty);
         lcm->inbufs_empty = NULL;
     }
     if (lcm->inbufs_filled) {
-        lcm_buf_queue_free (lcm->inbufs_filled);
+        lcm_buf_queue_free (lcm, lcm->inbufs_filled);
         lcm->inbufs_filled = NULL;
     }
     if (lcm->ringbuf) {
@@ -477,20 +496,6 @@ new_argument (gpointer key, gpointer value, gpointer user)
     }
 }
 
-static void udp_discard_packet(lcm_udpm_t *lcm)
-{
-    char             discard[65536];
-    struct sockaddr  from;
-    socklen_t        fromlen = sizeof(struct sockaddr);
-
-    int sz = recvfrom (lcm->recvfd, discard, 65536, 0, 
-                       (struct sockaddr*) &from, &fromlen);
-    if (sz < 0) 
-        perror("udp_discard_packet");
- 
-    lcm->udp_discarded_buf++;
-}
-
 static void
 _destroy_fragment_buffer (lcm_udpm_t *lcm, lcm_frag_buf_t *fbuf)
 {
@@ -566,7 +571,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
         }
 
         // if the packet has no subscribers, drop the message now.
-        if (!lcm_has_handlers (lcm->lcm, channel))
+        if(!lcm_has_handlers(lcm->lcm, channel))
             return 0;
 
         fbuf = lcm_frag_buf_new (*((struct sockaddr_in*) &lcmb->from),
@@ -609,13 +614,22 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     fbuf->fragments_remaining --;
 
     if (0 == fbuf->fragments_remaining) {
+        // complete message received.  Is there a subscriber that still
+        // wants it?  (i.e., does any subscriber have space in its queue?)
+        if(!lcm_try_enqueue_message(lcm->lcm, fbuf->channel)) {
+            // no... sad... free the fragment buffer and return
+            _destroy_fragment_buffer (lcm, fbuf);
+            return 0;
+        }
+
+        // yes, transfer the message into the lcm_buf_t
+ 
         // deallocate the ringbuffer-allocated buffer
         g_static_rec_mutex_lock (&lcm->mutex);
-        lcm_ringbuf_dealloc (lcm->ringbuf, lcmb->buf);
+        lcm_buf_free_data(lcm, lcmb);
         g_static_rec_mutex_unlock (&lcm->mutex);
-        lcmb->buf_from_ringbuf = 0;
 
-        // transfer ownership of the message's payload buffer to the lcm_buf_t
+        // transfer ownership of the message's payload buffer
         lcmb->buf = fbuf->data;
         fbuf->data = NULL;
 
@@ -654,7 +668,7 @@ _recv_short_message (lcm_udpm_t *lcm, lcm_buf_t *lcmb, int sz)
     lcm->udp_rx++;
 
     // if the packet has no subscribers, drop the message now.
-    if (!lcm_has_handlers (lcm->lcm, pkt_channel_str))
+    if(!lcm_try_enqueue_message(lcm->lcm, pkt_channel_str))
         return 0;
 
     strcpy (lcmb->channel_name, pkt_channel_str);
@@ -674,38 +688,36 @@ udp_read_packet (lcm_udpm_t *lcm)
 
     int sz = 0;
 
-    g_static_rec_mutex_lock (&lcm->mutex);
-    double buf_avail = lcm_ringbuf_available(lcm->ringbuf);
-    g_static_rec_mutex_unlock (&lcm->mutex);
-    if (buf_avail < lcm->udp_low_watermark)
-        lcm->udp_low_watermark = buf_avail;
+    // TODO warn about message loss somewhere else.
 
-    GTimeVal tv;
-    g_get_current_time(&tv);
-    int elapsedsecs = tv.tv_sec - lcm->udp_last_report_secs;
-    if (elapsedsecs > 2) {
-        uint32_t total_bad = lcm->udp_discarded_lcmb + 
-                             lcm->udp_discarded_buf + 
-                             lcm->udp_discarded_bad;
-        if (total_bad > 0 || lcm->udp_low_watermark < 0.5) {
-            fprintf(stderr, 
-                    "%d.%03d LCM loss %4.1f%% : %5d lcmb, %5d buf, %5d err, "
-                    "buf avail %4.1f%%\n", 
-                   (int) tv.tv_sec, (int) tv.tv_usec/1000,
-                   total_bad * 100.0 / (lcm->udp_rx + total_bad),
-                   lcm->udp_discarded_lcmb,
-                   lcm->udp_discarded_buf,
-                   lcm->udp_discarded_bad,
-                   100.0 * lcm->udp_low_watermark);
-            
-            lcm->udp_rx = 0;
-            lcm->udp_discarded_lcmb = 0;
-            lcm->udp_discarded_buf = 0;
-            lcm->udp_discarded_bad = 0;
-            lcm->udp_last_report_secs = tv.tv_sec;
-            lcm->udp_low_watermark = HUGE;
-        }
-    }
+//    g_static_rec_mutex_lock (&lcm->mutex);
+//    unsigned int ring_capacity = lcm_ringbuf_capacity(lcm->ringbuf);
+//    unsigned int ring_used = lcm_ringbuf_used(lcm->ringbuf);
+//    double buf_avail = ((double)(ring_capacity - ring_used)) / ring_capacity;
+//    g_static_rec_mutex_unlock (&lcm->mutex);
+//    if (buf_avail < lcm->udp_low_watermark)
+//        lcm->udp_low_watermark = buf_avail;
+//
+//    GTimeVal tv;
+//    g_get_current_time(&tv);
+//    int elapsedsecs = tv.tv_sec - lcm->udp_last_report_secs;
+//    if (elapsedsecs > 2) {
+//        uint32_t total_bad = lcm->udp_discarded_bad;
+//        if (total_bad > 0 || lcm->udp_low_watermark < 0.5) {
+//            fprintf(stderr, 
+//                    "%d.%03d LCM loss %4.1f%% : %5d err, "
+//                    "buf avail %4.1f%%\n", 
+//                   (int) tv.tv_sec, (int) tv.tv_usec/1000,
+//                   total_bad * 100.0 / (lcm->udp_rx + total_bad),
+//                   lcm->udp_discarded_bad,
+//                   100.0 * lcm->udp_low_watermark);
+//            
+//            lcm->udp_rx = 0;
+//            lcm->udp_discarded_bad = 0;
+//            lcm->udp_last_report_secs = tv.tv_sec;
+//            lcm->udp_low_watermark = HUGE;
+//        }
+//    }
     
     int got_complete_message = 0;
 
@@ -742,32 +754,48 @@ udp_read_packet (lcm_udpm_t *lcm)
         assert (FD_ISSET (lcm->recvfd, &fds));
 
         if (!lcmb) {
-            // try to allocate space on the ringbuffer for the new data
-
-            // first allocate a buffer struct
             g_static_rec_mutex_lock (&lcm->mutex);
-            lcmb = lcm_buf_dequeue (lcm->inbufs_empty);
 
-            if (!lcmb) {
-                g_static_rec_mutex_unlock (&lcm->mutex);
-                udp_discard_packet (lcm);
-                continue;
+            // first allocate a buffer struct for the packet metadata
+
+            if(is_buf_queue_empty(lcm->inbufs_empty)) {
+                // allocate additional buffer structs if needed
+                int i;
+                for (i = 0; i < LCM_DEFAULT_RECV_BUFS; i++) {
+                    lcm_buf_t * nbuf = (lcm_buf_t *) calloc (1, sizeof(lcm_buf_t));
+                    lcm_buf_enqueue (lcm->inbufs_empty, nbuf);
+                }
             }
-            lcmb->buf_from_ringbuf = 1;
 
-            // next allocate space on the ringbuffer.
+            lcmb = lcm_buf_dequeue (lcm->inbufs_empty);
+            assert(lcmb);
+
+            // next allocate space on the ringbuffer for the packet data.
             // give it the maximum possible size for an unfragmented packet
             lcmb->buf = lcm_ringbuf_alloc(lcm->ringbuf, 65536); 
-            g_static_rec_mutex_unlock (&lcm->mutex);
+            lcmb->ringbuf = lcm->ringbuf;
+//            int rb_used = lcm_ringbuf_used(lcm->ringbuf);
+//            int rb_capacity = lcm_ringbuf_capacity(lcm->ringbuf);
+//            int rb_free = rb_capacity - rb_used;
+//            printf("ringbuf: %7d / %7d (%7d)\n", rb_used, rb_capacity, rb_free);
 
             if (!lcmb->buf) {
-                // ringbuffer is full.  discard the packet, put lcmb back on the 
-                // empty queue, and start waiting again
-                udp_discard_packet (lcm);
-                lcm_buf_enqueue (lcm->inbufs_empty, lcmb);
-                lcmb = NULL;
-                continue;
+                // ringbuffer is full.  allocate a larger ringbuffer
+
+                // Can't free the old ringbuffer yet because it's in use (i.e., full)
+                // Must wait until later to free it.
+                assert(lcm_ringbuf_used(lcm->ringbuf) > 0);
+                dbg(DBG_LCM, "Orphaning ringbuffer %p\n", lcm->ringbuf);
+
+                unsigned int old_capacity = lcm_ringbuf_capacity(lcm->ringbuf);
+                unsigned int new_capacity = (unsigned int)(old_capacity * 1.5);
+                lcm->ringbuf = lcm_ringbuf_new(new_capacity);
+                lcmb->buf = lcm_ringbuf_alloc(lcm->ringbuf, 65536);
+                lcmb->ringbuf = lcm->ringbuf;
+
+                dbg(DBG_LCM, "Allocated new ringbuffer size %u\n", new_capacity);
             }
+            g_static_rec_mutex_unlock (&lcm->mutex);
 
             // zero the last byte so that strlen never segfaults
             lcmb->buf[65535] = 0; 
@@ -776,18 +804,16 @@ udp_read_packet (lcm_udpm_t *lcm)
         vec.iov_base = lcmb->buf;
         vec.iov_len = 65535;
 
-#ifdef MSG_EXT_HDR
-        // operating systems that provide SO_TIMESTAMP allow us to obtain more
-        // accurate timestamps by having the kernel produce timestamps as soon
-        // as packets are received.
-        char controlbuf[64];
-#endif
         struct msghdr msg;
         msg.msg_name = &lcmb->from;
         msg.msg_namelen = sizeof (struct sockaddr);
         msg.msg_iov = &vec;
         msg.msg_iovlen = 1;
 #ifdef MSG_EXT_HDR
+        // operating systems that provide SO_TIMESTAMP allow us to obtain more
+        // accurate timestamps by having the kernel produce timestamps as soon
+        // as packets are received.
+        char controlbuf[64];
         msg.msg_control = controlbuf;
         msg.msg_controllen = sizeof (controlbuf);
         msg.msg_flags = 0;
@@ -844,9 +870,9 @@ udp_read_packet (lcm_udpm_t *lcm)
     // allocated to it on the ringbuffer to exactly match the amount of space
     // required.  That way, we do not use 64k of the ringbuffer for every
     // incoming message.
-    if (lcmb->buf_from_ringbuf) {
+    if (lcmb->ringbuf) {
         g_static_rec_mutex_lock (&lcm->mutex);
-        lcm_ringbuf_shrink_last(lcm->ringbuf, lcmb->buf, sz);
+        lcm_ringbuf_shrink_last(lcmb->ringbuf, lcmb->buf, sz);
         g_static_rec_mutex_unlock (&lcm->mutex);
     }
 
@@ -1093,12 +1119,7 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
     }
 
     g_static_rec_mutex_lock (&lcm->mutex);
-    if (lcmb->buf_from_ringbuf)
-        lcm_ringbuf_dealloc (lcm->ringbuf, lcmb->buf);
-    else
-        free (lcmb->buf);
-    lcmb->buf = NULL;
-    lcmb->buf_size = 0;
+    lcm_buf_free_data(lcm, lcmb);
     lcm_buf_enqueue (lcm->inbufs_empty, lcmb);
     g_static_rec_mutex_unlock (&lcm->mutex);
 

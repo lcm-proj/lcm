@@ -219,6 +219,16 @@ int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
 LCM_API_FUNCTION
 int lcm_handle (lcm_t *lcm);
 
+/**
+ * lcm_subscription_set_queue_capacity:
+ *
+ * Adjusts the maximum number of messages queued up for the specified subscription 
+ * object.  
+ *
+ */
+LCM_API_FUNCTION
+int lcm_subscription_set_queue_capacity(lcm_subscription_t* handler, int num_messages);
+
 #ifdef __cplusplus
 }
 #endif

@@ -7,21 +7,6 @@
 
 #include <glib.h>
 
-// GRegex was new in GLib 2.14.0
-#if GLIB_CHECK_VERSION(2,14,0)
-#define USE_GREGEX
-#endif
-
-#ifdef WIN32
-#define USE_GREGEX
-#include <WinPorting.h>
-#include <winsock2.h>
-#endif
-
-#ifndef USE_GREGEX
-#include <regex.h>
-#endif
-
 #include "lcm.h"
 #include "lcm_internal.h"
 #include "dbg.h"
@@ -38,12 +23,15 @@ struct _lcm_t {
 
     lcm_provider_vtable_t * vtable;
     lcm_provider_t * provider;
+
+    int default_max_num_queued_messages;
 };
 
 struct _lcm_subscription_t {
     char             *channel;
     lcm_msg_handler_t  handler;
     void             *userdata;
+    lcm_t* lcm;
 #ifdef USE_GREGEX
     GRegex * regex;
 #else
@@ -51,12 +39,9 @@ struct _lcm_subscription_t {
 #endif
     int callback_scheduled;
     int marked_for_deletion;
-};
 
-struct map_callback_data
-{
-    lcm_t *lcm;
-    lcm_subscription_t *h;
+    int max_num_queued_messages;
+    int num_queued_messages;
 };
 
 extern void lcm_udpm_provider_init (GPtrArray * providers);
@@ -143,6 +128,9 @@ lcm_create (const char *url)
         lcm_destroy (lcm);
         return NULL;
     }
+
+    lcm->default_max_num_queued_messages = 30;
+
     return lcm;
 
 fail:
@@ -289,6 +277,9 @@ lcm_subscription_t
     h->userdata = userdata;
     h->callback_scheduled = 0;
     h->marked_for_deletion = 0;
+    h->max_num_queued_messages = lcm->default_max_num_queued_messages;
+    h->num_queued_messages = 0;
+    h->lcm = lcm;
 
     char *regexbuf = g_strdup_printf("^%s$", channel);
 #ifdef USE_GREGEX
@@ -358,7 +349,7 @@ lcm_get_handlers (lcm_t * lcm, const char * channel)
     // if we haven't seen this channel name before, create a new list
     // of subscribed handlers.
     handlers = g_ptr_array_new ();
-    // alloc 0-terminated channel name
+    // alloc channel name
     g_hash_table_insert (lcm->handlers_map, strdup(channel), handlers);
 
     // find all the matching handlers
@@ -371,6 +362,24 @@ lcm_get_handlers (lcm_t * lcm, const char * channel)
 finished:
     g_static_rec_mutex_unlock (&lcm->mutex);
     return handlers;
+}
+
+int
+lcm_try_enqueue_message(lcm_t* lcm, const char* channel)
+{
+    g_static_rec_mutex_lock (&lcm->mutex);
+    GPtrArray * handlers = lcm_get_handlers (lcm, channel);
+    int num_keepers = 0;
+    for(unsigned int i=0; i<handlers->len; i++) {
+        lcm_subscription_t* h = (lcm_subscription_t*) g_ptr_array_index(handlers, i);
+        if(h->num_queued_messages <= h->max_num_queued_messages ||
+                h->max_num_queued_messages <= 0) {
+            h->num_queued_messages++;
+            num_keepers++;
+        }
+    }
+    g_static_rec_mutex_unlock (&lcm->mutex);
+    return num_keepers > 0;
 }
 
 int
@@ -406,7 +415,8 @@ lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf, const char *channel)
     // now, call the handlers.
     for (int i = 0; i < nhandlers; i++) {
         lcm_subscription_t *h = (lcm_subscription_t *) g_ptr_array_index(handlers, i);
-        if (!h->marked_for_deletion) {
+        if (!h->marked_for_deletion && h->num_queued_messages > 0) {
+            h->num_queued_messages--;
             int depth = g_static_rec_mutex_unlock_full (&lcm->mutex);
             h->handler (buf, channel, h->userdata);
             g_static_rec_mutex_lock_full (&lcm->mutex, depth);
@@ -475,5 +485,14 @@ lcm_parse_url (const char * url, char ** provider, char ** network,
 
     g_strfreev (provider_networkargs);
     g_strfreev (network_args);
+    return 0;
+}
+
+int 
+lcm_subscription_set_queue_capacity(lcm_subscription_t* subs, int num_messages)
+{
+    g_static_rec_mutex_lock(&subs->lcm->mutex);
+    subs->max_num_queued_messages = num_messages;
+    g_static_rec_mutex_unlock(&subs->lcm->mutex);
     return 0;
 }
