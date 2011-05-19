@@ -200,10 +200,7 @@ lcm_handle (lcm_t * lcm)
     if (lcm->provider && lcm->vtable->handle) {
         int ret;
         g_static_rec_mutex_lock (&lcm->handle_mutex);
-        if(lcm->in_handle) {
-            fprintf(stderr, "Recursive calls to lcm_handle are not allowed\n");
-            return -1;
-        }
+        assert(!lcm->in_handle); // recursive calls to lcm_handle are not allowed
         lcm->in_handle = 1;
         ret = lcm->vtable->handle (lcm->provider);
         lcm->in_handle = 0;
