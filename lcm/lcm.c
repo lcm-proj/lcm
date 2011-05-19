@@ -25,6 +25,7 @@ struct _lcm_t {
     lcm_provider_t * provider;
 
     int default_max_num_queued_messages;
+    int in_handle;
 };
 
 struct _lcm_subscription_t {
@@ -118,6 +119,7 @@ lcm_create (const char *url)
     g_static_rec_mutex_init (&lcm->handle_mutex);
 
     lcm->provider = info->vtable->create (lcm, network, args);
+    lcm->in_handle = 0;
 
     free (provider_str);
     free (network);
@@ -188,7 +190,7 @@ lcm_destroy (lcm_t * lcm)
     g_static_rec_mutex_free (&lcm->mutex);
     free(lcm);
 #ifdef WIN32
-	WSACleanup();
+    WSACleanup();
 #endif
 }
 
@@ -198,7 +200,13 @@ lcm_handle (lcm_t * lcm)
     if (lcm->provider && lcm->vtable->handle) {
         int ret;
         g_static_rec_mutex_lock (&lcm->handle_mutex);
+        if(lcm->in_handle) {
+            fprintf(stderr, "Recursive calls to lcm_handle are not allowed\n");
+            return -1;
+        }
+        lcm->in_handle = 1;
         ret = lcm->vtable->handle (lcm->provider);
+        lcm->in_handle = 0;
         g_static_rec_mutex_unlock (&lcm->handle_mutex);
         return ret;
     } else
