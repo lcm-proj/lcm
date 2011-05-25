@@ -23,6 +23,7 @@ extern "C" {
  * SECTION:lcm
  * @short_description: Publish and receive messages with LCM.
  *
+ * All LCM functions are internally synchronized and thread-safe.
  */
 
 typedef struct _lcm_t lcm_t;
@@ -206,13 +207,18 @@ int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
 /**
  * lcm_handle:
  *
- * waits for and dispatches the next incoming message.
+ * Waits for and dispatches the next incoming message.
  *
- * Message handlers are invoked in the order registered.
+ * Message handlers are invoked one at a time from the thread that calls this
+ * function, and in the order that they were subscribed.
  *
  * This function waits indefinitely.  If you want timeout behavior, (e.g., wait
  * 100ms for a message) then consider using lcm_get_fileno() together with
  * select() or poll()
+ *
+ * Recursive calls to lcm_handle are not allowed -- do not call lcm_handle from
+ * within a message handler.  All other functions are okay (e.g., it is okay to
+ * call lcm_publish from within a message handler).
  *
  * Returns: 0 normally, or a negative number when something has failed.
  */
