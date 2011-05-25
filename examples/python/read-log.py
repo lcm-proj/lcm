@@ -1,7 +1,7 @@
 import sys
 import lcm
 
-from example_t import example_t
+from exlcm import example_t
 
 if len(sys.argv) < 2:
     sys.stderr.write("usage: read-log <logfile>\n")

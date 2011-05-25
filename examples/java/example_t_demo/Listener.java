@@ -1,7 +1,7 @@
 import java.io.*;
 
 import lcm.lcm.*;
-import lcmtypes.*;
+import exlcm.*;
 
 public class Listener implements LCMSubscriber
 {

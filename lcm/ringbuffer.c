@@ -159,9 +159,16 @@ char * lcm_ringbuf_alloc (lcm_ringbuf_t *ring, unsigned int len)
     return rec->buf;
 }
 
-double lcm_ringbuf_available(lcm_ringbuf_t *ring)
+unsigned int
+lcm_ringbuf_capacity(lcm_ringbuf_t *ring)
 {
-    return ((double) ring->size - ring->used) / ring->size;
+    return ring->size;
+}
+
+unsigned int 
+lcm_ringbuf_used(lcm_ringbuf_t *ring)
+{
+    return ring->used;
 }
 
 void 

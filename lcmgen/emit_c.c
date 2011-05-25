@@ -208,6 +208,8 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
         emit(0,"%s_subscription_t* %s_subscribe(lcm_t *lcm, const char *channel, %s_handler_t f, void *userdata);", 
                 tn_, tn_, tn_);
         emit(0,"int %s_unsubscribe(lcm_t *lcm, %s_subscription_t* hid);", tn_, tn_);
+        emit(0,"int %s_subscription_set_queue_capacity(%s_subscription_t* subs, \n"
+            "                              int num_messages);\n", tn_, tn_);
         emit(0,"");
     }
 
@@ -693,6 +695,13 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "    return n;\n"
             "}\n\n", tn_, tn_, tn_, tn_, tn_, tn_, tn_, tn_
         );
+
+    fprintf(f,
+            "int %s_subscription_set_queue_capacity (%s_subscription_t* subs, \n"
+            "                              int num_messages)\n"
+            "{\n"
+            "    return lcm_subscription_set_queue_capacity (subs->lc_h, num_messages);\n"
+            "}\n\n", tn_, tn_);
 
     fprintf(f,
             "int %s_unsubscribe(lcm_t *lcm, %s_subscription_t* hid)\n"

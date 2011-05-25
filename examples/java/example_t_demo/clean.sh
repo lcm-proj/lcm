@@ -1,5 +1,5 @@
 #!/bin/sh
 
-rm -f lcmtypes/example_t.class lcmtypes/example_t.java 
-rmdir lcmtypes
+rm -f exlcm/example_t.class exlcm/example_t.java 
+rmdir exlcm
 rm -f Listener.class SendMessage.class

@@ -1,43 +1,40 @@
 # This Makefile was tested with GNU Make
+CC=gcc
 
 # Use pkg-config to lookup the proper compiler and linker flags for LCM
-CFLAGS=`pkg-config --cflags lcm`
+CFLAGS=`pkg-config --cflags lcm glib-2.0`
 LDFLAGS=`pkg-config --libs lcm glib-2.0 gthread-2.0`
 
-# list the LCM types here
-lcmtypes=example_t
+all: listener \
+	listener-async \
+	send-message \
+	read-log 
 
-# derive the file names of the .c, .h, and .o files corresponding
-# to the LCM types here
-lcm_c_h_files=$(lcmtypes:%=%.c) $(lcmtypes:%=%.h)
-lcm_obj_files=$(lcmtypes:%=%.o)
-
-# compile the LCM types to a static library 
-all: libtypes.a listener send-message read-log
-
-listener: listener.o libtypes.a
+listener: exlcm_example_t.o listener.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-send-message: send_message.o libtypes.a
+listener-async: exlcm_example_t.o listener-async.o 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-read-log: read_log.o libtypes.a
+listener-glib: exlcm_example_t.o listener-glib.o 
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+send-message: exlcm_example_t.o send_message.o 
+	$(CC) -o $@ $^ $(LDFLAGS)
+
+read-log: exlcm_example_t.o read_log.o 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 # prevent auto-generated lcm .c/.h files from being deleted
-.SECONDARY : $(lcm_c_h_files)
-
-libtypes.a: $(lcm_obj_files)
-	ar rc $@ $(lcm_obj_files)
+.SECONDARY : exlcm_example_t.c exlcm_example_t.h
 
 %.o: %.c %.h
-	gcc $(CFLAGS) -c $< 
+	$(CC) $(CFLAGS) -c $< 
 
-%.c %.h: ../types/%.lcm
+exlcm_%.c exlcm_%.h: ../types/%.lcm
 	lcm-gen -c $<
 
 clean:
-	rm -f listener send-message read-log
+	rm -f listener listener-async listener-glib send-message read-log
 	rm -f *.o
-	rm -f libtypes.a
-	rm -f $(lcm_c_h_files)
+	rm -f exlcm_example_t.c exlcm_example_t.h

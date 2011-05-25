@@ -1,10 +1,6 @@
 package lcm.lcm;
 
-import java.net.*;
 import java.io.*;
-import java.util.*;
-import java.util.regex.*;
-import java.nio.*;
 
 import lcm.logging.*;
 
@@ -37,7 +33,7 @@ public class LogFileProvider implements Provider
         writemode = up.get("mode", "r").equals("w");
 
         if(writemode) {
-            log = new Log(logPath, "w");
+            log = new Log(logPath, "rw");
             nanotime_start = System.nanoTime();
             utime_start = System.currentTimeMillis() * 1000;
         } else {

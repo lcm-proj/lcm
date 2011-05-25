@@ -1,6 +1,6 @@
 import lcm
 
-from example_t import example_t
+from exlcm import example_t
 
 def my_handler(channel, data):
     msg = example_t.decode(data)

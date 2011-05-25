@@ -4,19 +4,21 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
-#ifdef WIN32
-#define __STDC_FORMAT_MACROS
-#endif
-#include <inttypes.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include <glib.h>
-
 #ifdef WIN32
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 #include <WinPorting.h>
 #include <windows.h>
+#else
+#include <inttypes.h>
+#include <unistd.h>
+#include <fcntl.h>
 #endif
+
+#include <glib.h>
 
 #include "lcmgen.h"
 
@@ -112,8 +114,8 @@ nil_initializer_string(const lcm_typename_t *type)
     if (!strcmp(type->lctypename, "int16_t")) return "0";
     if (!strcmp(type->lctypename, "int32_t")) return "0";
     if (!strcmp(type->lctypename, "int64_t")) return "0";
-    if (!strcmp(type->lctypename, "float")) return "0";
-    if (!strcmp(type->lctypename, "double")) return "0";
+    if (!strcmp(type->lctypename, "float")) return "0.0";
+    if (!strcmp(type->lctypename, "double")) return "0.0";
     if (!strcmp(type->lctypename, "string")) return "\"\"";
     else return "None";
 }
@@ -178,7 +180,7 @@ _emit_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
         } else if (is_same_package (lm->type, ls->structname)) {
             emit (indent, "%s%s.%s._decode_one(buf)%s", accessor, sn, sn, sfx);
         } else {
-            emit (indent, "%s%s.%s._decode_one(buf)%s", accessor, tn, sn, sfx);
+            emit (indent, "%s%s._decode_one(buf)%s", accessor, tn, sfx);
         }
     }
 }
@@ -451,6 +453,8 @@ static void
 emit_python_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(1, "def _encode_one(self, buf):");
+    if(!g_ptr_array_size(ls->members))
+        emit(2, "pass");
 
     GQueue *struct_fmt = g_queue_new ();
     GQueue *struct_members = g_queue_new ();
@@ -530,6 +534,25 @@ emit_python_encode (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 }
 
 static void
+emit_member_initializer(const lcmgen_t* lcm, FILE *f, lcm_member_t* lm, 
+        int dim_num)
+{
+    if(dim_num == lm->dimensions->len) {
+        fprintf(f, "%s", nil_initializer_string(lm->type));
+        return;
+    }
+    lcm_dimension_t *dim = 
+        (lcm_dimension_t *) g_ptr_array_index (lm->dimensions, dim_num);
+    if(dim->mode == LCM_VAR) {
+        fprintf(f, "[]");
+    } else {
+        fprintf(f, "[ ");
+        emit_member_initializer(lcm, f, lm, dim_num+1);
+        fprintf(f, " for dim%d in range(%s) ]", dim_num, dim->size);
+    }
+}
+
+static void
 emit_python_init (const lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
     fprintf(f, "    def __init__(self):\n");
@@ -538,11 +561,8 @@ emit_python_init (const lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
         fprintf(f, "        self.%s = ", lm->membername);
 
-        if( 0 == lm->dimensions->len ) {
-            fprintf(f, "%s\n", nil_initializer_string(lm->type));
-        } else {
-            fprintf(f, "[]\n");
-        }
+        emit_member_initializer(lcm, f, lm, 0);
+        fprintf(f, "\n");
     }
     if (0 == member) { fprintf(f, "        pass\n"); }
     fprintf(f, "\n");
@@ -556,7 +576,13 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     emit (1, "def _get_hash_recursive(parents):");
     emit (2,     "if %s in parents: return 0", sn);
-    emit (2,     "newparents = parents + [%s]", sn);
+    for (unsigned int m = 0; m < ls->members->len; m++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
+        if (! lcm_is_primitive_type (lm->type->lctypename)) {
+            emit (2,     "newparents = parents + [%s]", sn);
+            break;
+        }
+    }
     emit_start (2, "tmphash = (0x%"PRIx64, ls->hash);
     for (unsigned int m = 0; m < ls->members->len; m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
@@ -568,7 +594,7 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             } else if (is_same_package (lm->type, ls->structname)) {
                 emit_continue ("+ %s.%s.%s", msn, msn, ghr);
             } else {
-                emit_continue ("+ %s.%s.%s", lm->type->lctypename, msn, ghr);
+                emit_continue ("+ %s.%s", lm->type->lctypename, ghr);
             }
         }
     }
@@ -689,29 +715,46 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
             initpy_fname_parts[i+3] = NULL;
 
             char *initpy_fname = build_filenamev (initpy_fname_parts);
+            int created_initpy = 0;
             if (! g_file_test (initpy_fname, G_FILE_TEST_EXISTS)) {
                 // __init__.py does not exist for this package.  Create it.
-                init_py_fp = fopen (initpy_fname, "w");
-                if (!init_py_fp) {
-                    perror ("fopen");
-                    free (initpy_fname);
-                    return -1;
-                }
+                created_initpy = 1;
+                init_py_fp = fopen(initpy_fname, "w");
+            } else {
+                // open the existing __init__.py file, and make note of the
+                // modules it imports
+                created_initpy = 0;
+                init_py_fp = fopen(initpy_fname, "r+");
+            }
 
+            if (!init_py_fp) {
+                perror ("fopen");
+                free (initpy_fname);
+                return -1;
+            }
+#ifndef WIN32
+            // lock __init__.py for exclusive write access
+            // TODO do the equivalent in windows
+            struct flock lockinfo;
+            lockinfo.l_type = F_WRLCK;
+            lockinfo.l_start = 0;
+            lockinfo.l_whence = SEEK_SET;
+            lockinfo.l_len = 0 ;
+            lockinfo.l_pid = getpid();
+            if(0 != fcntl(fileno(init_py_fp), F_SETLKW, &lockinfo)) {
+                perror("locking __init__.py");
+                free(initpy_fname);
+                fclose(init_py_fp);
+                return -1;
+            }
+#endif
+
+            if(created_initpy) {
                 fprintf (init_py_fp, "\"\"\"LCM package __init__.py file\n"
                         "This file automatically generated by lcm-gen.\n"
                         "DO NOT MODIFY BY HAND!!!!\n"
                         "\"\"\"\n\n");
             } else {
-                // open the existing __init__.py file, and make note of the
-                // modules it imports
-                init_py_fp = fopen(initpy_fname, "r+");
-                if (!init_py_fp) {
-                    perror ("fopen");
-                    free (initpy_fname);
-                    return -1;
-                }
-                
                 while(!feof(init_py_fp)) {
                     char buf[4096];
                     memset(buf, 0, sizeof(buf));
@@ -721,12 +764,13 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 
                     g_strstrip(buf);
                     char **words = g_strsplit(buf, " ", -1);
-                    if(!words[0] || !words[1] || strcmp(words[0], "import"))
+                    if(!words[0] || !words[1] || !words[2] || !words[3])
                         continue;
-
-                    char *module_name = strdup(words[1]);
-                    g_hash_table_insert(init_py_imports, module_name, 
-                            module_name);
+                    if(!strcmp(words[0], "from") && !strcmp(words[2], "import")) {
+                        char *module_name = strdup(words[1]);
+                        g_hash_table_insert(init_py_imports, module_name, 
+                                module_name);
+                    }
 
                     g_strfreev(words);
                 }

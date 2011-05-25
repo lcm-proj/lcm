@@ -91,18 +91,17 @@ static int ndefaultpkg_warned = 0;
 
 const char *make_fqn_csharp(lcmgen_t *lcm, const char *type_name)
 {
+	char *root_nsp = getopt_get_string(lcm->gopt, "csharp-root-nsp");
+
     if (strchr(type_name, '.') != NULL)
-        return sprintfalloc("%s%s%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
-			(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."), type_name);
+        return sprintfalloc("%s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), type_name);
 
     if (!ndefaultpkg_warned && !getopt_was_specified(lcm->gopt, "csharp-default-nsp")) {
         printf("Notice: enclosing LCM types without package into C#.NET namespace '%s'.\n", getopt_get_string(lcm->gopt, "csharp-default-nsp"));
         ndefaultpkg_warned = 1;
     }
 
-	return sprintfalloc("%s%s%s.%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
-		(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."),
-		getopt_get_string(lcm->gopt, "csharp-default-nsp"), type_name);
+	return sprintfalloc("%s%s%s.%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"), type_name);
 }
 
 /** # -> replace1
@@ -173,7 +172,7 @@ int emit_csharp(lcmgen_t *lcm)
                                                "outs.Write(#);"));
     g_hash_table_insert(type_table, "string",   prim("String",
                                                "__strbuf = new byte[ins.ReadInt32()-1]; ins.ReadFully(__strbuf); ins.ReadByte(); # = System.Text.Encoding.GetEncoding(\"US-ASCII\").GetString(__strbuf);",
-                                               "__strbuf = System.Text.Encoding.GetEncoding(\"US-ASCII\").GetBytes(#); outs.Write(__strbuf.Length+1); outs.Write(__strbuf, 0, __strbuf.Length); outs.Write(0);"));
+                                               "__strbuf = System.Text.Encoding.GetEncoding(\"US-ASCII\").GetBytes(#); outs.Write(__strbuf.Length+1); outs.Write(__strbuf, 0, __strbuf.Length); outs.Write((byte) 0);"));
     g_hash_table_insert(type_table, "boolean",  prim("bool",
                                                "# = ins.ReadBoolean();",
                                                "outs.Write(#);"));
@@ -211,12 +210,11 @@ int emit_csharp(lcmgen_t *lcm)
         emit(0, "using LCM.LCM;");
         emit(0, " ");
 
+		char *root_nsp = getopt_get_string(lcm->gopt, "csharp-root-nsp");
         if (strlen(le->enumname->package) > 0)
-            emit(0, "namespace %s%s%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
-			(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."), le->enumname->package);
+            emit(0, "namespace %s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), le->enumname->package);
         else
-            emit(0, "namespace %s%s%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
-			(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"));
+            emit(0, "namespace %s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"));
 
         emit(0, "{");
         emit(1, "public sealed class %s %s", le->enumname->shortname, getopt_get_string(lcm->gopt, "csharp-decl"));
@@ -321,12 +319,11 @@ int emit_csharp(lcmgen_t *lcm)
         emit(0, "using LCM.LCM;");
         emit(0, " ");
         
+		char *root_nsp = getopt_get_string(lcm->gopt, "csharp-root-nsp");
         if (strlen(lr->structname->package) > 0)
-            emit(0, "namespace %s%s%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
-			(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."), lr->structname->package);
+            emit(0, "namespace %s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), lr->structname->package);
         else
-            emit(0, "namespace %s%s%s", getopt_get_string(lcm->gopt, "csharp-root-nsp"),
-			(getopt_get_string(lcm->gopt, "csharp-root-nsp") == "" ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"));
+            emit(0, "namespace %s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"));
 
         emit(0, "{");
         emit(1, "public sealed class %s %s", lr->structname->shortname, getopt_get_string(lcm->gopt, "csharp-decl"));

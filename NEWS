@@ -1,3 +1,48 @@
+Nov 8, 2010
+===========
+
+ Release 0.5.2:
+
+ This release includes a number of bugfixes and performance enhancements
+
+ lcm-logger:
+   exit when disk full
+   use GLib regexes if they're available.
+   Add --invert-channels / -v flag
+
+ lcm-java:
+   Make LCMTypeDatabase public
+   LCM fragmentation: guard against receiving same fragment twice
+   lcm.lcm.LCM: allow passing NULL or the empty string to the constructor to 
+      explicitly specify default LCM provider.
+   lcm.lcm.LogFileProvider: bugfix for write mode
+   remove lcm.test.SlowLCMSubscriber
+
+ lcm-gen:
+   general
+     warn if struct has 'int' member type instead of 'intN_t'
+     add options --csharp-strip-dirs and --csharp-root-nsp
+   Python - generate valid code on empty LCM type
+            only emit new_parents in _get_hash_recursive if necessary
+            fix __init__.py imports.  
+              Check for "from <msg> import <msg>" instead of "import <msg>"
+            lock __init__.py when writing
+   C#
+     miscellaneous bugfixes
+   Java
+     trust explicit array length field, not .length attribute. 
+     fix copy which copied in the wrong direction
+     faster arraycopy in several instances.
+  
+ miscellaneous:
+   add lcm-lite implementation
+   modify examples -- place LCM types in package "exlcm"
+   add tutorial-dotnet.sgml to Makefile
+
+ Windows & .NET:
+   LCM.NET - fix unsubscribe bug
+   portability fixes
+
 July 14, 2010
 =============
 

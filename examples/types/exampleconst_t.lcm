@@ -1,3 +1,5 @@
+package exlcm;
+
 struct exampleconst_t
 {
 const int32_t ABC = 1, DEF = 2;

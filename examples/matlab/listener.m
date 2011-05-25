@@ -16,7 +16,7 @@ disp(sprintf('channel of received message: %s', char(msg.channel)))
 disp(sprintf('raw bytes of received message:'))
 disp(sprintf('%d ', msg.data'))
 
-m = lcmtypes.example_t(msg.data);
+m = exlcm.example_t(msg.data);
 
 disp(sprintf('decoded message:\n'))
 disp([ 'timestamp:   ' sprintf('%d ', m.timestamp) ])

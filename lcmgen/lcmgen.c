@@ -296,6 +296,7 @@ void semantic_error(tokenize_t *t, const char *fmt, ...)
     printf("%s", t->buffer);
 
     va_end(ap);
+    fflush(stdout);
     _exit(1);
 }
 
@@ -336,6 +337,7 @@ void parse_error(tokenize_t *t, const char *fmt, ...)
     printf("^\n");
 
     va_end(ap);
+    fflush(stdout);
     _exit(1);
 }
 

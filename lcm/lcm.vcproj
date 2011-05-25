@@ -117,7 +117,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\WinSpecific;&quot;$(GLIB_PATH)\include\glib-2.0&quot;;&quot;$(GLIB_PATH)\lib\glib-2.0\include&quot;"
+				AdditionalIncludeDirectories="..\WinSpecific;..\WinSpecific\include;&quot;$(GLIB_PATH)\include\glib-2.0&quot;;&quot;$(GLIB_PATH)\lib\glib-2.0\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"

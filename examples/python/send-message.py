@@ -1,7 +1,7 @@
 import lcm
 import time
 
-from example_t import example_t
+from exlcm import example_t
 
 lc = lcm.LCM()
 

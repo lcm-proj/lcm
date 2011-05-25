@@ -115,7 +115,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\lcm; ..\; ..\WinSpecific;"
+				AdditionalIncludeDirectories="..\WinSpecific\include"
 				PreprocessorDefinitions="WIN32;_CONSOLE"
 				RuntimeLibrary="2"
 				WarningLevel="3"

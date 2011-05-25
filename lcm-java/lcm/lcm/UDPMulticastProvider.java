@@ -187,6 +187,7 @@ public class UDPMulticastProvider implements Provider
         int data_size = 0;
         int fragments_remaining = 0;
         byte[] data = null;
+        boolean frag_received[];
 
         FragmentBuffer(SocketAddress from, String channel, int msgSeqNumber, int data_size,
                        int fragments_remaining)
@@ -197,6 +198,7 @@ public class UDPMulticastProvider implements Provider
             this.data_size = data_size;
             this.fragments_remaining = fragments_remaining;
             this.data = new byte[data_size];
+            this.frag_received = new boolean[fragments_remaining];
         }
     }
 
@@ -287,8 +289,13 @@ public class UDPMulticastProvider implements Provider
                 return;
             }
 
-            System.arraycopy(payload, data_start, fbuf.data, fragment_offset, frag_size);
-            fbuf.fragments_remaining --;
+            if (!fbuf.frag_received[fragment_id]) {
+                fbuf.frag_received[fragment_id] = true;
+
+                System.arraycopy(payload, data_start, fbuf.data, fragment_offset, frag_size);
+
+                fbuf.fragments_remaining --;
+            }
 
             if (0 == fbuf.fragments_remaining) {
                 lcm.receiveMessage(fbuf.channel, fbuf.data, 0, fbuf.data_size);

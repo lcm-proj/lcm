@@ -45,6 +45,14 @@ public class LCM
         }
 
         for (String url : urls) {
+            // Allow passing in NULL or the empty string to explicitly indicate
+            // the default LCM URL.
+            if(null == url || url.equals("")) {
+                url = System.getenv("LCM_DEFAULT_URL");
+                if (url == null)
+                    url = "udpm://239.255.76.67:7667";
+            }
+        	
             URLParser up = new URLParser(url);
             String protocol = up.get("protocol");
 
