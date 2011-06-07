@@ -1,9 +1,9 @@
 #!/bin/sh
 
-lcm-gen -j ../../types/example_t.lcm
+lcm-gen -j ../../types/*.lcm
 
 export CLASSPATH="`pkg-config --variable=classpath lcm-java`:."
 
-javac exlcm/example_t.java
+javac exlcm/*.java
 javac Listener.java
 javac SendMessage.java

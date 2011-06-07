@@ -3,7 +3,7 @@
 
 /**
  * C++ wrappers for liblcm.  Primarily intended for use with the C++ message
- * bindings (once they exist).
+ * bindings.
  *
  * TODO usage documentation
  */
@@ -35,12 +35,31 @@ class MessageHandler {
 
 class LCM {
     public:
-        inline LCM(std::string lcm_url);
+        inline LCM();
 
         inline ~LCM();
 
+        /**
+         * Initializes the LCM instance and connects it to the specified LCM
+         * network.  See the documentation on lcm_handle() in the C API for
+         * details on how lcm_url is formatted.
+         *
+         * @return 0 on success, -1 on failure.
+         */
+        inline int init(std::string lcm_url="");
+
+        /**
+         * Publishes a message.
+         *
+         * @return 0 on success, -1 on failure.
+         */
         inline int publish(std::string channel, void *data, int datalen);
 
+        /**
+         * Publishes a message.  TODO
+         *
+         * @return 0 on success, -1 on failure.
+         */
         template<class MessageType>
         inline int publish(std::string channel, const MessageType *msg);
 
@@ -48,7 +67,7 @@ class LCM {
 
         inline int fileno();
 
-        inline void handle();
+        inline int handle();
 
         /**
          * Subscribe an object to a channel, with automatic message decoding.

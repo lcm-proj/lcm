@@ -48,6 +48,10 @@ int main(int argc, char *argv[])
     getopt_add_bool  (gopt, 'c', "c",         0,     "Emit C code");
     setup_c_options(gopt);
 
+    getopt_add_spacer(gopt, "**** C++ options ****");
+    getopt_add_bool  (gopt, 'x', "cpp",         0,     "Emit C++ code");
+    setup_cpp_options(gopt);
+
     getopt_add_spacer(gopt, "**** Java options ****");
     getopt_add_bool  (gopt, 'j', "java",      0,     "Emit Java code");
     setup_java_options(gopt);
@@ -93,6 +97,13 @@ int main(int argc, char *argv[])
         did_something = 1;
         if (emit_c(lcm)) {
             printf("An error occurred while emitting C code.\n");
+        }
+    }
+
+    if (getopt_get_bool(gopt, "cpp")) {
+        did_something = 1;
+        if (emit_cpp(lcm)) {
+            printf("An error occurred while emitting C++ code.\n");
         }
     }
 

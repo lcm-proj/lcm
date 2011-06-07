@@ -15,7 +15,9 @@ liblcm_la_SOURCES = \
 	eventlog.c \
 	eventlog.h \
 	ioutils.h \
-	lcm_internal.h
+	lcm_internal.h \
+	lcm-cpp.hpp \
+	lcm-cpp-impl.hpp
 
 liblcm_la_LIBADD = $(GLIB_LIBS)
 
@@ -24,7 +26,8 @@ liblcminclude_HEADERS = \
 	eventlog.h \
 	lcm.h \
 	lcm_coretypes.h \
-	lcm-c++.h
+	lcm-cpp.hpp \
+	lcm-cpp-impl.hpp
 
 
 pkgconfigdir = $(libdir)/pkgconfig
