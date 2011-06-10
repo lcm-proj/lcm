@@ -89,6 +89,7 @@ lcm_subscribe
 lcm_unsubscribe
 lcm_publish
 lcm_handle
+lcm_subscription_set_queue_capacity
 </SECTION>
 
 <SECTION>

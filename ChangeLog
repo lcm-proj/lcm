@@ -1,5 +1,90 @@
+2011-06-02  ashuang
+
+	* [r549] lcm/lcm.h: comment doc: events are never skipped in read
+	  mode for log file provider
+
+2011-05-19  ashuang
+
+	* [r546] lcm/lcm.c: change recursive lcm_handle test to an assert
+	* [r545] lcm/lcm.c, lcm/lcm.h: Explicitly disallow recursive calls
+	  to lcm_handle. Update documentation to reflect this.
+
+2011-04-27  ashuang
+
+	* [r544] lcmgen/emit_java.c: fix bug 31. emit_java appends 'f' for
+	  const float.
+	* [r543] ., examples/c/Makefile, lcm-python/pylcm_subscription.c,
+	  lcm/lcm.c, lcm/lcm.h, lcm/lcm_file.c, lcm/lcm_internal.h,
+	  lcm/lcm_tcpq.c, lcm/lcm_udp.c, lcm/ringbuffer.c,
+	  lcm/ringbuffer.h, lcmgen/emit_c.c, liblcm-test,
+	  liblcm-test/Makefile.am, liblcm-test/buftest-receiver.c,
+	  liblcm-test/buftest-sender.c: merge in buffers branch
+
+2011-04-26  ashuang
+
+	* [r542] lcm-logger/glib_util.c: lcm-logger: fix mkdir_with_parents
+	  when path doesn't end with '/'
+
+2011-04-16  edwinolson
+
+	* [r541] lcm-java/lcm/logging/LogPlayer.java: expose remote log
+	  player play and pause commands
+
+2011-04-14  edwinolson
+
+	* [r540] lcm-java/lcm/spy/Spy.java: fix lcm spy URL handling when
+	  urls contain equal signs
+
+2011-03-17  ashuang
+
+	* [r539] lcmgen/emit_python.c: emit_python bugfix. remove
+	  extraneous typename
+
+2011-03-16  ashuang
+
+	* [r538] lcm/lcm_udp.c: fix synchronization issues when allocating
+	  receive resources and conducting multicast self-test. see issue
+	  #30
+
+2011-03-14  ashuang
+
+	* [r537] lcm/lcm_udp.c: make _setup_recv_thread more thread-safe
+
+2011-01-28  ashuang
+
+	* [r532] lcmgen/emit_python.c: emit_python: constructor initializes
+	  valid fixed-size arrays
+
+2010-12-28  ashuang
+
+	* [r529] lcmgen/lcmgen.c: lcm-gen flush stdout before failing on
+	  parse / semantic error
+	* [r528] examples/c, examples/c/Makefile,
+	  examples/c/listener-glib.c: add example for using LCM with GLib
+	  event loop
+
+2010-12-27  ashuang
+
+	* [r526] lcm/lcm.h: update API documentation on lcm_get_fileno
+	* [r525] examples/c, examples/c/Makefile,
+	  examples/c/listener-async.c: add example program for using LCM
+	  with select()
+
+2010-11-30  ashuang
+
+	* [r524] lcm-java/lcm/util/ClassDiscoverer.java: ClassDiscoverer
+	  searches directories on classpath for .class files, in addition
+	  to .jar files.
+
+2010-11-22  ashuang
+
+	* [r523] lcmgen/emit_python.c: python initialize float, double to
+	  0.0 instead of 0
+
 2010-11-08  ashuang
 
+	* [r521] ChangeLog, NEWS, configure.in, lcm-python/setup.py:
+	  release 0.5.2
 	* [r520] lcmgen/emit_python.c: emit_python generate valid code on
 	  empty LCM type
 

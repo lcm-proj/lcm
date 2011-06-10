@@ -119,7 +119,9 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  *         speed = N
  *             Scale factor controlling the playback speed of the log file.
  *             Defaults to 1.  If less than or equal to zero, then the events
- *             in the log file are played back as fast as possible.
+ *             in the log file are played back as fast as possible.  Events are
+ *             never skipped in read mode, so actual playback speed may be slower
+ *             than requested, depending on the handlers.
  *         
  *         mode = r | w
  *             Specifies the log file mode.  Defaults to 'r'

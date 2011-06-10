@@ -1,3 +1,50 @@
+Jun 9, 2011
+===========
+
+ Release 0.6.0
+
+ This release includes a number of bugfixes and performance enhancements
+
+ lcm-c:
+   - Change internal buffering from a fixed size ringbuffer to
+     per-subscription FIFO queues.  Subscriptions start with a default maximum
+     queue length of 30 messages, which can be adjusted using the new function
+         <message_type>_subscription_set_queue_capacity()
+     For example, to set the queue size to 5 for a message type example_t:
+       example_t_subscription_t* subs = 
+           example_t_subscribe(lcm, "EXAMPLE", message_handler);
+       example_t_subscription_set_queue_capacity(subs, 5);
+   - Explicitly disallow recursive calls to lcm_handle.
+   - fix synchronization issues when allocating receive resources and
+     conducting multicast self-test.  see issue #30
+
+ lcm-logplayer-gui:
+   - expose remote log player play and pause commands
+
+ lcm-logger: 
+   - bugfix when creating subdirectories for output files
+
+ lcm-spy: 
+   - bugfix when LCM URLs contain equal signs
+   - searches directories on classpath for lcmtype .class files, in
+     addition to .jar files.
+
+ lcm-gen:
+   Python
+     - bugfix.  remove extraneous typename
+     - Constructor initializes valid fixed-size arrays
+     - initialize float, double to 0.0 instead of 0
+   Java
+     - now appends 'f' for const float
+   General
+     - flush stdout before failing on parse / semantic error
+
+ General:
+     - add example for using LCM with GLib event loop
+     - add example program for using LCM with select()
+     - minor updates to API documentation
+
+
 Nov 8, 2010
 ===========
 
