@@ -33,12 +33,10 @@ Jun 9, 2011
    Python
      - bugfix.  remove extraneous typename
      - Constructor initializes valid fixed-size arrays
-     - python initialize float, double to 0.0 instead of 0
-
+     - initialize float, double to 0.0 instead of 0
    Java
-     - emit_java now appends 'f' for const float
-
-   General:
+     - now appends 'f' for const float
+   General
      - flush stdout before failing on parse / semantic error
 
  General:
