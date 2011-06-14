@@ -127,7 +127,7 @@ lcm_tcpq_destroy (lcm_tcpq_t *self)
     if(self->server_addr_str)
         g_free(self->server_addr_str);
     free(self->recv_channel_buf);
-
+    free(self->data_buf);
     free(self);
 }
 
