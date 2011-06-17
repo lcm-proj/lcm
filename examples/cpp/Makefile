@@ -8,7 +8,8 @@ LDFLAGS=`pkg-config --libs lcm glib-2.0 gthread-2.0`
 msg_types=../lcm/*.lcm
 
 all: listener \
-	send-message
+	send-message \
+	read-log
 
 listener: exlcm/example_t.o listener.o
 	$(CXX) -o $@ $^ $(LDFLAGS)

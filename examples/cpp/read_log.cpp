@@ -1,66 +1,69 @@
-// file: read_log.c
+// file: read_log.cpp
 //
 // LCM example program.  Demonstrates how to read and decode messages directly
-// from a log file in C.  It is also possible to use the log file provider --
-// see the documentation on lcm_create() for details on that method.
+// from a log file in C++.  It is also possible to use the log file provider --
+// see the documentation on the LCM class for details on that method.
 //
 // compile with:
-//  $ gcc -o read_log read_log.c -llcm
+//  $ g++ -o read_log read_log.cpp -llcm
 //
 // If using GNU/Linux, you can also use pkg-config:
-//  $ gcc -o read_log read_log.c `pkg-config --cflags --libs lcm`
+//  $ g++ -o read_log read_log.cpp `pkg-config --cflags --libs lcm`
 
 #include <stdio.h>
-#include <inttypes.h>
-#include <string.h>
-#include <lcm/lcm.h>
 
-#include "exlcm_example_t.h"
+#include <lcm/lcm-cpp.hpp>
+
+#include "exlcm/example_t.hpp"
 
 int main(int argc, char ** argv)
 {
-    lcm_eventlog_t * log;
     if(argc < 2) {
         fprintf(stderr, "usage: read_log <logfile>\n");
         return 1;
     }
 
-    log = lcm_eventlog_create(argv[1], "r");
-    if(!log) {
-        fprintf(stderr, "couldn't open log file\n");
+    // Open the log file.
+    lcm::LogFile log;
+    if(0 != log.open(argv[1], "r")) {
+        perror("LogFile.open");
+        fprintf(stderr, "couldn't open log file %s\n", argv[1]);
         return 1;
     }
 
     while(1) {
-        exlcm_example_t msg;
-        int i;
-        lcm_eventlog_event_t *event = lcm_eventlog_read_next_event(log);
-
+        // Read a log event.
+        const lcm::LogEvent *event = log.readNextEvent();
         if(!event)
             break;
 
-        if(0 != strcmp(event->channel, "EXAMPLE"))
+        // Only process messages on the EXAMPLE channel.
+        if(event->channel != "EXAMPLE")
             continue;
 
-        exlcm_example_t_decode(event->data, 0, event->datalen, &msg);
+        // Try to decode the message.
+        exlcm::example_t msg;
+        if(msg.decode(event->data, 0, event->datalen) != event->datalen)
+            continue;
 
+        // Decode success!  Print out the message contents.
         printf("Message:\n");
-        printf("  timestamp   = %"PRId64"\n", msg.timestamp);
+        printf("  timestamp   = %lld\n", (long long)msg.timestamp);
         printf("  position    = (%f, %f, %f)\n",
                 msg.position[0], msg.position[1], msg.position[2]);
         printf("  orientation = (%f, %f, %f, %f)\n",
                 msg.orientation[0], msg.orientation[1], msg.orientation[2],
                 msg.orientation[3]);
         printf("  ranges:");
-        for(i = 0; i < msg.num_ranges; i++)
+        for(int i = 0; i < msg.num_ranges; i++)
             printf(" %d", msg.ranges[i]);
         printf("\n");
-
-        exlcm_example_t_decode_cleanup(&msg);
-
-        lcm_eventlog_free_event(event);
     }
 
-    lcm_eventlog_destroy(log);
+    // explicitly close the log file.  This also happens automatically when the
+    // log variable goes out of scope.
+    log.close();
+
+    printf("done\n");
     return 0;
 }

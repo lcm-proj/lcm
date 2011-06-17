@@ -13,8 +13,7 @@
 #include <lcm/lcm-cpp.hpp>
 #include "exlcm/example_t.hpp"
 
-class Handler : 
-    public lcm::MessageHandler<exlcm::example_t>
+class Handler 
 {
     public:
         ~Handler() {}
@@ -47,7 +46,7 @@ int main(int argc, char** argv)
 
     Handler handlerObject;
     lcm::Subscription* subscription;
-    subscription = lcm.subscribe<exlcm::example_t>("EXAMPLE", &handlerObject);
+    subscription = lcm.subscribe("EXAMPLE", &Handler::handleMessage, &handlerObject);
 
     while(0 == lcm.handle());
 

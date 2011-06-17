@@ -89,6 +89,9 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
     return le;
 
 eof:
+    free(le->channel);
+    free(le->data);
+    free(le);
     return NULL;
 }
 

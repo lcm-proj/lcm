@@ -25,14 +25,6 @@ struct ReceiveBuffer {
     int64_t recv_utime;
 };
 
-template<class MessageType>
-class MessageHandler {
-    public:
-        virtual void handleMessage(const ReceiveBuffer* rbuf,
-                std::string channel, const MessageType* msg) = 0;
-        virtual ~MessageHandler() {}
-};
-
 class LCM {
     public:
         inline LCM();
@@ -70,11 +62,36 @@ class LCM {
         inline int handle();
 
         /**
-         * Subscribe an object to a channel, with automatic message decoding.
+         * Subscribe an object to a channel, with automatic message decoding.  For example:
+         *
+         * \code
+         * #include <exlcm/example_t.lcm>
+         * class MyMessageHandler {
+         *   void onMessage(const lcm::ReceiveBuffer* rbuf, const std::string& channel, 
+         *           const exlcm::example_t* msg) {
+         *      // do something with the message
+         *   }
+         * };
+         *
+         * // elsewhere...
+         *
+         * MyMessageHandler handler;
+         * lcm->subscribe("CHANNEL", &MyMessageHandler::onMessage, &handler);
+         *
+         * \endcode
          */
-        template <class MessageType>
+        template <class MessageType, class MessageHandlerClass>
         Subscription* subscribe(std::string channel, 
-                MessageHandler<MessageType>* handler);
+            void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel, const MessageType* msg),
+            MessageHandlerClass* handler);
+
+        /**
+         * Subscribe an object to a channel, without automatic message decoding.
+         */
+        template <class MessageHandlerClass>
+        Subscription* subscribe(std::string channel,
+            void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel),
+            MessageHandlerClass* handler);
 
         /** 
          * Subscribe a function callback to a channel, with automatic message
@@ -105,23 +122,40 @@ class LCM {
         std::vector<Subscription*> subscriptions;
 };
 
-// TODO make wrappers around lcm_eventlog_t, lcm_eventlog_event_t
+/**
+ * TODO
+ */
+struct LogEvent {
+    int64_t eventnum;
+    int64_t timestamp;
+    std::string channel;
+    int32_t datalen;
+    void* data;
+};
 
-//struct LogEvent {
-//    int64_t eventnum;
-//    int64_t timestamp;
-//    int32_t channellen;
-//    int32_t datalen;
-//    char* channel;
-//    void* data;
-//};
-//
-//class LCMLog {
-//    public:
-//
-//    private:
-//
-//};
+/**
+ * TODO
+ */
+class LogFile {
+    public:
+        inline LogFile();
+        inline ~LogFile();
+
+        inline int open(const char* path, const char* mode);
+
+        inline int close();
+
+        inline const LogEvent* readNextEvent();
+
+        inline int seekToTimestamp(int64_t timestamp);
+
+        inline int writeEvent(LogEvent* event);
+
+    private:
+        LogEvent curEvent;
+        lcm_eventlog_t* eventlog;
+        lcm_eventlog_event_t* last_event;
+};
 
 #define __lcm_cpp_impl_ok__
 #include "lcm-cpp-impl.hpp"

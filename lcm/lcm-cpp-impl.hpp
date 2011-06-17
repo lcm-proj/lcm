@@ -63,16 +63,17 @@ class LCMUntypedSubscription : public Subscription {
         }
 };
 
-template <class MessageType> 
+template <class MessageType, class MessageHandlerClass> 
 class LCMMHSubscription : public Subscription {
     friend class LCM;
     private:
-        MessageHandler<MessageType>* handler;
+        MessageHandlerClass* handler;
+        void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, std::string channel, const MessageType* msg);
         static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, 
                 void *user_data)
         {
-            LCMMHSubscription<MessageType> *subs = 
-                static_cast<LCMMHSubscription<MessageType> *>(user_data);
+            LCMMHSubscription<MessageType,MessageHandlerClass> *subs = 
+                static_cast<LCMMHSubscription<MessageType,MessageHandlerClass> *>(user_data);
             MessageType msg;
             int status = msg.decode(rbuf->data, 0, rbuf->data_size);
             if (status < 0) {
@@ -85,37 +86,28 @@ class LCMMHSubscription : public Subscription {
                 rbuf->data_size,
                 rbuf->recv_utime
             };
-            subs->handler->handleMessage(&rb, channel, &msg);
+            std::string chan_str(channel);
+            (subs->handler->*subs->handlerMethod)(&rb, chan_str, &msg);
         }
 };
 
-// specialization of LCMMHSubscription template class for class
-// message handlers that do not want the message automatically decoded.
-//
-// To use this, subclass MessageHandler<void>.  e.g.,
-//
-// class MyHandler : public MessageHandler<void> {
-//     public handleMessage(const ReceiveBuffer* rbuf, std::string chan,
-//         void* msg_data) {
-//         printf("first byte of message: 0x%X\n", ((uint8_t*)rbuf)->data[0]);
-//     }
-// }
-template<> 
-class LCMMHSubscription<void> : public Subscription {
+template<class MessageHandlerClass> 
+class LCMMHUntypedSubscription : public Subscription {
     friend class LCM;
     private:
-        MessageHandler<void>* handler;
-        static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, 
-                void *user_data)
+        MessageHandlerClass* handler;
+        void (MessageHandlerClass*::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel);
+        static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
         {
-            LCMMHSubscription<void> *subs = 
-                static_cast<LCMMHSubscription<void> *>(user_data);
+            LCMMHUntypedSubscription<MessageHandlerClass> *subs = 
+                static_cast<LCMMHUntypedSubscription<MessageHandlerClass> *>(user_data);
             const ReceiveBuffer rb = {
                 rbuf->data,
                 rbuf->data_size,
                 rbuf->recv_utime
             };
-            subs->handler->handleMessage(&rb, channel, rbuf->data);
+            std::string chan_str(channel);
+            (subs->handler->*subs->handlerMethod)(&rb, chan_str);
         }
 };
 
@@ -195,18 +187,40 @@ LCM::handle() {
     return lcm_handle(this->lcm);
 }
 
-template <class MessageType>
+template <class MessageType, class MessageHandlerClass>
 Subscription* 
-LCM::subscribe(std::string channel, MessageHandler<MessageType>* handler)
+LCM::subscribe(std::string channel, 
+    void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel, const MessageType* msg),
+    MessageHandlerClass* handler)
 {
     if(!this->lcm) {
         fprintf(stderr, "LCM instance not initialized.  Ignoring call to subscribe()\n");
         return NULL;
     }
-    LCMMHSubscription<MessageType> *subs = new LCMMHSubscription<MessageType>();
+    LCMMHSubscription<MessageType, MessageHandlerClass> *subs = new LCMMHSubscription<MessageType, MessageHandlerClass>();
     subs->handler = handler;
+    subs->handlerMethod = handlerMethod;
     subs->c_subs = lcm_subscribe(this->lcm, channel.c_str(), 
-            LCMMHSubscription<MessageType>::cb_func, subs);
+            LCMMHSubscription<MessageType, MessageHandlerClass>::cb_func, subs);
+    subscriptions.push_back(subs);
+    return subs;
+}
+
+template <class MessageHandlerClass>
+Subscription* 
+LCM::subscribe(std::string channel, 
+    void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel),
+    MessageHandlerClass* handler)
+{
+    if(!this->lcm) {
+        fprintf(stderr, "LCM instance not initialized.  Ignoring call to subscribe()\n");
+        return NULL;
+    }
+    LCMMHUntypedSubscription<MessageHandlerClass> *subs = new LCMMHUntypedSubscription<MessageHandlerClass>();
+    subs->handler = handler;
+    subs->handlerMethod = handlerMethod;
+    subs->c_subs = lcm_subscribe(this->lcm, channel.c_str(), 
+            LCMMHUntypedSubscription<MessageHandlerClass>::cb_func, subs);
     subscriptions.push_back(subs);
     return subs;
 }
@@ -249,4 +263,74 @@ LCM::subscribeFunction(std::string channel,
     sub->context = context;
     subscriptions.push_back(sub);
     return sub;
+}
+
+LogFile::LogFile() : eventlog(NULL), last_event(NULL)
+{ }
+
+LogFile::~LogFile()
+{
+    if(eventlog)
+        lcm_eventlog_destroy(eventlog);
+    eventlog = NULL;
+    if(last_event)
+        lcm_eventlog_free_event(last_event);
+    last_event = NULL;
+}
+
+int 
+LogFile::open(const char* path, const char* mode) 
+{
+    if(eventlog)
+        return -1;
+    eventlog = lcm_eventlog_create(path, mode);
+    if(eventlog)
+        return 0;
+    return -1;
+}
+
+int 
+LogFile::close()
+{
+    if(!eventlog)
+        return -1;
+    lcm_eventlog_destroy(eventlog);
+    eventlog = NULL;
+    return 0;
+}
+
+const LogEvent* 
+LogFile::readNextEvent()
+{
+    lcm_eventlog_event_t* evt = lcm_eventlog_read_next_event(eventlog);
+    if(last_event)
+        lcm_eventlog_free_event(last_event);
+    last_event = evt;
+    if(!evt)
+        return NULL;
+    curEvent.eventnum = evt->eventnum;
+    curEvent.timestamp = evt->timestamp;
+    curEvent.channel.assign(evt->channel, evt->channellen);
+    curEvent.datalen = evt->datalen;
+    curEvent.data = evt->data;
+    return &curEvent;
+}
+
+int 
+LogFile::seekToTimestamp(int64_t timestamp)
+{
+    return lcm_eventlog_seek_to_timestamp(eventlog, timestamp);
+}
+
+int 
+LogFile::writeEvent(LogEvent* event)
+{
+    lcm_eventlog_event_t evt;
+    evt.eventnum = event->eventnum;
+    evt.timestamp = event->timestamp;
+    evt.channellen = event->channel.size();
+    evt.datalen = event->datalen;
+    evt.channel = (char*) event->channel.c_str();
+    evt.data = event->data;
+    return lcm_eventlog_write_event(eventlog, &evt);
 }
