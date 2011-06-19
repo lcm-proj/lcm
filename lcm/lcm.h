@@ -232,8 +232,14 @@ int lcm_handle (lcm_t *lcm);
 /**
  * lcm_subscription_set_queue_capacity:
  *
- * Adjusts the maximum number of messages queued up for the specified subscription 
- * object.  
+ * Adjusts the maximum number of received messages that can be queued
+ * up for this subscription.  Setting this to a low number may reduce
+ * overall latency at the expense of dropping more messages.
+ * Conversely, setting this to a high number may drop fewer messages at
+ * the expense of increased latency.  A value of 0 indicates no limit, and
+ * should be used carefully.
+ *
+ * @param the maximum queue size, in messages.  The default is 30.
  *
  */
 LCM_API_FUNCTION

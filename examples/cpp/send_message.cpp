@@ -18,7 +18,7 @@ main(int argc, char ** argv)
 {
     lcm::LCM lcm;
 
-    if(0 != lcm.init())
+    if(!lcm.good())
         return 1;
 
     exlcm::example_t my_data;

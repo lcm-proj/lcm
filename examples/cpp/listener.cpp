@@ -19,7 +19,7 @@ class Handler
         ~Handler() {}
 
         void handleMessage(const lcm::ReceiveBuffer* rbuf,
-                std::string chan, 
+                const std::string& chan, 
                 const exlcm::example_t* msg)
         {
             int i;
@@ -41,16 +41,13 @@ int main(int argc, char** argv)
 {
     lcm::LCM lcm;
 
-    if(0 != lcm.init())
+    if(!lcm.good())
         return 1;
 
     Handler handlerObject;
-    lcm::Subscription* subscription;
-    subscription = lcm.subscribe("EXAMPLE", &Handler::handleMessage, &handlerObject);
+    lcm.subscribe("EXAMPLE", &Handler::handleMessage, &handlerObject);
 
     while(0 == lcm.handle());
-
-    lcm.unsubscribe(subscription);
 
     return 0;
 }

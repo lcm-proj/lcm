@@ -24,9 +24,9 @@ int main(int argc, char ** argv)
     }
 
     // Open the log file.
-    lcm::LogFile log;
-    if(0 != log.open(argv[1], "r")) {
-        perror("LogFile.open");
+    lcm::LogFile log(argv[1], "r");
+    if(!log.good()) {
+        perror("LogFile");
         fprintf(stderr, "couldn't open log file %s\n", argv[1]);
         return 1;
     }
@@ -60,9 +60,8 @@ int main(int argc, char ** argv)
         printf("\n");
     }
 
-    // explicitly close the log file.  This also happens automatically when the
-    // log variable goes out of scope.
-    log.close();
+    // Log file is closed automatically when the log variable goes out of
+    // scope.
 
     printf("done\n");
     return 0;

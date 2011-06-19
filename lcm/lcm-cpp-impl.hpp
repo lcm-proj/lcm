@@ -6,20 +6,18 @@
 
 // =============== implementation ===============
 
-class Subscription {
-    public:
-        virtual ~Subscription() {}
-    friend class LCM;
-    protected:
-        lcm_subscription_t *c_subs;
-};
+int 
+Subscription::setQueueCapacity(int num_messages)
+{
+    return lcm_subscription_set_queue_capacity(c_subs, num_messages);
+}
 
 template <class MessageType, class ContextClass> 
 class LCMTypedSubscription : public Subscription {
     friend class LCM;
     private:
         ContextClass context;
-        void (*handler)(const ReceiveBuffer *rbuf, std::string channel, 
+        void (*handler)(const ReceiveBuffer *rbuf, const std::string& channel, 
                 const MessageType*msg, ContextClass context);
         static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, 
                 void *user_data)
@@ -47,7 +45,7 @@ class LCMUntypedSubscription : public Subscription {
     friend class LCM;
     private:
         ContextClass context;
-        void (*handler)(const ReceiveBuffer *rbuf, std::string channel, 
+        void (*handler)(const ReceiveBuffer *rbuf, const std::string& channel, 
                 ContextClass context);
         static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, 
                 void *user_data)
@@ -68,7 +66,7 @@ class LCMMHSubscription : public Subscription {
     friend class LCM;
     private:
         MessageHandlerClass* handler;
-        void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, std::string channel, const MessageType* msg);
+        void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel, const MessageType* msg);
         static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, 
                 void *user_data)
         {
@@ -96,7 +94,7 @@ class LCMMHUntypedSubscription : public Subscription {
     friend class LCM;
     private:
         MessageHandlerClass* handler;
-        void (MessageHandlerClass*::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel);
+        void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel);
         static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
         {
             LCMMHUntypedSubscription<MessageHandlerClass> *subs = 
@@ -112,15 +110,15 @@ class LCMMHUntypedSubscription : public Subscription {
 };
 
 inline 
-LCM::LCM() : lcm(NULL)
-{
-}
-
-inline int
-LCM::init(std::string lcm_url)
+LCM::LCM(std::string lcm_url)
 {
     this->lcm = lcm_create(lcm_url.c_str());
-    return (this->lcm ? 0 : -1);
+}
+
+inline bool
+LCM::good() const
+{
+    return this->lcm != NULL;
 }
 
 inline 
@@ -134,7 +132,7 @@ LCM::~LCM() {
 }
 
 inline int 
-LCM::publish(std::string channel, void *data, int datalen) {
+LCM::publish(const std::string& channel, void *data, unsigned int datalen) {
     if(!this->lcm) {
         fprintf(stderr, "LCM instance not initialized.  Ignoring call to publish()\n");
         return -1;
@@ -144,7 +142,7 @@ LCM::publish(std::string channel, void *data, int datalen) {
 
 template<class MessageType>
 inline int 
-LCM::publish(std::string channel, const MessageType *msg) {
+LCM::publish(const std::string& channel, const MessageType *msg) {
     unsigned int datalen = msg->getEncodedSize();
     uint8_t *buf = new uint8_t[datalen];
     msg->encode(buf, 0, datalen);
@@ -189,7 +187,7 @@ LCM::handle() {
 
 template <class MessageType, class MessageHandlerClass>
 Subscription* 
-LCM::subscribe(std::string channel, 
+LCM::subscribe(const std::string& channel, 
     void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel, const MessageType* msg),
     MessageHandlerClass* handler)
 {
@@ -208,7 +206,7 @@ LCM::subscribe(std::string channel,
 
 template <class MessageHandlerClass>
 Subscription* 
-LCM::subscribe(std::string channel, 
+LCM::subscribe(const std::string& channel, 
     void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel),
     MessageHandlerClass* handler)
 {
@@ -227,9 +225,9 @@ LCM::subscribe(std::string channel,
 
 template <class MessageType, class ContextClass> 
 Subscription*
-LCM::subscribeFunction(std::string channel,
+LCM::subscribeFunction(const std::string& channel,
         void (*handler)(const ReceiveBuffer *rbuf, 
-            std::string channel, 
+            const std::string& channel, 
             const MessageType *msg, ContextClass context),
         ContextClass context) {
     if(!this->lcm) {
@@ -247,9 +245,9 @@ LCM::subscribeFunction(std::string channel,
 
 template <class ContextClass> 
 Subscription*
-LCM::subscribeFunction(std::string channel,
+LCM::subscribeFunction(const std::string& channel,
         void (*handler)(const ReceiveBuffer *rbuf, 
-                       std::string channel, 
+                       const std::string& channel, 
                        ContextClass context),
         ContextClass context) {
     if(!this->lcm) {
@@ -265,8 +263,11 @@ LCM::subscribeFunction(std::string channel,
     return sub;
 }
 
-LogFile::LogFile() : eventlog(NULL), last_event(NULL)
-{ }
+LogFile::LogFile(const char* path, const char* mode) : 
+  eventlog(lcm_eventlog_create(path, mode)), 
+  last_event(NULL)
+{ 
+}
 
 LogFile::~LogFile()
 {
@@ -278,25 +279,10 @@ LogFile::~LogFile()
     last_event = NULL;
 }
 
-int 
-LogFile::open(const char* path, const char* mode) 
+bool
+LogFile::good() const
 {
-    if(eventlog)
-        return -1;
-    eventlog = lcm_eventlog_create(path, mode);
-    if(eventlog)
-        return 0;
-    return -1;
-}
-
-int 
-LogFile::close()
-{
-    if(!eventlog)
-        return -1;
-    lcm_eventlog_destroy(eventlog);
-    eventlog = NULL;
-    return 0;
+    return eventlog != NULL;
 }
 
 const LogEvent* 
