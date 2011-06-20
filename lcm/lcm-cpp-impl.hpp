@@ -123,18 +123,19 @@ LCM::good() const
 
 inline 
 LCM::~LCM() {
-    if(this->lcm)
+    for(int i=0, n=subscriptions.size(); i<n; i++) {
+        delete subscriptions[i];
+    }
+    if(this->lcm) {
         lcm_destroy(this->lcm);
-    for(int i=0, num_subscribers=this->subscriptions.size(); 
-            i<num_subscribers; i++) {
-        delete this->subscriptions[i];
     }
 }
 
 inline int 
 LCM::publish(const std::string& channel, void *data, unsigned int datalen) {
     if(!this->lcm) {
-        fprintf(stderr, "LCM instance not initialized.  Ignoring call to publish()\n");
+        fprintf(stderr, 
+            "LCM instance not initialized.  Ignoring call to publish()\n");
         return -1;
     }
     return lcm_publish(this->lcm, channel.c_str(), data, datalen);
@@ -152,7 +153,8 @@ LCM::publish(const std::string& channel, const MessageType *msg) {
 inline void 
 LCM::unsubscribe(Subscription *subscription) {
     if(!this->lcm) {
-        fprintf(stderr, "LCM instance not initialized.  Ignoring call to unsubscribe()\n");
+        fprintf(stderr, 
+            "LCM instance not initialized.  Ignoring call to unsubscribe()\n");
         return;
     }
     std::vector<Subscription*>::iterator iter;
@@ -170,7 +172,8 @@ LCM::unsubscribe(Subscription *subscription) {
 inline int 
 LCM::fileno() {
     if(!this->lcm) {
-        fprintf(stderr, "LCM instance not initialized.  Ignoring call to fileno()\n");
+        fprintf(stderr, 
+            "LCM instance not initialized.  Ignoring call to fileno()\n");
         return -1;
     }
     return lcm_get_fileno(this->lcm);
@@ -179,7 +182,8 @@ LCM::fileno() {
 inline int 
 LCM::handle() {
     if(!this->lcm) {
-        fprintf(stderr, "LCM instance not initialized.  Ignoring call to handle()\n");
+        fprintf(stderr, 
+            "LCM instance not initialized.  Ignoring call to handle()\n");
         return -1;
     }
     return lcm_handle(this->lcm);
@@ -192,10 +196,12 @@ LCM::subscribe(const std::string& channel,
     MessageHandlerClass* handler)
 {
     if(!this->lcm) {
-        fprintf(stderr, "LCM instance not initialized.  Ignoring call to subscribe()\n");
+        fprintf(stderr, 
+            "LCM instance not initialized.  Ignoring call to subscribe()\n");
         return NULL;
     }
-    LCMMHSubscription<MessageType, MessageHandlerClass> *subs = new LCMMHSubscription<MessageType, MessageHandlerClass>();
+    LCMMHSubscription<MessageType, MessageHandlerClass> *subs = 
+        new LCMMHSubscription<MessageType, MessageHandlerClass>();
     subs->handler = handler;
     subs->handlerMethod = handlerMethod;
     subs->c_subs = lcm_subscribe(this->lcm, channel.c_str(), 
@@ -211,10 +217,12 @@ LCM::subscribe(const std::string& channel,
     MessageHandlerClass* handler)
 {
     if(!this->lcm) {
-        fprintf(stderr, "LCM instance not initialized.  Ignoring call to subscribe()\n");
+        fprintf(stderr, 
+            "LCM instance not initialized.  Ignoring call to subscribe()\n");
         return NULL;
     }
-    LCMMHUntypedSubscription<MessageHandlerClass> *subs = new LCMMHUntypedSubscription<MessageHandlerClass>();
+    LCMMHUntypedSubscription<MessageHandlerClass> *subs = 
+        new LCMMHUntypedSubscription<MessageHandlerClass>();
     subs->handler = handler;
     subs->handlerMethod = handlerMethod;
     subs->c_subs = lcm_subscribe(this->lcm, channel.c_str(), 
@@ -261,6 +269,13 @@ LCM::subscribeFunction(const std::string& channel,
     sub->context = context;
     subscriptions.push_back(sub);
     return sub;
+}
+
+
+lcm_t* 
+LCM::getUnderlyingLCM() 
+{
+    return this->lcm;
 }
 
 LogFile::LogFile(const char* path, const char* mode) : 
