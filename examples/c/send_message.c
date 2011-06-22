@@ -28,6 +28,8 @@ send_message(lcm_t * lcm)
 
     my_data.num_ranges = 15;
     my_data.ranges = ranges;
+    my_data.name = "example string";
+    my_data.enabled = 1;
 
     exlcm_example_t_publish(lcm, "EXAMPLE", &my_data);
 }

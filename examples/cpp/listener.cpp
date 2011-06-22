@@ -1,12 +1,12 @@
-// file: listener.c
+// file: listener.cpp
 //
 // LCM example program.
 //
 // compile with:
-//  $ gcc -o listener listener.c -llcm
+//  $ gcc -o listener listener.cpp -llcm
 //
 // If using GNU/Linux, you can also use pkg-config:
-//  $ gcc -o listener listener.c `pkg-config --cflags --libs lcm`
+//  $ gcc -o listener listener.cpp `pkg-config --cflags --libs lcm`
 
 #include <stdio.h>
 
@@ -28,12 +28,14 @@ class Handler
             printf("  position    = (%f, %f, %f)\n",
                     msg->position[0], msg->position[1], msg->position[2]);
             printf("  orientation = (%f, %f, %f, %f)\n",
-                    msg->orientation[0], msg->orientation[1], msg->orientation[2],
-                    msg->orientation[3]);
+                    msg->orientation[0], msg->orientation[1], 
+                    msg->orientation[2], msg->orientation[3]);
             printf("  ranges:");
             for(i = 0; i < msg->num_ranges; i++)
                 printf(" %d", msg->ranges[i]);
             printf("\n");
+            printf("  name        = '%s'\n", msg->name.c_str());
+            printf("  enabled     = %d\n", msg->enabled);
         }
 };
 

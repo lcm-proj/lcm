@@ -55,6 +55,8 @@ int main(int argc, char ** argv)
         for(i = 0; i < msg.num_ranges; i++)
             printf(" %d", msg.ranges[i]);
         printf("\n");
+        printf("  name        = '%s'\n", msg.name);
+        printf("  enabled     = %d\n", msg.enabled);
 
         exlcm_example_t_decode_cleanup(&msg);
 

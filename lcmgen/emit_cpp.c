@@ -108,7 +108,7 @@ static char *
 map_type_name(const char *t)
 {
     if (!strcmp(t,"boolean"))
-        return strdup("bool");
+        return strdup("int8_t");
 
     if (!strcmp(t,"string"))
         return strdup("std::string");
@@ -470,7 +470,7 @@ static void emit_cpp_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             for(int i=0; i<ndim; i++)
                 emit_continue("[a%d]", i);
             if(!strcmp(lm->type->lctypename, "string")) {
-                emit_end(".size() + 4;");
+                emit_end(".size() + 4 + 1;");
             } else {
                 emit_end("._getEncodedSizeRecursive();");
             }

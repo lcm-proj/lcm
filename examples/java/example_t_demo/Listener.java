@@ -37,6 +37,8 @@ public class Listener implements LCMSubscriber
                         System.out.print (", ");
                 }
                 System.out.println (" ]");
+                System.out.println("  name         = '" + msg.name + "'");
+                System.out.println("  enabled      = '" + msg.enabled + "'");
             }
 
         } catch (IOException ex) {

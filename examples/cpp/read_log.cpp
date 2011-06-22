@@ -58,6 +58,8 @@ int main(int argc, char ** argv)
         for(int i = 0; i < msg.num_ranges; i++)
             printf(" %d", msg.ranges[i]);
         printf("\n");
+        printf("  name        = '%s'\n", msg.name.c_str());
+        printf("  enabled     = %d\n", msg.enabled);
     }
 
     // Log file is closed automatically when the log variable goes out of

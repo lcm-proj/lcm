@@ -9,7 +9,7 @@
 //  $ g++ -o send_message send_message.cpp `pkg-config --cflags --libs lcm`
 
 #include <stdio.h>
-#include <lcm/lcm.h>
+#include <lcm/lcm-cpp.hpp>
 
 #include "exlcm/example_t.hpp"
 
@@ -37,6 +37,9 @@ main(int argc, char ** argv)
     my_data.ranges.resize(my_data.num_ranges);
     for(int i = 0; i < my_data.num_ranges; i++)
         my_data.ranges[i] = i;
+
+    my_data.name = "example string";
+    my_data.enabled = true;
 
     lcm.publish("EXAMPLE", &my_data);
 
