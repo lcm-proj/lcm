@@ -102,7 +102,7 @@ class LCM {
         inline int fileno();
 
         /**
-         * @brief Waits for and dispatch one message.
+         * @brief Waits for and dispatches one message.
          *
          * @return 0 on success, -1 if something went wrong.
          * @sa lcm_handle()
@@ -416,7 +416,7 @@ class Subscription {
 
     friend class LCM;
     protected:
-        Subscription() = 0;
+        Subscription() {};
         /**
          * The underlying lcm_subscription_t object wrapped by this
          * subscription.

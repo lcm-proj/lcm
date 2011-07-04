@@ -7,7 +7,7 @@
 // compile with:
 //  $ g++ -o read_log read_log.cpp -llcm
 //
-// If using GNU/Linux, you can also use pkg-config:
+// On a system with pkg-config, you can also use:
 //  $ g++ -o read_log read_log.cpp `pkg-config --cflags --libs lcm`
 
 #include <stdio.h>

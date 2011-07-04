@@ -5,7 +5,7 @@
 // compile with:
 //  $ g++ -o send_message send_message.cpp -llcm
 //
-// If using GNU/Linux, you can also use pkg-config:
+// On a system with pkg-config, you can also use:
 //  $ g++ -o send_message send_message.cpp `pkg-config --cflags --libs lcm`
 
 #include <stdio.h>

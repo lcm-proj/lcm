@@ -7,7 +7,7 @@
 // compile with:
 //  $ gcc -o read_log read_log.c -llcm
 //
-// If using GNU/Linux, you can also use pkg-config:
+// On a system with pkg-config, you can also use:
 //  $ gcc -o read_log read_log.c `pkg-config --cflags --libs lcm`
 
 #include <stdio.h>
