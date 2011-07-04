@@ -91,6 +91,8 @@ int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *eventlog, int64_t ts);
  * Write an event into a log file.  Valid in write mode only.
  *
  * eventnum will be filled in for you
+ *
+ * Returns: 0 on success, -1 on failure.
  */
 LCM_API_FUNCTION
 int lcm_eventlog_write_event(lcm_eventlog_t *eventlog, lcm_eventlog_event_t *le);

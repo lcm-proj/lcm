@@ -138,8 +138,8 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  *             
  * </programlisting>
  *
- * Returns: a newly allocated @lcm_t instance.  Free with lcm_destroy() when no
- * longer needed.
+ * Returns: a newly allocated @lcm_t instance, or NULL on failure.  Free with
+ * lcm_destroy() when no longer needed.
  */
 LCM_API_FUNCTION
 lcm_t * lcm_create (const char *provider);
@@ -200,7 +200,9 @@ int lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *handler);
 /**
  * lcm_publish:
  *
- * transmits a message to a multicast group
+ * transmits a message.
+ *
+ * Returns: 0 on success, -1 on failure.
  */
 LCM_API_FUNCTION
 int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
@@ -222,7 +224,7 @@ int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
  * within a message handler.  All other functions are okay (e.g., it is okay to
  * call lcm_publish from within a message handler).
  *
- * Returns: 0 normally, or a negative number when something has failed.
+ * Returns: 0 normally, or -1 when an error has occurred.
  */
 LCM_API_FUNCTION
 int lcm_handle (lcm_t *lcm);
@@ -230,8 +232,14 @@ int lcm_handle (lcm_t *lcm);
 /**
  * lcm_subscription_set_queue_capacity:
  *
- * Adjusts the maximum number of messages queued up for the specified subscription 
- * object.  
+ * Adjusts the maximum number of received messages that can be queued
+ * up for this subscription.  Setting this to a low number may reduce
+ * overall latency at the expense of dropping more messages.
+ * Conversely, setting this to a high number may drop fewer messages at
+ * the expense of increased latency.  A value of 0 indicates no limit, and
+ * should be used carefully.
+ *
+ * @param the maximum queue size, in messages.  The default is 30.
  *
  */
 LCM_API_FUNCTION
