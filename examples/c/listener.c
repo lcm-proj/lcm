@@ -29,6 +29,8 @@ my_handler(const lcm_recv_buf_t *rbuf, const char * channel,
     for(i = 0; i < msg->num_ranges; i++)
         printf(" %d", msg->ranges[i]);
     printf("\n");
+    printf("  name        = '%s'\n", msg->name);
+    printf("  enabled     = %d\n", msg->enabled);
 }
 
 int

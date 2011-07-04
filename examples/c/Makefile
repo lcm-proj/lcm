@@ -2,8 +2,8 @@
 CC=gcc
 
 # Use pkg-config to lookup the proper compiler and linker flags for LCM
-CFLAGS=`pkg-config --cflags lcm glib-2.0`
-LDFLAGS=`pkg-config --libs lcm glib-2.0 gthread-2.0`
+CFLAGS=`pkg-config --cflags lcm`
+LDFLAGS=`pkg-config --libs lcm`
 
 all: listener \
 	listener-async \

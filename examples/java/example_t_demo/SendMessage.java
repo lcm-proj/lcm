@@ -21,6 +21,8 @@ public class SendMessage
                 0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
             };
             msg.num_ranges = msg.ranges.length;
+            msg.name = "example string";
+            msg.enabled = true;
 
             lcm.publish ("EXAMPLE", msg);
         } catch (IOException ex) {

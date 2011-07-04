@@ -9,6 +9,8 @@ def my_handler(channel, data):
     print("   position    = %s" % str(msg.position))
     print("   orientation = %s" % str(msg.orientation))
     print("   ranges: %s" % str(msg.ranges))
+    print("   name        = '%s'" % msg.name)
+    print("   enabled     = %s" % str(msg.enabled))
     print("")
 
 lc = lcm.LCM()
