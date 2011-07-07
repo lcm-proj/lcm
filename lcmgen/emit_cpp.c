@@ -494,14 +494,17 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
         strcmp(lm->type->lctypename, "string")) {
         lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
 
+        int decode_indent = 1 + depth;
         if(!lcm_is_constant_size_array(lm)) {
             emit_start(1 + depth, "this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
             emit_end(".resize(%s%s);", dim_size_prefix(dim->size), dim->size);
+            emit(1 + depth, "if(%s%s)", dim_size_prefix(dim->size), dim->size);
+            decode_indent++;
         }
 
-        emit_start(1 + depth, "tlen = __%s_decode_array(buf, offset + pos, maxlen - pos, &this->%s", 
+        emit_start(decode_indent, "tlen = __%s_decode_array(buf, offset + pos, maxlen - pos, &this->%s", 
                 lm->type->lctypename, lm->membername);
         for(int i=0; i<depth; i++)
             emit_continue("[a%d]", i);
