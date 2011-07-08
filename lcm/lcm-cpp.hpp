@@ -506,13 +506,6 @@ class LogFile {
          * @sa lcm_eventlog_seek_to_timestamp()
          */
         inline int seekToTimestamp(int64_t timestamp);
-#if 0
-         * Positions the log file at the event in the log file with the
-         * smallest timestamp that is greater than or equal to the specified
-         * timestamp.  In other words, this method seeks the log file pointer 
-         * as close the specified timestamp in the log file as possible.  Valid
-         * in read mode only.
-#endif
 
         /**
          * Writes an event to the log file.  Valid in write mode only.

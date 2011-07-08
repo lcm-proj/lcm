@@ -200,62 +200,56 @@ static void emit_header(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     fprintf(f, "\n");
     emit_package_namespace_start(lcmgen, f, ls);
 
-    // output constants
-    for (unsigned int i = 0; i < g_ptr_array_size(ls->constants); i++) {
-        lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
-        assert(lcm_is_legal_const_type(lc->lctypename));
-        const char *suffix = "";
-        if (!strcmp(lc->lctypename, "int64_t")) {
-            suffix = "LL";
+    // define the class
+    emit(0, "\nclass %s", sn);
+    emit(0, "{");
+
+    // data members
+    if(g_ptr_array_size(ls->members)) {
+        emit(1, "public:");
+        for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
+
+            char* mapped_typename = map_type_name(lm->type->lctypename);
+            int ndim = g_ptr_array_size(lm->dimensions);
+            if (ndim == 0) {
+                emit(2, "%-10s %s;", mapped_typename, lm->membername);
+            } else {
+                if (lcm_is_constant_size_array(lm)) {
+                    emit_start(2, "%-10s %s", map_type_name(lm->type->lctypename), lm->membername);
+                    for (unsigned int d = 0; d < ndim; d++) {
+                        lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
+                        emit_continue("[%s]", ld->size);
+                    }
+                    emit_end(";");
+                } else {
+                    emit_start(2, "");
+                    for (unsigned int d = 0; d < ndim; d++) 
+                        emit_continue("std::vector< ");
+                    emit_continue("%s", mapped_typename);
+                    for (unsigned int d = 0; d < ndim; d++) 
+                        emit_continue(" >");
+                    emit_end(" %s;", lm->membername);
+                }
+            }
+            free(mapped_typename);
         }
-        emit(0, "#define %s_%s %s%s", tn_upper, lc->membername, lc->val_str, 
-                suffix);
-    }
-    if (g_ptr_array_size(ls->constants) > 0) {
         emit(0, "");
     }
 
-    // define the struct
-    emit(0, "\nclass %s", sn);
-    emit(0, "{");
-    emit(1, "public:");
+    // constants
+    if (g_ptr_array_size(ls->constants) > 0) {
+        emit(1, "public:");
+        for (unsigned int i = 0; i < g_ptr_array_size(ls->constants); i++) {
+            lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
+            assert(lcm_is_legal_const_type(lc->lctypename));
 
-    for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
-        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
-
-        char* mapped_typename = map_type_name(lm->type->lctypename);
-        int ndim = g_ptr_array_size(lm->dimensions);
-        if (ndim == 0) {
-            emit(2, "%-10s %s;", mapped_typename, lm->membername);
-        } else {
-            if (lcm_is_constant_size_array(lm)) {
-                emit_start(2, "%-10s %s", map_type_name(lm->type->lctypename), lm->membername);
-                for (unsigned int d = 0; d < ndim; d++) {
-                    lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
-                    emit_continue("[%s]", ld->size);
-                }
-                emit_end(";");
-            } else {
-                emit_start(2, "");
-                for (unsigned int d = 0; d < ndim; d++) 
-                    emit_continue("std::vector< ");
-                emit_continue("%s", mapped_typename);
-                for (unsigned int d = 0; d < ndim; d++) 
-                    emit_continue(" >");
-//                emit_start(2, "%-10s ", map_type_name(lm->type->lctypename));
-//                for (unsigned int d = 0; d < ndim; d++) 
-//                    emit_continue("*");
-                emit_end(" %s;", lm->membername);
-            }
+            char* mapped_typename = map_type_name(lc->lctypename);
+            emit(2, "static const %-8s %s; // %s", mapped_typename, lc->membername, lc->val_str);
+            free(mapped_typename);
         }
-        free(mapped_typename);
+        emit(0, "");
     }
-
-    emit(0, "");
-//    emit(2, "%s();", sn);
-//    emit(2, "%s(const %s& toCopy);", sn, sn);
-//    emit(2, "void copyFrom(const %s* toCopy);", sn);
-//    emit(0, "");
 
     emit(1, "public:");
     emit(2, "int encode(void *buf, int offset, int maxlen) const;");
@@ -273,16 +267,34 @@ static void emit_header(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(2, "int     _getEncodedSizeRecursive() const;");
     emit(0,"");
     emit(0, "};");
+    emit(0, "");
 
     // close namespaces
     emit_package_namespace_close(lcmgen, f, ls);
 
-    emit(0, "");
-    emit(0, "");
     emit(0, "#endif");
 
     free(tn_);
     g_free(tn_upper);
+}
+
+static void emit_cpp_constants(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    if (0 == g_ptr_array_size(ls->constants)) 
+        return;
+
+    const char* sn = ls->structname->shortname;
+    for (unsigned int i = 0; i < g_ptr_array_size(ls->constants); i++) {
+        lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
+        const char *suffix = "";
+        if (!strcmp(lc->lctypename, "int64_t"))
+            suffix = "LL";
+        char* mapped_typename = map_type_name(lc->lctypename);
+        emit(0, "const %-8s %s::%s = %s%s;", mapped_typename, sn, 
+                lc->membername, lc->val_str, suffix);
+        free(mapped_typename);
+    }
+    emit(0, "");
 }
 
 static void emit_cpp_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -356,15 +368,11 @@ static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
     // 
     if(depth == g_ptr_array_size(lm->dimensions)) {
         if(!strcmp(lm->type->lctypename, "string")) {
-            emit(1 + depth, "int32_t %s_len = this->%s.size();", lm->membername, lm->membername);
-            emit(1 + depth, "tlen = __int32_t_encode_array(buf, offset + pos, maxlen - pos, &%s_len, 1);",
-                    lm->membername);
-            emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
-            emit_start(1 + depth, "tlen = __int8_t_encode_array(buf, offset + pos, maxlen - pos, (int8_t*)%s",
-                    lm->membername);
+            emit_start(1 + depth, "char* __cstr = (char*) this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
-            emit_end(".c_str(), %s_len);", lm->membername);
+            emit_end(".c_str();");
+            emit(1 + depth, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &__cstr, 1);");
         } else {
             emit_start(1 + depth, "tlen = this->%s", lm->membername);
             for(int i=0; i<depth; i++)
@@ -515,15 +523,15 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
     // 
     if(depth == g_ptr_array_size(lm->dimensions)) {
         if(!strcmp(lm->type->lctypename, "string")) { 
-            emit(1 + depth, "int32_t __%s_len__;", lm->membername);
-            emit(1 + depth, "tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__%s_len__, 1);", lm->membername);
+            emit(1 + depth, "int32_t __elem_len;");
+            emit(1 + depth, "tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__elem_len, 1);");
             emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
-            emit(1 + depth, "if(__%s_len__ > maxlen - pos) return -1;", lm->membername);
+            emit(1 + depth, "if(__elem_len > maxlen - pos) return -1;");
             emit_start(1 + depth, "this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
-            emit_end(".assign(((const char*)buf) + offset + pos, __%s_len__);", lm->membername);
-            emit(1 + depth, "pos += __%s_len__;", lm->membername);
+            emit_end(".assign(((const char*)buf) + offset + pos, __elem_len -  1);");
+            emit(1 + depth, "pos += __elem_len;");
         } else {
             emit_start(1 + depth, "tlen = this->%s", lm->membername);
             for(int i=0; i<depth; i++)
@@ -583,7 +591,7 @@ static void emit_cpp_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 emit(1, "tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__%s_len__, 1);", lm->membername);
                 emit(1, "if(tlen < 0) return tlen; else pos += tlen;");
                 emit(1, "if(__%s_len__ > maxlen - pos) return -1;", lm->membername);
-                emit(1, "this->%s.assign(((const char*)buf) + offset + pos, __%s_len__);", lm->membername, lm->membername);
+                emit(1, "this->%s.assign(((const char*)buf) + offset + pos, __%s_len__ - 1);", lm->membername, lm->membername);
                 emit(1, "pos += __%s_len__;", lm->membername);
             } else {
                 emit(1, "tlen = __%s_decode_array(buf, offset + pos, maxlen - pos, &this->%s, 1);", lm->type->lctypename, lm->membername);
@@ -649,6 +657,8 @@ int emit_cpp(lcmgen_t *lcmgen)
 
             emit_package_namespace_start(lcmgen, f, lr);
 
+            emit(0, "");
+            emit_cpp_constants(lcmgen, f, lr);
             emit_cpp_encode(lcmgen, f, lr);
             emit_cpp_decode(lcmgen, f, lr);
             emit_cpp_encoded_size(lcmgen, f, lr);

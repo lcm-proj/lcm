@@ -12,38 +12,10 @@ utility.  It takes as input one or more \fB.lcm\fR files containing LCM message
 type definitions, and generates language-specific bindings for marshalling and
 unmarshalling messages of the specified types.
 
-Currently, \fBlcm-gen\fR is capable of generating language bindings for C,
-Python, and Java.  One or more of \fB\-j\fR, \fB\-c\fR, or \fB\-p\fR must be
-specified.
+Currently, \fBlcm-gen\fR is capable of generating language bindings for C, C++,
+C#, Python, and Java.
 
-.SH OPTIONS
-The following options are provided by \fBlcm-gen\fR:
-.TP
-.B \-c, \-\-c
-Emit C code.
-.TP
-.B \-\-c-cpath \fIDIR\fR
-Destination directory for generated .c files. (default: current directory)
-.TP
-.B \-\-c-hpath \fIDIR\fR
-Destination directory for generated .h files. (default: current directory)
-.TP
-.B \-\-cinclude \fIDIR\fR
-Generated #include lines reference this directory
-.TP
-.B \-j, \-\-java
-Emit Java code.
-.TP
-.B \-\-jpath \fIDIR\fR
-Destination base directory for generated Java files. (default: current
-directory)
-.TP
-.B \-p, \-\-python
-Emit Python code.
-.TP
-.B \-\-ppath \fIDIR\fR
-Destination base directory for generated Python files. (default: current
-directory)
+.SH GENERAL OPTIONS
 .TP
 .B \-\-lazy
 Generate output file only if .lcm is newer than output file (or if output file
@@ -56,7 +28,85 @@ Show parsed files
 Show tokenization
 .TP
 .B \-h
-Prints this help text and exits.
+Prints some help text and exits.
+
+.SH C OPTIONS
+.TP
+.B \-c, \-\-c
+Emit C code.
+.TP
+.B \-\-c-cpath \fIDIR\fR
+Destination directory for generated .c files. (default: current directory)
+.TP
+.B \-\-c-hpath \fIDIR\fR
+Destination directory for generated .h files. (default: current directory)
+.TP
+.B \-\-cinclude \fIDIR\fR
+Generated #include lines reference this directory
+
+.SH C++ OPTIONS
+.TP
+.B \-x, \-\-cpp
+Emit C++ code.
+.TP
+.B \-\-cpp-cpath \fIDIR\fR
+Destination directory for generated .cpp files. (default: current directory)
+.TP
+.B \-\-cpp-hpath \fIDIR\fR
+Destination directory for generated .hpp files. (default: current directory)
+.TP
+.B \-\-cpp-include \fIDIR\fR
+Generated C++ #include lines reference this directory
+
+.SH C#.NET OPTIONS
+.TP
+.B \-\-csharp
+Emit C#.NET code   
+.TP
+.B \-\-csharp-path \fIDIR\fR
+C#.NET destination directory   
+.TP
+.B \-\-csharp-mkdir <true|false>
+Make C#.NET source directories automatically (default: true)
+.TP
+.B \-\-csharp-strip-dirs <true|false>
+Do not generate folders for default and root namespace (default: false)
+.TP
+.B \-\-csharp-decl \fISTR\fR
+String added to class declarations (default: " : LCM.LCM.LCMEncodable")
+.TP
+.B \-\-csharp-root-nsp \fINSP\fR
+Root C#.NET namespace (wrapper) added before LCM package (default: "")
+.TP
+.B \-\-csharp-default-nsp \fINSP\fR
+Default C#.NET namespace if LCM type has no package (default: LCMTypes)
+
+.SH JAVA OPTIONS
+.TP
+.B \-j, \-\-java
+Emit Java code.
+.TP
+.B \-\-jpath \fIDIR\fR
+Destination base directory for generated Java files. (default: current
+directory)
+.TP
+.B \-\-jmkdir <true|false>
+Automatically create Java source directories (default: true)
+.TP
+.B \-\-jdecl \fISTR\fR
+String added to class declarations (default: implements lcm.lcm.LCMEncodable)
+.TP
+.B \-\-jdefaultpkg \fIPKG\fR
+Default Java package if LCM type has no package (default: lcmtypes)
+
+.SH PYTHON OPTIONS
+.TP
+.B \-p, \-\-python
+Emit Python code.
+.TP
+.B \-\-ppath \fIDIR\fR
+Destination base directory for generated Python files. (default: current
+directory)
 
 .SH COPYRIGHT
 
