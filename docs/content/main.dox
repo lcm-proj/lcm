@@ -1,0 +1,17 @@
+/**
+
+\mainpage LCM C/C++ API documentation
+
+\section sec_intro Introduction
+
+This is the introduction.
+
+\section sec_c C
+
+\li \ref LcmC
+
+\section sec_cpp C++
+
+\li \ref LcmCpp
+
+*/
