@@ -2,16 +2,20 @@
 
 \mainpage LCM C/C++ API documentation
 
-\section sec_intro Introduction
+\section main_tutorials Tutorials
 
-This is the introduction.
+\li \ref tutorial_c
+\li \ref tut_java
+\li \ref tut_dotnet
 
-\section sec_c C
+\section main_api_ref API Reference
 
 \li \ref LcmC
-
-\section sec_cpp C++
-
 \li \ref LcmCpp
 
-*/
+\section main_other Other
+
+\li \ref type_specification
+\li \ref multicast
+
+**/
