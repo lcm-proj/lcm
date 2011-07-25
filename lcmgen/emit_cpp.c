@@ -244,8 +244,12 @@ static void emit_header(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
             lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
             assert(lcm_is_legal_const_type(lc->lctypename));
 
+            const char *suffix = "";
+            if (!strcmp(lc->lctypename, "int64_t"))
+              suffix = "LL";
             char* mapped_typename = map_type_name(lc->lctypename);
-            emit(2, "static const %-8s %s; // %s", mapped_typename, lc->membername, lc->val_str);
+            emit(2, "static const %-8s %s = %s%s;", mapped_typename, 
+                lc->membername, lc->val_str, suffix);
             free(mapped_typename);
         }
         emit(0, "");
@@ -270,31 +274,11 @@ static void emit_header(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(0, "");
 
     // close namespaces
-    emit_package_namespace_close(lcmgen, f, ls);
-
-    emit(0, "#endif");
+//    emit_package_namespace_close(lcmgen, f, ls);
+//    emit(0, "#endif");
 
     free(tn_);
     g_free(tn_upper);
-}
-
-static void emit_cpp_constants(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
-{
-    if (0 == g_ptr_array_size(ls->constants)) 
-        return;
-
-    const char* sn = ls->structname->shortname;
-    for (unsigned int i = 0; i < g_ptr_array_size(ls->constants); i++) {
-        lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
-        const char *suffix = "";
-        if (!strcmp(lc->lctypename, "int64_t"))
-            suffix = "LL";
-        char* mapped_typename = map_type_name(lc->lctypename);
-        emit(0, "const %-8s %s::%s = %s%s;", mapped_typename, sn, 
-                lc->membername, lc->val_str, suffix);
-        free(mapped_typename);
-    }
-    emit(0, "");
 }
 
 static void emit_cpp_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -303,8 +287,10 @@ static void emit_cpp_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     const char *sn  = ls->structname->shortname;
     char *tn_ = dots_to_underscores(tn);
 
-    emit(0, "static bool __%s_hash_computed = false;", tn_);
-    emit(0, "static int64_t __%s_hash;", tn_);
+    emit(0, "int64_t %s::getHash()", sn);
+    emit(0, "{");
+    emit(1,     "return lcm::message_traits::Hash<%s>::value();", sn);
+    emit(0, "}");
     emit(0, " ");
 
     emit(0, "int64_t %s::_getHashRecursive(const __lcm_hash_ptr *p)", sn);
@@ -332,17 +318,6 @@ static void emit_cpp_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(2,";");
     emit(0, " ");
     emit(1, "return (hash<<1) + ((hash>>63)&1);");
-    emit(0, "}");
-    emit(0, " ");
-
-    emit(0, "int64_t %s::getHash()", sn);
-    emit(0, "{");
-    emit(1, "if (!__%s_hash_computed) {", tn_);
-    emit(2,      "__%s_hash = %s::_getHashRecursive(NULL);", tn_, sn);
-    emit(2,      "__%s_hash_computed = true;", tn_);
-    emit(1,      "}");
-    emit(0, " ");
-    emit(1, "return __%s_hash;", tn_);
     emit(0, "}");
     emit(0, " ");
 
@@ -449,7 +424,6 @@ static void emit_cpp_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "int %s::_getEncodedSizeRecursive() const", sn);
     emit(0, "{");
     emit(1,     "int enc_size = 0;");
-    emit(0, "");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
         int ndim = g_ptr_array_size(lm->dimensions);
@@ -486,8 +460,6 @@ static void emit_cpp_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 emit(1 + n, "}");
             }
         }
-        
-        emit(0," ");
     }
     emit(1, "return enc_size;");
     emit(0,"}");
@@ -632,49 +604,50 @@ int emit_cpp(lcmgen_t *lcmgen)
                 return -1;
 
             emit_header(lcmgen, f, lr);
-            fclose(f);
-        }
-        free(header_name);
-
-        char *cpp_name      = sprintfalloc("%s%s%s.cpp", 
-                getopt_get_string(lcmgen->gopt, "cpp-cpath"), 
-                strlen(getopt_get_string(lcmgen->gopt, "cpp-cpath")) > 0 ? G_DIR_SEPARATOR_S : "",
-                tn_);
-        // cpp file
-        if (lcm_needs_generation(lcmgen, lr->lcmfile, cpp_name)) {
-            FILE *f = fopen(cpp_name, "w");
-            if (f == NULL)
-                return -1;
-
-            emit_auto_generated_warning(f);
-            fprintf(f, "#include <string.h>\n");
-            fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
-            fprintf(f, "#include \"%s%s%s.hpp\"\n",
-                    getopt_get_string(lcmgen->gopt, "cinclude"),
-                    strlen(getopt_get_string(lcmgen->gopt, "cinclude"))>0 ? "/" : "",
-                    tn_);
-            fprintf(f, "\n");
-
-            emit_package_namespace_start(lcmgen, f, lr);
-
-            emit(0, "");
-            emit_cpp_constants(lcmgen, f, lr);
+            emit_cpp_encoded_size(lcmgen, f, lr);
+            emit_cpp_struct_get_hash(lcmgen, f, lr);
             emit_cpp_encode(lcmgen, f, lr);
             emit_cpp_decode(lcmgen, f, lr);
-            emit_cpp_encoded_size(lcmgen, f, lr);
             emit(0, "const char* %s::getTypeName()", lr->structname->shortname);
             emit(0, "{");
             emit(1,     "return \"%s\";", lr->structname->shortname);
             emit(0, "}");
-            emit(0, "");
-
-            emit_cpp_struct_get_hash(lcmgen, f, lr);
-
             emit_package_namespace_close(lcmgen, f, lr);
+            emit(0, "#endif");
 
             fclose(f);
         }
-        free(cpp_name);
+        free(header_name);
+
+//        char *cpp_name      = sprintfalloc("%s%s%s.cpp", 
+//                getopt_get_string(lcmgen->gopt, "cpp-cpath"), 
+//                strlen(getopt_get_string(lcmgen->gopt, "cpp-cpath")) > 0 ? G_DIR_SEPARATOR_S : "",
+//                tn_);
+//        // cpp file
+//        if (lcm_needs_generation(lcmgen, lr->lcmfile, cpp_name)) {
+//            FILE *f = fopen(cpp_name, "w");
+//            if (f == NULL)
+//                return -1;
+//
+//            emit_auto_generated_warning(f);
+//            fprintf(f, "#include <string.h>\n");
+//            fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
+//            fprintf(f, "#include \"%s%s%s.hpp\"\n",
+//                    getopt_get_string(lcmgen->gopt, "cinclude"),
+//                    strlen(getopt_get_string(lcmgen->gopt, "cinclude"))>0 ? "/" : "",
+//                    tn_);
+//            fprintf(f, "\n");
+//
+//            emit_package_namespace_start(lcmgen, f, lr);
+//
+//            emit(0, "");
+//            emit(0, "");
+//
+//            emit_package_namespace_close(lcmgen, f, lr);
+//
+//            fclose(f);
+//        }
+//        free(cpp_name);
     }
 
     return 0;

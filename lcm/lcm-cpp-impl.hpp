@@ -109,6 +109,27 @@ class LCMMHUntypedSubscription : public Subscription {
         }
 };
 
+namespace message_traits
+{
+template <class T>
+class Hash
+{
+    public:
+        static int64_t value() {
+            if(!computed) {
+                hash = T::_getHashRecursive(NULL);
+                computed = true;
+            }
+            return hash;
+        }
+    private:
+        static int64_t hash;
+        static bool computed;
+};
+template <class T> int64_t Hash<T>::hash = 0;
+template <class T> bool Hash<T>::computed = false;
+}
+
 inline 
 LCM::LCM(std::string lcm_url)
 {
