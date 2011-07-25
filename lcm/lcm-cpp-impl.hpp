@@ -117,7 +117,7 @@ class Hash
     public:
         static int64_t value() {
             if(!computed) {
-                hash = T::_getHashRecursive(NULL);
+                hash = T::_computeHash(NULL);
                 computed = true;
             }
             return hash;
