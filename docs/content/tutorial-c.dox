@@ -6,18 +6,25 @@
 \section tutorial_c_intro Introduction
 
 This tutorial will walk you through the main tasks for exchanging messages
-between two applications:
+using the LCM C API.  It covers the following topics:
 
 \li Initialize LCM in your application.
 \li Publish a message.
 \li Subscribe to and receive a message.
 
-This tutorial is intended for C users, and uses the \p example_t message type defined in the
-\ref tutorial_lcmgen "data type definition tutorial".  It assumes that you have
+This tutorial uses the \p example_t message type defined in the
+\ref tutorial_lcmgen "type definition tutorial", and assumes that you have
 generated the C bindings for the example type by running
 \code
 lcm-gen -c example_t.lcm
 \endcode
+
+After running this command, you should have two files:
+<tt>exlcm_example_t.c</tt> and <tt>exlcm_example_t.h</tt>.  These two files are
+the C bindings for the example message type.  Notice that the message type
+package name "exlcm" was prepended to the file name.  This is how LCM emulates
+namespaces in C, and the package name is also prefixed to the generated C struct name.  
+If you have the time, take a moment to open up those two files and inspect the generated code.
 
 \section tutorial_c_initialize Initializing LCM
 
@@ -44,11 +51,10 @@ int main(int argc, char ** argv)
 
 The function lcm_create() allocates and initializes an instance of
 \ref lcm_t, which represents a connection to an LCM network.  The single
-argument to lcm_create() can be \c NULL as shown above, to initialize LCM
-with default settings.  It can also be a string specifying the
-underlying communications mechanisms.  The defaults initialized with a \c NULL
-argument are suitable for communicating with other LCM applications on the
-local computer.  
+argument can be \c NULL as shown above, to initialize LCM
+with default settings.  The defaults initialized are suitable for communicating
+with other LCM applications on the local computer.  The argument can also be a
+string specifying the underlying communications mechanisms.
 For communication across computers, or other usages such as reading data from
 an LCM logfile (e.g., to post-process or analyze previously collected data),
 see the API reference for lcm_create().
@@ -76,18 +82,17 @@ struct _exlcm_example_t
 };
 \endcode
 
-The first thing to notice is that the message type package name "exlcm" was
-prepended to the name of the C struct.  This is how LCM emulates namespaces in
-C.  Second, notice here that fixed-length arrays in LCM appear as fixed-length
-C arrays.  Variable length arrays appear as pointers in C.  More on that below.
+Notice here that fixed-length arrays in LCM appear as fixed-length C arrays.
+Variable length arrays appear as pointers in C.  More on that below.
     
 We can instantiate and then publish some sample data as follows:
     
 \code
+#include <lcm/lcm.h>
 #include "exlcm_example_t.h"
 
 static void
-send_message (lcm_t * lcm)
+send_message(lcm_t * lcm)
 {
     exlcm_example_t my_data = {
         .timestamp = 0,
@@ -106,11 +111,25 @@ send_message (lcm_t * lcm)
 
     exlcm_example_t_publish(lcm, "EXAMPLE", &my_data);
 }
+
+int
+main(int argc, char ** argv)
+{
+    lcm_t * lcm = lcm_create(NULL);
+    if(!lcm)
+        return 1;
+
+    send_message(lcm);
+
+    lcm_destroy(lcm);
+    return 0;
+}
 \endcode
 
 The full example is available in runnable form as
 <tt>examples/c/send_message.c</tt> in the LCM source distribution.
 
+For the most part, this example should be pretty straightforward.
 Note that \c my_data.ranges refers to a variable length array defined by the
 <tt>example_t</tt> LCM type, and is represented by a pointer in the generated
 C struct.  It is up to the programmer to set this pointer to an array of the

@@ -489,7 +489,8 @@ class LogFile {
         /**
          * Reads the next event in the log file.  Valid in read mode only.
          *
-         * The LogFile class manages the memory of the read event.
+         * The LogFile class manages the memory of the read event.  The
+         * returned event is valid until the next call to this method.
          *
          * @return the next event, or NULL if the end of the log file has been
          * reached.
