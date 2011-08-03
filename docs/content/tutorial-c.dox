@@ -1,7 +1,7 @@
 /**
 
 \page tutorial_c C Tutorial
-\brief An example use case from start to finish in C
+\brief Sending and receiving LCM messages with C
 
 \section tutorial_c_intro Introduction
 
@@ -13,7 +13,7 @@ using the LCM C API.  It covers the following topics:
 \li Subscribe to and receive a message.
 
 This tutorial uses the \p example_t message type defined in the
-\ref tutorial_lcmgen "type definition tutorial", and assumes that you have
+\ref tut_lcmgen "type definition tutorial", and assumes that you have
 generated the C bindings for the example type by running
 \code
 lcm-gen -c example_t.lcm
@@ -59,7 +59,7 @@ For communication across computers, or other usages such as reading data from
 an LCM logfile (e.g., to post-process or analyze previously collected data),
 see the API reference for lcm_create().
 
-Once you're all done using LCM, it's a good idea to call lcm_destroy() to clean
+Once you're all done, it's a good idea to call lcm_destroy() to clean
 up any resources used by LCM.
     
 \section tutorial_c_publishing Publishing a message
@@ -91,9 +91,13 @@ We can instantiate and then publish some sample data as follows:
 #include <lcm/lcm.h>
 #include "exlcm_example_t.h"
 
-static void
-send_message(lcm_t * lcm)
+int
+main(int argc, char ** argv)
 {
+    lcm_t * lcm = lcm_create(NULL);
+    if(!lcm)
+        return 1;
+
     exlcm_example_t my_data = {
         .timestamp = 0,
         .position = { 1, 2, 3 },
@@ -110,16 +114,6 @@ send_message(lcm_t * lcm)
     my_data.enabled = 1;
 
     exlcm_example_t_publish(lcm, "EXAMPLE", &my_data);
-}
-
-int
-main(int argc, char ** argv)
-{
-    lcm_t * lcm = lcm_create(NULL);
-    if(!lcm)
-        return 1;
-
-    send_message(lcm);
 
     lcm_destroy(lcm);
     return 0;
@@ -190,19 +184,15 @@ my_handler(const lcm_recv_buf_t *rbuf, const char * channel,
 int
 main(int argc, char ** argv)
 {
-    lcm_t * lcm;
-
-    lcm = lcm_create(NULL);
+    lcm_t * lcm = lcm_create(NULL);
     if(!lcm)
         return 1;
 
-    exlcm_example_t_subscription_t * sub =
-        exlcm_example_t_subscribe(lcm, "EXAMPLE", &my_handler, NULL);
+    exlcm_example_t_subscribe(lcm, "EXAMPLE", &my_handler, NULL);
 
     while(1)
         lcm_handle(lcm);
 
-    exlcm_example_t_unsubscribe(lcm, sub);
     lcm_destroy(lcm);
     return 0;
 }

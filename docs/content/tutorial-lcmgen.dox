@@ -1,6 +1,6 @@
 /**
 
-\page tutorial_lcmgen Defining a data type - \c example_t
+\page tut_lcmgen Defining a data type - \c example_t
 
 When exchanging messages between two applications, you may have
 many different types of data.  LCM allows you to define these types as
@@ -33,7 +33,7 @@ NULL-terminated <tt>char *</tt>.  Note that unsigned types are not defined,
 since there is no equivalent in Java.
 
 Additionally, you can define fixed-size or variable-length arrays.  In this
-example, \p position is an \c double array of length 3, and \p ranges is a
+example, \p position is a \c double array of length 3, and \p ranges is a
 variable-length \c int16_t array.  The length of \p ranges is specified by the
 \c num_ranges field.
 

@@ -1,7 +1,7 @@
 /**
 
 \page tut_java Java Tutorial
-\brief An example use case from start to finish in Java
+\brief Sending and receiving LCM messages with Java
 
 \section tut_java_intro Introduction
 

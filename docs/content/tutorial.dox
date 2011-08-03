@@ -31,20 +31,20 @@ between two applications:
  -# Publish a message
  -# Subscribe to and receive a message
 
-Since the type definitions are language independent, the \ref tutorial_lcmgen "first step" is the same
+Since the type definitions are language independent, the \ref tut_lcmgen "first step" is the same
 for all programming languages.  
 
- - \ref tutorial_lcmgen "Step 1: Creating a type definition"
+ - \ref tut_lcmgen "Step 1: Creating a type definition"
 
 The remaining steps vary across programming
 languages, consult the following sections for language-specific tutorials.
 
  - \ref tutorial_c "Steps 2-4: C"
  - \ref tut_cpp "Steps 2-4: C++"
- - \ref tut_java "Steps 2-4: Java"
- - \ref tut_python "Steps 2-4: Python"
  - \ref tut_dotnet "Steps 2-4: C# / .NET"
+ - \ref tut_java "Steps 2-4: Java"
  - \ref tut_matlab "Steps 2-4: MATLAB"
+ - \ref tut_python "Steps 2-4: Python"
 
 Note that C and C++ are considered to be separate programming languages.  It is
 possible to use the C bindings from C++, but there are also LCM bindings

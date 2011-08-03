@@ -1,7 +1,7 @@
 /**
 
 \page tut_cpp C++ Tutorial
-\brief An example use case from start to finish in C++
+\brief Sending and receiving LCM messages with C++
 
 \section tut_cpp_intro Introduction
 
@@ -58,7 +58,8 @@ communication across computers, or other usages such as reading data from
 an LCM logfile (e.g., to post-process or analyze previously collected data),
 see the \ref lcm::LCM::LCM() "constructor documentation".
 
-Once constructed, the \ref lcm::LCM::good() method
+Once constructed, the \ref lcm::LCM::good() method can be used to check if
+there were any errors initializing the LCM instance for communications.
 
 The class destructor takes care of releasing resources and cleaning up, so it
 is sufficient to explicitly delete heap-allocated instances or let
