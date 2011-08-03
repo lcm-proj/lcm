@@ -36,20 +36,15 @@ my_handler(const lcm_recv_buf_t *rbuf, const char * channel,
 int
 main(int argc, char ** argv)
 {
-    lcm_t * lcm;
-
-    lcm = lcm_create(NULL);
+    lcm_t * lcm = lcm_create(NULL);
     if(!lcm)
         return 1;
 
-    exlcm_example_t_subscription_t * sub =
-        exlcm_example_t_subscribe(lcm, "EXAMPLE", &my_handler, NULL);
+    exlcm_example_t_subscribe(lcm, "EXAMPLE", &my_handler, NULL);
 
     while(1)
         lcm_handle(lcm);
 
-    exlcm_example_t_unsubscribe(lcm, sub);
     lcm_destroy(lcm);
     return 0;
 }
-

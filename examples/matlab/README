@@ -19,11 +19,11 @@ Step 0:
   Then we could run the following commands:
   
   $ lcm-gen -j ../types/example_t.lcm
-  Notice: enclosing LCM types without package into java namespace 'lcmtypes'.
+  Notice: enclosing LCM types without package into java namespace 'exlcm'.
 
-  $ javac -cp /path/to/lcm.jar lcmtypes/*.java
+  $ javac -cp /path/to/lcm.jar exlcm/*.java
 
-  $ jar cf my_types.jar lcmtypes/*.class
+  $ jar cf my_types.jar exlcm/*.class
 
   This is summarized in the shell script "buildjar.sh"
 
