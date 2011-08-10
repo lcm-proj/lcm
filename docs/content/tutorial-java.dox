@@ -6,79 +6,44 @@
 \section tut_java_intro Introduction
 
 This tutorial will show you how to use all of the core functionality of LCM,
-including message transmission, subscription, and message encoding. This guide
-is intended for those who have a working knowledge of Java, and it should
-simultaneously provide a brief introduction to using LCM. For detailed
-information about LCM, however, please see the Java API reference.
+and is intended for those who have a working knowledge of Java. For detailed
+information about LCM, please see the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/index.html">Java API reference</a>.
 
-\section tuto_java_core Core LCM concepts
-  
-LCM is a package designed to allow multiple processes to exchange messages in
-a safe and high-performance way. LCM was designed for online real-time
-applications communicating via private ethernets. 
-  
-A <em>message</em> is the basic unit of LCM communications: it represents a
-self-contained unit. Messages are defined using a language-independent
-definition language; the lcm-gen tool compiles these definitions into
-language-specific encoding and decoding functions. Java applications can thus
-communicate with applications written in other languages: issues like byte
-order are taken care of by LCM.
-  
-For a simple example, suppose that we are building a system that will record
-the temperature in a number of different locations. One reasonable
-implementation would be to have a message contain a single temperature
-measurement. The LCM type specification, saved to a file named
-temperature_t.lcm, might look like this:
-  
+The topics covered in this tutorial are:
+
+\li Initialize LCM in your application.
+\li Publish a message.
+\li Subscribe to and receive a message.
+
+This tutorial uses the \p example_t message type defined in the
+\ref tut_lcmgen "type definition tutorial", and assumes that you have
+generated the C++ bindings for the example type by running
 \code
-struct temperature_t
-{
-  int64_t  utime;
-  double   deg_celsius;
-}
+lcm-gen -j example_t.lcm
 \endcode
 
-We can compile this specification into a class file by invoking lcm-gen with
-the -j flag.
-  
-There is no single correct way to define a message, but this example
-illustrates several useful conventions. First, the name of the type is
-"temperature_t": by convention, all LCM types end in a "_t" suffix. Type names
-are typically all lower-case with underscores between word boundaries (e.g.,
-"wind_speed_t"). The type also contains a timestamp, conventionally denoted as
-a 64 bit integer giving the number of microseconds since a noteworthy epoch
-(often the UNIX epoch). Finally, embedding the units into the names of the
-variables (e.g., "deg_celsius") helps prevent errors.
-  
-Each message is sent on a <em>channel</em>, which is identified by a
-human-readable name. For example, messages containing information about the
-temperature in the hallway might be published on the "HALLWAY_TEMPERATURE"
-channel. By convention, all messages on a channel have the same type.
-  
-Any application can publish on any channel, however, in many cases, a single
-application serves as the sole source of data on a channel. Any application
-can receive data on any channel--- for example, both a thermostat application
-and data logger might subscribe to the "HALLWAY_TEMPERATURE" channel.
-  
-The remainder of the tutorial is divided into the four steps required to make
-a working LCM application:
+After running this command, you should have one file,
+<tt>exlcm/example_t.java</tt>.  This file is the Java binding for the example
+message type.  If you have the time, take a moment to open up the
+file and inspect the generated code.
 
-\li Initializing LCM
-\li Defining LCM types
-\li Publishing messages
-\li Subscribing to messages
+You can then compile this into a .class file, and then create a .jar
+archive.  Assuming that \c lcm.jar is in the current directory (see the \ref java_notes "Java notes" page), you
+could then run (also from a command shell):
 
-Defining LCM types is fairly intuitive and is language neutral. We thus direct
-you to the LCM type specification reference. The remainder of the tutorial on
-the other topics.
+\code
+javac -cp lcm.jar exlcm/*.java
+jar cf my_types.jar exlcm/*.class
+\endcode
+
+You should then have a file \c my_types.jar, which is a Java archive containing
+the Java bindings for the example message.  In order to use LCM types, you must
+include the jar file on your classpath.
   
 \section tut_java_initialize Initializing LCM
   
 You will need to make sure that <em>lcm.jar</em> is in your classpath, and
-your Java classes will need to include "import lcm.lcm.*". If you do not
-manually specify a package for your LCM types, they will be placed in a
-package called "lcmtypes", so you should add "import lcmtypes.*" to your Java
-files.
+your Java classes will need to include "import lcm.lcm.*".
   
 To initialize LCM, with default options, simply call:
   
@@ -86,30 +51,63 @@ To initialize LCM, with default options, simply call:
 LCM myLCM = LCM.getSingleton();
 \endcode
 
+The default options are suitable for communicating with other LCM applications
+on the local computer.
+For communication across computers, or other usages such as reading data from
+an LCM logfile (e.g., to post-process or analyze previously collected data),
+see the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/index.html">Java API reference</a>.
+
 \section tut_java_publish Publishing a message
   
-In order to use LCM types, you must include the class files for your LCM
-delcared types in a jar file on your classpath.
-  
+We can instantiate and then publish some sample data as follows:
+    
 \code
-temperature_t temp = new temperature_t();
-temp.utime = System.nanoTime()/1000;
-temp.deg_celsius = 25.0;
+import java.io.*;
+import lcm.lcm.*;
 
-myLCM.publish("HALLWAY_TEMPERATURE", temp);
+public class SendMessage
+{
+    public static void main(String args[])
+    {
+        try {
+            LCM lcm = LCM.getSingleton();
+
+            exlcm.example_t msg = new exlcm.example_t();
+            msg.timestamp = System.nanoTime();
+            msg.position = new double[] { 1, 2, 3 };
+            msg.orientation = new double[] { 1, 0, 0, 0 };
+            msg.ranges = new short[] {
+                0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14
+            };
+            msg.num_ranges = msg.ranges.length;
+            msg.name = "example string";
+            msg.enabled = true;
+
+            lcm.publish("EXAMPLE", msg);
+        } catch (IOException ex) {
+            System.out.println("Exception: " + ex);
+        }
+    }
+}
 \endcode
   
-Keep in mind that LCM is typically a lossy communications mechanism. In a
-typical configuration on a private ethernet, messages are only lost when a
-sender is transmitting faster than a receiver can receive. Still, an
-application should not be designed around reliable or ordered delivery. If
-reliable delivery is required, it must be built on top of LCM (using a
-handshake or acknowledgement mechanism, for example).
-  
+After initializing LCM, this application creates an instance of the example
+message, fills in some message fields, and then publishes the message.
+
+The call to \c lcm.publish() serializes the data into a byte stream and
+transmits the packet using LCM to any interested receivers.  The string
+<tt>"EXAMPLE"</tt> is the <em>channel</em> name, which is a string
+transmitted with each packet that identifies the contents to receivers.
+Receivers subscribe to different channels using this identifier, allowing
+uninteresting data to be discarded quickly and efficiently.
+
+ 
 \section tut_java_subscribe Subscribing to messages
   
-In order to receive messages, you must register an LCMSubscriber and pass it
-to the LCM object using the subscribe call. The subscriber will be provided
+In order to receive messages, you must implement an <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/LCMSubscriber.html">LCMSubscriber</a> and pass it
+to <a
+href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/LCM.html#subscribe(java.lang.String,
+lcm.lcm.LCMSubscriber)">LCM.subscribe()</a>. The subscriber will be provided
 with a LCMDataInputStream that can be read for the message contents. All LCM
 data types include a constructor that takes a DataInput (including instances
 of LCMDataInputStream) as an argument. First, let's look at the
@@ -118,140 +116,127 @@ subscriber:
 \code
 public class MySubscriber implements LCMSubscriber
 {
-   public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
-   {
-      if (channel.equals("HALLWAY_TEMPERATURE")) 
-      {
-         try {
-            temperature_t temp = new temperature_t(ins);
-            System.out.println("The temperature is: "+temp.deg_celsius);
-         } catch (IOException ex) {
-            System.out.println("Error decoding temperature message: "+ex);
-         }
-      }
-   }
-}
-\endcode
-
-Now, we can subscribe to the message with just:
-  
-\code
-myLCM.subscriber("HALLWAY_TEMPERATURE", new MySubscriber());
-\endcode
-
-\section tut_java_together Putting it all together
-
-We now provide complete code for two programs: the first will periodically
-transmit a simulated temperature and the second will subscribe to and display
-that temperature. We assume that the temperature_t.class file (resulting from
-invoking lcm-gen -j temperature_t.lcm) can be found on the classpath.
-  
-\code
-import lcm.lcm.*;
-import lcmtypes.*;
-    
-public class TemperatureTransmit
-{
-    public static void main(String args[])
-    {
-	LCM myLCM = LCM.getSingleton();
-
-	while (true)
-	    {
-                temperature_t temp = new temperature_t();
-                temp.utime = System.nanoTime()/1000;
-                temp.deg_celsius = 25.0 + 5*Math.sin(System.nanoTime()/1000000000.0);
-
-                myLCM.publish("HALLWAY_TEMPERATURE", temp);
-
-		try {
-		    Thread.sleep(10);
-		} catch (InterruptedException ex) {
-		}
-	    }
-    }
-}
-\endcode
-
-\code
-import lcm.lcm.*;
-import lcmtypes.*;
-import java.io.*;
-
-public class TemperatureDisplay implements LCMSubscriber
-{
     public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
     {
-	try {
-	    temperature_t temp = new temperature_t(ins);
-	    System.out.println("The temperature is: "+temp.deg_celsius);
-	} catch (IOException ex) {
-	    System.out.println("Error decoding temperature message: "+ex);
-	}
-    }
+        System.out.println("Received message on channel " + channel);
+        example_t msg;
+        try {
+            msg = new example_t(ins);
+        } catch (IOException ex) {
+            System.out.println("Error decoding message: " + ex);
+            return;
+        }
 
-    public static void main(String args[])
-    {
-	LCM myLCM = LCM.getSingleton();
-
-	myLCM.subscribe("HALLWAY_TEMPERATURE", new TemperatureDisplay());
-
-	// Sleep forever: if we quit, so will the LCM thread.
-	while (true) 
-	    {
-		try {
-		    Thread.sleep(1000);
-		} catch (InterruptedException ex) {
-		}
-	    }
+        System.out.println("  timestamp    = " + msg.timestamp);
+        // Could do something else with the message here.
     }
 }
 \endcode
 
-To compile and run these, let us assume that the lcm.jar file is in the
-current directory (along with TemperatureDisplay.java,
-TemperatureTransmit.java, and temperature_t.lcm). We can run our programs by
+Next, we can subscribe to the message with:
+  
+\code
+lcm.subscriber("EXAMPLE", new MySubscriber());
+\endcode
+
+The LCM instance has a background thread that constantly listens for messages.
+When a message on channel <tt>"EXAMPLE"</tt> arrives, the LCM thread will
+invoke the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/LCMSubscriber.html#messageReceived(lcm.lcm.LCM, java.lang.String, lcm.lcm.LCMDataInputStream)">messageReceived()</a> method.  
+
+\subsection tut_java_together Putting it all together
+
+Here's an example of a complete subscriber application:
+
+\code
+import java.io.*;
+
+import lcm.lcm.*;
+import exlcm.*;
+
+public class MySubscriber implements LCMSubscriber
+{
+    LCM lcm;
+
+    public MySubscriber()
+        throws IOException
+    {
+        this.lcm = new LCM();
+        this.lcm.subscribe("EXAMPLE", this);
+    }
+
+    public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins)
+    {
+        System.out.println("Received message on channel " + channel);
+
+        try {
+            if (channel.equals("EXAMPLE")) {
+                example_t msg = new example_t(ins);
+
+                System.out.println("  timestamp    = " + msg.timestamp);
+                System.out.println("  position     = [ " + msg.position[0] +
+                                   ", " + msg.position[1] + ", " + msg.position[2] + " ]");
+                System.out.println("  orientation  = [ " + msg.orientation[0] +
+                                   ", " + msg.orientation[1] +
+                                   ", " + msg.orientation[2] +
+                                   ", " + msg.orientation[3] + " ]");
+
+                System.out.print("  ranges       = [ ");
+                for (int i=0; i<msg.num_ranges; i++) {
+                    System.out.print("" + msg.ranges[i]);
+                    if (i < msg.num_ranges-1)
+                        System.out.print (", ");
+                }
+                System.out.println (" ]");
+                System.out.println("  name         = '" + msg.name + "'");
+                System.out.println("  enabled      = '" + msg.enabled + "'");
+            }
+
+        } catch (IOException ex) {
+            System.out.println("Exception: " + ex);
+        }
+    }
+
+    public static void main(String args[])
+    {
+        try {
+            MySubscriber m = new MySubscriber();
+            while(true) {
+                Thread.sleep(1000);
+            }
+        } catch (IOException ex) {
+            System.out.println("Exception: " + ex);
+        } catch (InterruptedException ex) { }
+    }
+}
+\endcode
+
+The full example is included in the LCM source distribution, in the
+<tt>examples/java</tt> directory.
+
+\section tut_java_compiling_running Compiling and running
+
+To compile and run the examples, let's assume that the \c lcm.jar file is in the
+current directory, along with \c SendMessage.java,  
+\c MySubscriber.java, and \c example_t.lcm. We can run our programs by
 executing the commands:
   
-
 \verbatim
 # 1. Create the Java implementation of temperature_t.lcm
-lcm-gen -j temperature_t.lcm
+lcm-gen -j example_t.lcm
 
 # 2. Compile the demo applications and the LCM type created above.
-javac -cp .:lcm.jar *.java
+javac -cp .:lcm.jar *.java exlcm/*.java
 
-# 3. Run TemperatureTransmit (in one terminal)
-java -cp .:lcm.jar TemperatureTransmit 
+# 3. Run MySubscriber (in one terminal)
+java -cp .:lcm.jar MySubscriber 
 
-# 4. Run Temperature Display (in another terminal)
-java -cp .:lcm.jar TemperatureDisplay
+# 4. Run SendMessage (in another terminal)
+java -cp .:lcm.jar SendMessage 
 \endverbatim
 
-\section tut_java_namespace Namespace issues
+\section tut_java_notes Additional notes
 
-LCM supports namespaces for data types, making it easier for users to use the
-types defined by others without worry that those types will conflict with
-other users' types. 
-
-When defining a type, the name of the type can include a namespace, e.g.,
-"struct examples.temperature_t { ... }". When compiled with lcm-gen, this will
-result in a class named "temperature_t" in package "examples". If lcm-gen is
-given the root of a source tree with the --jpath flag, it will automatically
-put temperature_t.class in the examples subdirectory. You will need to
-remember to import that type before you use it, e.g., "import examples.*", or
-else you will need to refer to types by their fully-qualified names (e.g.,
-"new examples.temperature_t()").
-
-Note that if you do not specify a package name in your LCM type definition
-file, lcm-gen will (by default) put those types into the "lcmtypes" Java
-package. This is necessary because Java does not official support packageless
-classes.
-
-\section tut_java_conclusion Conclusion 
-  
-This tutorial has given a brief description of LCM and has shown how to write
-a simple LCM application. While this application is very simple, all of the
-important features of LCM have been illustrated.
+See the \ref java_notes "Java notes" page for some additional information
+related to LCM development with Java.
 
 **/

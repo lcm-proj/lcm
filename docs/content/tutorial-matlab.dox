@@ -22,7 +22,7 @@ differences, which mainly consist of how incoming messages are handled.
 
 This tutorial uses the \p example_t message type defined in the
 \ref tut_lcmgen "type definition tutorial", and assumes that you have
-compiled \c lcm.jar (see the \ref tut_java "Java tutorial"), and 
+compiled \c lcm.jar (see the \ref java_notes "Java notes" page), and 
 generated the Java bindings for the example type by running the following 
 (from a command shell, not the MATLAB prompt):
 \code

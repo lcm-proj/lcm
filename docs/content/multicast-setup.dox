@@ -26,7 +26,9 @@ following commands:
 Remember, you must always do this to use LCM if your machine is <em>not
 connected</em> to any external network.
 
-\section multicast_ttl Choosing a TTL
+\section multicast_multihost Using LCM across multiple hosts
+
+\subsection multicast_ttl Choosing a TTL
 
 LCM by default uses a time-to-live (TTL) value of 0.  This will prevent any
 LCM packets from being transmitted on the wire.  Only local applications will
@@ -44,7 +46,7 @@ exaple, in the bash shell:
   export LCM_DEFAULT_URL=udpm://239.255.76.67:7667?ttl=1
 \endverbatim
 
-\section multicast_igmp Using IGMP snooping
+\subsection multicast_igmp Using IGMP snooping
 
 When the multicast protocol was designed, it was intended that on local
 subnets it would act like broadcast traffic.  However, for high-bandwidth
@@ -64,6 +66,15 @@ queries, you must configure the switch to send out "fake queries".  Without
 this, the hosts will eventually stop sending IGMP subscription requests, and
 the switch will "fail open" causing all multicast traffic to be broadcast
 again.
+
+\subsection multicast_firewalls Firewalls
+
+If your operating system is running a firewall, then be sure to check its
+settings and make sure that it is allowing UDP Multicast traffic to get
+through.  Specifically, make sure the incoming packets are allowed on the
+multicast group and port you're using (defined in the LCM URL).  The exact
+method of doing this depends heavily on the specific firewall software
+installed, so general instructions can't be given here.
 
 \subsection multicast_mixed_speed Mixed-speed networks
 
@@ -86,8 +97,6 @@ devices using two levels of switches can also improve the situation.
 
 \section multicast_kernel_buffer Kernel UDP receive buffer sizing
 
-\note Some of this information is adapted from http://www.29west.com/docs/THPM/udp-buffer-sizing.html
-
 When used on a properly shielded local area network, the most common source of
 dropped and lost packets is not electrical disturbances.  Instead, it will
 usually be packet buffers that have reached capacity and cannot store any more
@@ -95,13 +104,13 @@ packets.
 
 Operating system kernels typically allocate both a <em>send buffer</em> and
 <em>receive buffer</em> for a network socket.  The send buffer stores packets
-that the operating system has agreed to transmit (i.e. a call to send() was
+that the operating system has agreed to transmit (i.e. a call to \c send() was
 successful) but that it hasn't actually yet transmitted over the network.  The
 receive buffer stores packets that the operating system has received from the
 network, but that the application hasn't yet retrieved.  In both cases, the
 buffers have a maximum capacity, and no new packets can be sent or received if
 that capacity is reached.  In the send case, a call to
-send() blocks until there is space in the buffer (or fails with
+\c send() blocks until there is space in the buffer (or fails with
 \c EAGAIN for non-blocking sockets).  In the receive case, incoming
 packets are simply discarded.
     
@@ -119,13 +128,9 @@ a 2MB maximum buffer size.
     <td><tt>sysctl -w net.core.rmem_max=2097152</tt></td>
     <td><tt>sysctl -w net.core.rmem_default=2097152</tt></td>
 </tr><tr>
-    <td>Solaris</td>
-    <td><tt>ndd -set /dev/udp udp_max_buf 2097152</tt></td>
-    <td>unknown.</td>
-</tr><tr>
-    <td>FreeBSD, Darwin (OS X)</td>
+    <td>OS/X, FreeBSD, etc.</td>
     <td><tt>sysctl -w kern.ipc.maxsockbuf=2097152</tt></td>
-    <td>unknown.</td>
+    <td>??</td>
 </tr>
 </table>
 
@@ -138,10 +143,9 @@ lines into the file somewhere:
     net.core.rmem_default=2097152
 \endverbatim
     
-An LCM application can also explicitly request a larger receive buffer, which
-is useful on Solaris and FreeBSD/OS X.  This is done by setting the
-<tt>recv_buf_size</tt> option with the <tt>udpm</tt>
-provider in lcm_create().  In our initial projects, which involved typical
-data rates of 10 MB/s, a 2 MB receive buffer was generally sufficient.
+In our initial projects, which involved typical data rates of 10 MB/s, a 2 MB
+receive buffer was generally sufficient.
+
+\note http://www.29west.com/docs/THPM/udp-buffer-sizing.html is also a good source of information on UDP buffer sizing.
 
 **/

@@ -128,9 +128,6 @@ int main(int argc, char ** argv)
 }
 \endcode
 
-The full example is available in runnable form as
-<tt>examples/cpp/send_message.cpp</tt> in the LCM source distribution.
-
 For the most part, this example should be pretty straightforward.
 Note that \c my_data.ranges refers to a variable length array defined by the
 <tt>example_t</tt> LCM type, and is represented by a STL vector in the
@@ -147,6 +144,9 @@ transmits the packet using LCM to any interested receivers.  The string
 transmitted with each packet that identifies the contents to receivers.
 Receivers subscribe to different channels using this identifier, allowing
 uninteresting data to be discarded quickly and efficiently.
+
+The full example is available in runnable form as
+<tt>examples/cpp/send_message.cpp</tt> in the LCM source distribution.
 
 \section tut_cpp_receive Receiving LCM Messages
 
