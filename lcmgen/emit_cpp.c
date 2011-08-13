@@ -158,12 +158,11 @@ emit_package_namespace_close(lcmgen_t* lcmgen, FILE* f, lcm_struct_t* ls)
 }
 
 /** Emit header file **/
-static void emit_header(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
+static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
 {
     char *tn = ls->structname->lctypename;
     char *sn = ls->structname->shortname;
     char *tn_ = dots_to_underscores(tn);
-    char *tn_upper = g_utf8_strup(tn_, -1);
 
     emit_auto_generated_warning(f);
     
@@ -244,8 +243,12 @@ static void emit_header(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
             lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
             assert(lcm_is_legal_const_type(lc->lctypename));
 
+            const char *suffix = "";
+            if (!strcmp(lc->lctypename, "int64_t"))
+              suffix = "LL";
             char* mapped_typename = map_type_name(lc->lctypename);
-            emit(2, "static const %-8s %s; // %s", mapped_typename, lc->membername, lc->val_str);
+            emit(2, "static const %-8s %s = %s%s;", mapped_typename, 
+                lc->membername, lc->val_str, suffix);
             free(mapped_typename);
         }
         emit(0, "");
@@ -253,100 +256,124 @@ static void emit_header(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
 
     emit(1, "public:");
     emit(2, "int encode(void *buf, int offset, int maxlen) const;");
-    emit(2, "int decode(const void *buf, int offset, int maxlen);");
     emit(2, "int getEncodedSize() const;");
-    emit(2, "static const char* getTypeName();");
-    emit(0,"");
-
+    emit(2, "int decode(const void *buf, int offset, int maxlen);");
     emit(2, "static int64_t getHash();");
+    emit(2, "static const char* getTypeName();");
+
     emit(0, "");
     emit(2, "// LCM support functions. Users should not call these");
-    emit(2, "static int64_t _getHashRecursive(const __lcm_hash_ptr *p);");
-    emit(2, "int     _encodeRecursive(void *buf, int offset, int maxlen) const;");
-    emit(2, "int     _decodeRecursive(const void *buf, int offset, int maxlen);");
-    emit(2, "int     _getEncodedSizeRecursive() const;");
-    emit(0,"");
+    emit(2, "int _encodeNoHash(void *buf, int offset, int maxlen) const;");
+    emit(2, "int _getEncodedSizeNoHash() const;");
+    emit(2, "int _decodeNoHash(const void *buf, int offset, int maxlen);");
+    emit(2, "static int64_t _computeHash(const __lcm_hash_ptr *p);");
     emit(0, "};");
     emit(0, "");
 
-    // close namespaces
-    emit_package_namespace_close(lcmgen, f, ls);
-
-    emit(0, "#endif");
-
     free(tn_);
-    g_free(tn_upper);
 }
 
-static void emit_cpp_constants(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    if (0 == g_ptr_array_size(ls->constants)) 
-        return;
-
     const char* sn = ls->structname->shortname;
-    for (unsigned int i = 0; i < g_ptr_array_size(ls->constants); i++) {
-        lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
-        const char *suffix = "";
-        if (!strcmp(lc->lctypename, "int64_t"))
-            suffix = "LL";
-        char* mapped_typename = map_type_name(lc->lctypename);
-        emit(0, "const %-8s %s::%s = %s%s;", mapped_typename, sn, 
-                lc->membername, lc->val_str, suffix);
-        free(mapped_typename);
-    }
+    emit(0, "int %s::encode(void *buf, int offset, int maxlen) const", sn);
+    emit(0, "{");
+    emit(1,     "int pos = 0, tlen;");
+    emit(1,     "int64_t hash = %s::getHash();", sn);
+    emit(0, "");
+    emit(1,     "tlen = __int64_t_encode_array(buf, offset + pos, maxlen - pos, &hash, 1);");
+    emit(1,     "if(tlen < 0) return tlen; else pos += tlen;");
+    emit(0, "");
+    emit(1,     "tlen = this->_encodeNoHash(buf, offset + pos, maxlen - pos);");
+    emit(1,     "if (tlen < 0) return tlen; else pos += tlen;");
+    emit(0, "");
+    emit(1,     "return pos;");
+    emit(0, "}");
     emit(0, "");
 }
 
-static void emit_cpp_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    const char *tn  = ls->structname->lctypename;
-    const char *sn  = ls->structname->shortname;
-    char *tn_ = dots_to_underscores(tn);
+    const char *sn = ls->structname->shortname;
+    emit(0,"int %s::getEncodedSize() const", sn);
+    emit(0,"{");
+    emit(1, "return 8 + %s::_getEncodedSizeNoHash();", sn);
+    emit(0,"}");
+    emit(0," ");
+}
 
-    emit(0, "static bool __%s_hash_computed = false;", tn_);
-    emit(0, "static int64_t __%s_hash;", tn_);
-    emit(0, " ");
-
-    emit(0, "int64_t %s::_getHashRecursive(const __lcm_hash_ptr *p)", sn);
+static void emit_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char* sn = ls->structname->shortname;
+    emit(0, "int %s::decode(const void *buf, int offset, int maxlen)", sn);
     emit(0, "{");
-    emit(1,     "const __lcm_hash_ptr *fp;");
-    emit(1,     "for(fp = p; fp != NULL; fp = fp->parent)");
-    emit(2,         "if(fp->v == %s::getHash)", sn);
-    emit(3,              "return 0;");
-    emit(0, " ");
-    if(g_ptr_array_size(ls->members)) {
-        emit(1, "const __lcm_hash_ptr cp = { p, (void*)%s::getHash };", sn);
-    }
-    emit(0, " ");
-    emit(1, "int64_t hash = 0x%016"PRIx64"LL", ls->hash);
-    
+    emit(1,     "int pos = 0, thislen;");
+    emit(0, "");
+    emit(1,     "int64_t msg_hash;");
+    emit(1,     "thislen = __int64_t_decode_array(buf, offset + pos, maxlen - pos, &msg_hash, 1);");
+    emit(1,     "if (thislen < 0) return thislen; else pos += thislen;");
+    emit(1,     "if (msg_hash != %s::getHash()) return -1;", sn);
+    emit(0, "");
+    emit(1,     "thislen = this->_decodeNoHash(buf, offset + pos, maxlen - pos);");
+    emit(1,     "if (thislen < 0) return thislen; else pos += thislen;");
+    emit(0, "");
+    emit(1,  "return pos;");
+    emit(0, "}");
+    emit(0, "");
+}
+
+static void emit_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char *sn  = ls->structname->shortname;
+    emit(0, "int64_t %s::getHash()", sn);
+    emit(0, "{");
+    emit(1,     "return lcm::message_traits::Hash<%s>::value();", sn);
+    emit(0, "}");
+    emit(0, "");
+}
+
+static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char *sn  = ls->structname->shortname;
+    int last_complex_member = -1;
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
-        char* lm_tnc = dots_to_double_colons(lm->type->lctypename);
-        if(lcm_is_primitive_type(lm->type->lctypename))
-          emit(2, " + __%s_hash_recursive(&cp)", lm->type->lctypename);
-        else
-          emit(2, " + %s::_getHashRecursive(&cp)", lm_tnc);
-        free(lm_tnc);
+        if(!lcm_is_primitive_type(lm->type->lctypename))
+            last_complex_member = m;
     }
-    emit(2,";");
-    emit(0, " ");
+
+    emit(0, "int64_t %s::_computeHash(const __lcm_hash_ptr *p)", sn);
+    emit(0, "{");
+
+    if(last_complex_member >= 0) {
+        emit(1,     "const __lcm_hash_ptr *fp;");
+        emit(1,     "for(fp = p; fp != NULL; fp = fp->parent)");
+        emit(2,         "if(fp->v == %s::getHash)", sn);
+        emit(3,              "return 0;");
+        if(g_ptr_array_size(ls->members)) {
+            emit(1, "const __lcm_hash_ptr cp = { p, (void*)%s::getHash };", sn);
+        }
+        emit(0, " ");
+        emit(1, "int64_t hash = 0x%016"PRIx64"LL +", ls->hash);
+
+        for (unsigned int m = 0; m <= last_complex_member; m++) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
+            char* lm_tnc = dots_to_double_colons(lm->type->lctypename);
+            if(!lcm_is_primitive_type(lm->type->lctypename)) {
+                emit(2, " %s::_computeHash(&cp)%s", 
+                        lm_tnc, 
+                        (m == last_complex_member) ? ";" : " +");
+            }
+            free(lm_tnc);
+        }
+        emit(0, " ");
+    } else {
+        emit(1, "int64_t hash = 0x%016"PRIx64"LL;", ls->hash);
+    }
+
     emit(1, "return (hash<<1) + ((hash>>63)&1);");
     emit(0, "}");
     emit(0, " ");
-
-    emit(0, "int64_t %s::getHash()", sn);
-    emit(0, "{");
-    emit(1, "if (!__%s_hash_computed) {", tn_);
-    emit(2,      "__%s_hash = %s::_getHashRecursive(NULL);", tn_, sn);
-    emit(2,      "__%s_hash_computed = true;", tn_);
-    emit(1,      "}");
-    emit(0, " ");
-    emit(1, "return __%s_hash;", tn_);
-    emit(0, "}");
-    emit(0, " ");
-
-    free(tn_);
 }
 
 static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int depth)
@@ -377,7 +404,7 @@ static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
             emit_start(1 + depth, "tlen = this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
-            emit_end("._encodeRecursive(buf, offset + pos, maxlen - pos);");
+            emit_end("._encodeNoHash(buf, offset + pos, maxlen - pos);");
         }
         emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
         return;
@@ -393,24 +420,10 @@ static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
     emit(1+depth, "}");
 }
 
-static void emit_cpp_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char* sn = ls->structname->shortname;
-    emit(0, "int %s::encode(void *buf, int offset, int maxlen) const", sn);
-    emit(0, "{");
-    emit(1,     "int pos = 0, tlen;");
-    emit(1,     "int64_t hash = %s::getHash();", sn);
-    emit(0, "");
-    emit(1,     "tlen = __int64_t_encode_array(buf, offset + pos, maxlen - pos, &hash, 1);");
-    emit(1,     "if(tlen < 0) return tlen; else pos += tlen;");
-    emit(0, "");
-    emit(1,     "tlen = this->_encodeRecursive(buf, offset + pos, maxlen - pos);");
-    emit(1,     "if (tlen < 0) return tlen; else pos += tlen;");
-    emit(0, "");
-    emit(1,     "return pos;");
-    emit(0, "}");
-    emit(0, "");
-    emit(0, "int %s::_encodeRecursive(void *buf, int offset, int maxlen) const", sn);
+    emit(0, "int %s::_encodeNoHash(void *buf, int offset, int maxlen) const", sn);
     emit(0, "{");
     emit(1,     "int pos = 0, tlen;");
     emit(0, "");
@@ -438,18 +451,12 @@ static void emit_cpp_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0," ");
 }
 
-static void emit_cpp_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char *sn = ls->structname->shortname;
-    emit(0,"int %s::getEncodedSize() const", sn);
-    emit(0,"{");
-    emit(1, "return 8 + %s::_getEncodedSizeRecursive();", sn);
-    emit(0,"}");
-    emit(0," ");
-    emit(0, "int %s::_getEncodedSizeRecursive() const", sn);
+    emit(0, "int %s::_getEncodedSizeNoHash() const", sn);
     emit(0, "{");
     emit(1,     "int enc_size = 0;");
-    emit(0, "");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
         int ndim = g_ptr_array_size(lm->dimensions);
@@ -480,14 +487,12 @@ static void emit_cpp_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             if(!strcmp(lm->type->lctypename, "string")) {
                 emit_end(".size() + 4 + 1;");
             } else {
-                emit_end("._getEncodedSizeRecursive();");
+                emit_end("._getEncodedSizeNoHash();");
             }
             for(int n=ndim-1; n >= 0; n--) {
                 emit(1 + n, "}");
             }
         }
-        
-        emit(0," ");
     }
     emit(1, "return enc_size;");
     emit(0,"}");
@@ -536,7 +541,7 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
             emit_start(1 + depth, "tlen = this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
-            emit_end("._decodeRecursive(buf, offset + pos, maxlen - pos);");
+            emit_end("._decodeNoHash(buf, offset + pos, maxlen - pos);");
             emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
         }
         return;
@@ -557,28 +562,10 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
     emit(1+depth, "}");
 }
 
-static void emit_cpp_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    const char *tn = ls->structname->lctypename;
     const char* sn = ls->structname->shortname;
-    char *tn_ = dots_to_underscores(tn);
-
-    emit(0, "int %s::decode(const void *buf, int offset, int maxlen)", sn);
-    emit(0, "{");
-    emit(1,     "int pos = 0, thislen;");
-    emit(0, "");
-    emit(1,     "int64_t msg_hash;");
-    emit(1,     "thislen = __int64_t_decode_array(buf, offset + pos, maxlen - pos, &msg_hash, 1);");
-    emit(1,     "if (thislen < 0) return thislen; else pos += thislen;");
-    emit(1,     "if (msg_hash != %s::getHash()) return -1;", sn);
-    emit(0, "");
-    emit(1,     "thislen = this->_decodeRecursive(buf, offset + pos, maxlen - pos);");
-    emit(1,     "if (thislen < 0) return thislen; else pos += thislen;");
-    emit(0, "");
-    emit(1,  "return pos;");
-    emit(0, "}");
-    emit(0, "");
-    emit(0, "int %s::_decodeRecursive(const void *buf, int offset, int maxlen)", sn);
+    emit(0, "int %s::_decodeNoHash(const void *buf, int offset, int maxlen)", sn);
     emit(0, "{");
     emit(1,     "int pos = 0, tlen;");
     emit(0, "");
@@ -606,24 +593,24 @@ static void emit_cpp_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(1, "return pos;");
     emit(0, "}");
     emit(0, "");
-    free(tn_);
 }
 
 int emit_cpp(lcmgen_t *lcmgen)
 {
-    ////////////////////////////////////////////////////////////
-    // STRUCTS
+    // iterate through all defined message types
     for (unsigned int i = 0; i < g_ptr_array_size(lcmgen->structs); i++) {
         lcm_struct_t *lr = (lcm_struct_t *) g_ptr_array_index(lcmgen->structs, i);
 
-        char *tn = lr->structname->lctypename;
+        const char *tn = lr->structname->lctypename;
         char *tn_ = dots_to_slashes(tn);
 
-        // header file
+        // compute the target filename
         char *header_name = sprintfalloc("%s%s%s.hpp", 
                 getopt_get_string(lcmgen->gopt, "cpp-hpath"), 
                 strlen(getopt_get_string(lcmgen->gopt, "cpp-hpath")) > 0 ? G_DIR_SEPARATOR_S : "",
                 tn_);
+
+        // generate code if needed
         if (lcm_needs_generation(lcmgen, lr->lcmfile, header_name)) {
             make_dirs_for_file(header_name);
 
@@ -631,50 +618,29 @@ int emit_cpp(lcmgen_t *lcmgen)
             if (f == NULL)
                 return -1;
 
-            emit_header(lcmgen, f, lr);
-            fclose(f);
-        }
-        free(header_name);
-
-        char *cpp_name      = sprintfalloc("%s%s%s.cpp", 
-                getopt_get_string(lcmgen->gopt, "cpp-cpath"), 
-                strlen(getopt_get_string(lcmgen->gopt, "cpp-cpath")) > 0 ? G_DIR_SEPARATOR_S : "",
-                tn_);
-        // cpp file
-        if (lcm_needs_generation(lcmgen, lr->lcmfile, cpp_name)) {
-            FILE *f = fopen(cpp_name, "w");
-            if (f == NULL)
-                return -1;
-
-            emit_auto_generated_warning(f);
-            fprintf(f, "#include <string.h>\n");
-            fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
-            fprintf(f, "#include \"%s%s%s.hpp\"\n",
-                    getopt_get_string(lcmgen->gopt, "cinclude"),
-                    strlen(getopt_get_string(lcmgen->gopt, "cinclude"))>0 ? "/" : "",
-                    tn_);
-            fprintf(f, "\n");
-
-            emit_package_namespace_start(lcmgen, f, lr);
-
-            emit(0, "");
-            emit_cpp_constants(lcmgen, f, lr);
-            emit_cpp_encode(lcmgen, f, lr);
-            emit_cpp_decode(lcmgen, f, lr);
-            emit_cpp_encoded_size(lcmgen, f, lr);
+            emit_header_start(lcmgen, f, lr);
+            emit_encode(lcmgen, f, lr);
+            emit_decode(lcmgen, f, lr);
+            emit_encoded_size(lcmgen, f, lr);
+            emit_get_hash(lcmgen, f, lr);
             emit(0, "const char* %s::getTypeName()", lr->structname->shortname);
             emit(0, "{");
             emit(1,     "return \"%s\";", lr->structname->shortname);
             emit(0, "}");
             emit(0, "");
 
-            emit_cpp_struct_get_hash(lcmgen, f, lr);
+            emit_encode_nohash(lcmgen, f, lr);
+            emit_decode_nohash(lcmgen, f, lr);
+            emit_encoded_size_nohash(lcmgen, f, lr);
+            emit_compute_hash(lcmgen, f, lr);
 
             emit_package_namespace_close(lcmgen, f, lr);
+            emit(0, "#endif");
 
             fclose(f);
         }
-        free(cpp_name);
+        free(header_name);
+        free(tn_);
     }
 
     return 0;
