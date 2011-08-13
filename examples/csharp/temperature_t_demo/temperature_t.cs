@@ -38,14 +38,14 @@ namespace LCMTypes
             classes.RemoveAt(classes.Count - 1);
             return (hash<<1) + ((hash>>63)&1);
         }
- 
-        public void Encode(BinaryWriter outs)
+
+        public void Encode(LCMDataOutputStream outs)
         {
             outs.Write((long) LCM_FINGERPRINT);
             _encodeRecursive(outs);
         }
- 
-        public void _encodeRecursive(BinaryWriter outs)
+
+        public void _encodeRecursive(LCMDataOutputStream outs)
         {
             byte[] __strbuf = null;
             outs.Write(this.utime); 
@@ -55,23 +55,23 @@ namespace LCMTypes
         public temperature_t(byte[] data) : this(new LCMDataInputStream(data))
         {
         }
- 
-        public temperature_t(BinaryReader ins)
+
+        public temperature_t(LCMDataInputStream ins)
         {
             if ((ulong) ins.ReadInt64() != LCM_FINGERPRINT)
                 throw new System.IO.IOException("LCM Decode error: bad fingerprint");
  
             _decodeRecursive(ins);
         }
- 
-        public static LCMTypes.temperature_t _decodeRecursiveFactory(BinaryReader ins)
+
+        public static LCMTypes.temperature_t _decodeRecursiveFactory(LCMDataInputStream ins)
         {
             LCMTypes.temperature_t o = new LCMTypes.temperature_t();
             o._decodeRecursive(ins);
             return o;
         }
- 
-        public void _decodeRecursive(BinaryReader ins)
+
+        public void _decodeRecursive(LCMDataInputStream ins)
         {
             byte[] __strbuf = null;
             this.utime = ins.ReadInt64();

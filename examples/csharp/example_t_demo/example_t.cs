@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using LCM.LCM;
  
-namespace LCMTypes
+namespace exlcm
 {
     public sealed class example_t : LCM.LCM.LCMEncodable
     {
@@ -17,6 +17,8 @@ namespace LCMTypes
         public double[] orientation;
         public int num_ranges;
         public short[] ranges;
+        public String name;
+        public bool enabled;
  
         public example_t()
         {
@@ -25,51 +27,61 @@ namespace LCMTypes
         }
  
         public static readonly ulong LCM_FINGERPRINT;
-        public static readonly ulong LCM_FINGERPRINT_BASE = 0x9eb95d2c2f66b618L;
+        public static readonly ulong LCM_FINGERPRINT_BASE = 0x1baa9e29b0fbaa8bL;
  
-        static example_t() {
+        static example_t()
+        {
             LCM_FINGERPRINT = _hashRecursive(new List<String>());
         }
  
         public static ulong _hashRecursive(List<String> classes)
         {
-            if (classes.Contains("LCMTypes.example_t"))
+            if (classes.Contains("exlcm.example_t"))
                 return 0L;
  
-            classes.Add("LCMTypes.example_t");
+            classes.Add("exlcm.example_t");
             ulong hash = LCM_FINGERPRINT_BASE
                 ;
             classes.RemoveAt(classes.Count - 1);
             return (hash<<1) + ((hash>>63)&1);
         }
  
-        public void Encode(BinaryWriter outs)
+        public void Encode(LCMDataOutputStream outs)
         {
             outs.Write((long) LCM_FINGERPRINT);
             _encodeRecursive(outs);
         }
  
-        public void _encodeRecursive(BinaryWriter outs)
+        public void _encodeRecursive(LCMDataOutputStream outs)
         {
             byte[] __strbuf = null;
             outs.Write(this.timestamp); 
+ 
             for (int a = 0; a < 3; a++) {
                 outs.Write(this.position[a]); 
             }
+ 
             for (int a = 0; a < 4; a++) {
                 outs.Write(this.orientation[a]); 
             }
+ 
             outs.Write(this.num_ranges); 
-            for (int a = 0; a < num_ranges; a++) {
+ 
+            for (int a = 0; a < this.num_ranges; a++) {
                 outs.Write(this.ranges[a]); 
             }
+ 
+            __strbuf = System.Text.Encoding.GetEncoding("US-ASCII").GetBytes(this.name); outs.Write(__strbuf.Length+1); outs.Write(__strbuf, 0, __strbuf.Length); outs.Write((byte) 0); 
+ 
+            outs.Write(this.enabled); 
+ 
         }
  
         public example_t(byte[] data) : this(new LCMDataInputStream(data))
         {
         }
  
-        public example_t(BinaryReader ins)
+        public example_t(LCMDataInputStream ins)
         {
             if ((ulong) ins.ReadInt64() != LCM_FINGERPRINT)
                 throw new System.IO.IOException("LCM Decode error: bad fingerprint");
@@ -77,35 +89,44 @@ namespace LCMTypes
             _decodeRecursive(ins);
         }
  
-        public static LCMTypes.example_t _decodeRecursiveFactory(BinaryReader ins)
+        public static exlcm.example_t _decodeRecursiveFactory(LCMDataInputStream ins)
         {
-            LCMTypes.example_t o = new LCMTypes.example_t();
+            exlcm.example_t o = new exlcm.example_t();
             o._decodeRecursive(ins);
             return o;
         }
  
-        public void _decodeRecursive(BinaryReader ins)
+        public void _decodeRecursive(LCMDataInputStream ins)
         {
             byte[] __strbuf = null;
             this.timestamp = ins.ReadInt64();
+ 
             this.position = new double[(int) 3];
             for (int a = 0; a < 3; a++) {
                 this.position[a] = ins.ReadDouble();
             }
+ 
             this.orientation = new double[(int) 4];
             for (int a = 0; a < 4; a++) {
                 this.orientation[a] = ins.ReadDouble();
             }
+ 
             this.num_ranges = ins.ReadInt32();
+ 
             this.ranges = new short[(int) num_ranges];
-            for (int a = 0; a < num_ranges; a++) {
+            for (int a = 0; a < this.num_ranges; a++) {
                 this.ranges[a] = ins.ReadInt16();
             }
+ 
+            __strbuf = new byte[ins.ReadInt32()-1]; ins.ReadFully(__strbuf); ins.ReadByte(); this.name = System.Text.Encoding.GetEncoding("US-ASCII").GetString(__strbuf);
+ 
+            this.enabled = ins.ReadBoolean();
+ 
         }
  
-        public LCMTypes.example_t Copy()
+        public exlcm.example_t Copy()
         {
-            LCMTypes.example_t outobj = new LCMTypes.example_t();
+            exlcm.example_t outobj = new exlcm.example_t();
             outobj.timestamp = this.timestamp;
  
             outobj.position = new double[(int) 3];
@@ -121,9 +142,13 @@ namespace LCMTypes
             outobj.num_ranges = this.num_ranges;
  
             outobj.ranges = new short[(int) num_ranges];
-            for (int a = 0; a < num_ranges; a++) {
+            for (int a = 0; a < this.num_ranges; a++) {
                 outobj.ranges[a] = this.ranges[a];
             }
+ 
+            outobj.name = this.name;
+ 
+            outobj.enabled = this.enabled;
  
             return outobj;
         }

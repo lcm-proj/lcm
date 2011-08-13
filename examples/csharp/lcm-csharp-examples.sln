@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example_t_demo", "example_t_demo\example_t_demo.csproj", "{070C52DF-21E9-4E64-9544-3B3D4FC42502}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example_t_display", "example_t_demo\example_t_display.csproj", "{070C52DF-21E9-4E64-9544-3B3D4FC42502}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tcp_provider_demo", "tcp_provider_demo\tcp_provider_demo.csproj", "{73DF9E5E-47C6-4235-96E2-4796D5DA8108}"
 EndProject
@@ -10,6 +10,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "temperature_t_display", "temperature_t_demo\temperature_t_display.csproj", "{06AF596F-A1A1-4C52-AE62-71677B01D048}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "temperature_t_transmit", "temperature_t_demo\temperature_t_transmit.csproj", "{9D98E314-2976-43E2-BDBD-0A9C24C36B82}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "example_t_transmit", "example_t_demo\example_t_transmit.csproj", "{0B5AAF23-3DEB-4C2A-8637-6ED97166F93B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +39,10 @@ Global
 		{9D98E314-2976-43E2-BDBD-0A9C24C36B82}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9D98E314-2976-43E2-BDBD-0A9C24C36B82}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9D98E314-2976-43E2-BDBD-0A9C24C36B82}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0B5AAF23-3DEB-4C2A-8637-6ED97166F93B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0B5AAF23-3DEB-4C2A-8637-6ED97166F93B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0B5AAF23-3DEB-4C2A-8637-6ED97166F93B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0B5AAF23-3DEB-4C2A-8637-6ED97166F93B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

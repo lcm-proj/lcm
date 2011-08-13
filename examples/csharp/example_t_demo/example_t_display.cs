@@ -8,9 +8,9 @@ namespace LCM.Examples
 {
     /// <summary>
     /// Demo listener, demonstrating interoperability with other implementations
-    /// Just run this listener and use some example_t message sender (e.g. c demo send-message)
+    /// Just run this listener and use any of the example_t message senders
     /// </summary>
-    class ExampleDemo
+    class ExampleDisplay
     {
         public static void Main(string[] args)
         {
@@ -23,9 +23,7 @@ namespace LCM.Examples
                 lcm.SubscribeAll(new SimpleSubscriber());
 
                 while (true)
-                {
                     System.Threading.Thread.Sleep(1000);
-                }
             }
             catch (Exception ex)
             {
@@ -42,7 +40,7 @@ namespace LCM.Examples
 
                 if (channel == "EXAMPLE")
                 {
-                    LCMTypes.example_t msg = new LCMTypes.example_t(dins);
+                    exlcm.example_t msg = new exlcm.example_t(dins);
 
                     Console.WriteLine("Received message of the type example_t:");
                     Console.WriteLine("  timestamp   = {0:D}", msg.timestamp);
@@ -51,10 +49,16 @@ namespace LCM.Examples
                     Console.WriteLine("  orientation = ({0:N}, {1:N}, {2:N}, {3:N})",
                             msg.orientation[0], msg.orientation[1], msg.orientation[2],
                             msg.orientation[3]);
-                    Console.Write("  ranges:");
+                    Console.Write("  ranges      = [ ");
                     for (int i = 0; i < msg.num_ranges; i++)
+                    {
                         Console.Write(" {0:D}", msg.ranges[i]);
-                    Console.WriteLine("");
+                        if (i < msg.num_ranges-1)
+                            Console.Write(", ");
+                    }
+                    Console.WriteLine(" ]");
+                    Console.WriteLine("  name         = '" + msg.name + "'");
+                    Console.WriteLine("  enabled      = '" + msg.enabled + "'");
                 }
             }
         }
