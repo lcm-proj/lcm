@@ -28,12 +28,29 @@ extern "C" {
  */
 
 /**
- * @defgroup LcmC_lcm_recv_buf_t lcm_recv_buf_t
+ * @defgroup LcmC_lcm_t lcm_t
  * @ingroup LcmC
+ * @brief Publish and receive messages
+ *
+ * All %LCM functions are internally synchronized and thread-safe.
+ *
+ * <tt> #include <lcm/lcm.h> </tt>
+ *
+ * Linking: <tt> `pkg-config --libs lcm` </tt>
  * @{
  */
 
- /**
+/**
+ * Opaque data structure containing the LCM context.
+ */
+typedef struct _lcm_t lcm_t;
+
+/**
+ * An opaque data structure that identifies an LCM subscription.
+ */
+typedef struct _lcm_subscription_t lcm_subscription_t;
+
+/**
  * Received messages are passed to user programs using this data structure.
  * Each instance represents one message.
  */
@@ -58,32 +75,6 @@ struct _lcm_recv_buf_t
      */
     lcm_t *lcm;
 };
-/**
- * @}
- */
-
-/**
- * @defgroup LcmC_lcm_t lcm_t
- * @ingroup LcmC
- * @brief Publish and receive messages
- *
- * <tt> #include <lcm/lcm.h> </tt>
- *
- * Linking: <tt> `pkg-config --libs lcm` </tt>
- * @{
- */
-
-/**
- * Publish and receive messages with LCM.
- *
- * All %LCM functions are internally synchronized and thread-safe.
- */
-typedef struct _lcm_t lcm_t;
-
-/**
- * An opaque data structure that identifies an LCM subscription.
- */
-typedef struct _lcm_subscription_t lcm_subscription_t;
 
 /**
  * @brief Callback function prototype.  

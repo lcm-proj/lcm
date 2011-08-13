@@ -32,6 +32,9 @@ int emit_python(lcmgen_t *lcm);
 void setup_csharp_options(getopt_t *gopt);
 int emit_csharp(lcmgen_t *lcm);
 
+void setup_cpp_options(getopt_t *gopt);
+int emit_cpp(lcmgen_t *lcm);
+
 int main(int argc, char *argv[])
 {
     getopt_t *gopt = getopt_create();
