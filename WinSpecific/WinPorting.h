@@ -1,3 +1,5 @@
+#ifndef _WINPORTING_H_
+#define _WINPORTING_H_
 
 
 #define	strdup		_strdup
@@ -51,3 +53,5 @@ int fcntl (int fd, int flag1, ...);
 size_t recvmsg ( SOCKET s, struct msghdr *msg, int flags );
 size_t sendmsg ( SOCKET s, const struct msghdr *msg, int flags );
 }
+
+#endif

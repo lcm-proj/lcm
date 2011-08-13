@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="8,00"
 	Name="lcm-gen"
 	ProjectGUID="{4D2C4E6A-E658-480A-988A-B9CDF786D60F}"
 	RootNamespace="lcm-gen"
@@ -182,6 +182,26 @@
 			>
 			<File
 				RelativePath=".\emit_c.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\emit_cpp.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
