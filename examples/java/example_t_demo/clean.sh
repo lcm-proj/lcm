@@ -1,5 +1,4 @@
 #!/bin/sh
 
-rm -f exlcm/example_t.class exlcm/example_t.java 
-rmdir exlcm
-rm -f Listener.class SendMessage.class
+rm -rf exlcm
+rm -f MySubscriber.class SendMessage.class

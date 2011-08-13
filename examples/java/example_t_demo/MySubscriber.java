@@ -3,11 +3,11 @@ import java.io.*;
 import lcm.lcm.*;
 import exlcm.*;
 
-public class Listener implements LCMSubscriber
+public class MySubscriber implements LCMSubscriber
 {
     LCM lcm;
 
-    public Listener()
+    public MySubscriber()
         throws IOException
     {
         this.lcm = new LCM();
@@ -49,7 +49,7 @@ public class Listener implements LCMSubscriber
     public static void main(String args[])
     {
         try {
-            Listener m = new Listener();
+            MySubscriber m = new MySubscriber();
             while(true) {
                 Thread.sleep(1000);
             }
