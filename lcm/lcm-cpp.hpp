@@ -85,8 +85,8 @@ class LCM {
 
         /**
          * @brief Returns a file descriptor or socket that can be used with
-         * @c select() @c , @c poll() @c , or other event loops for asynchronous notification
-         * of incoming messages.
+         * @c select(), @c poll(), or other event loops for asynchronous
+         * notification of incoming messages.
          *
          * This method is useful when integrating LCM into another event loop,
          * such as the Qt event loop (via QSocketNotifier), the GLib event loop
@@ -489,7 +489,8 @@ class LogFile {
         /**
          * Reads the next event in the log file.  Valid in read mode only.
          *
-         * The LogFile class manages the memory of the read event.
+         * The LogFile class manages the memory of the read event.  The
+         * returned event is valid until the next call to this method.
          *
          * @return the next event, or NULL if the end of the log file has been
          * reached.

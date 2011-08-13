@@ -102,8 +102,6 @@ AM_GNU_GETTEXT_VERSION(0.14.3)
 
 AM_ICONV()
 
-GTK_DOC_CHECK([1.4])
-
 dnl ---------------------------------------------------------------------------
 dnl Warnings
 dnl ---------------------------------------------------------------------------
@@ -123,8 +121,6 @@ AC_OUTPUT([
   lcm-java/lcm-java.pc
   lcm-python/Makefile
   examples/Makefile
-  docs/Makefile
-  docs/reference/Makefile
   m4/Makefile
   po/Makefile.in
   m4macros/Makefile

@@ -8,16 +8,13 @@
 // On a system with pkg-config, you can also use:
 //  $ g++ -o send_message send_message.cpp `pkg-config --cflags --libs lcm`
 
-#include <stdio.h>
 #include <lcm/lcm-cpp.hpp>
 
 #include "exlcm/example_t.hpp"
 
-int
-main(int argc, char ** argv)
+int main(int argc, char ** argv)
 {
     lcm::LCM lcm;
-
     if(!lcm.good())
         return 1;
 

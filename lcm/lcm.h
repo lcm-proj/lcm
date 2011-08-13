@@ -20,140 +20,169 @@ extern "C" {
 #endif
 
 /**
- * SECTION:lcm
- * @short_description: Publish and receive messages with LCM.
+ * @defgroup LcmC C API Reference
  *
- * All LCM functions are internally synchronized and thread-safe.
+ * THe %LCM C API provides classes and data structures for communicating with
+ * other %LCM clients, as well as reading and writing %LCM log files.
+ *
  */
 
-typedef struct _lcm_t lcm_t;
-
 /**
- * lcm_subscription_t:
- *
- * This is an opaque data structure that identifies an LCM subscription.
+ * @defgroup LcmC_lcm_recv_buf_t lcm_recv_buf_t
+ * @ingroup LcmC
+ * @{
  */
-typedef struct _lcm_subscription_t lcm_subscription_t;
 
-/**
- * lcm_recv_buf_t:
- * @data:      the data received (raw bytes)
- * @data_size: the length of the data received (in bytes)
- * @recv_utime: timestamp (micrseconds since the epoch) at which the first data
- *             bytes of the message were received.
- * @lcm:       pointer to the lcm_t struct that owns this buffer
- *
- * Received messages are passed to user programs using this data structure.  One
- * struct represents one message.
+ /**
+ * Received messages are passed to user programs using this data structure.
+ * Each instance represents one message.
  */
 typedef struct _lcm_recv_buf_t lcm_recv_buf_t;
 struct _lcm_recv_buf_t
 {
+    /**
+     * the data received (raw bytes)
+     */
     void *data;
+    /**
+     * the length of the data received (in bytes)
+     */
     uint32_t data_size;
+    /**
+     * timestamp (micrseconds since the epoch) at which the first data
+     * bytes of the message were received.
+     */
     int64_t recv_utime;
+    /**
+     * pointer to the lcm_t struct that owns this buffer
+     */
     lcm_t *lcm;
 };
+/**
+ * @}
+ */
 
 /**
- * lcm_msg_handler_t:
- * @user_data: the user-specified parameter passed to lcm_subscribe
- * @channel: 
+ * @defgroup LcmC_lcm_t lcm_t
+ * @ingroup LcmC
+ * @brief Publish and receive messages
  *
- * callback function prototype.
+ * <tt> #include <lcm/lcm.h> </tt>
+ *
+ * Linking: <tt> `pkg-config --libs lcm` </tt>
+ * @{
+ */
+
+/**
+ * Publish and receive messages with LCM.
+ *
+ * All %LCM functions are internally synchronized and thread-safe.
+ */
+typedef struct _lcm_t lcm_t;
+
+/**
+ * An opaque data structure that identifies an LCM subscription.
+ */
+typedef struct _lcm_subscription_t lcm_subscription_t;
+
+/**
+ * @brief Callback function prototype.  
+ * 
+ * Pass instances of this to lcm_subscribe()
+ *
+ * @param rbuf the message timestamp and payload
+ * @param channel the channel the message was received on
+ * @param user_data the user-specified parameter passed to lcm_subscribe()
  */
 typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf, 
         const char *channel, void *user_data);
 
 /**
- * lcm_create:
- * @provider:  Initializationg string specifying the LCM network provider.
+ * @brief Constructor
+ * 
+ * Allocates and initializes a lcm_t.  %provider must be either
+ * NULL, or a string of the form 
+ *
+ * <tt>"provider://network?option1=value1&option2=value2&...&optionN=valueN"</tt>
+ *
+ * @param provider  Initializationg string specifying the LCM network provider.
  * If this is NULL, and the environment variable "LCM_DEFAULT_URL" is defined,
  * then the environment variable is used instead.  If this is NULL and the
  * environment variable is not defined, then default settings are used.
  *
- * Constructor.  Allocates and initializes a lcm_t.  %provider must be either
- * NULL, or a string of the form 
- * 
- * "provider://network?option1=value1&option2=value2&...&optionN=valueN"
- *
  * The currently supported providers are:
  *
- * <programlisting>
- * udpm://
- *     UDP Multicast provider
- *     network can be of the form "multicast_address:port".  Either the
- *     multicast address or the port may be ommitted for the default.
- *
- *     options:
- *
- *         recv_buf_size = N
- *             size of the kernel UDP receive buffer to request.  Defaults to
- *             operating system defaults
- *
- *         ttl = N
- *             time to live of transmitted packets.  Default 0
- *
- *     examples:
- *
- *         "udpm://239.255.76.67:7667"
- *             Default initialization string
- *
- *         "udpm://239.255.76.67:7667?ttl=1"
- *             Sets the multicast TTL to 1 so that packets published will enter
- *             the local network.
- * </programlisting>
+ * @verbatim
+ udpm://
+     UDP Multicast provider
+     network can be of the form "multicast_address:port".  Either the
+     multicast address or the port may be ommitted for the default.
+
+     options:
+         recv_buf_size = N
+             size of the kernel UDP receive buffer to request.  Defaults to
+             operating system defaults
+
+         ttl = N
+             time to live of transmitted packets.  Default 0
+
+     examples:
+         "udpm://239.255.76.67:7667"
+             Default initialization string
+
+         "udpm://239.255.76.67:7667?ttl=1"
+             Sets the multicast TTL to 1 so that packets published will enter
+             the local network.
+ @endverbatim
  * 
- * <programlisting>
- * file://
- *     LCM Log file-based provider
- *     network should be the path to the log file
+ * @verbatim
+ file://
+     LCM Log file-based provider
+     network should be the path to the log file
+ 
+     Events are read from or written to the log file.  In read mode, events
+     are generated from the log file in real-time, or at the rate specified
+     by the speed option.  In write mode, events published to the LCM instance
+     will be written to the log file in real-time.
+ 
+     options:
+         speed = N
+             Scale factor controlling the playback speed of the log file.
+             Defaults to 1.  If less than or equal to zero, then the events
+             in the log file are played back as fast as possible.  Events are
+             never skipped in read mode, so actual playback speed may be slower
+             than requested, depending on the handlers.
+         
+         mode = r | w
+             Specifies the log file mode.  Defaults to 'r'
+ 
+     examples:
+         "file:///home/albert/path/to/logfile"
+             Loads the file "/home/albert/path/to/logfile" as an LCM event
+             source.
+ 
+         "file:///home/albert/path/to/logfile?speed=4"
+             Loads the file "/home/albert/path/to/logfile" as an LCM event
+             source.  Events are played back at 4x speed.
+             
+ @endverbatim
  *
- *     Events are read from or written to the log file.  In read mode, events
- *     are generated from the log file in real-time, or at the rate specified
- *     by the speed option.  In write mode, events published to the LCM instance
- *     will be written to the log file in real-time.
- *
- *     options:
- *
- *         speed = N
- *             Scale factor controlling the playback speed of the log file.
- *             Defaults to 1.  If less than or equal to zero, then the events
- *             in the log file are played back as fast as possible.  Events are
- *             never skipped in read mode, so actual playback speed may be slower
- *             than requested, depending on the handlers.
- *         
- *         mode = r | w
- *             Specifies the log file mode.  Defaults to 'r'
- *
- *     examples:
- *         
- *         "file:///home/albert/path/to/logfile"
- *             Loads the file "/home/albert/path/to/logfile" as an LCM event
- *             source.
- *
- *         "file:///home/albert/path/to/logfile?speed=4"
- *             Loads the file "/home/albert/path/to/logfile" as an LCM event
- *             source.  Events are played back at 4x speed.
- *             
- * </programlisting>
- *
- * Returns: a newly allocated @lcm_t instance, or NULL on failure.  Free with
+ * @return a newly allocated lcm_t instance, or NULL on failure.  Free with
  * lcm_destroy() when no longer needed.
  */
 LCM_API_FUNCTION
 lcm_t * lcm_create (const char *provider);
 
 /**
- * lcm_destroy:
- *
- * destructor
+ * @brief Destructor
  */
 LCM_API_FUNCTION
 void lcm_destroy (lcm_t *lcm);
 
 /**
- * lcm_get_fileno:
+ * @brief Returns a file descriptor or socket that can be used with
+ * @c select(), @c poll(), or other event loops for asynchronous
+ * notification of incoming messages.
  *
  * Each LCM instance has a file descriptor that can be used to asynchronously
  * receive notification when incoming messages have been received.  This file
@@ -161,57 +190,79 @@ void lcm_destroy (lcm_t *lcm);
  * (e.g., GTK+, QT, etc.)  For an example using select(), see
  * examples/c/listener-async.c
  *
- * Returns: a file descriptor suitable for use with select, poll, etc.
+ * @return a file descriptor suitable for use with select, poll, etc.
  */
 LCM_API_FUNCTION
 int lcm_get_fileno (lcm_t *lcm);
 
 /**
- * lcm_subscribe:
- * @lcm:        the LCM object
- * @channel:   the channel to listen on
- * @handler:   the callback function to be invoked when a message is received
- *             on the specified channel
- * @userdata:  this will be passed to the callback function.
+ * @brief Subscribe a callback function to a channel, without automatic message
+ * decoding.
  *
- * registers a callback function that will be invoked any time a message on the
- * specified channel is received.  Multiple callbacks can be subscribed for a
- * given channel.
+ * In general, you probably don't want to use this function, as it does not
+ * automatically decode messages.  Instead, use the message-specific subscribe
+ * function generated by @c lcm-gen.  Use this function only when you want to
+ * work with the raw message itself.  TODO link to example or more details.
  *
- * %channel can also be a GLib regular expression, and is treated as a regex
- * implicitly surrounded by '^' and '$'.
+ * The callback function will be invoked during calls to lcm_handle() any time
+ * a message on the specified channel is received.  Multiple callbacks can be
+ * subscribed for the same channel.
  *
- * Returns: a lcm_subscription_t to identify the new subscription,
- *          which can be passed to lcm_unsubscribe
+ * @param lcm      the LCM object
+ * @param channel  the channel to listen on.  This can also be a GLib regular
+ *                 expression, and is treated as a regex implicitly surrounded
+ *                 by '^' and '$'
+ * @param handler  the callback function to be invoked when a message is
+ *                 received on the specified channel
+ * @param userdata this will be passed to the callback function
+ *
+ * @return a lcm_subscription_t to identify the new subscription,
+ *          which can be passed to lcm_unsubscribe().  The lcm_t instance owns
+ *          the subscription object.
  */
 LCM_API_FUNCTION
 lcm_subscription_t *lcm_subscribe (lcm_t *lcm, const char *channel, 
 				   lcm_msg_handler_t handler, void *userdata);
 
 /**
- * lcm_unsubscribe:
+ * @brief Unsubscribe a message handler.
  *
- * unregisters a message handler so that it will no longer be invoked when the
- * specified message type is received.
+ * In general, you probably don't want to use this function.  Instead, use the
+ * message-specific unsubscribe function generated by @c lcm-gen.  Use this
+ * function only when you want to work with the raw message itself.  TODO link
+ * to example or more details.
+ *
+ * The callback function for the subscription will no longer be
+ * invoked when messages on the corresponding channel are received.  After this
+ * function returns, @c handler is no longer valid and should not be used
+ * anymore.
+ *
+ * @return 0 on success, or -1 if @c handler is not a valid subscription.
  */
 LCM_API_FUNCTION
 int lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *handler);
 
 /**
- * lcm_publish:
+ * @brief Publish a message, specified as a raw byte buffer.
  *
- * transmits a message.
+ * In general, you probably don't want to use this function, as it does not
+ * automatically encode messages.  Instead, use the message-specific publish
+ * function generated by @c lcm-gen.  Use this function only when you want to
+ * publish raw byte buffers.  TODO link to example or more details.
  *
- * Returns: 0 on success, -1 on failure.
+ * @param lcm      The %LCM object
+ * @param channel  The channel to publish on
+ * @param data     The raw byte buffer
+ * @param datalen  Size of the byte buffer
+ *
+ * @return 0 on success, -1 on failure.
  */
 LCM_API_FUNCTION
 int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
         unsigned int datalen);
 
 /**
- * lcm_handle:
- *
- * Waits for and dispatches the next incoming message.
+ * @brief Wait for and dispatch the next incoming message.
  *
  * Message handlers are invoked one at a time from the thread that calls this
  * function, and in the order that they were subscribed.
@@ -224,26 +275,37 @@ int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
  * within a message handler.  All other functions are okay (e.g., it is okay to
  * call lcm_publish from within a message handler).
  *
- * Returns: 0 normally, or -1 when an error has occurred.
+ * @param lcm the %LCM object
+ *
+ * @return 0 normally, or -1 when an error has occurred.
  */
 LCM_API_FUNCTION
 int lcm_handle (lcm_t *lcm);
 
 /**
- * lcm_subscription_set_queue_capacity:
+ * @brief Adjusts the maximum number of received messages that can be queued up
+ * for a subscription.  
+ * 
+ * In general, you probably don't want to use this function.  Instead, use the
+ * message-specific set_queue_capacity function generated by @c lcm-gen.  Use
+ * this function only when you want to work with untyped subscriptions.  TODO
+ * link to example or more details.
  *
- * Adjusts the maximum number of received messages that can be queued
- * up for this subscription.  Setting this to a low number may reduce
- * overall latency at the expense of dropping more messages.
- * Conversely, setting this to a high number may drop fewer messages at
- * the expense of increased latency.  A value of 0 indicates no limit, and
- * should be used carefully.
+ * Setting this to a low number may reduce overall latency at the expense of
+ * dropping more messages.  Conversely, setting this to a high number may drop
+ * fewer messages at the expense of increased latency.  A value of 0 indicates
+ * no limit, and should be used carefully.
  *
- * @param the maximum queue size, in messages.  The default is 30.
+ * @param handler the subscription object
+ * @param num_messages the maximum queue size, in messages.  The default is 30.
  *
  */
 LCM_API_FUNCTION
 int lcm_subscription_set_queue_capacity(lcm_subscription_t* handler, int num_messages);
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }

@@ -1,0 +1,20 @@
+/**
+
+\mainpage LCM C/C++ API documentation
+
+\section main_tutorials Tutorials
+
+\li \ref tutorial_general
+
+\section main_api_ref API Reference
+
+\li \ref LcmC
+\li \ref LcmCpp
+
+\section main_other Other
+
+\li \ref type_specification
+\li \ref multicast
+\li \ref java_notes
+
+**/

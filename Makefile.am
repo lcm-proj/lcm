@@ -1,4 +1,4 @@
-SUBDIRS = m4 lcm liblcm-test lcmgen lcm-logger docs po m4macros
+SUBDIRS = m4 lcm liblcm-test lcmgen lcm-logger po m4macros
 
 if HAVE_JAVA
 SUBDIRS += lcm-java
@@ -12,6 +12,5 @@ if WITH_EXAMPLES
 SUBDIRS += examples
 endif
 
-EXTRA_DIST = WinSpecific lcm-dotnet
+EXTRA_DIST = WinSpecific lcm-dotnet docs
 ACLOCAL_AMFLAGS = -I m4
-DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc

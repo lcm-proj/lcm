@@ -17,94 +17,132 @@ extern "C" {
 #endif // LCM_API_FUNCTION
 
 /**
- * SECTION:eventlog
- * @short_description: Read and write LCM log files
+ * @defgroup LcmC_lcm_eventlog_t lcm_eventlog_t
+ * @ingroup LcmC
+ * @brief Read and write %LCM log files
  *
+ * <tt> #include <lcm/lcm.h> </tt>
+ *
+ * Linking: <tt> `pkg-config --libs lcm` </tt>
+ *
+ * @{
  */
 
 typedef struct _lcm_eventlog_t lcm_eventlog_t;
 struct _lcm_eventlog_t
 {
+    /**
+     * The underlying file handle.  Use this at your own risk.  Example use
+     * cases include implementing your own seek routine for read-mode logs, or
+     * rewinding the file pointer to the beginning of the log file.
+     */
     FILE *f;
+    /**
+     * Do not use.
+     */
     int64_t eventcount;
 };
 
+/**
+ * Represents a single event (message) in a log file.
+ */
 typedef struct _lcm_eventlog_event_t lcm_eventlog_event_t;
 struct _lcm_eventlog_event_t {
+    /**
+     * A monotonically increasing number assigned to the message to identify it
+     * in the log file.
+     */
     int64_t eventnum; 
+    /**
+     * Time that the message was received, in microseconds since the UNIX
+     * epoch
+     */
     int64_t timestamp;
+    /**
+     * Length of @c channel, in bytes
+     */
     int32_t channellen;
+    /**
+     * Length of @c data, in bytes
+     */
     int32_t datalen;
 
+    /**
+     * Channel that the message was received on
+     */
     char     *channel;
+    /**
+     * Raw byte buffer containing the message payload.
+     */
     void     *data;
 };
 
 /**
- * lcm_eventlog_create:
- * @path: Log file to open
- * @mode: must be "r" or "w"
+ * Open a log file for reading or writing.
  *
- * Open a log file for reading (mode = "r"), or writing (mode = "w")
+ * @param path Log file to open
+ * @param mode "r" (read mode) or "w" (write mode)
  *
- * Returns: a newly allocated lcm_eventlog_t, or NULL on failure.
+ * @return a newly allocated lcm_eventlog_t, or NULL on failure.
  */
 LCM_API_FUNCTION
 lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode);
 
 /** 
- * lcm_eventlog_read_next_event:
- * @eventlog: The log file
+ * Read the next event in the log file.  Valid in read mode only.  Free the
+ * returned structure with lcm_eventlog_free_event() after use.
  *
- * Read the next event in the log file.  Valid in read mode only.
+ * @param eventlog The log file object
  *
- * Returns: the next event in the log file; free the returned structure with
- * lcm_eventlog_free_event()
+ * @return the next event in the log file, or NULL when the end of the file has
+ * been reached.
  */
 LCM_API_FUNCTION
 lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *eventlog);
 
 /**
- * lcm_eventlog_free_event:
- * @le: A structure returned by lcm_eventlog_read_next_event()
+ * Free a structure returned by lcm_eventlog_read_next_event().
  *
- * free a structure returned by read_next_event.
+ * @param event A structure returned by lcm_eventlog_read_next_event()
  */
 LCM_API_FUNCTION
-void lcm_eventlog_free_event(lcm_eventlog_event_t *le);
+void lcm_eventlog_free_event(lcm_eventlog_event_t *event);
 
 /**
- * lcm_eventlog_seek_to_timestamp:
- * @eventlog: The log file
- * @ts: Timestamp of the target event in the log file.
+ * Seek (approximately) to a particular timestamp.
  *
- * seek (approximately) to a particular timestamp
+ * @param eventlog The log file object
+ * @param ts Timestamp of the target event in the log file.
+ *
+ * @return 0 on success, -1 on failure
  */
 LCM_API_FUNCTION
 int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *eventlog, int64_t ts);
 
 /**
- * lcm_eventlog_write_event:
- * @eventlog: The log file
- * @le: The event to write to the file
- *
  * Write an event into a log file.  Valid in write mode only.
  *
- * eventnum will be filled in for you
+ * @param eventlog The log file object
+ * @param event The event to write to the file.  On return, the eventnum field
+ * will be filled in for you.
  *
- * Returns: 0 on success, -1 on failure.
+ * @return 0 on success, -1 on failure.
  */
 LCM_API_FUNCTION
-int lcm_eventlog_write_event(lcm_eventlog_t *eventlog, lcm_eventlog_event_t *le);
+int lcm_eventlog_write_event(lcm_eventlog_t *eventlog, 
+        lcm_eventlog_event_t *event);
 
 /**
- * lcm_eventlog_destroy:
- * @eventlog: The log file
+ * Close a log file and release allocated resources.
  *
- * when you're done with the log, clean up after yourself!
+ * @param eventlog The log file object
  */
 LCM_API_FUNCTION
 void lcm_eventlog_destroy(lcm_eventlog_t *eventlog);
+
+/**
+ * @}
+ */
 
 #ifdef __cplusplus
 }

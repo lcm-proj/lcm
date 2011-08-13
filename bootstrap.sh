@@ -1,8 +1,5 @@
 #!/bin/sh
 
-echo "running \"gtkdocize --copy\"..."
-gtkdocize --copy || exit 1
-
 echo "running \"autoreconf -i\"..."
 autoreconf -i || exit 1
 
