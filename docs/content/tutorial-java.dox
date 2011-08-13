@@ -17,7 +17,7 @@ The topics covered in this tutorial are:
 
 This tutorial uses the \p example_t message type defined in the
 \ref tut_lcmgen "type definition tutorial", and assumes that you have
-generated the C++ bindings for the example type by running
+generated the Java bindings for the example type by running
 \code
 lcm-gen -j example_t.lcm
 \endcode

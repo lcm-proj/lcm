@@ -14,13 +14,13 @@ namespace LCM.Examples
     {
         public static void Main(string[] args)
         {
-            LCM.LCM lcm;
+            LCM.LCM myLCM;
 
             try
             {
-                lcm = new LCM.LCM();
+                myLCM = new LCM.LCM();
 
-                lcm.SubscribeAll(new SimpleSubscriber());
+                myLCM.SubscribeAll(new SimpleSubscriber());
 
                 while (true)
                     System.Threading.Thread.Sleep(1000);
