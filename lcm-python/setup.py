@@ -26,6 +26,6 @@ pylcm_extension = Extension("lcm._lcm",
                                "-D_LARGEFILE_SOURCE",
                                "-std=gnu99" ])
 
-setup(name="lcm", version="0.6.0",
+setup(name="lcm", version="0.7.0",
       ext_modules=[pylcm_extension],
       packages=["lcm"])

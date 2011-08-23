@@ -1,3 +1,107 @@
+2011-08-13  jan.hrbacek
+
+	* [r588] WinSpecific/WinPorting.h, lcmgen/lcm-gen.vcproj: windows c
+	  port - fix a header & include emit_cpp.c to the project
+	* [r587] docs/content/tutorial-dotnet.dox,
+	  docs/content/tutorial-java.dox,
+	  examples/csharp/example_t_demo/example_t_display.cs: update
+	  csharp tutorial
+	* [r586] examples/csharp/example_t_demo/Program.cs,
+	  examples/csharp/example_t_demo/example_t.cs,
+	  examples/csharp/example_t_demo/example_t_demo.csproj,
+	  examples/csharp/example_t_demo/example_t_display.cs,
+	  examples/csharp/example_t_demo/example_t_display.csproj,
+	  examples/csharp/example_t_demo/example_t_transmit.cs,
+	  examples/csharp/example_t_demo/example_t_transmit.csproj,
+	  examples/csharp/lcm-csharp-examples.sln,
+	  examples/csharp/tcp_provider_demo/tcp_provider_demo.csproj,
+	  examples/csharp/temperature_t_demo/temperature_t.cs: update
+	  csharp examples
+
+2011-08-13  ashuang
+
+	* [r584] lcm/lcm.h, lcmgen/main.c: bugfixes
+	* [r583] ., Makefile.am, bootstrap.sh, configure.in, docs,
+	  docs/Doxyfile, docs/DoxygenLayout.xml, docs/Makefile.am,
+	  docs/content, docs/content/java-notes.dox,
+	  docs/content/lcm-type-ref.dox, docs/content/main.dox,
+	  docs/content/multicast-setup.dox, docs/content/tutorial-c.dox,
+	  docs/content/tutorial-cpp.dox, docs/content/tutorial-dotnet.dox,
+	  docs/content/tutorial-java.dox, docs/content/tutorial-lcmgen.dox,
+	  docs/content/tutorial-matlab.dox,
+	  docs/content/tutorial-python.dox, docs/content/tutorial.dox,
+	  docs/footer.html, docs/reference, docs/release_checklist,
+	  examples/c/listener.c, examples/c/send_message.c,
+	  examples/cpp/send_message.cpp,
+	  examples/java/example_t_demo/Listener.java,
+	  examples/java/example_t_demo/MySubscriber.java,
+	  examples/java/example_t_demo/build.sh,
+	  examples/java/example_t_demo/clean.sh, examples/matlab/README,
+	  examples/python/listener_select.py, lcm-java/build.xml,
+	  lcm/eventlog.h, lcm/lcm-cpp.hpp, lcm/lcm.h: merge in doxygen
+	  branch
+
+2011-07-25  ashuang
+
+	* [r574] lcmgen/emit_cpp.c: clean up emitted C++ code
+	* [r573] lcm/lcm-cpp-impl.hpp, lcmgen/emit_cpp.c: rename some
+	  generated methods
+	* [r572] examples/cpp/Makefile, lcm/lcm-cpp-impl.hpp,
+	  lcmgen/emit_cpp.c: lcm-gen: C++ code is now generated as header
+	  files with inlined method definitions. .cpp files are no longer
+	  generated.
+
+2011-07-08  ashuang
+
+	* [r568] examples/types/exampleconst_t.lcm, lcm/lcm-cpp.hpp,
+	  lcmgen/TODO, lcmgen/emit_cpp.c, lcmgen/lcm-gen.1: emit_cpp
+	  bugfixes for strings change constants in C++ from #define to
+	  static const class members update lcm-gen manpage
+
+2011-07-07  ashuang
+
+	* [r567] lcmgen/emit_cpp.c: emit_cpp - don't barf on zero length
+	  primitive arrays
+
+2011-07-04  ashuang
+
+	* [r566] examples/c/listener-async.c, examples/c/listener.c,
+	  examples/c/read_log.c, examples/c/send_message.c,
+	  examples/cpp/listener.cpp, examples/cpp/read_log.cpp,
+	  examples/cpp/send_message.cpp, lcm/lcm-cpp.hpp: bugfixes, touch
+	  up example docs
+	* [r565] ., docs, examples/c/Makefile, examples/c/listener-async.c,
+	  examples/c/listener-glib.c, examples/c/listener.c,
+	  examples/c/read_log.c, examples/c/send_message.c,
+	  examples/cpp/Makefile, examples/cpp/listener.cpp,
+	  examples/cpp/read_log.cpp, examples/cpp/send_message.cpp,
+	  examples/java/example_t_demo/Listener.java,
+	  examples/java/example_t_demo/SendMessage.java,
+	  examples/matlab/listener.m, examples/matlab/sendmessage.m,
+	  examples/python, examples/python/listener.py,
+	  examples/python/send-message.py, examples/types/example_t.lcm,
+	  lcm/lcm.pc.in, lcmgen/emit_cpp.c: more merging in of C++ branch
+	* [r564] ., docs/Doxyfile, examples/c, examples/cpp,
+	  examples/cpp/Makefile, examples/cpp/listener.cpp,
+	  examples/cpp/read_log.cpp, examples/cpp/send_message.cpp,
+	  examples/java/example_t_demo/build.sh,
+	  examples/types/multidim_array_t.lcm, lcm/Makefile.am,
+	  lcm/eventlog.c, lcm/eventlog.h, lcm/lcm-cpp-impl.hpp,
+	  lcm/lcm-cpp.hpp, lcm/lcm.h, lcmgen/Makefile.am,
+	  lcmgen/emit_cpp.c, lcmgen/main.c: merge C++ branch into trunk
+
+2011-06-14  ashuang
+
+	* [r556] lcm/lcm_tcpq.c: fix memory leak in lcm_tcpq.c (closes
+	  issue #33)
+
+2011-06-10  ashuang
+
+	* [r553] NEWS: cleanup NEWS
+	* [r551] ChangeLog, NEWS, configure.in,
+	  docs/reference/lcm-sections.txt, lcm-python/setup.py: release
+	  0.6.0
+
 2011-06-02  ashuang
 
 	* [r549] lcm/lcm.h: comment doc: events are never skipped in read

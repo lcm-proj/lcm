@@ -1,3 +1,25 @@
+Aug 22, 2011
+============
+
+ Release 0.7.0
+
+ This release introduces support for native C++ bindings, and includes a number
+ of bugfixes and documentation updates.
+
+ lcm-gen:
+   - Added the -x / --cpp option, which generates native C++ language bindings.
+     See examples/cpp for examples, and the documentation for a tutorial and
+     API reference.
+
+ lcm-c:
+   - fix a minor memory leak in lcm_tcpq.c (closes issue #33)
+
+ General:
+   - Switched documentation from GTK-Doc to Doxygen.  To build most documentation,
+     run doxygen from the docs/ directory.  Java, C#, and Python API reference
+     docs are still built separately.
+
+
 Jun 9, 2011
 ===========
 
