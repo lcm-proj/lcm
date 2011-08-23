@@ -24,5 +24,8 @@
       doxygen
       copy built docs to www directory
 17. Update any mime types if necessary:
-      svn propset svn:mime-type text/html *.html
+      find . -name "*.html" -exec svn propset svn:mime-type text/html {} \;
+      find . -name "*.css" -exec svn propset svn:mime-type text/css {} \;
+      find . -name "*.js" -exec svn propset svn:mime-type text/javascript {} \;
+      find . -name "*.png" -exec svn propset svn:mime-type image/png {} \;
 18. Commit the docs
