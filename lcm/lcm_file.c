@@ -74,7 +74,7 @@ timer_thread (void * user)
 {
     lcm_logprov_t * lr = (lcm_logprov_t *) user;
     int64_t abstime;
-	struct timeval sleep_tv;
+    struct timeval sleep_tv;
 
     while (lcm_internal_pipe_read(lr->timer_pipe[0], &abstime, 8) == 8) {
         if (abstime < 0) return NULL;
@@ -92,7 +92,7 @@ timer_thread (void * user)
             FD_SET (lr->timer_pipe[0], &fds);
 
             int status = select (lr->timer_pipe[0] + 1, &fds, NULL, NULL,
-								 &sleep_tv);
+                                 &sleep_tv);
 
             if (0 == status) {
                 // select timed out
@@ -330,7 +330,7 @@ void
 lcm_logprov_provider_init (GPtrArray * providers)
 {
 // Microsoft VS compiler issues. Can't do this statically
-	logprov_vtable.create      = lcm_logprov_create;
+    logprov_vtable.create      = lcm_logprov_create;
     logprov_vtable.destroy     = lcm_logprov_destroy;
     logprov_vtable.subscribe   = NULL;
     logprov_vtable.unsubscribe = NULL;
@@ -338,7 +338,7 @@ lcm_logprov_provider_init (GPtrArray * providers)
     logprov_vtable.handle      = lcm_logprov_handle;
     logprov_vtable.get_fileno  = lcm_logprov_get_fileno;
 
-	logprov_info.name = "file";
+    logprov_info.name = "file";
     logprov_info.vtable = &logprov_vtable;
 
     g_ptr_array_add (providers, &logprov_info);

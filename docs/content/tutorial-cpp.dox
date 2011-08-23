@@ -131,7 +131,7 @@ int main(int argc, char ** argv)
 For the most part, this example should be pretty straightforward.
 Note that \c my_data.ranges refers to a variable length array defined by the
 <tt>example_t</tt> LCM type, and is represented by a STL vector in the
-generated C++ class.  It is up to the programmer to resize it appropriate and
+generated C++ class.  It is up to the programmer to resize it appropriately and
 set \c my_data.num_ranges to a value smaller or equal to the
 number of elements in that vector.  When the message is encoded, \c
 my_data.num_ranges determines how many elements will actually be read and
