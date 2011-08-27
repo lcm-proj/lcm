@@ -43,6 +43,12 @@ Destination directory for generated .h files. (default: current directory)
 .TP
 .B \-\-cinclude \fIDIR\fR
 Generated #include lines reference this directory
+.TP
+.B \-\-c-no-pubsub \fIDIR\fR
+Do not generate _publish and _subscribe functions.  This results in .c and .h
+files that have no linking dependencies and can be used for just marshalling,
+separately from liblcm.  They still #include <lcm/lcm_coretypes.h>, so
+you will need to copy that file to the appropriate include path.
 
 .SH C++ OPTIONS
 .TP
