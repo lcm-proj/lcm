@@ -15,12 +15,12 @@ clean-local:
 bin_SCRIPTS = lcm-logplayer-gui lcm-spy
 CLEANFILES = $(bin_SCRIPTS)
 
-lcm-logplayer-gui:
+lcm-logplayer-gui: Makefile
 	@echo > $@ "#!/bin/sh"
 	@echo >> $@ "exec java -server -Xincgc -Xmx64m -Xms32m -ea -cp ${jardir}/lcm.jar lcm.logging.LogPlayer \$$*"
 	chmod 755 $@
 
-lcm-spy:
+lcm-spy: Makefile
 	@echo > $@ "#!/bin/sh"
 	@echo >> $@ "exec java -server -Xincgc -Xmx128m -Xms64m -ea -cp ${jardir}/lcm.jar lcm.spy.Spy \$$*"
 	chmod 755 $@
