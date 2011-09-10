@@ -166,7 +166,6 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
 
     emit_auto_generated_warning(f);
     
-    fprintf(f, "#include <lcm/lcm-cpp.hpp>\n");
     fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
     fprintf(f, "\n");
     fprintf(f, "#ifndef __%s_hpp__\n", tn_);
@@ -279,7 +278,7 @@ static void emit_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "int %s::encode(void *buf, int offset, int maxlen) const", sn);
     emit(0, "{");
     emit(1,     "int pos = 0, tlen;");
-    emit(1,     "int64_t hash = %s::getHash();", sn);
+    emit(1,     "int64_t hash = getHash();");
     emit(0, "");
     emit(1,     "tlen = __int64_t_encode_array(buf, offset + pos, maxlen - pos, &hash, 1);");
     emit(1,     "if(tlen < 0) return tlen; else pos += tlen;");
@@ -297,7 +296,7 @@ static void emit_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     const char *sn = ls->structname->shortname;
     emit(0,"int %s::getEncodedSize() const", sn);
     emit(0,"{");
-    emit(1, "return 8 + %s::_getEncodedSizeNoHash();", sn);
+    emit(1, "return 8 + _getEncodedSizeNoHash();");
     emit(0,"}");
     emit(0," ");
 }
@@ -312,7 +311,7 @@ static void emit_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(1,     "int64_t msg_hash;");
     emit(1,     "thislen = __int64_t_decode_array(buf, offset + pos, maxlen - pos, &msg_hash, 1);");
     emit(1,     "if (thislen < 0) return thislen; else pos += thislen;");
-    emit(1,     "if (msg_hash != %s::getHash()) return -1;", sn);
+    emit(1,     "if (msg_hash != getHash()) return -1;");
     emit(0, "");
     emit(1,     "thislen = this->_decodeNoHash(buf, offset + pos, maxlen - pos);");
     emit(1,     "if (thislen < 0) return thislen; else pos += thislen;");
@@ -327,7 +326,8 @@ static void emit_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     const char *sn  = ls->structname->shortname;
     emit(0, "int64_t %s::getHash()", sn);
     emit(0, "{");
-    emit(1,     "return lcm::message_traits::Hash<%s>::value();", sn);
+    emit(1,     "static int64_t hash = _computeHash(NULL);");
+    emit(1,     "return hash;");
     emit(0, "}");
     emit(0, "");
 }
@@ -425,7 +425,12 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     const char* sn = ls->structname->shortname;
     emit(0, "int %s::_encodeNoHash(void *buf, int offset, int maxlen) const", sn);
     emit(0, "{");
-    emit(1,     "int pos = 0, tlen;");
+    if(0 == g_ptr_array_size(ls->members)) {
+        emit(1,     "return 0;");
+        emit(0,"}");
+        emit(0," ");
+        return;
+    }
     emit(0, "");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
@@ -456,6 +461,12 @@ static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     const char *sn = ls->structname->shortname;
     emit(0, "int %s::_getEncodedSizeNoHash() const", sn);
     emit(0, "{");
+    if(0 == g_ptr_array_size(ls->members)) {
+        emit(1,     "return 0;");
+        emit(0,"}");
+        emit(0," ");
+        return;
+    }
     emit(1,     "int enc_size = 0;");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
@@ -567,6 +578,12 @@ static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     const char* sn = ls->structname->shortname;
     emit(0, "int %s::_decodeNoHash(const void *buf, int offset, int maxlen)", sn);
     emit(0, "{");
+    if(0 == g_ptr_array_size(ls->members)) {
+        emit(1,     "return 0;");
+        emit(0,"}");
+        emit(0," ");
+        return;
+    }
     emit(1,     "int pos = 0, tlen;");
     emit(0, "");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
