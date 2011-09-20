@@ -254,18 +254,18 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     }
 
     emit(1, "public:");
-    emit(2, "int encode(void *buf, int offset, int maxlen) const;");
-    emit(2, "int getEncodedSize() const;");
-    emit(2, "int decode(const void *buf, int offset, int maxlen);");
-    emit(2, "static int64_t getHash();");
-    emit(2, "static const char* getTypeName();");
+    emit(2, "inline int encode(void *buf, int offset, int maxlen) const;");
+    emit(2, "inline int getEncodedSize() const;");
+    emit(2, "inline int decode(const void *buf, int offset, int maxlen);");
+    emit(2, "inline static int64_t getHash();");
+    emit(2, "inline static const char* getTypeName();");
 
     emit(0, "");
     emit(2, "// LCM support functions. Users should not call these");
-    emit(2, "int _encodeNoHash(void *buf, int offset, int maxlen) const;");
-    emit(2, "int _getEncodedSizeNoHash() const;");
-    emit(2, "int _decodeNoHash(const void *buf, int offset, int maxlen);");
-    emit(2, "static int64_t _computeHash(const __lcm_hash_ptr *p);");
+    emit(2, "inline int _encodeNoHash(void *buf, int offset, int maxlen) const;");
+    emit(2, "inline int _getEncodedSizeNoHash() const;");
+    emit(2, "inline int _decodeNoHash(const void *buf, int offset, int maxlen);");
+    emit(2, "inline static int64_t _computeHash(const __lcm_hash_ptr *p);");
     emit(0, "};");
     emit(0, "");
 
