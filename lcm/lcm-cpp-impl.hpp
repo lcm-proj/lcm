@@ -147,7 +147,9 @@ LCM::publish(const std::string& channel, const MessageType *msg) {
     unsigned int datalen = msg->getEncodedSize();
     uint8_t *buf = new uint8_t[datalen];
     msg->encode(buf, 0, datalen);
-    return this->publish(channel, buf, datalen);
+    int status = this->publish(channel, buf, datalen);
+    delete[] buf;
+    return status;
 }
 
 inline void 
