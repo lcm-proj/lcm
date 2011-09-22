@@ -172,12 +172,19 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     fprintf(f, "#define __%s_hpp__\n", tn_);
     fprintf(f, "\n");
     
-    // do wew need to #include <vector> ?
+    // do wew need to #include <vector> or <string>?
+    int emit_include_vector = 0;
+    int emit_include_string = 0;
     for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
-        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
-        if (g_ptr_array_size(lm->dimensions) != 0 && !lcm_is_constant_size_array(lm)) {
+        lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, mind);
+        if (g_ptr_array_size(lm->dimensions) != 0 && 
+            !lcm_is_constant_size_array(lm) && !emit_include_vector) {
             emit(0, "#include <vector>");
-            break;
+            emit_include_vector = 1;
+        } else if(!emit_include_string && 
+            !strcmp(lm->type->lctypename, "string")) {
+            emit(0, "#include <string>");
+            emit_include_string = 1;
         }
     }
 
@@ -431,6 +438,7 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         emit(0," ");
         return;
     }
+    emit(1,     "int pos = 0, tlen;");
     emit(0, "");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
