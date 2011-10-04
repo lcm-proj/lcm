@@ -350,10 +350,9 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             last_complex_member = m;
     }
 
-    emit(0, "int64_t %s::_computeHash(const __lcm_hash_ptr *p)", sn);
-    emit(0, "{");
-
     if(last_complex_member >= 0) {
+        emit(0, "int64_t %s::_computeHash(const __lcm_hash_ptr *p)", sn);
+        emit(0, "{");
         emit(1,     "const __lcm_hash_ptr *fp;");
         emit(1,     "for(fp = p; fp != NULL; fp = fp->parent)");
         emit(2,         "if(fp->v == %s::getHash)", sn);
@@ -362,7 +361,7 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             emit(1, "const __lcm_hash_ptr cp = { p, (void*)%s::getHash };", sn);
         }
         emit(0, " ");
-        emit(1, "int64_t hash = 0x%016"PRIx64"LL +", ls->hash);
+        emit(1,     "int64_t hash = 0x%016"PRIx64"LL +", ls->hash);
 
         for (unsigned int m = 0; m <= last_complex_member; m++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
@@ -376,7 +375,9 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         }
         emit(0, " ");
     } else {
-        emit(1, "int64_t hash = 0x%016"PRIx64"LL;", ls->hash);
+        emit(0, "int64_t %s::_computeHash(const __lcm_hash_ptr *)", sn);
+        emit(0, "{");
+        emit(1,     "int64_t hash = 0x%016"PRIx64"LL;", ls->hash);
     }
 
     emit(1, "return (hash<<1) + ((hash>>63)&1);");
