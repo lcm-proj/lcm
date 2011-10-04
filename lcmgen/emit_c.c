@@ -129,7 +129,8 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     for (unsigned int i = 0; i < g_ptr_array_size(ls->members); i++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, i);
         
-        if (!lcm_is_primitive_type(lm->type->lctypename)) {
+        if (!lcm_is_primitive_type(lm->type->lctypename) && 
+             strcmp(lm->type->lctypename, ls->structname->lctypename)) {
             char *other_tn = dots_to_underscores (lm->type->lctypename);
             fprintf(f, "#include \"%s%s%s.h\"\n",
                     getopt_get_string(lcm->gopt, "cinclude"),

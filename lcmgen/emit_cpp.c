@@ -116,7 +116,7 @@ map_type_name(const char *t)
     if (!strcmp(t,"byte"))
         return strdup("uint8_t");
 
-    return dots_to_underscores (t);
+    return dots_to_double_colons (t);
 }
 
 void setup_cpp_options(getopt_t *gopt)
@@ -192,7 +192,8 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
         
-        if (!lcm_is_primitive_type(lm->type->lctypename)) {
+        if (!lcm_is_primitive_type(lm->type->lctypename) && 
+            strcmp(lm->type->lctypename, ls->structname->lctypename)) {
             char *other_tn = dots_to_slashes (lm->type->lctypename);
             emit(0, "#include \"%s%s%s.hpp\"",
                     getopt_get_string(lcmgen->gopt, "cpp-include"),
