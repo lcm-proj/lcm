@@ -534,7 +534,7 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
             emit_end(".resize(%s%s);", dim_size_prefix(dim->size), dim->size);
-            emit(1 + depth, "if(%s%s)", dim_size_prefix(dim->size), dim->size);
+            emit(1 + depth, "if(%s%s) {", dim_size_prefix(dim->size), dim->size);
             decode_indent++;
         }
 
@@ -543,7 +543,10 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
         for(int i=0; i<depth; i++)
             emit_continue("[a%d]", i);
         emit_end("[0], %s%s);", dim_size_prefix(dim->size), dim->size);
-        emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
+        emit(decode_indent, "if(tlen < 0) return tlen; else pos += tlen;");
+        if(!lcm_is_constant_size_array(lm)) {
+            emit(1 + depth, "}");
+        }
         return;
     }
     // 
