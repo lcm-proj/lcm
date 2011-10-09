@@ -23,7 +23,11 @@ public class ClassDiscoverer
 
     private static void visitDirectory(ClassVisitor visitor, URLClassLoader cldr, 
             String classpath_entry, File dir, String visiting_classpath) {
+        if(!dir.canRead())
+            return;
         for(File f : dir.listFiles()) {
+            if(!f.canRead())
+                continue;
             String fname = f.getName();
             if(f.isDirectory()) {
                 // found a directory. recursively traverse the directory and
