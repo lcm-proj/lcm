@@ -1,3 +1,31 @@
+Oct 15, 2011
+============
+
+ Release 0.7.1
+
+ This is a bugfix and maintenance release.
+
+ lcm-gen:
+   C++:
+     - fix decoding of zero-length primitive arrays (re issue #38)
+     - computeHash() omit parameter name if unused
+     - don't #include a type's own header file for recursive types
+     - fix memory leak in LCM::publish() (re issue #35)
+     - inline methods for generated code
+     - use static local variable for getHash() to reduce liblcm dependency of
+       generated C++ code
+     - #include <string> if a type has a string field
+   C:
+     - don't #include a type's own header file for recursive types
+   Java:
+     - add --with-jardir=DIR option to configure script to allow configuring
+       lcm.jar destination directory.
+   General:
+     - update lcm-gen manpage to document --c-no-pubsub
+
+ lcm-java:
+    - ClassDiscoverer doesn't try to traverse unreadable files/directories
+
 Aug 22, 2011
 ============
 

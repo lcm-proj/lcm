@@ -1,3 +1,61 @@
+2011-10-09  ashuang
+
+	* [r618] lcm-java/lcm/util/ClassDiscoverer.java: ClassDiscoverer
+	  doesn't try to traverse unreadable files/directories
+
+2011-10-08  ashuang
+
+	* [r617] lcmgen/emit_cpp.c: fix decoding of zero-length primitive
+	  arrays (re issue #38)
+
+2011-10-04  ashuang
+
+	* [r616] lcmgen/emit_cpp.c: emit_cpp: computeHash() omit parameter
+	  name if unused
+	* [r615] examples/types/node_t.lcm, lcmgen/emit_c.c,
+	  lcmgen/emit_cpp.c: emit_c, emit_cpp: don't #include a type's own
+	  header file for recursive types emit_cpp: fix type name for
+	  non-primitive member types
+
+2011-09-22  ashuang
+
+	* [r608] lcm/lcm-cpp-impl.hpp: fix memory leak in C++
+	  LCM::publish() closes #35
+	* [r607] lcmgen/emit_cpp.c: emit_cpp: bugfix from regression
+	  introduced in r605 (accidentally removed int pos, tlen) emit
+	  #include <string> if a type has a string field
+
+2011-09-20  ashuang
+
+	* [r606] lcmgen/emit_cpp.c: emit_cpp - prefix method declarations
+	  with inline
+
+2011-09-10  ashuang
+
+	* [r605] lcm/lcm-cpp-impl.hpp, lcmgen/emit_cpp.c: use static local
+	  variable for getHash() to reduce liblcm dependency of generated
+	  C++ code
+
+2011-08-28  ashuang
+
+	* [r604] configure.in, lcm-java/Makefile.am: add --with-jardir=DIR
+	  option to configure script to allow configuring lcm.jar
+	  destination directory.
+
+2011-08-27  ashuang
+
+	* [r603] lcmgen/lcm-gen.1: update lcm-gen manpage to document
+	  --c-no-pubsub
+
+2011-08-23  ashuang
+
+	* [r592] docs/release_checklist, lcm/lcm_udp.c: update
+	  release_checklist. update multicast-setup www link
+	* [r590] ChangeLog, NEWS, configure.in, lcm-python/setup.py:
+	  release 0.7.0
+	* [r589] docs/content/tutorial-cpp.dox, lcm/lcm_file.c: fix typo,
+	  whitespace
+
 2011-08-13  jan.hrbacek
 
 	* [r588] WinSpecific/WinPorting.h, lcmgen/lcm-gen.vcproj: windows c
