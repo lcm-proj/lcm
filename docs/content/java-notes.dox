@@ -38,7 +38,7 @@ else you will need to refer to types by their fully-qualified names (e.g.,
 
 Note that if you do not specify a package name in your LCM type definition
 file, lcm-gen will (by default) put those types into the "lcmtypes" Java
-package. This is necessary because Java does not official support packageless
+package. This is necessary because Java does not officially support packageless
 classes.
 
 **/

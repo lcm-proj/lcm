@@ -172,7 +172,7 @@ LCM::unsubscribe(Subscription *subscription) {
 }
 
 inline int 
-LCM::fileno() {
+LCM::getFileno() {
     if(!this->lcm) {
         fprintf(stderr, 
             "LCM instance not initialized.  Ignoring call to fileno()\n");

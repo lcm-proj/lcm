@@ -99,7 +99,7 @@ class LCM {
          * is wrong.
          * @sa lcm_get_fileno()
          */
-        inline int fileno();
+        inline int getFileno();
 
         /**
          * @brief Waits for and dispatches one message.
