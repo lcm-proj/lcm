@@ -46,7 +46,7 @@ static char *dots_to_underscores(const char *s)
 
 static void emit_auto_generated_warning(FILE *f)
 {
-    fprintf(f, 
+    fprintf(f,
             "/** THIS IS AN AUTOMATICALLY GENERATED FILE.  DO NOT MODIFY\n"
             " * BY HAND!!\n"
             " *\n"
@@ -84,7 +84,7 @@ void setup_c_options(getopt_t *gopt)
 static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
 {
     emit_auto_generated_warning(f);
-    
+
     fprintf(f, "#include <stdint.h>\n");
     fprintf(f, "#include <stdlib.h>\n");
     fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
@@ -96,16 +96,16 @@ static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
         fprintf(f, "#include <lcm/lcm.h>\n");
     }
     fprintf(f, "\n");
-        
+
     fprintf(f, "#ifndef _%s_h\n", name);
     fprintf(f, "#define _%s_h\n", name);
     fprintf(f, "\n");
-    
+
     fprintf(f, "#ifdef __cplusplus\n");
     fprintf(f, "extern \"C\" {\n");
     fprintf(f, "#endif\n");
     fprintf(f, "\n");
-    
+
 }
 
 /** Emit output that is common to every header file **/
@@ -128,8 +128,8 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     // include header files required by members
     for (unsigned int i = 0; i < g_ptr_array_size(ls->members); i++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, i);
-        
-        if (!lcm_is_primitive_type(lm->type->lctypename) && 
+
+        if (!lcm_is_primitive_type(lm->type->lctypename) &&
              strcmp(lm->type->lctypename, ls->structname->lctypename)) {
             char *other_tn = dots_to_underscores (lm->type->lctypename);
             fprintf(f, "#include \"%s%s%s.h\"\n",
@@ -148,7 +148,7 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         if (!strcmp(lc->lctypename, "int64_t")) {
             suffix = "LL";
         }
-        emit(0, "#define %s_%s %s%s", tn_upper, lc->membername, lc->val_str, 
+        emit(0, "#define %s_%s %s%s", tn_upper, lc->membername, lc->val_str,
                 suffix);
     }
     if (g_ptr_array_size(ls->constants) > 0) {
@@ -165,7 +165,7 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
         int ndim = g_ptr_array_size(lm->dimensions);
         if (ndim == 0) {
-            emit(1, "%-10s %s;", map_type_name(lm->type->lctypename), 
+            emit(1, "%-10s %s;", map_type_name(lm->type->lctypename),
                     lm->membername);
         } else {
             if (lcm_is_constant_size_array(lm)) {
@@ -177,14 +177,14 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 emit_end(";");
             } else {
                 emit_start(1, "%-10s ", map_type_name(lm->type->lctypename));
-                for (unsigned int d = 0; d < ndim; d++) 
+                for (unsigned int d = 0; d < ndim; d++)
                     emit_continue("*");
                 emit_end("%s;", lm->membername);
             }
         }
     }
     emit(0, "};");
-    emit(0, " ");
+    emit(0, "");
 
     free(tn_);
     g_free(tn_upper);
@@ -201,15 +201,15 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
 
     if (!getopt_get_bool(lcmgen->gopt, "c-no-pubsub")) {
         emit(0,"typedef struct _%s_subscription_t %s_subscription_t;", tn_, tn_);
-        emit(0,"typedef void(*%s_handler_t)(const lcm_recv_buf_t *rbuf, \n"
-               "             const char *channel, const %s *msg, void *user);", 
+        emit(0,"typedef void(*%s_handler_t)(const lcm_recv_buf_t *rbuf,\n"
+               "             const char *channel, const %s *msg, void *user);",
                tn_, tn_);
         emit(0,"");
         emit(0,"int %s_publish(lcm_t *lcm, const char *channel, const %s *p);", tn_, tn_);
-        emit(0,"%s_subscription_t* %s_subscribe(lcm_t *lcm, const char *channel, %s_handler_t f, void *userdata);", 
+        emit(0,"%s_subscription_t* %s_subscribe(lcm_t *lcm, const char *channel, %s_handler_t f, void *userdata);",
                 tn_, tn_, tn_);
         emit(0,"int %s_unsubscribe(lcm_t *lcm, %s_subscription_t* hid);", tn_, tn_);
-        emit(0,"int %s_subscription_set_queue_capacity(%s_subscription_t* subs, \n"
+        emit(0,"int %s_subscription_set_queue_capacity(%s_subscription_t* subs,\n"
             "                              int num_messages);\n", tn_, tn_);
         emit(0,"");
     }
@@ -239,7 +239,7 @@ static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     emit(0, "static int __%s_hash_computed;", tn_);
     emit(0, "static int64_t __%s_hash;", tn_);
-    emit(0, " ");
+    emit(0, "");
 
     emit(0, "int64_t __%s_hash_recursive(const __lcm_hash_ptr *p)", tn_);
     emit(0, "{");
@@ -247,22 +247,22 @@ static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(1,     "for (fp = p; fp != NULL; fp = fp->parent)");
     emit(2,         "if (fp->v == __%s_get_hash)", tn_);
     emit(3,              "return 0;");
-    emit(0, " ");
+    emit(0, "");
     emit(1, "const __lcm_hash_ptr cp = { p, (void*)__%s_get_hash };", tn_);
     emit(1, "(void) cp;");
-    emit(0, " ");
+    emit(0, "");
     emit(1, "int64_t hash = 0x%016"PRIx64"LL", ls->hash);
-    
+
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
-        
+
         emit(2, " + __%s_hash_recursive(&cp)", dots_to_underscores(lm->type->lctypename));
     }
     emit(2,";");
-    emit(0, " ");
+    emit(0, "");
     emit(1, "return (hash<<1) + ((hash>>63)&1);");
     emit(0, "}");
-    emit(0, " ");
+    emit(0, "");
 
     emit(0, "int64_t __%s_get_hash(void)", tn_);
     emit(0, "{");
@@ -270,10 +270,10 @@ static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(2,      "__%s_hash = __%s_hash_recursive(NULL);", tn_, tn_);
     emit(2,      "__%s_hash_computed = 1;", tn_);
     emit(1,      "}");
-    emit(0, " ");
+    emit(0, "");
     emit(1, "return __%s_hash;", tn_);
     emit(0, "}");
-    emit(0, " ");
+    emit(0, "");
 }
 
 // Create an accessor for member lm, whose name is "n". For arrays,
@@ -300,7 +300,7 @@ static char *make_array_size(lcm_member_t *lm, const char *n, int dim)
         return sprintfalloc("1");
     else {
         lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
-        switch (ld->mode) 
+        switch (ld->mode)
         {
         case LCM_CONST:
             return sprintfalloc("%s", ld->size);
@@ -327,12 +327,12 @@ static void emit_c_array_loops_start(lcmgen_t *lcm, FILE *f, lcm_member_t *lm, c
                 stars[s+1] = 0;
             }
 
-            emit(2+i, "%s = (%s%s*) lcm_malloc(sizeof(%s%s) * %s);", 
+            emit(2+i, "%s = (%s%s*) lcm_malloc(sizeof(%s%s) * %s);",
                  make_accessor(lm, n, i),
                  map_type_name(lm->type->lctypename),
                  stars,
                  map_type_name(lm->type->lctypename),
-                 stars, 
+                 stars,
                  make_array_size(lm, n, i));
         }
 
@@ -343,7 +343,7 @@ static void emit_c_array_loops_start(lcmgen_t *lcm, FILE *f, lcm_member_t *lm, c
     if (flags & FLAG_EMIT_MALLOCS) {
         emit(2 + g_ptr_array_size(lm->dimensions) - 1, "%s = (%s*) lcm_malloc(sizeof(%s) * %s);",
              make_accessor(lm, n, g_ptr_array_size(lm->dimensions) - 1),
-             map_type_name(lm->type->lctypename),             
+             map_type_name(lm->type->lctypename),
              map_type_name(lm->type->lctypename),
              make_array_size(lm, n, g_ptr_array_size(lm->dimensions) - 1));
     }
@@ -378,28 +378,28 @@ static void emit_c_encode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"int __%s_encode_array(void *buf, int offset, int maxlen, const %s *p, int elements)", tn_, tn_);
     emit(0,"{");
     emit(1,    "int pos = 0, thislen, element;");
-    emit(0," ");
+    emit(0,"");
     emit(1,    "for (element = 0; element < elements; element++) {");
-    emit(0," ");
+    emit(0,"");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
-        
+
         emit_c_array_loops_start(lcm, f, lm, "p", FLAG_NONE);
-        
+
         int indent = 2+imax(0, g_ptr_array_size(lm->dimensions) - 1);
-        emit(indent, "thislen = __%s_encode_array(buf, offset + pos, maxlen - pos, %s, %s);", 
+        emit(indent, "thislen = __%s_encode_array(buf, offset + pos, maxlen - pos, %s, %s);",
              dots_to_underscores (lm->type->lctypename),
              make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1),
              make_array_size(lm, "p", g_ptr_array_size(lm->dimensions) - 1));
         emit(indent, "if (thislen < 0) return thislen; else pos += thislen;");
-        
+
         emit_c_array_loops_end(lcm, f, lm, "p", FLAG_NONE);
-        emit(0," ");
+        emit(0,"");
     }
     emit(1,   "}");
     emit(1, "return pos;");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -411,16 +411,16 @@ static void emit_c_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"{");
     emit(1,    "int pos = 0, thislen;");
     emit(1,    "int64_t hash = __%s_get_hash();", tn_);
-    emit(0," ");
+    emit(0,"");
     emit(1,    "thislen = __int64_t_encode_array(buf, offset + pos, maxlen - pos, &hash, 1);");
     emit(1,    "if (thislen < 0) return thislen; else pos += thislen;");
-    emit(0," ");
+    emit(0,"");
     emit(1,    "thislen = __%s_encode_array(buf, offset + pos, maxlen - pos, p, 1);", tn_);
     emit(1,    "if (thislen < 0) return thislen; else pos += thislen;");
-    emit(0," ");
+    emit(0,"");
     emit(1, "return pos;");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_decode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -431,28 +431,28 @@ static void emit_c_decode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"int __%s_decode_array(const void *buf, int offset, int maxlen, %s *p, int elements)", tn_, tn_);
     emit(0,"{");
     emit(1,    "int pos = 0, thislen, element;");
-    emit(0," ");
+    emit(0,"");
     emit(1,    "for (element = 0; element < elements; element++) {");
-    emit(0," ");
+    emit(0,"");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
-     
+
         emit_c_array_loops_start(lcm, f, lm, "p", lcm_is_constant_size_array(lm) ? FLAG_NONE : FLAG_EMIT_MALLOCS);
 
         int indent = 2+imax(0, g_ptr_array_size(lm->dimensions) - 1);
-        emit(indent, "thislen = __%s_decode_array(buf, offset + pos, maxlen - pos, %s, %s);", 
+        emit(indent, "thislen = __%s_decode_array(buf, offset + pos, maxlen - pos, %s, %s);",
              dots_to_underscores (lm->type->lctypename),
              make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1),
              make_array_size(lm, "p", g_ptr_array_size(lm->dimensions) - 1));
         emit(indent, "if (thislen < 0) return thislen; else pos += thislen;");
 
         emit_c_array_loops_end(lcm, f, lm, "p", FLAG_NONE);
-        emit(0," ");
+        emit(0,"");
     }
     emit(1,   "}");
     emit(1, "return pos;");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_decode_array_cleanup(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -464,25 +464,25 @@ static void emit_c_decode_array_cleanup(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls
     emit(0,"{");
     emit(1,    "int element;");
     emit(1,    "for (element = 0; element < elements; element++) {");
-    emit(0," ");
+    emit(0,"");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
-     
+
         emit_c_array_loops_start(lcm, f, lm, "p", FLAG_NONE);
 
         int indent = 2+imax(0, g_ptr_array_size(lm->dimensions) - 1);
-        emit(indent, "__%s_decode_array_cleanup(%s, %s);", 
+        emit(indent, "__%s_decode_array_cleanup(%s, %s);",
              dots_to_underscores (lm->type->lctypename),
              make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1),
              make_array_size(lm, "p", g_ptr_array_size(lm->dimensions) - 1));
 
         emit_c_array_loops_end(lcm, f, lm, "p", lcm_is_constant_size_array(lm) ? FLAG_NONE : FLAG_EMIT_FREES);
-        emit(0," ");
+        emit(0,"");
     }
     emit(1,   "}");
     emit(1, "return 0;");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -494,18 +494,18 @@ static void emit_c_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"{");
     emit(1,    "int pos = 0, thislen;");
     emit(1,    "int64_t hash = __%s_get_hash();", tn_);
-    emit(0," ");
+    emit(0,"");
     emit(1,    "int64_t this_hash;");
     emit(1,    "thislen = __int64_t_decode_array(buf, offset + pos, maxlen - pos, &this_hash, 1);");
     emit(1,    "if (thislen < 0) return thislen; else pos += thislen;");
     emit(1,    "if (this_hash != hash) return -1;");
-    emit(0," ");
+    emit(0,"");
     emit(1,    "thislen = __%s_decode_array(buf, offset + pos, maxlen - pos, p, 1);", tn_);
     emit(1,    "if (thislen < 0) return thislen; else pos += thislen;");
-    emit(0," ");
+    emit(0,"");
     emit(1, "return pos;");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_decode_cleanup(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -517,7 +517,7 @@ static void emit_c_decode_cleanup(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"{");
     emit(1, "return __%s_decode_array_cleanup(p, 1);", tn_);
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_encoded_array_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -529,25 +529,25 @@ static void emit_c_encoded_array_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"{");
     emit(1,"int size = 0, element;");
     emit(1,    "for (element = 0; element < elements; element++) {");
-    emit(0," ");
+    emit(0,"");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
-        
+
         emit_c_array_loops_start(lcm, f, lm, "p", FLAG_NONE);
-        
+
         int indent = 2+imax(0, g_ptr_array_size(lm->dimensions) - 1);
         emit(indent, "size += __%s_encoded_array_size(%s, %s);",
              dots_to_underscores (lm->type->lctypename),
              make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1),
              make_array_size(lm, "p", g_ptr_array_size(lm->dimensions) - 1));
-        
+
         emit_c_array_loops_end(lcm, f, lm, "p", FLAG_NONE);
-        emit(0," ");
+        emit(0,"");
     }
     emit(1,"}");
     emit(1, "return size;");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -559,7 +559,7 @@ static void emit_c_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"{");
     emit(1, "return 8 + __%s_encoded_array_size(p, 1);", tn_);
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_clone_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
@@ -571,60 +571,60 @@ static void emit_c_clone_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
     emit(0,"{");
     emit(1,    "int element;");
     emit(1,    "for (element = 0; element < elements; element++) {");
-    emit(0," ");
+    emit(0,"");
     for (unsigned int m = 0; m < g_ptr_array_size(lr->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, m);
-        
+
         emit_c_array_loops_start(lcm, f, lm, "q", lcm_is_constant_size_array(lm) ? FLAG_NONE : FLAG_EMIT_MALLOCS);
-        
+
         int indent = 2+imax(0, g_ptr_array_size(lm->dimensions) - 1);
         emit(indent, "__%s_clone_array(%s, %s, %s);",
              dots_to_underscores (lm->type->lctypename),
              make_accessor(lm, "p", g_ptr_array_size(lm->dimensions) - 1),
              make_accessor(lm, "q", g_ptr_array_size(lm->dimensions) - 1),
              make_array_size(lm, "p", g_ptr_array_size(lm->dimensions) - 1));
-        
+
         emit_c_array_loops_end(lcm, f, lm, "p", FLAG_NONE);
-        emit(0," ");
+        emit(0,"");
     }
     emit(1,   "}");
     emit(1,   "return 0;");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_copy(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
     char *tn = lr->structname->lctypename;
     char *tn_ = dots_to_underscores(tn);
-    
+
     emit(0,"%s *%s_copy(const %s *p)", tn_, tn_, tn_);
     emit(0,"{");
     emit(1,    "%s *q = (%s*) malloc(sizeof(%s));", tn_, tn_, tn_);
     emit(1,    "__%s_clone_array(p, q, 1);", tn_);
     emit(1,    "return q;");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_destroy(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
     char *tn = lr->structname->lctypename;
     char *tn_ = dots_to_underscores(tn);
-    
+
     emit(0,"void %s_destroy(%s *p)", tn_, tn_);
     emit(0,"{");
     emit(1,    "__%s_decode_array_cleanup(p, 1);", tn_);
     emit(1,    "free(p);");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_c_struct_publish(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
     char *tn = lr->structname->lctypename;
     char *tn_ = dots_to_underscores(tn);
-    fprintf(f, 
+    fprintf(f,
             "int %s_publish(lcm_t *lc, const char *channel, const %s *p)\n"
             "{\n"
             "      int max_data_size = %s_encoded_size (p);\n"
@@ -655,7 +655,7 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "};\n", tn_, tn_);
     fprintf(f,
             "static\n"
-            "void %s_handler_stub (const lcm_recv_buf_t *rbuf, \n"
+            "void %s_handler_stub (const lcm_recv_buf_t *rbuf,\n"
             "                            const char *channel, void *userdata)\n"
             "{\n"
             "    int status;\n"
@@ -675,8 +675,8 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
         );
 
     fprintf(f,
-            "%s_subscription_t* %s_subscribe (lcm_t *lcm, \n"
-            "                    const char *channel, \n"
+            "%s_subscription_t* %s_subscribe (lcm_t *lcm,\n"
+            "                    const char *channel,\n"
             "                    %s_handler_t f, void *userdata)\n"
             "{\n"
 //            "    int chan_len = strlen (channel) + 1;\n"
@@ -686,7 +686,7 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "    n->userdata = userdata;\n"
 //            "    n->channel = (char*) malloc (chan_len);\n"
 //            "    memcpy (n->channel, channel, chan_len);\n"
-            "    n->lc_h = lcm_subscribe (lcm, channel, \n"
+            "    n->lc_h = lcm_subscribe (lcm, channel,\n"
             "                                 %s_handler_stub, n);\n"
             "    if (n->lc_h == NULL) {\n"
             "        fprintf (stderr,\"couldn't reg %s LCM handler!\\n\");\n"
@@ -698,7 +698,7 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
         );
 
     fprintf(f,
-            "int %s_subscription_set_queue_capacity (%s_subscription_t* subs, \n"
+            "int %s_subscription_set_queue_capacity (%s_subscription_t* subs,\n"
             "                              int num_messages)\n"
             "{\n"
             "    return lcm_subscription_set_queue_capacity (subs->lc_h, num_messages);\n"
@@ -709,7 +709,7 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "{\n"
             "    int status = lcm_unsubscribe (lcm, hid->lc_h);\n"
             "    if (0 != status) {\n"
-            "        fprintf(stderr, \n"
+            "        fprintf(stderr,\n"
             "           \"couldn't unsubscribe %s_handler %%p!\\n\", hid);\n"
             "        return -1;\n"
             "    }\n"
@@ -732,7 +732,7 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
         FILE *f = fopen(header_name, "w");
         if (f == NULL)
             return -1;
-        
+
         emit_header_top(lcmgen, f, tn_);
 
         char *tn_upper = g_ascii_strup (tn_, strlen (tn_));
@@ -742,22 +742,22 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
         emit(0, "enum _%s {", tn_);
         for (unsigned int i = 0; i < g_ptr_array_size(le->values); i++) {
             lcm_enum_value_t *lev = (lcm_enum_value_t *) g_ptr_array_index(le->values, i);
-            emit(1," %s_%s = %d%s", 
+            emit(1," %s_%s = %d%s",
                     tn_upper,
-                    lev->valuename, 
+                    lev->valuename,
                     lev->value, i==(g_ptr_array_size(le->values)-1) ? "" : ",");
         }
-    
+
         free (tn_upper);
 
         emit(0, "};");
-        emit(0, " ");
+        emit(0, "");
 
         emit(0, "typedef enum _%s %s;", tn_, tn_);
-        emit(0, " ");
+        emit(0, "");
 
         emit(0, "const char * %s_name(%s val);", tn_, tn_);
-        emit(0, " ");
+        emit(0, "");
 
         ///////////////////////////////////////////////////////////////////
 
@@ -765,13 +765,13 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
         emit(0, "{");
         emit(1,    "return 0x%016"PRIx64"LL;", le->hash);
         emit(0, "}");
-        emit(0, " ");
+        emit(0, "");
 
         emit(0, "static inline int64_t __%s_get_hash()", tn_);
         emit(0, "{");
         emit(1,    "return 0x%016"PRIx64"LL;", le->hash);
         emit(0, "}");
-        emit(0, " ");
+        emit(0, "");
 
         // enums are always "ints", but "ints" are not always int32_t. We
         // always store an enum as an int32_t, however. Consequently, we
@@ -788,22 +788,22 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
         emit(1,     "}");
         emit(1, "return thislen;");
         emit(0, "}");
-        emit(0, " ");
+        emit(0, "");
 
         emit(0,"static inline int %s_encode(void *buf, int offset, int maxlen, const %s *p)", tn_, tn_);
         emit(0,"{");
         emit(1,    "int pos = 0, thislen;");
         emit(1,    "int64_t hash = 0x%016"PRIx64"LL;", le->hash);
-        emit(0," ");
+        emit(0,"");
         emit(1,    "thislen = __int64_t_encode_array(buf, offset + pos, maxlen - pos, &hash, 1);");
         emit(1,    "if (thislen < 0) return thislen; else pos += thislen;");
-        emit(0," ");
+        emit(0,"");
         emit(1,    "thislen = __%s_encode_array(buf, offset + pos, maxlen - pos, p, 1);", tn_);
         emit(1,    "if (thislen < 0) return thislen; else pos += thislen;");
-        emit(0," ");
+        emit(0,"");
         emit(1, "return pos;");
         emit(0,"}");
-        emit(0," ");
+        emit(0,"");
 
         emit(0, "static inline int __%s_decode_array(const void *_buf, int offset, int maxlen, %s *p, int elements)", tn_, tn_);
         emit(0, "{");
@@ -816,60 +816,60 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
         emit(1,     "}");
         emit(1, "return thislen;");
         emit(0, "}");
-        emit(0, " ");
+        emit(0, "");
 
         emit(0, "static inline int __%s_clone_array(const %s *p, %s *q, int elements)", tn_, tn_, tn_);
         emit(0, "{");
         emit(1,    "memcpy(q, p, elements * sizeof(%s));", tn_);
         emit(1,    "return 0;");
         emit(0, "}");
-        emit(0, " ");
+        emit(0, "");
 
         emit(0,"static inline int %s_decode(const void *buf, int offset, int maxlen, %s *p)", tn_, tn_);
         emit(0,"{");
         emit(1,    "int pos = 0, thislen;");
         emit(1,    "int64_t hash = 0x%016"PRIx64"LL;", le->hash);
-        emit(0," ");
+        emit(0,"");
         emit(1,    "int64_t this_hash;");
         emit(1,    "thislen = __int64_t_decode_array(buf, offset + pos, maxlen - pos, &this_hash, 1);");
         emit(1,    "if (thislen < 0) return thislen; else pos += thislen;");
         emit(1,    "if (this_hash != hash) return -1;");
-        emit(0," ");
+        emit(0,"");
         emit(1,    "thislen = __%s_decode_array(buf, offset + pos, maxlen - pos, p, 1);", tn_);
         emit(1,    "if (thislen < 0) return thislen; else pos += thislen;");
-        emit(0," ");
+        emit(0,"");
         emit(1,   "return pos;");
         emit(0,"}");
-        emit(0," ");
-    
+        emit(0,"");
+
         emit(0, "static inline int __%s_decode_array_cleanup(%s *in, int elements)", tn_, tn_);
         emit(0, "{");
         emit(1,    "return 0;");
         emit(0, "}");
-        emit(0, " ");
+        emit(0, "");
 
         emit(0,"static inline int %s_decode_cleanup(%s *p)", tn_, tn_);
         emit(0,"{");
         emit(1,    "return 0;");
         emit(0,"}");
-        emit(0," ");
+        emit(0,"");
 
         emit(0, "static inline int __%s_encoded_array_size(const %s *p, int elements)", tn_, tn_);
         emit(0, "{");
         emit(1,    "return __int32_t_encoded_array_size((const int32_t*)p, elements);");
         emit(0, "}");
-        emit(0, " ");
+        emit(0, "");
 
         emit(0, "static inline int %s_encoded_size(const %s *in)", tn_, tn_);
         emit(0, "{");
         emit(1,    "return int32_t_encoded_size((const int32_t*)in);");
         emit(0, "}");
-        emit(0, " ");
+        emit(0, "");
 
-        emit_header_bottom(lcmgen, f); 
+        emit_header_bottom(lcmgen, f);
         fclose(f);
     }
-    
+
     // ENUM C file
     if (lcm_needs_generation(lcmgen, le->lcmfile, c_name)) {
         char *tn_upper = g_ascii_strup (tn_, strlen (tn_));
@@ -913,7 +913,7 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *lr)
         FILE *f = fopen(header_name, "w");
         if (f == NULL)
             return -1;
-        
+
         emit_header_top(lcmgen, f, tn_);
         emit_header_struct(lcmgen, f, lr);
         emit_header_prototypes(lcmgen, f, lr);
@@ -921,13 +921,13 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *lr)
         emit_header_bottom(lcmgen, f);
         fclose(f);
     }
-    
+
     // STRUCT C file
     if (lcm_needs_generation(lcmgen, lr->lcmfile, c_name)) {
         FILE *f = fopen(c_name, "w");
         if (f == NULL)
             return -1;
-        
+
         emit_auto_generated_warning(f);
         fprintf(f, "#include <string.h>\n");
         fprintf(f, "#include \"%s%s%s.h\"\n",
@@ -941,21 +941,21 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *lr)
         emit_c_encode(lcmgen, f, lr);
         emit_c_encoded_array_size(lcmgen, f, lr);
         emit_c_encoded_size(lcmgen, f, lr);
-        
+
         emit_c_decode_array(lcmgen, f, lr);
         emit_c_decode_array_cleanup(lcmgen, f, lr);
         emit_c_decode(lcmgen, f, lr);
         emit_c_decode_cleanup(lcmgen, f, lr);
-        
+
         emit_c_clone_array(lcmgen, f, lr);
         emit_c_copy(lcmgen, f, lr);
         emit_c_destroy(lcmgen, f, lr);
-        
+
         if(!getopt_get_bool(lcmgen->gopt, "c-no-pubsub")) {
             emit_c_struct_publish(lcmgen, f, lr );
             emit_c_struct_subscribe(lcmgen, f, lr );
         }
-        
+
         fclose(f);
     }
 
@@ -972,7 +972,7 @@ int emit_c(lcmgen_t *lcmgen)
         if (emit_enum(lcmgen, le))
             return -1;
     }
-    
+
     ////////////////////////////////////////////////////////////
     // STRUCTS
     for (unsigned int i = 0; i < g_ptr_array_size(lcmgen->structs); i++) {

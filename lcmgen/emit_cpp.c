@@ -51,7 +51,7 @@ dots_to_double_colons(const char *s)
             *q = ':';
             q++;
             *q = ':';
-        } else 
+        } else
             *q = *t;
         q++;
     }
@@ -128,7 +128,7 @@ void setup_cpp_options(getopt_t *gopt)
 
 static void emit_auto_generated_warning(FILE *f)
 {
-    fprintf(f, 
+    fprintf(f,
             "/** THIS IS AN AUTOMATICALLY GENERATED FILE.  DO NOT MODIFY\n"
             " * BY HAND!!\n"
             " *\n"
@@ -142,7 +142,7 @@ emit_package_namespace_start(lcmgen_t* lcmgen, FILE* f, lcm_struct_t* ls)
     // output namespace declaration
     char **namespaces = g_strsplit(ls->structname->lctypename, ".", 0);
     for(int nsind=0; namespaces[nsind] && namespaces[nsind+1]; nsind++) {
-        emit(0, "namespace %s \n{", namespaces[nsind]);
+        emit(0, "namespace %s\n{", namespaces[nsind]);
     }
     g_strfreev(namespaces);
 }
@@ -165,23 +165,23 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     char *tn_ = dots_to_underscores(tn);
 
     emit_auto_generated_warning(f);
-    
+
     fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
     fprintf(f, "\n");
     fprintf(f, "#ifndef __%s_hpp__\n", tn_);
     fprintf(f, "#define __%s_hpp__\n", tn_);
     fprintf(f, "\n");
-    
+
     // do wew need to #include <vector> or <string>?
     int emit_include_vector = 0;
     int emit_include_string = 0;
     for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
         lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, mind);
-        if (g_ptr_array_size(lm->dimensions) != 0 && 
+        if (g_ptr_array_size(lm->dimensions) != 0 &&
             !lcm_is_constant_size_array(lm) && !emit_include_vector) {
             emit(0, "#include <vector>");
             emit_include_vector = 1;
-        } else if(!emit_include_string && 
+        } else if(!emit_include_string &&
             !strcmp(lm->type->lctypename, "string")) {
             emit(0, "#include <string>");
             emit_include_string = 1;
@@ -191,8 +191,8 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     // include header files for other LCM types
     for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
-        
-        if (!lcm_is_primitive_type(lm->type->lctypename) && 
+
+        if (!lcm_is_primitive_type(lm->type->lctypename) &&
             strcmp(lm->type->lctypename, ls->structname->lctypename)) {
             char *other_tn = dots_to_slashes (lm->type->lctypename);
             emit(0, "#include \"%s%s%s.hpp\"",
@@ -230,10 +230,10 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
                     emit_end(";");
                 } else {
                     emit_start(2, "");
-                    for (unsigned int d = 0; d < ndim; d++) 
+                    for (unsigned int d = 0; d < ndim; d++)
                         emit_continue("std::vector< ");
                     emit_continue("%s", mapped_typename);
-                    for (unsigned int d = 0; d < ndim; d++) 
+                    for (unsigned int d = 0; d < ndim; d++)
                         emit_continue(" >");
                     emit_end(" %s;", lm->membername);
                 }
@@ -254,7 +254,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
             if (!strcmp(lc->lctypename, "int64_t"))
               suffix = "LL";
             char* mapped_typename = map_type_name(lc->lctypename);
-            emit(2, "static const %-8s %s = %s%s;", mapped_typename, 
+            emit(2, "static const %-8s %s = %s%s;", mapped_typename,
                 lc->membername, lc->val_str, suffix);
             free(mapped_typename);
         }
@@ -306,7 +306,7 @@ static void emit_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"{");
     emit(1, "return 8 + _getEncodedSizeNoHash();");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -360,20 +360,20 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         if(g_ptr_array_size(ls->members)) {
             emit(1, "const __lcm_hash_ptr cp = { p, (void*)%s::getHash };", sn);
         }
-        emit(0, " ");
+        emit(0, "");
         emit(1,     "int64_t hash = 0x%016"PRIx64"LL +", ls->hash);
 
         for (unsigned int m = 0; m <= last_complex_member; m++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
             char* lm_tnc = dots_to_double_colons(lm->type->lctypename);
             if(!lcm_is_primitive_type(lm->type->lctypename)) {
-                emit(2, " %s::_computeHash(&cp)%s", 
-                        lm_tnc, 
+                emit(2, " %s::_computeHash(&cp)%s",
+                        lm_tnc,
                         (m == last_complex_member) ? ";" : " +");
             }
             free(lm_tnc);
         }
-        emit(0, " ");
+        emit(0, "");
     } else {
         emit(0, "int64_t %s::_computeHash(const __lcm_hash_ptr *)", sn);
         emit(0, "{");
@@ -382,17 +382,17 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     emit(1, "return (hash<<1) + ((hash>>63)&1);");
     emit(0, "}");
-    emit(0, " ");
+    emit(0, "");
 }
 
 static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int depth)
 {
     // primitive array
-    if (depth+1 == g_ptr_array_size(lm->dimensions) && 
+    if (depth+1 == g_ptr_array_size(lm->dimensions) &&
             lcm_is_primitive_type(lm->type->lctypename) &&
             strcmp(lm->type->lctypename, "string")) {
         lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
-        emit_start(1 + depth, "tlen = __%s_encode_array(buf, offset + pos, maxlen - pos, &this->%s", 
+        emit_start(1 + depth, "tlen = __%s_encode_array(buf, offset + pos, maxlen - pos, &this->%s",
                 lm->type->lctypename, lm->membername);
         for(int i=0; i<depth; i++)
             emit_continue("[a%d]", i);
@@ -401,7 +401,7 @@ static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
         emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
         return;
     }
-    // 
+    //
     if(depth == g_ptr_array_size(lm->dimensions)) {
         if(!strcmp(lm->type->lctypename, "string")) {
             emit_start(1 + depth, "char* __cstr = (char*) this->%s", lm->membername);
@@ -437,7 +437,7 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     if(0 == g_ptr_array_size(ls->members)) {
         emit(1,     "return 0;");
         emit(0,"}");
-        emit(0," ");
+        emit(0,"");
         return;
     }
     emit(1,     "int pos = 0, tlen;");
@@ -448,22 +448,22 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         if (0 == g_ptr_array_size(lm->dimensions) && lcm_is_primitive_type(lm->type->lctypename)) {
             if(!strcmp(lm->type->lctypename, "string")) {
                 emit(1, "char* %s_cstr = (char*) this->%s.c_str();", lm->membername, lm->membername);
-                emit(1, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &%s_cstr, 1);", 
+                emit(1, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &%s_cstr, 1);",
                         lm->membername);
             } else {
-            emit(1, "tlen = __%s_encode_array(buf, offset + pos, maxlen - pos, &this->%s, 1);", 
+            emit(1, "tlen = __%s_encode_array(buf, offset + pos, maxlen - pos, &this->%s, 1);",
                 lm->type->lctypename, lm->membername);
             }
             emit(1, "if(tlen < 0) return tlen; else pos += tlen;");
         } else {
             _encode_recursive(lcm, f, lm, 0);
         }
-        
-        emit(0," ");
+
+        emit(0,"");
     }
     emit(1, "return pos;");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -474,7 +474,7 @@ static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     if(0 == g_ptr_array_size(ls->members)) {
         emit(1,     "return 0;");
         emit(0,"}");
-        emit(0," ");
+        emit(0,"");
         return;
     }
     emit(1,     "int enc_size = 0;");
@@ -491,7 +491,7 @@ static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             }
             if(ndim > 0) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, ndim - 1);
-                emit_end("__%s_encoded_array_size(NULL, %s%s);", 
+                emit_end("__%s_encoded_array_size(NULL, %s%s);",
                         lm->type->lctypename, dim_size_prefix(dim->size), dim->size);
             } else {
                 emit_end("__%s_encoded_array_size(NULL, 1);", lm->type->lctypename);
@@ -517,14 +517,14 @@ static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     }
     emit(1, "return enc_size;");
     emit(0,"}");
-    emit(0," ");
+    emit(0,"");
 }
 
 static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int depth)
 {
     // primitive array
-    if (depth+1 == g_ptr_array_size(lm->dimensions) && 
-        lcm_is_primitive_type(lm->type->lctypename) && 
+    if (depth+1 == g_ptr_array_size(lm->dimensions) &&
+        lcm_is_primitive_type(lm->type->lctypename) &&
         strcmp(lm->type->lctypename, "string")) {
         lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
 
@@ -592,7 +592,7 @@ static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     if(0 == g_ptr_array_size(ls->members)) {
         emit(1,     "return 0;");
         emit(0,"}");
-        emit(0," ");
+        emit(0,"");
         return;
     }
     emit(1,     "int pos = 0, tlen;");
@@ -601,7 +601,7 @@ static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
 
         if (0 == g_ptr_array_size(lm->dimensions) && lcm_is_primitive_type(lm->type->lctypename)) {
-            if(!strcmp(lm->type->lctypename, "string")) { 
+            if(!strcmp(lm->type->lctypename, "string")) {
                 emit(1, "int32_t __%s_len__;", lm->membername);
                 emit(1, "tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__%s_len__, 1);", lm->membername);
                 emit(1, "if(tlen < 0) return tlen; else pos += tlen;");
@@ -615,8 +615,8 @@ static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         } else {
             _decode_recursive(lcm, f, lm, 0);
         }
-        
-        emit(0," ");
+
+        emit(0,"");
     }
     emit(1, "return pos;");
     emit(0, "}");
@@ -633,8 +633,8 @@ int emit_cpp(lcmgen_t *lcmgen)
         char *tn_ = dots_to_slashes(tn);
 
         // compute the target filename
-        char *header_name = sprintfalloc("%s%s%s.hpp", 
-                getopt_get_string(lcmgen->gopt, "cpp-hpath"), 
+        char *header_name = sprintfalloc("%s%s%s.hpp",
+                getopt_get_string(lcmgen->gopt, "cpp-hpath"),
                 strlen(getopt_get_string(lcmgen->gopt, "cpp-hpath")) > 0 ? G_DIR_SEPARATOR_S : "",
                 tn_);
 
