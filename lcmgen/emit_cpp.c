@@ -538,7 +538,7 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
             decode_indent++;
         }
 
-        emit_start(decode_indent, "tlen = __%s_decode_array(buf, offset + pos, maxlen - pos, &this->%s", 
+        emit_start(decode_indent, "tlen = __%s_decode_array(buf, offset + pos, maxlen - pos, &this->%s",
                 lm->type->lctypename, lm->membername);
         for(int i=0; i<depth; i++)
             emit_continue("[a%d]", i);
@@ -547,11 +547,8 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
         if(!lcm_is_constant_size_array(lm)) {
             emit(1 + depth, "}");
         }
-        return;
-    }
-    // 
-    if(depth == g_ptr_array_size(lm->dimensions)) {
-        if(!strcmp(lm->type->lctypename, "string")) { 
+    } else if(depth == g_ptr_array_size(lm->dimensions)) {
+        if(!strcmp(lm->type->lctypename, "string")) {
             emit(1 + depth, "int32_t __elem_len;");
             emit(1 + depth, "tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__elem_len, 1);");
             emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
@@ -568,22 +565,23 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
             emit_end("._decodeNoHash(buf, offset + pos, maxlen - pos);");
             emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
         }
-        return;
+    } else {
+        lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
+
+        if(lcm_is_constant_size_array(lm)) {
+            emit_start(1+depth, "this->%s", lm->membername);
+            for(int i=0; i<depth; i++) {
+                emit_continue("[a%d]", i);
+            }
+            emit_end(".resize(%s%s);", dim_size_prefix(dim->size), dim->size);
+        }
+        emit(1+depth, "for (int a%d = 0; a%d < %s%s; a%d++) {",
+                depth, depth, dim_size_prefix(dim->size), dim->size, depth);
+
+        _decode_recursive(lcm, f, lm, depth+1);
+
+        emit(1+depth, "}");
     }
-
-    lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
-
-    emit_start(1+depth, "this->%s", lm->membername);
-    for(int i=0; i<depth; i++) {
-      emit_continue("[a%d]", i);
-    }
-    emit_end(".resize(%s%s);", dim_size_prefix(dim->size), dim->size);
-    emit(1+depth, "for (int a%d = 0; a%d < %s%s; a%d++) {",
-            depth, depth, dim_size_prefix(dim->size), dim->size, depth);
-
-    _decode_recursive(lcm, f, lm, depth+1);
-
-    emit(1+depth, "}");
 }
 
 static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
