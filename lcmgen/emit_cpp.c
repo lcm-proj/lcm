@@ -568,7 +568,7 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
     } else {
         lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
 
-        if(lcm_is_constant_size_array(lm)) {
+        if(!lcm_is_constant_size_array(lm)) {
             emit_start(1+depth, "this->%s", lm->membername);
             for(int i=0; i<depth; i++) {
                 emit_continue("[a%d]", i);
