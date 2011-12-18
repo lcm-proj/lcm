@@ -8,6 +8,7 @@ import java.io.*;
 import java.util.*;
 import java.net.*;
 import java.util.concurrent.*;
+import java.util.regex.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
@@ -164,6 +165,8 @@ public class LogPlayer extends JComponent
         }
     }
 
+    Pattern filteredPattern;
+    boolean invertFilteredPattern;
     FilterTableModel filterTableModel = new FilterTableModel();
     ArrayList<Filter> filters = new ArrayList<Filter>();
     // JTable calls upon filterTableModel which calls upon filters...
@@ -196,12 +199,23 @@ public class LogPlayer extends JComponent
         speedLabel.setText(""+v);
         speed = v;
     }
+    
+    void setChannelFilter(String channelFilterRegex)
+    {
+    	filteredPattern = Pattern.compile(channelFilterRegex);
+    }
+    void invertChannelFilter(){
+    	invertFilteredPattern = true;
+    }
 
     public LogPlayer(String lcmurl) throws IOException
     {
         setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
+        filteredPattern = null;
+        invertFilteredPattern = false;
+        
         Insets insets = new Insets(0,0,0,0);
         int row = 0;
 
@@ -462,7 +476,7 @@ public class LogPlayer extends JComponent
             return;
 
         try {
-            setLog(jfc.getSelectedFile().getPath());
+            setLog(jfc.getSelectedFile().getPath(), true);
         } catch (IOException ex) {
             System.out.println("Exception: "+ex);
         }
@@ -495,6 +509,21 @@ public class LogPlayer extends JComponent
         }
         outs.close();
         fouts.close();
+    }
+    
+    Filter addChannelFilter(String channel, boolean enabledByDefault){
+        Filter f = new Filter();
+        f.inchannel = channel;
+        f.outchannel = channel;
+        if (filteredPattern== null)
+        	f.enabled = enabledByDefault;
+        else
+        	f.enabled = !(invertFilteredPattern ^ filteredPattern.matcher(channel).matches());
+        filterMap.put(f.inchannel, f);
+        filters.add(f);
+        Collections.sort(filters);
+        filterTableModel.fireTableDataChanged();
+        return f;
     }
 
     void loadPreferences(String path) throws IOException
@@ -535,7 +564,10 @@ public class LogPlayer extends JComponent
                     filters.add(f);
                 }
                 f.outchannel = toks[2];
-                f.enabled = Boolean.parseBoolean(toks[3]);
+            	f.enabled = Boolean.parseBoolean(toks[3]);
+                if (filteredPattern != null) //disable if either the saved value, or the filter say it should be disabled
+                	f.enabled = f.enabled && !(invertFilteredPattern ^ filteredPattern.matcher(f.inchannel).matches());
+                
             }
             if (toks[0].equals("ZOOMFRAC"))
                 js.setZoomFraction(Double.parseDouble(toks[1]));
@@ -543,8 +575,40 @@ public class LogPlayer extends JComponent
 
         filterTableModel.fireTableDataChanged();
     }
+    
+    void populateChannelFilters()
+    {
+        try {
+        	long logStartUTime = -1;
+            while (true)
+            {
+                Log.Event e = log.readNext();               
+                if (logStartUTime<0)
+                	logStartUTime = e.utime;
+                if (e.utime-logStartUTime >30*1e6 ){ //only scan through the first 30sec of the log
+                	break;
+                }
 
-    void setLog(String path) throws IOException
+                Filter f = filterMap.get(e.channel);
+                if (f == null) {
+                	addChannelFilter(e.channel, !invertFilteredPattern);
+                }
+
+            }
+        } catch (EOFException ex) {
+        	//System.err.println("Breaking at end of log");
+        } catch (IOException ex) {
+            System.err.println("Exception: "+ex);
+        }
+        try{
+        //rewind to beginning of the log
+        	log.seekPositionFraction(0);
+        } catch (IOException ex) {
+        	System.err.println("Exception: "+ex);
+        }
+    }
+
+    void setLog(String path, boolean startPlaying) throws IOException
     {
         if (currentLogPath != null)
             savePreferences();
@@ -574,7 +638,11 @@ public class LogPlayer extends JComponent
         }
 
         loadPreferences(path+".jlp");
-        doPlay();
+        if (startPlaying)
+        	doPlay();
+        else{
+        	populateChannelFilters();
+        }
     }
 
     void setPlaying(boolean t)
@@ -754,13 +822,7 @@ public class LogPlayer extends JComponent
 
                     Filter f = filterMap.get(e.channel);
                     if (f == null) {
-                        f = new Filter();
-                        f.inchannel = e.channel;
-                        f.outchannel = e.channel;
-                        filterMap.put(f.inchannel, f);
-                        filters.add(f);
-                        Collections.sort(filters);
-                        filterTableModel.fireTableDataChanged();
+                    	f = addChannelFilter(e.channel, !invertFilteredPattern);
                     }
 
                     if (f.enabled && f.outchannel.length() > 0)
@@ -870,7 +932,7 @@ public class LogPlayer extends JComponent
 
     public static void usage()
     {
-        System.err.println("usage: lcm-spy [options]");
+        System.err.println("usage: lcm-logplayer-gui [options] [log-name]");
         System.err.println("");
         System.err.println("lcm-logplayer-gui is the Lightweight Communications and Marshalling");
         System.err.println("log playback tool.  It provides a graphical user interface for playing logfiles");
@@ -879,6 +941,11 @@ public class LogPlayer extends JComponent
         System.err.println("");
         System.err.println("Options:");
         System.err.println("  -l, --lcm-url=URL      Use the specified LCM URL");
+        System.err.println("  -p, --paused           Start with the log paused.");
+        System.err.println("  -f, --filter=CHAN      Disable channels that match the regex in CHAN.");
+        System.err.println("                         (default: \"\")");
+        System.err.println("  -v, --invert-filter    Invert the filtering regex. Only enable channels");
+        System.err.println("                         matching CHAN.");
         System.err.println("  -h, --help             Shows this help text and exits");
         System.err.println("");
         System.exit(1);
@@ -895,7 +962,11 @@ public class LogPlayer extends JComponent
         }
 
         String lcmurl = null;
+        String logFile = null;
+        boolean startPaused = false;
         int optind;
+        String channelFilterRegex = null;
+        boolean invertChannelFilter = false;
         for(optind=0; optind<args.length; optind++) {
             String c = args[optind];
             if(c.equals("-h") || c.equals("--help")) {
@@ -913,8 +984,29 @@ public class LogPlayer extends JComponent
                 } else {
                     lcmurl = optarg;
                 }
-            } else {
-                break;
+            } else if (c.equals("-p") || c.equals("--paused")){
+            	startPaused = true;
+            }else if(c.equals("-f") || c.equals("--filter") || c.startsWith("--filter=")) {
+            	String optarg = null;
+                if(c.startsWith("--filter=")) {
+                    optarg=c.split("=")[1];
+                } else if(optind < args.length) {
+                    optind++;
+                    optarg = args[optind];
+                }
+                if(null == optarg) {
+                    usage();
+                } else {
+                	channelFilterRegex = optarg;
+                }
+            } else if (c.equals("-v") || c.equals("--invert-filter")){
+            	invertChannelFilter = true;
+            } else if (c.startsWith("-")){
+                usage();
+            } else if (logFile!=null) //there should only be 1 non-flag argument
+            	usage();
+            else {
+            	logFile = c;
             }
         }
 
@@ -937,8 +1029,13 @@ public class LogPlayer extends JComponent
                     System.exit(0);
                 }});
 
-            if (optind < args.length)
-                p.setLog(args[optind]);
+            if (channelFilterRegex!=null)
+            	p.setChannelFilter(channelFilterRegex);
+            if (invertChannelFilter)
+            	p.invertChannelFilter();
+
+            if (logFile !=null)
+                p.setLog(logFile, !startPaused);
             else
                 p.openDialog();
 
