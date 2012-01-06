@@ -102,6 +102,7 @@ main(int argc, char ** argv)
     l.lcm_in = lcm_create (url_in);
     if (!l.lcm_in) {
         fprintf (stderr, "Error: Failed to open %s\n", file);
+        free(expression);
         return 1;
     }
 
@@ -109,6 +110,7 @@ main(int argc, char ** argv)
     free(lcmurl);
     if (!l.lcm_out) {
         fprintf (stderr, "Error: Failed to create LCM\n");
+        free(expression);
         return 1;
     }
 

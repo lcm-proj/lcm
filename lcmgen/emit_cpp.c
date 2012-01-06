@@ -222,7 +222,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
                 emit(2, "%-10s %s;", mapped_typename, lm->membername);
             } else {
                 if (lcm_is_constant_size_array(lm)) {
-                    emit_start(2, "%-10s %s", map_type_name(lm->type->lctypename), lm->membername);
+                    emit_start(2, "%-10s %s", mapped_typename, lm->membername);
                     for (unsigned int d = 0; d < ndim; d++) {
                         lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
                         emit_continue("[%s]", ld->size);

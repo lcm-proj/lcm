@@ -400,15 +400,17 @@ int main(int argc, char *argv[])
         logger.regex = g_regex_new(regexbuf, (GRegexCompileFlags) 0, (GRegexMatchFlags) 0, &rerr);
         if(rerr) {
             fprintf(stderr, "%s\n", rerr->message);
+            g_free(regexbuf);
             return 1;
         }
 #else
         if (0 != regcomp (&logger.preg, regexbuf, REG_NOSUB | REG_EXTENDED)) {
             fprintf(stderr, "bad regex!\n");
+            g_free(regexbuf);
             return 1;
         }
 #endif
-        free(regexbuf);
+        g_free(regexbuf);
     } else {
         // otherwise, let LCM handle the regex
         lcm_subscribe(logger.lcm, chan_regex, message_handler, &logger);

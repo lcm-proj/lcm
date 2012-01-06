@@ -290,6 +290,7 @@ lcm_subscription_t
 #ifdef USE_GREGEX
     GError *rerr = NULL;
     h->regex = g_regex_new(regexbuf, (GRegexCompileFlags) 0, (GRegexMatchFlags) 0, &rerr);
+    g_free(regexbuf);
     if(rerr) {
         fprintf(stderr, "%s: %s\n", __FUNCTION__, rerr->message);
         dbg(DBG_LCM, "%s: %s\n", __FUNCTION__, rerr->message);
@@ -299,13 +300,13 @@ lcm_subscription_t
     }
 #else
     int rstatus = regcomp (&h->preg, regexbuf, REG_NOSUB | REG_EXTENDED);
+    g_free(regexbuf);
     if (rstatus != 0) {
         dbg (DBG_LCM, "bad regex in channel name!\n");
         free (h);
         return NULL;
     }
 #endif
-    g_free(regexbuf);
 
     g_static_rec_mutex_lock (&lcm->mutex);
     g_ptr_array_add(lcm->handlers_all, h);
