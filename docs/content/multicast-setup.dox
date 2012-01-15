@@ -143,6 +143,12 @@ lines into the file somewhere:
     net.core.rmem_default=2097152
 \endverbatim
     
+Note that OS/X users may also want to increase the buffer size setting for
+<tt>net.inet.udp.recvspace</tt> via <tt>sysctl -w
+net.inet.udp.recvspace=2097152</tt>. This has been found (at least on
+10.7.2) to improve throughput in the case of transmitting larger
+messages.
+
 In our initial projects, which involved typical data rates of 10 MB/s, a 2 MB
 receive buffer was generally sufficient.
 
