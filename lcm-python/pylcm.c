@@ -67,8 +67,13 @@ pylcm_msg_handler (const lcm_recv_buf_t *rbuf, const char *channel,
 
     PyLCMSubscriptionObject *subs_obj = userdata;
 
-    PyObject *arglist = Py_BuildValue ("ss#", channel, 
-            rbuf->data, rbuf->data_size);
+    //PyObject *arglist = Py_BuildValue ("ss#", channel, rbuf->data, rbuf->data_size);
+    PyObject *arglist = Py_BuildValue ("yy#", channel, rbuf->data, rbuf->data_size); //py3 interprets "s" as unicode(!)
+
+    if(arglist == NULL){
+        printf("Py_BuildValue(%d, %s, %d) failed\n", channel, rbuf->data, rbuf->data_size); 
+        return;
+    }
 
     PyObject *result  = PyEval_CallObject (subs_obj->handler, arglist);
     Py_DECREF (arglist);
@@ -220,7 +225,8 @@ static PyObject *
 pylcm_fileno (PyLCMObject *lcm_obj)
 {
     dbg ("%s %p\n", __FUNCTION__, lcm_obj);
-    return PyInt_FromLong (lcm_get_fileno (lcm_obj->lcm));
+    //return PyInt_FromLong (lcm_get_fileno (lcm_obj->lcm));
+    return PyLong_FromLong(lcm_get_fileno (lcm_obj->lcm)); //python3 only has long
 }
 PyDoc_STRVAR (pylcm_fileno_doc,
 "fileno() -> int\n\
@@ -295,7 +301,8 @@ pylcm_dealloc (PyLCMObject *lcm_obj)
         lcm_obj->lcm = NULL;
     }
     Py_DECREF (lcm_obj->all_handlers);
-    lcm_obj->ob_type->tp_free ((PyObject*)lcm_obj);
+    //lcm_obj->ob_type->tp_free ((PyObject*)lcm_obj);
+    Py_TYPE(lcm_obj)->tp_free((PyObject *)lcm_obj);
 }
 
 static int
@@ -320,8 +327,9 @@ pylcm_initobj (PyObject *self, PyObject *args, PyObject *kwargs)
 
 /* Type object for socket objects. */
 PyTypeObject pylcm_type = {
-    PyObject_HEAD_INIT (0)   /* Must fill in type value later */
-    0,                  /* ob_size */
+    //PyObject_HEAD_INIT (0)   /* Must fill in type value later */
+    //0,                  /* ob_size */
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
     "LCM",            /* tp_name */
     sizeof (PyLCMObject),     /* tp_basicsize */
     0,                  /* tp_itemsize */

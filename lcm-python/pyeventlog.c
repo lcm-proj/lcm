@@ -188,7 +188,7 @@ pylog_repr(PyLogObject *s)
     char buf[512];
     PyOS_snprintf(buf, sizeof(buf),
                 "<Log object ... TODO>");
-    return PyString_FromString(buf);
+    return PyUnicode_FromString(buf); //PyString_FromString(buf);
 }
 
 static PyObject *
@@ -210,7 +210,8 @@ pylog_dealloc(PyLogObject *self)
     if (self->eventlog) {
         lcm_eventlog_destroy (self->eventlog);
     }
-    self->ob_type->tp_free((PyObject*)self);
+    //self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject *)self);
 }
 
 static int
@@ -247,8 +248,9 @@ pylog_initobj(PyObject *s, PyObject *args, PyObject *kwds)
 
 /* Type object */
 PyTypeObject pylcmeventlog_type = {
-    PyObject_HEAD_INIT(0)   /* Must fill in type value later */
-    0,                  /* ob_size */
+    //PyObject_HEAD_INIT(0)   /* Must fill in type value later */
+    //0,                  /* ob_size */
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
     "EventLog",            /* tp_name */
     sizeof(PyLogObject),     /* tp_basicsize */
     0,                  /* tp_itemsize */

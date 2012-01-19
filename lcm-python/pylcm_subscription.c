@@ -14,7 +14,9 @@ This class should never be instantiated by the programmer.\n\
 static PyObject *
 _set_queue_capacity (PyLCMSubscriptionObject *sobj, PyObject *arg)
 {
-    int num_messages = PyInt_AsLong(arg);
+    //int num_messages = PyInt_AsLong(arg);
+    int num_messages =  PyLong_FromLong(arg); //python3 only has long
+
     if (num_messages == -1 && PyErr_Occurred())
         return NULL;
 
@@ -55,7 +57,8 @@ _dealloc (PyLCMSubscriptionObject *s)
         s->handler = NULL;
     }
     // ignore s->subscription and s->lcm_obj
-    s->ob_type->tp_free ((PyObject*)s);
+    //s->ob_type->tp_free ((PyObject*)s);
+    Py_TYPE(s)->tp_free((PyObject *)s);
 }
 
 static PyObject *
@@ -77,8 +80,9 @@ _init (PyObject *self, PyObject *args, PyObject *kwargs)
 
 /* Type object for socket objects. */
 PyTypeObject pylcm_subscription_type = {
-    PyObject_HEAD_INIT (0)   /* Must fill in type value later */
-    0,                  /* ob_size */
+    //PyObject_HEAD_INIT (0)   /* Must fill in type value later */
+    //0,                  /* ob_size */
+    PyVarObject_HEAD_INIT(&PyType_Type, 0)
     "LCMSubscription",            /* tp_name */
     sizeof (PyLCMSubscriptionObject),     /* tp_basicsize */
     0,                  /* tp_itemsize */

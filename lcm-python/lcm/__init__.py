@@ -109,7 +109,7 @@ to next() returning the next L{Event<lcm.Event>} in the log.
         self.c_eventlog.seek (0)
         return self
     
-    def next (self):
+    def __next__ (self):
         """
         @rtype: L{Event<lcm.Event>}
         """
