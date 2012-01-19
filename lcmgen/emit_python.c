@@ -282,7 +282,7 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             GString *accessor = g_string_new ("");
             g_string_append_printf (accessor, "self.%s", lm->membername);
 
-            // iterate through the dimensions of the member, building up 
+            // iterate through the dimensions of the member, building up
             // an accessor string, and emitting for loops
             unsigned int n;
             for (n=0; n<lm->dimensions->len-1; n++) {
@@ -291,7 +291,7 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 if(n == 0) {
                     emit (2, "%s = []", accessor->str);
                 } else {
-                    emit (2+n, "%s.append ([])", accessor->str);
+                    emit (2+n, "%s.append([])", accessor->str);
                 }
 
                 if (dim->mode == LCM_CONST) {
@@ -300,8 +300,8 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                     emit (2+n, "for i%d in range(self.%s):", n, dim->size);
                 }
 
-                if(n < lm->dimensions->len-2) {
-                    g_string_append_printf (accessor, "[i%d]", n);
+                if(n > 0 && n < lm->dimensions->len-1) {
+                    g_string_append_printf(accessor, "[i%d]", n-1);
                 }
             }
 
