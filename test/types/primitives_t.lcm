@@ -1,0 +1,14 @@
+package lcmtest;
+
+struct primitives_t
+{
+    int8_t   i8;
+    int16_t  i16;
+    int32_t  num_ranges;
+    int64_t  i64;
+    int16_t  ranges[num_ranges];
+    float    position[3];
+    double   orientation[4];
+    string   name;
+    boolean  enabled;
+}

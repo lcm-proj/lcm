@@ -1,0 +1,10 @@
+package lcmtest;
+
+struct multidim_array_t
+{
+    int32_t size_a;
+    int32_t size_b;
+    int32_t size_c;
+    int32_t data[size_a][size_b][size_c];
+    string strarray[2][size_c];
+}

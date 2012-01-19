@@ -1,0 +1,168 @@
+This directory contains unit tests.
+
+
+Each language can have two test programs, client and server.  A test
+consists of running the client and the server at the same time.  The server
+should generally be started before the client.  If both client and server exit
+successfully, then the test succeeds.
+
+The client test program for any language should be compatible with the server
+test program for any other language.
+
+
+1. Echo test
+============
+
+This tests basic message transmission, without any marshalling.
+
+Client publishes a random set of mmessages to the "TEST_ECHO" channel and
+listens for replies on "TEST_ECHO_REPLY".  The replies should be identical to
+the transmitted messages, and should be received within 1 s of transmission.
+
+
+2. primitives_t test
+=================
+
+This tests primitive data types, fixed length primitive arrays, and
+variable-length primitive arrays.
+
+Client publishes 1000 lcmtest.primitives_t messages to channel
+"test_lcmtest_primitives_t".  Message number n should be populated as follows for
+n from 0 to 999:
+  .i8             = n % 100
+  .i16            = n * 10
+  .i64            = n * 10000
+  .position[0]    = n
+  .position[1]    = n
+  .position[2]    = n
+  .orientation[0] = n
+  .orientation[1] = n
+  .orientation[2] = n
+  .orientation[3] = n
+  .num_ranges     = n
+  .ranges[i]      = i         (i = 0 ... n-1)
+  .name           = <string representation of n>
+  .enabled        = n % 2
+
+The server should reply to each message with an lcmtest.primitives_t message on
+channel "test_lcmtest_primitives_t_reply".  The reply should be populated as
+follows:
+  .i8             = (n + 1) % 100
+  .i16            = (n + 1) * 10
+  .i64            = (n + 1) * 10000
+  .position[0]    = n + 1
+  .position[1]    = n + 1
+  .position[2]    = n + 1
+  .orientation[0] = n + 1
+  .orientation[1] = n + 1
+  .orientation[2] = n + 1
+  .orientation[3] = n + 1
+  .num_ranges     = n + 1
+  .ranges[i]      = i         (i = 0 ... n-1)
+  .name           = <string representation of n+1>
+  .enabled        = (n+1) % 2
+
+
+3. example_list_t
+=================
+
+This tests nested datatypes.
+
+Client publishes 100 lcmtest.example_list_t messages to channel
+"test_lcmtest_example_list_t".  Message number n should be populated as
+follows, for n from 0 to 99:
+
+  .n = n
+  .examples[i] = {            (i = 0 ... n-1)
+    .i8             = -(i % 100)
+    .i16            = -(i * 10)
+    .i64            = -(i * 10000)
+    .position[0]    = -i
+    .position[1]    = -i
+    .position[2]    = -i
+    .orientation[0] = -i
+    .orientation[1] = -i
+    .orientation[2] = -i
+    .orientation[3] = -i
+    .num_ranges     = i
+    .ranges[j]      = -j      (j = 0 ... i-1)
+    .name           = <string representation of -i>
+    .enabled        = i % 2
+  }
+
+The server should reply to each message with an lcmtest.example_list_t message on
+channel "test_lcmtest_example_list_t_reply".  The reply should be populated as
+follows:
+
+  .n = n + 1
+  .examples[i] = {            (i = 0 ... n)
+    .i8             = -(i % 100)
+    .i16            = -(i * 10)
+    .i64            = -(i * 10000)
+    .timestamp      = -i
+    .position[0]    = -i
+    .position[1]    = -i
+    .position[2]    = -i
+    .orientation[0] = -i
+    .orientation[1] = -i
+    .orientation[2] = -i
+    .orientation[3] = -i
+    .num_ranges     = i
+    .ranges[j]      = -j      (j = 0 ... i-1)
+    .name           = <string representation of -i>
+    .enabled        = i % 2
+  }
+
+
+4. node_t
+=========
+
+This tests recursive data types.
+
+Client publishes 7 lcmtest.node_t messages to channel "test_lcmtest_node_t".
+Message number n should be populated as follows, for n from 0 to 6:
+
+  .num_children = n
+  .children[i] = {              (i = 0 ... n-1)
+      .num_children = n - 1
+      .children[j] = {          (j = 0 ... n-2)
+          .num_children = n-2
+          .children[k] = {      (k = 0 ... n-3)
+              .
+              .
+              .
+              .children[m] = {
+                  .num_children = 0
+              }
+          }
+      }
+  }
+
+Thus, the client message is a tree of height n, where the root node has n
+children, and each node has one fewer child than its parent.
+
+The server should reply to each message with an lcmtest.node_t message on
+channel "test_lcmtest_node_t_reply".  The reply should be similar to
+the client message, but with a tree height of (n+1).
+
+5. multidim_array_t
+===================
+
+This tests multidimensional arrays.
+
+Client publishes 5 lcmtest.multidim_array_t messages to channel
+"test_lcmtest_multidim_array_t".  Message number n should be populated as
+follows, for n from 0 to 4:
+
+  .size_a = n
+  .size_b = n
+  .size_c = n
+
+  .data[i][j][k] = i*n*n + j*n + k    (i, j, k = 0 .. n-1)
+
+  .strarray[p][q] = <string repreesentation of p*n + q>
+                    (p = { 0, 1 }, q = 0 .. n-1)
+
+The server should reply to each message with an lcmtest.multidim_array_t
+message on channel "test_lcmtest_multidim_array_t_reply".  The reply should be
+similar to the client message, but with as if the client was on message (n+1).

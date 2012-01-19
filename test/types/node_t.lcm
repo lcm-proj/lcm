@@ -1,0 +1,10 @@
+// This is an example of a recursive type.  You can use this to implement 
+// data structures such as linked lists and trees.
+
+package lcmtest;
+
+struct node_t
+{
+    int32_t        num_children;
+    lcmtest.node_t   children[num_children];
+}
