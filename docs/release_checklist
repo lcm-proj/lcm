@@ -1,31 +1,32 @@
 1.  Update NEWS
-2.  Bump the version number in configure.in at the line:
-      AM_INIT_AUTOMAKE(lcm, x.y.z)
-3.  Bump the version number in lcm-python/setup.py
-4.  Update the AGE, REVISION, and CURRENT variables.  See configure.in
+2.  Bump the version number in:
+  a. configure.in at the line AM_INIT_AUTOMAKE(lcm, x.y.z)
+  b. lcm-python/setup.py
+  c. lcm/lcm.h
+3.  Update the AGE, REVISION, and CURRENT variables.  See configure.in
       comments for details.
-5.  Run 'svn2cl --group-by-day --reparagraph -i' in the top-level dir to
+4.  Run 'svn2cl --group-by-day --reparagraph -i' in the top-level dir to
       generate the ChangeLog file.
-6.  After committing, check out a clean copy of the repository:
+5.  After committing, check out a clean copy of the repository:
       svn co https://lcm.googlecode.com/svn/trunk lcm-rel
-7.  autoreconf -i
-8.  ./configure
-9. make
-10. make distcheck
-11. Fix any errors that appear in step 10, and repeat as necessary.
-12. Take the resulting tarball, extract it, build it, install it, make sure
+6.  autoreconf -i
+7.  ./configure
+8. make
+9. make distcheck
+10. Fix any errors that appear in step 10, and repeat as necessary.
+11. Take the resulting tarball, extract it, build it, install it, make sure
     the basic executables run.
-13. Upload the tarball to google code.
-14. Make sure the outstanding changes are commited to SVN.
-15. Update the web site
+12. Upload the tarball to google code.
+13. Make sure the outstanding changes are commited to SVN.
+14. Update the web site
 
-16. Build docs
+15. Build docs
       cd docs
       doxygen
       copy built docs to www directory
-17. Update any mime types if necessary:
+16. Update any mime types if necessary:
       find . -name "*.html" -exec svn propset svn:mime-type text/html {} \;
       find . -name "*.css" -exec svn propset svn:mime-type text/css {} \;
       find . -name "*.js" -exec svn propset svn:mime-type text/javascript {} \;
       find . -name "*.png" -exec svn propset svn:mime-type image/png {} \;
-18. Commit the docs
+17. Commit the docs

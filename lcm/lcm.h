@@ -15,7 +15,7 @@ extern "C" {
 
 #ifdef WIN32
 #define LCM_API_FUNCTION __declspec(dllexport)
-#else 
+#else
 #define LCM_API_FUNCTION
 #endif
 
@@ -293,6 +293,10 @@ int lcm_handle (lcm_t *lcm);
  */
 LCM_API_FUNCTION
 int lcm_subscription_set_queue_capacity(lcm_subscription_t* handler, int num_messages);
+
+#define LCM_MAJOR_VERSION 0
+#define LCM_MINOR_VERSION 7
+#define LCM_MICRO_VERSION 1
 
 /**
  * @}
