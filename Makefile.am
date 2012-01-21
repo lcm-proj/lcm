@@ -12,5 +12,5 @@ if WITH_EXAMPLES
 SUBDIRS += examples
 endif
 
-EXTRA_DIST = WinSpecific lcm-dotnet docs
+EXTRA_DIST = WinSpecific lcm-dotnet docs test
 ACLOCAL_AMFLAGS = -I m4

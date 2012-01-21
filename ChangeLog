@@ -1,3 +1,72 @@
+2012-01-20  ashuang
+
+	* [r635] docs/release_checklist, lcm/lcm.h, test/c/Makefile: add C
+	  unit test Makefile add C/C++ API version macros:
+	  LCM_MAJOR_VERSION LCM_MINOR_VERSION LCM_MICRO_VERSION
+
+2012-01-19  ashuang
+
+	* [r634] lcm-python/lcm/__init__.py, lcm-python/module.c,
+	  lcm-python/pyeventlog.c, lcm-python/pylcm.c,
+	  lcm-python/pylcm_subscription.c, lcmgen/emit_python.c: revert
+	  r631 (didn't mean to commit)
+	* [r633] lcmgen/emit_python.c: emit_python bugfix in decoding
+	  multivariable arrays
+	* [r632] lcmgen-test/types/canbus_list_t.lcm,
+	  lcmgen-test/types/canbus_t.lcm, lcmgen-test/types/image_t.lcm,
+	  lcmgen-test/types/laser_t.lcm, lcmgen-test/types/lcmtest_t.lcm,
+	  lcmgen-test/types/pose_t.lcm, test, test/README, test/c,
+	  test/c/client.c, test/c/common.c, test/c/common.h,
+	  test/c/server.c, test/python, test/python/cleanup.sh,
+	  test/python/client.py, test/python/gen-types.sh, test/test.py,
+	  test/types, test/types/exampleconst_t.lcm,
+	  test/types/multidim_array_t.lcm, test/types/node_t.lcm,
+	  test/types/primitives_list_t.lcm, test/types/primitives_t.lcm:
+	  start writing some unit tests
+	* [r631] lcm-python/lcm/__init__.py, lcm-python/module.c,
+	  lcm-python/pyeventlog.c, lcm-python/pylcm.c,
+	  lcm-python/pylcm_subscription.c, lcmgen/emit_python.c: simon
+	  schulz patch
+
+2012-01-15  mrwalter@gmail.com
+
+	* [r630] docs/content/multicast-setup.dox: updated buffer settings
+	  for osx
+
+2012-01-06  ashuang
+
+	* [r629] lcm-logger/lcm_logger.c, lcm-logger/lcm_logplayer.c,
+	  lcm/lcm.c, lcmgen/emit_cpp.c: re #43 Clean up some minor memory
+	  leaks
+
+2011-12-18  abachrach@gmail.com
+
+	* [r628] lcm-java/lcm/logging/LogPlayer.java: added command line
+	  parameters to: 1) start logplayer with the log being paused. 2)
+	  filter out specific channels from being played back by default.
+	  The channels will still show up in the gui, however they will be
+	  disabled by default.
+
+2011-12-11  ashuang
+
+	* [r627] lcmgen/emit_cpp.c: bugfix re issue #42
+	* [r626] lcmgen/emit_c.c, lcmgen/emit_cpp.c: lcmgen: whitespace
+	  edits.
+	* [r625] lcmgen/emit_cpp.c: re issue #42 c++ decode: don't try to
+	  dynamically resize fixed-size arrays.
+
+2011-11-19  ashuang
+
+	* [r624] docs/content/java-notes.dox, lcm/lcm-cpp-impl.hpp,
+	  lcm/lcm-cpp.hpp: C++: rename LCM::fileno() to LCM::getFileno()
+	  fileno is apparently implemented as a macro in some places. fix
+	  doxygen typo
+
+2011-10-15  ashuang
+
+	* [r619] ChangeLog, NEWS, configure.in, lcm-python/setup.py:
+	  release 0.7.1
+
 2011-10-09  ashuang
 
 	* [r618] lcm-java/lcm/util/ClassDiscoverer.java: ClassDiscoverer

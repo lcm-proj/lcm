@@ -1,3 +1,29 @@
+Jan 20, 2012
+============
+
+ Release 0.8.0
+
+ This release changes the C++ API, adds some features to lcm-logplayer-gui, and
+ fixes a few bugs.
+
+ lcm-c:
+  - add new macros LCM_MAJOR_VERSION, LCM_MINOR_VERSION, LCM_MICRO_VERSION to
+    check LCM version from C/C++.
+ lcm-c++:
+  - rename LCM::fileno() to LCM::getFileno()
+    fileno is implemented as a macro on some platforms, and is thus effectively
+    a reserved keyword.
+ lcm-gen:
+  C++:
+    - don't try to dynamically resize fixed-size arrays (re issue #42)
+  Python:
+    - bugfix in decoding multivariable arrays
+ lcm-logplayer-gui:
+  add command line parameters to:
+    - start logplayer with the log paused
+    - filter out specific channels from being played back by default.
+
+
 Oct 15, 2011
 ============
 
