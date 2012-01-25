@@ -978,12 +978,20 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
     } else {
         // message is large.  fragment into multiple packets
 
-        int nfragments = payload_size / LCM_SHORT_MESSAGE_MAX_SIZE + 
-            !!(payload_size % LCM_SHORT_MESSAGE_MAX_SIZE);
+        int fragment_size = LCM_SHORT_MESSAGE_MAX_SIZE;
+        int nfragments = payload_size / fragment_size +
+            !!(payload_size % fragment_size);
 
         if (nfragments > 65535) {
-            fprintf (stderr, "LCM error: too much data for a single message\n");
-            return -1;
+          //message is REALLY big. fragment into bigger packets
+          int max_fragment_size =  65535 - (LCM_MAX_CHANNEL_NAME_LENGTH+1) - sizeof(lcm2_header_long_t);  //UDP uses a short for the length field
+          fragment_size = MIN(max_fragment_size, (payload_size/65534)+1);
+          nfragments = payload_size / fragment_size +
+                      !!(payload_size % fragment_size);
+          if (nfragments > 65535) {
+              fprintf (stderr, "LCM error: too much data for a single message\n");
+              return -1;
+          }
         }
 
         // acquire transmit lock so that all fragments are transmitted
@@ -1004,7 +1012,7 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
         hdr.fragments_in_msg = htons (nfragments);
 
         // first fragment is special.  insert channel before data
-        int firstfrag_datasize = LCM_SHORT_MESSAGE_MAX_SIZE - (channel_size + 1);
+        int firstfrag_datasize = fragment_size - (channel_size + 1);
         assert (firstfrag_datasize <= datalen);
 
         struct iovec    first_sendbufs[3];
@@ -1035,7 +1043,7 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
             hdr.fragment_offset = htonl (fragment_offset);
             hdr.fragment_no = htons (frag_no);
 
-            int fraglen = MIN (LCM_SHORT_MESSAGE_MAX_SIZE, 
+            int fraglen = MIN (fragment_size,
                     datalen - fragment_offset);
 
             struct iovec sendbufs[2];
