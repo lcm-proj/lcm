@@ -3,6 +3,18 @@ from distutils.core import setup, Extension
 from distutils import msvccompiler
 import os
 
+sources = [ \
+    "module.c",
+    "pyeventlog.c",
+    "pylcm.c", 
+    "pylcm_subscription.c",
+    os.path.join("..", "lcm", "lcm.c"), 
+    os.path.join("..", "lcm", "lcm_udp.c"), 
+    os.path.join("..", "lcm", "lcm_file.c"), 
+    os.path.join("..", "lcm", "lcm_tcpq.c"), 
+    os.path.join("..", "lcm", "ringbuffer.c"), 
+    os.path.join("..", "lcm", "eventlog.c") ]
+
 if os.name == 'nt':
     # check for GLIB_PATH environment var, exit with error if not found
     glibPath = os.getenv('GLIB_PATH')
@@ -36,39 +48,28 @@ if os.name == 'nt':
     msvccompiler.MSVCCompiler._cpp_extensions.append('.c')
 
     pylcm_extension = Extension("lcm._lcm", 
-            [ "module.c",
-                "pyeventlog.c",
-                "pylcm.c", 
-                "pylcm_subscription.c",
-                os.path.join("..", "lcm", "lcm.c"), 
-                os.path.join("..", "lcm", "lcm_udp.c"), 
-                os.path.join("..", "lcm", "lcm_file.c"), 
-                os.path.join("..", "lcm", "lcm_tcpq.c"), 
-                os.path.join("..", "lcm", "ringbuffer.c"), 
-                os.path.join("..", "lcm", "eventlog.c"),
-                os.path.join("..", "WinSpecific", "WinPorting.cpp"),
-                ],
+                sources + \
+                    [ os.path.join("..", "WinSpecific", "WinPorting.cpp") ],
             include_dirs=includeDirs,
             define_macros=defineMacros,
             library_dirs=libraryDirs,
             libraries=winlibs,
             extra_compile_args=extraCompileArgs)
 else:
-    pkgconfig_cflags = commands.getoutput ("pkg-config --cflags lcm glib-2.0 gthread-2.0")
-    pkgconfig_include_flags = commands.getoutput ("pkg-config --cflags-only-I lcm")
+    pkgconfig_cflags = commands.getoutput ("pkg-config --cflags glib-2.0 gthread-2.0")
+    pkgconfig_include_flags = commands.getoutput ("pkg-config --cflags-only-I")
     pkgconfig_include_dirs = [ t[2:] for t in pkgconfig_include_flags.split() ]
 
     pkgconfig_lflags = commands.getoutput ( \
-            "pkg-config --libs-only-l lcm glib-2.0 gthread-2.0")
+            "pkg-config --libs-only-l glib-2.0 gthread-2.0")
     pkgconfig_libs = [ t[2:] for t in pkgconfig_lflags.split() ]
   
     pkgconfig_biglflags = commands.getoutput ( \
-            "pkg-config --libs-only-L lcm glib-2.0 gthread-2.0")
+            "pkg-config --libs-only-L glib-2.0 gthread-2.0")
     pkgconfig_ldirs = [ t[2:] for t in pkgconfig_biglflags.split() ]
   
     pylcm_extension = Extension("lcm._lcm",
-            sources=["module.c", "pyeventlog.c", "pylcm.c", 
-                "pylcm_subscription.c"],
+            sources=sources,
             library_dirs=pkgconfig_ldirs,
             include_dirs=pkgconfig_include_dirs,
             libraries=pkgconfig_libs,
