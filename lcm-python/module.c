@@ -1,4 +1,5 @@
 #include <Python.h>
+#include "pylcm_subscription.h"
 
 //#define dbg(...) fprintf (stderr, __VA_ARGS__)
 #define dbg(...)

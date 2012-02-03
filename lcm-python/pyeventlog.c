@@ -1,6 +1,9 @@
 #include <Python.h>
 
 #include <lcm/eventlog.h>
+#ifdef WIN32
+#include <WinPorting.h>
+#endif
 
 typedef struct {
     PyObject_HEAD
@@ -13,7 +16,8 @@ PyDoc_STRVAR(pylog_doc,
 "Event Log parser\n\
 ");
 
-PyTypeObject pylcmeventlog_type;
+//gives redefinition error in MSVC
+//PyTypeObject pylcmeventlog_type; 
 
 static PyObject *
 pylog_close (PyLogObject *self)
@@ -134,14 +138,14 @@ pylog_write_next_event (PyLogObject *self, PyObject *args)
         return NULL;
     }
 
-    lcm_eventlog_event_t le = {
-        .eventnum = 0,
-        .timestamp = utime,
-        .channellen = channellen,
-        .datalen = datalen,
-        .channel = channel,
-        .data = data
-    };
+    lcm_eventlog_event_t le; //msvc needs init of all fields seperately
+    le.eventnum = 0;
+    le.timestamp = utime;
+    le.channellen = channellen;
+    le.datalen = datalen;
+    le.channel = channel;
+    le.data = data;
+    
 
     if (0 != lcm_eventlog_write_event (self->eventlog, &le)) {
         PyErr_SetFromErrno (PyExc_IOError);
@@ -194,14 +198,15 @@ pylog_repr(PyLogObject *s)
 static PyObject *
 pylog_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-	PyObject *new;
+	//msvc does not allow usage of new as variable name
+	PyObject *newobj;
 
-	new = type->tp_alloc(type, 0);
-	if (new != NULL) {
-		((PyLogObject *)new)->eventlog = NULL;
-        ((PyLogObject *)new)->mode = 0;
+	newobj = type->tp_alloc(type, 0);
+	if (newobj != NULL) {
+		((PyLogObject *)newobj)->eventlog = NULL;
+        ((PyLogObject *)newobj)->mode = 0;
     }
-	return new;
+	return newobj;
 }
 
 static void
