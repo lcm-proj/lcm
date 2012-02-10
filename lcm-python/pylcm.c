@@ -1,7 +1,11 @@
+#ifndef WIN32
 #include <sys/socket.h>
 #include <sys/select.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#else
+#include <winsock2.h>
+#endif
 
 #include "pylcm.h"
 #include "pylcm_subscription.h"
@@ -54,7 +58,8 @@ and the following usage would publish a message::\n\
 @undocumented: __new__, __getattribute__\n\
 ");
 
-PyTypeObject pylcm_type;
+//gives redefinition error in MSVC
+//PyTypeObject pylcm_type;
 
 // all LCM messages subscribed to by all LCM objects pass through this
 // handler first.
@@ -64,8 +69,9 @@ pylcm_msg_handler (const lcm_recv_buf_t *rbuf, const char *channel,
 {
     // if an exception has occurred, then abort.
     if (PyErr_Occurred ()) return;
-
-    PyLCMSubscriptionObject *subs_obj = userdata;
+	
+	//MSVC requires explicit cast
+    PyLCMSubscriptionObject *subs_obj = (PyLCMSubscriptionObject*) userdata;
 
     PyObject *arglist = Py_BuildValue ("ss#", channel, 
             rbuf->data, rbuf->data_size);

@@ -1,6 +1,5 @@
 import os
 
-import _lcm
 from _lcm import LCM, LCMSubscription
 
 class Event(object):

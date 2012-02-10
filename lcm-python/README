@@ -9,7 +9,13 @@ BUILD REQUIREMENTS:
 
   - POSIX system (GNU/Linux, OS X, etc.)
   - GLib 2.x
-  - LCM
+
+  Windows notes:
+  - only tested with MS Visual Studio 2008 (MSVC 9.0)
+  - you should be able to build the LCM C library from Visual Studio.
+  - you must set the GLIB_PATH environment variable.
+  - The following files need to be discoverable by the dynamic linker:
+    intl.dll, libglib-2.0-0.dll, libgthread-2.0-0.dll
 
 INSTALLATION:
   from a command shell:
