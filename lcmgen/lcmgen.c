@@ -477,8 +477,6 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
         parse_error(t, "recursive structs not implemented.");
     } else if (parse_try_consume(t, "enum")) {
         parse_error(t, "recursive enums not implemented.");
-    } else if (parse_try_consume(t, "union")) {
-        parse_error(t, "recursive unions not implemented.");
     } else if (parse_try_consume(t, "const")) {
         return parse_const(lcmgen, lr, t);
     }
@@ -684,12 +682,7 @@ int parse_entity(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
         return 0;
     }
 
-    if (!strcmp(t->token, "union")) {
-        parse_error(t,"unions not implemented\n");
-        return 0;
-    }
-
-    parse_error(t,"Missing struct/enum/union token.");
+    parse_error(t,"Missing struct token.");
     return -1;
 
 }
