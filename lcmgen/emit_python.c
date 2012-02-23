@@ -600,12 +600,12 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     }
     emit_end (") & 0xffffffffffffffff");
     emit (2, "tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + "
-            "(tmphash>>63)) & 0xffffffffffffffff ");
+            "(tmphash>>63)) & 0xffffffffffffffff");
     emit (2,     "return tmphash");
     emit (1, "_get_hash_recursive = staticmethod(_get_hash_recursive)");
 
     emit (1, "_packed_fingerprint = None");
-    emit (1, "");
+    emit (0, "");
     emit (1, "def _get_packed_fingerprint():");
     emit (2,     "if %s._packed_fingerprint is None:", sn);
     emit (3,         "%s._packed_fingerprint = struct.pack(\">Q\", "
