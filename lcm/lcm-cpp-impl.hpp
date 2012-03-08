@@ -115,6 +115,12 @@ LCM::LCM(std::string lcm_url)
     this->lcm = lcm_create(lcm_url.c_str());
 }
 
+inline
+LCM::LCM(lcm_t * lcm_in)
+{
+    this->lcm = lcm_in;
+}
+
 inline bool
 LCM::good() const
 {

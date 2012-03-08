@@ -41,6 +41,15 @@ class LCM {
         inline LCM(std::string lcm_url="");
 
         /**
+         * @brief Constructor.
+         *
+         * Initializes the c++ LCM instance from an existing C instance.
+         *
+         * @sa lcm_create()
+         */
+        inline LCM(lcm_t * lcm_in);
+
+        /**
          * @brief Destructor.
          *
          * Disconnects from the LCM network, and destroys all outstanding
