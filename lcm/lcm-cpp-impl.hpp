@@ -110,13 +110,15 @@ class LCMMHUntypedSubscription : public Subscription {
 };
 
 inline 
-LCM::LCM(std::string lcm_url)
+LCM::LCM(std::string lcm_url):
+owns_lcm(true)
 {
     this->lcm = lcm_create(lcm_url.c_str());
 }
 
 inline
-LCM::LCM(lcm_t * lcm_in)
+LCM::LCM(lcm_t * lcm_in):
+owns_lcm(false)
 {
     this->lcm = lcm_in;
 }
@@ -132,7 +134,7 @@ LCM::~LCM() {
     for(int i=0, n=subscriptions.size(); i<n; i++) {
         delete subscriptions[i];
     }
-    if(this->lcm) {
+    if(this->lcm && this->owns_lcm) {
         lcm_destroy(this->lcm);
     }
 }

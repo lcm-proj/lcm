@@ -369,6 +369,7 @@ class LCM {
 
     private:
         lcm_t *lcm;
+        bool owns_lcm;
 
         std::vector<Subscription*> subscriptions;
 };
