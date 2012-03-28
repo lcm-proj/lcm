@@ -9,38 +9,42 @@ lcm-logger \- data logger
 .PP
 \fBlcm-logger\fR is the Lightweight Communications and Marshalling message
 logging utility.  It subscribes to all channels on an LCM network, and records
-all messages received to \fIFILE\fR.  If \fIFILE\fR is not specified, 
+all messages received to \fIFILE\fR.  If \fIFILE\fR is not specified,
 then a filename is automatically chosen.
 
 .SH OPTIONS
 The following options are provided by \fBlcm-logger\fR
 .TP
+.B \-a, \-\-auto\-split\-hours=\fIN\fR
+Automatically start writing to a new log file every N hours (can be
+fractional).  This option implies -i.
+.TP
+.B \-c, \-\-channel=\fICHAN\fR
+Channel string to pass to lcm_subscribe. (default: ".*")
+.TP
 .B \-f, \-\-force
 Overwrite existing files.  The default behavior is to fail if the output file
 already exists.
+.TP
+.B \-h, \-\-help
+Shows some help text and exits
 .TP
 .B \-i, \-\-increment
 Automatically append a suffix to \fIFILE\fR such that the resulting filename
 does not already exist.  This option precludes -f.
 .TP
-.B \-c, \-\-channel=\fICHAN\fR
-Channel string to pass to lcm_subscribe. (default: ".*")
-.TP
-.B \-v, \-\-invert-channels
-Invert channels.  Log evertyhing that \fICHAN\fR does not match.
-.TP
 .B \-l, \-\-lcm\-url=\fIURL\fR
 Log messages on the specified LCM URL
+.TP
+.B \-m, \-\-max\-unwritten-mb=\fISIZE\fR
+Maximum size of received but unwritten messages to store in memory before
+dropping messages.  (default: 100 MB)
 .TP
 .B \-s, \-\-strftime
 Format \fIFILE\fR with strftime.
 .TP
-.B \-m, \-\-max\-unwritten-mb=\fISIZE\fR
-Maximum size of received but unwritten messages to store in memory before 
-dropping messages.  (default: 100 MB)
-.TP
-.B \-h, \-\-help
-Shows some help text and exits
+.B \-v, \-\-invert-channels
+Invert channels.  Log evertyhing that \fICHAN\fR does not match.
 
 .SH SEE ALSO
 .BR strftime (3)
