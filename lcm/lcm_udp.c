@@ -1612,6 +1612,18 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     // don't start the receive thread yet.  Only allocate resources for
     // receiving messages when a subscription is made.
 
+    // However, we still need to setup sendfd in multi-cast group
+    struct ip_mreq mreq;
+    mreq.imr_multiaddr = lcm->params.mc_addr;
+    mreq.imr_interface.s_addr = INADDR_ANY;
+    dbg (DBG_LCM, "LCM: joining multicast group\n");
+    if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+            (char*)&mreq, sizeof (mreq)) < 0) {
+        perror ("setsockopt (IPPROTO_IP, IP_ADD_MEMBERSHIP)");
+        lcm_udpm_destroy (lcm);
+        return NULL;
+    }
+
     return lcm;
 }
 
