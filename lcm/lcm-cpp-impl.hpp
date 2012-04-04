@@ -288,8 +288,8 @@ LCM::getUnderlyingLCM()
     return this->lcm;
 }
 
-LogFile::LogFile(const char* path, const char* mode) : 
-  eventlog(lcm_eventlog_create(path, mode)), 
+LogFile::LogFile(const std::string & path, const std::string & mode) :
+  eventlog(lcm_eventlog_create(path.c_str(), mode.c_str())),
   last_event(NULL)
 { 
 }

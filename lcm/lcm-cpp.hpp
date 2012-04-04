@@ -484,7 +484,7 @@ class LogFile {
          *
          * @sa lcm_eventlog_create()
          */
-        inline LogFile(const char* path, const char* mode);
+        inline LogFile(const std::string & path, const std::string & mode);
 
         /**
          * Destructor.  Closes the log file.
