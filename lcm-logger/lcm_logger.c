@@ -59,6 +59,7 @@ struct logger
     int64_t max_write_queue_size;
     int auto_increment;
     double auto_split_hours;
+    double auto_split_mb;
     int force_overwrite;
     int use_strftime;
 
@@ -160,20 +161,27 @@ write_thread(void *user_data)
     while(1) {
         void *msg = g_async_queue_pop(logger->write_queue);
 
-        // start a new logfile?
+        // Is it time to start a new logfile?
+        int split_log = 0;
         if(logger->auto_split_hours) {
             GTimeVal now;
             g_get_current_time(&now);
-            if(now.tv_sec > next_split_sec) {
-                // open up a new log file
-                lcm_eventlog_destroy (logger->log);
-                if(0 != open_logfile(logger))
-                    exit(1);
+            split_log = (now.tv_sec > next_split_sec);
+        } else if(logger->auto_split_mb) {
+          double logsize_mb = (double)logger->logsize / (1 << 20);
+          split_log = (logsize_mb > logger->auto_split_mb);
+        }
 
-                num_splits++;
-                int64_t log_duration_sec = logger->auto_split_hours * SECONDS_PER_HOUR;
-                next_split_sec = start_time.tv_sec + (num_splits + 1) * log_duration_sec;
-            }
+        if(split_log) {
+            // Yes.  open up a new log file
+            lcm_eventlog_destroy(logger->log);
+            if(0 != open_logfile(logger))
+              exit(1);
+            num_splits++;
+            int64_t log_duration_sec = logger->auto_split_hours * SECONDS_PER_HOUR;
+            next_split_sec = start_time.tv_sec + (num_splits + 1) * log_duration_sec;
+            logger->logsize = 0;
+            logger->last_report_logsize = 0;
         }
 
         // Should the write thread exit?
@@ -303,9 +311,12 @@ static void usage ()
             "\n"
             "Options:\n"
             "\n"
-            "  -a, --auto-split-hours=N   Automatically start writing to a new log\n"
+            "      --auto-split-hours=N   Automatically start writing to a new log\n"
             "                             file every N hours (can be fractional).\n"
             "                             This option implies -i.\n"
+            "      --auto-split-mb=N      Automatically start writing to a new log\n"
+            "                             file once the log file exceeds N MB in size\n"
+            "                             (can be fractional).  This option implies -i.\n"
             "  -c, --channel=CHAN         Channel string to pass to lcm_subscribe.\n"
             "                             (default: \".*\")\n"
             "  -f, --force                Overwrite existing files\n"
@@ -348,6 +359,7 @@ int main(int argc, char *argv[])
     int c;
     struct option long_opts[] = {
         { "auto-split-hours", required_argument, 0, 'a' },
+        { "auto-split-mb", required_argument, 0, 'b' },
         { "channel", required_argument, 0, 'c' },
         { "force", no_argument, 0, 'f' },
         { "increment", required_argument, 0, 'i' },
@@ -364,6 +376,13 @@ int main(int argc, char *argv[])
             case 'a':
                 logger.auto_split_hours = strtod(optarg, NULL);
                 if(logger.auto_split_hours <= 0) {
+                    usage();
+                    return 1;
+                }
+                break;
+            case 'b':
+                logger.auto_split_mb = strtod(optarg, NULL);
+                if(logger.auto_split_mb <= 0) {
                     usage();
                     return 1;
                 }

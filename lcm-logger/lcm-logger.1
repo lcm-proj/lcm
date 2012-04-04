@@ -15,9 +15,13 @@ then a filename is automatically chosen.
 .SH OPTIONS
 The following options are provided by \fBlcm-logger\fR
 .TP
-.B \-a, \-\-auto\-split\-hours=\fIN\fR
+.B      \-\-auto\-split\-hours=\fIN\fR
 Automatically start writing to a new log file every N hours (can be
 fractional).  This option implies -i.
+.TP
+.B      \-\-auto\-split\-mb=\fIN\fR
+Automatically start writing to a new log file once the log file
+exceeds N MB in size (can be fractional).  This option implies -i.
 .TP
 .B \-c, \-\-channel=\fICHAN\fR
 Channel string to pass to lcm_subscribe. (default: ".*")
