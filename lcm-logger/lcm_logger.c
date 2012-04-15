@@ -54,10 +54,12 @@ struct logger
 
     char    input_fname[PATH_MAX];
     char    fname[PATH_MAX];
+    char    fname_prefix[PATH_MAX];
     lcm_t    *lcm;
 
     int64_t max_write_queue_size;
     int auto_increment;
+    int next_increment_num;
     double auto_split_hours;
     double auto_split_mb;
     int force_overwrite;
@@ -97,36 +99,42 @@ open_logfile(logger_t* logger)
 {
     // maybe run the filename through strftime
     if (logger->use_strftime) {
+        char new_prefix[PATH_MAX];
         time_t now = time (NULL);
-        strftime (logger->fname, sizeof (logger->fname), logger->input_fname,
-                localtime (&now));
+        strftime(new_prefix, sizeof(new_prefix),
+                logger->input_fname, localtime(&now));
+
+        // If auto-increment is enabled and the strftime-formatted filename
+        // prefix has changed, then reset the auto-increment counter.
+        if(logger->auto_increment && strcmp(new_prefix, logger->fname_prefix))
+            logger->next_increment_num = 0;
+        strcpy(logger->fname_prefix, new_prefix);
     } else {
-        strcpy (logger->fname, logger->input_fname);
+        strcpy(logger->fname_prefix, logger->input_fname);
     }
 
     if (logger->auto_increment) {
         /* Loop through possible file names until we find one that doesn't
          * already exist.  This way, we never overwrite an existing file. */
-        char tmpname[PATH_MAX];
-        int filenum = -1;
         do {
-            filenum++;
-            snprintf (tmpname, sizeof (tmpname), "%s.%02d", logger->fname,
-                    filenum);
-        } while(g_file_test(tmpname, G_FILE_TEST_EXISTS));
+            snprintf(logger->fname, sizeof(logger->fname), "%s.%02d",
+                    logger->fname_prefix, logger->next_increment_num);
+            logger->next_increment_num++;
+        } while(g_file_test(logger->fname, G_FILE_TEST_EXISTS));
 
         if (errno != ENOENT) {
             perror ("Error: checking for previous logs");
             return 1;
         }
-
-        strcpy (logger->fname, tmpname);
-    } else if (! logger->force_overwrite) {
-        if (g_file_test(logger->fname, G_FILE_TEST_EXISTS))
-        {
-            fprintf (stderr, "Refusing to overwrite existing file \"%s\"\n",
-                    logger->fname);
-            return 1;
+    } else {
+        strcpy(logger->fname, logger->fname_prefix);
+        if (! logger->force_overwrite) {
+            if (g_file_test(logger->fname, G_FILE_TEST_EXISTS))
+            {
+                fprintf (stderr, "Refusing to overwrite existing file \"%s\"\n",
+                        logger->fname);
+                return 1;
+            }
         }
     }
 
@@ -375,6 +383,7 @@ int main(int argc, char *argv[])
         switch (c) {
             case 'a':
                 logger.auto_split_hours = strtod(optarg, NULL);
+                logger.auto_increment = 1;
                 if(logger.auto_split_hours <= 0) {
                     usage();
                     return 1;
@@ -382,6 +391,7 @@ int main(int argc, char *argv[])
                 break;
             case 'b':
                 logger.auto_split_mb = strtod(optarg, NULL);
+                logger.auto_increment = 1;
                 if(logger.auto_split_mb <= 0) {
                     usage();
                     return 1;
