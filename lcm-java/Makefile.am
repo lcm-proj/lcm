@@ -2,7 +2,9 @@ JAVAROOT = build
 JARFILE = lcm$(apiversion).jar
 JAVACFLAGS = -source 1.5 -target 1.5
 
-$(JARFILE): classdist_noinst.stamp
+.PHONY classfiles: classdist_noinst.stamp classnoinst.stamp
+
+$(JARFILE): classfiles
 	rm -f $(JARFILE)
 	$(JAR) cf $(JARFILE) -C $(JAVAROOT) .
 
