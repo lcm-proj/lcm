@@ -214,7 +214,13 @@ int emit_csharp(lcmgen_t *lcm)
         if (strlen(le->enumname->package) > 0)
             emit(0, "namespace %s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), le->enumname->package);
         else
-            emit(0, "namespace %s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"));
+		{
+			char *def_nsp = getopt_get_string(lcm->gopt, "csharp-default-nsp");
+			if (strlen(def_nsp) > 0)
+				emit(0, "namespace %s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), def_nsp);
+			else
+				emit(0, "namespace %s", root_nsp);
+		}
 
         emit(0, "{");
         emit(1, "public sealed class %s %s", le->enumname->shortname, getopt_get_string(lcm->gopt, "csharp-decl"));
@@ -323,7 +329,13 @@ int emit_csharp(lcmgen_t *lcm)
         if (strlen(lr->structname->package) > 0)
             emit(0, "namespace %s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), lr->structname->package);
         else
-            emit(0, "namespace %s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"));
+		{
+			char *def_nsp = getopt_get_string(lcm->gopt, "csharp-default-nsp");
+			if (strlen(def_nsp) > 0)
+				emit(0, "namespace %s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), def_nsp);
+			else
+				emit(0, "namespace %s", root_nsp);
+		}
 
         emit(0, "{");
         emit(1, "public sealed class %s %s", lr->structname->shortname, getopt_get_string(lcm->gopt, "csharp-decl"));
