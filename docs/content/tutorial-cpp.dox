@@ -229,7 +229,7 @@ If no work is needed, the function will block until there is.  For
 applications without another type of main loop, it is suitable to call
 lcm::LCM::handle() in a loop as seen above.  However, many applications already use
 some type of event loop.  In these cases, it is best to monitor the LCM file
-descriptor, which can be obtained with lcm::LCM::fileno().  Whenever this
+descriptor, which can be obtained with lcm::LCM::getFileno().  Whenever this
 file descriptor becomes readable, the application should call lcm::LCM::handle()
 which is guaranteed to not block in such a situation.
 
