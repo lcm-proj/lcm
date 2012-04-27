@@ -155,7 +155,7 @@ int main(int argc, char **argv)
             g_free, free);
     int nwritten = 0;
     int have_first_event_timestamp = 0;
-    int64_t first_event_timestamp;
+    int64_t first_event_timestamp = 0;
 
     for (lcm_eventlog_event_t *event = lcm_eventlog_read_next_event(src_log);
             event != NULL;

@@ -6,7 +6,7 @@ AM_INIT_AUTOMAKE([foreign])
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CC
-AM_PATH_GLIB_2_0(,,[AC_MSG_ERROR([LCM requires GLib >= 2.0])],gthread)
+PKG_CHECK_MODULES(GLIB,[glib-2.0 >= 2.0.0 gthread-2.0 >= 2.0.0],,[AC_MSG_ERROR([LCM requires GLib >= 2.0])])
 AC_PATH_PROGS(JAR, [jar])
 AC_PATH_PROGS(JAVAC, [javac])
 

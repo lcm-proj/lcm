@@ -147,6 +147,7 @@ _primitive_type_size (const char *tn)
     if (!strcmp ("float", tn)) return 4;
     if (!strcmp ("double", tn)) return 8;
     assert (0);
+    return 0;
 }
 
 static void
