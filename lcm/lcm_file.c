@@ -26,6 +26,7 @@ struct _lcm_provider_t {
 
     double speed;
     int64_t next_clock_time;
+    int64_t start_timestamp;
 
     int thread_created;
     GThread *timer_thread;
@@ -119,6 +120,11 @@ new_argument (gpointer key, gpointer value, gpointer user)
         lr->speed = strtod ((char *) value, &endptr);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for speed\n");
+    } else if (!strcmp ((char *) key, "start_timestamp")) {
+        char *endptr = NULL;
+        lr->start_timestamp = strtoll ((char *) value, &endptr, 10);
+        if (endptr == value)
+            fprintf (stderr, "Warning: Invalid value for start_timestamp\n");
     } else if (!strcmp ((char *) key, "mode")) {
         const char *mode = (char *) value;
         if(!strcmp(mode, "w")) {
@@ -127,7 +133,7 @@ new_argument (gpointer key, gpointer value, gpointer user)
             fprintf(stderr, "Warning: Invalid value for mode\n");
         }
     } else {
-        fprintf(stderr, "Warning: unrecognized option: [%s]\n", 
+        fprintf(stderr, "Warning: unrecognized option: [%s]\n",
                 (const char*)key);
     }
 }
@@ -145,7 +151,6 @@ load_next_event (lcm_logprov_t * lr)
     return 0;
 }
 
-
 static lcm_provider_t *
 lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
 {
@@ -159,6 +164,7 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
     lr->filename = strdup(target);
     lr->speed = 1;
     lr->next_clock_time = -1;
+    lr->start_timestamp = -1;
 
     g_hash_table_foreach ((GHashTable*) args, new_argument, lr);
 
@@ -209,6 +215,11 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
 
         if(lcm_internal_pipe_write(lr->notify_pipe[1], "+", 1) < 0) {
             perror(__FILE__ " - write (reader create)");
+        }
+
+        if(lr->start_timestamp > 0){
+            dbg (DBG_LCM, "Seeking to timestamp: %lld\n", (long long)lr->start_timestamp);
+            lcm_eventlog_seek_to_timestamp(lr->log, lr->start_timestamp);
         }
     }
 

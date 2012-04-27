@@ -90,9 +90,9 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
 
 /**
  * @brief Constructor
- * 
+ *
  * Allocates and initializes a lcm_t.  %provider must be either
- * NULL, or a string of the form 
+ * NULL, or a string of the form
  *
  * <tt>"provider://network?option1=value1&option2=value2&...&optionN=valueN"</tt>
  *
@@ -125,17 +125,17 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
              Sets the multicast TTL to 1 so that packets published will enter
              the local network.
  @endverbatim
- * 
+ *
  * @verbatim
  file://
      LCM Log file-based provider
      network should be the path to the log file
- 
+
      Events are read from or written to the log file.  In read mode, events
      are generated from the log file in real-time, or at the rate specified
      by the speed option.  In write mode, events published to the LCM instance
      will be written to the log file in real-time.
- 
+
      options:
          speed = N
              Scale factor controlling the playback speed of the log file.
@@ -143,19 +143,19 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
              in the log file are played back as fast as possible.  Events are
              never skipped in read mode, so actual playback speed may be slower
              than requested, depending on the handlers.
-         
+
          mode = r | w
              Specifies the log file mode.  Defaults to 'r'
- 
+
      examples:
          "file:///home/albert/path/to/logfile"
              Loads the file "/home/albert/path/to/logfile" as an LCM event
              source.
- 
+
          "file:///home/albert/path/to/logfile?speed=4"
              Loads the file "/home/albert/path/to/logfile" as an LCM event
              source.  Events are played back at 4x speed.
-             
+
  @endverbatim
  *
  * @return a newly allocated lcm_t instance, or NULL on failure.  Free with
