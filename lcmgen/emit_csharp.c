@@ -101,7 +101,11 @@ const char *make_fqn_csharp(lcmgen_t *lcm, const char *type_name)
         ndefaultpkg_warned = 1;
     }
 
-	return sprintfalloc("%s%s%s.%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"), type_name);
+	char *def_nsp = getopt_get_string(lcm->gopt, "csharp-default-nsp");
+	if (strlen(def_nsp) > 0)
+		return sprintfalloc("%s%s%s.%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"), type_name);
+	else
+		return sprintfalloc("%s.%s", root_nsp, type_name);
 }
 
 /** # -> replace1
