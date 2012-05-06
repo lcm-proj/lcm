@@ -1,3 +1,33 @@
+May 6, 2012
+===========
+
+ Release 0.9.0
+
+ This release adds a constructor to the C++ API, some command line options to
+ lcm-logger, and incorporates a number of bugfixes.
+
+ Java:
+  - workaround to accomodate recent changes in Automake.  In particular, fixes
+    lcm-java for Ubuntu 12.04.
+ lcm-c:
+  - add start_timestamp option to log file provider
+  - fix multicast TTL issue #45
+  - Fixes for fragmentation of larger messages.  Big messages were previously
+    fragmented into 1400B packets. However, since lcm_udp uses a short for the
+    number for fragments there can only be 64K fragments.  The makes LCM use
+    the 1400B packet size if the message would be broken up in to less than 64K
+    fragments. Otherwise it increases the packet size to split the message into
+    64K packets
+ lcm-c++:
+  - add a constructor to create a C++ instance wrapping arond an existing lcm_t
+   C instance.
+ Python:
+  - fixes to build in Windows using MS VS 2008.
+ C#:
+  - bugfixes when generating default namespace.
+ lcm-logger:
+  - add --auto-split-mb and --auto-split-hours options.
+
 Jan 20, 2012
 ============
 
