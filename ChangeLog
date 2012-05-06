@@ -1,3 +1,101 @@
+2012-05-04  jan.hrbacek
+
+	* [r658] lcmgen/emit_csharp.c: emit_csharp in lcm-gen - one more
+	  fix concerning empty default namespace
+
+2012-04-27  jan.hrbacek
+
+	* [r657] lcmgen/emit_csharp.c: emit_csharp in lcm-gen - fix
+	  generating empty default namespace
+
+2012-04-27  ashuang
+
+	* [r656] lcm/lcm.h, lcm/lcm_file.c: patch from mfallon to add
+	  start_timestamp option to C log file provider
+	* [r655] docs/content/tutorial-cpp.dox: fix c++ tutorial for fileno
+	  -> getFileno API change
+	* [r654] configure.in, lcmgen/emit_python.c,
+	  liblcm-test/lcm-logfilter.c: use PKG_CHECK_MODULES instead of
+	  AM_PATH_GLIB_2_0 fix some minor compile warnings
+	* [r653] lcm-java/Makefile.am: workaround for java build broken by
+	  recent changes to automake Java build.
+
+2012-04-15  ashuang
+
+	* [r652] lcm-logger/lcm_logger.c: lcm-logger: auto-incremented
+	  filename counter resets only when strftime-formatted filename
+	  changes.
+
+2012-04-04  abachrach@gmail.com
+
+	* [r651] lcm/lcm-cpp-impl.hpp, lcm/lcm-cpp.hpp: the c++ LogFile
+	  constructor should use a const std::string & instead of const
+	  char *
+
+2012-04-04  ashuang
+
+	* [r650] lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c:
+	  lcm-logger: add --auto-split-mb=N option. Automatically splits
+	  log files once they reach the specified size. N can be
+	  fractional. This option implies -i.
+
+2012-03-31  ashuang
+
+	* [r649] lcm/lcm_udp.c: re issue #45 apply patch from Ryan Morton
+	  fixing multicast TTL issue.
+
+2012-03-28  ashuang
+
+	* [r648] lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c:
+	  lcm-logger: add -a/--auto-split-hours=N option. Automatically
+	  starts writing to a new log file every N hours (can be
+	  fractional). This option implies -i.
+
+2012-03-12  abachrach@gmail.com
+
+	* [r647] lcm/lcm-cpp-impl.hpp, lcm/lcm-cpp.hpp: change the C++
+	  bindings so that the underlying C lcm object is only destroyed if
+	  it was created by the C++ object
+
+2012-03-08  abachrach@gmail.com
+
+	* [r646] lcm/lcm-cpp-impl.hpp, lcm/lcm-cpp.hpp: add overloaded
+	  constructor to allow you to create a CPP lcm object from an
+	  existing C object
+
+2012-02-23  abachrach@gmail.com
+
+	* [r645] lcmgen/emit_python.c: remove whitespace in emitted python
+	  code
+
+2012-02-22  ashuang
+
+	* [r644] docs/content/lcm-type-ref.dox, lcmgen/lcmgen.c: update
+	  documentation re constants. remove some mentions of enum/union in
+	  lcm-gen error messages
+
+2012-02-10  ashuang
+
+	* [r643] ., WinSpecific/include/lcm/lcm.h, lcm-python/README,
+	  lcm-python/lcm/__init__.py, lcm-python/module.c,
+	  lcm-python/pyeventlog.c, lcm-python/pylcm.c, lcm-python/setup.py:
+	  reintegrate py-win branch into trunk
+
+2012-01-25  abachrach@gmail.com
+
+	* [r638] lcm/lcm_udp.c: commit a change to allow LCM messages up to
+	  4GB in size. big messages were previously fragmented into 1400B
+	  packets. However, since lcm_udp uses a short for the number for
+	  fragments there can only be 64K fragments. The makes LCM use the
+	  1400B packet size if the message would be broken up in to less
+	  than 64K fragments. Otherwise it increases the packet size to
+	  split the message into 64K packets
+
+2012-01-21  ashuang
+
+	* [r636] ChangeLog, Makefile.am, NEWS, configure.in,
+	  lcm-python/setup.py, lcm/lcm.h: release 0.8.0
+
 2012-01-20  ashuang
 
 	* [r635] docs/release_checklist, lcm/lcm.h, test/c/Makefile: add C

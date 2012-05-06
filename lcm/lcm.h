@@ -295,7 +295,7 @@ LCM_API_FUNCTION
 int lcm_subscription_set_queue_capacity(lcm_subscription_t* handler, int num_messages);
 
 #define LCM_MAJOR_VERSION 0
-#define LCM_MINOR_VERSION 8
+#define LCM_MINOR_VERSION 9
 #define LCM_MICRO_VERSION 0
 
 /**
