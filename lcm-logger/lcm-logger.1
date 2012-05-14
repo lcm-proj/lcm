@@ -26,6 +26,9 @@ exceeds N MB in size (can be fractional).  This option implies -i.
 .B \-c, \-\-channel=\fICHAN\fR
 Channel string to pass to lcm_subscribe. (default: ".*")
 .TP
+.B      \-\-flush\-interval=\fIMS\fR
+Flush the log file to disk every MS milliseconds. (default: 100)
+.TP
 .B \-f, \-\-force
 Overwrite existing files.  The default behavior is to fail if the output file
 already exists.

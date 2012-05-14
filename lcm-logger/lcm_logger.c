@@ -64,6 +64,7 @@ struct logger
     double auto_split_mb;
     int force_overwrite;
     int use_strftime;
+    int fflush_interval_ms;
 
     GThread *write_thread;
     GAsyncQueue *write_queue;
@@ -88,6 +89,7 @@ struct logger
     int64_t last_report_time;
     int64_t last_report_logsize;
     int64_t time0;
+    int64_t last_fflush_time;
 
     int64_t dropped_packets_count;
     int64_t last_drop_report_utime;
@@ -220,6 +222,11 @@ write_thread(void *user_data)
                 continue;
             }
         }
+        if (logger->fflush_interval_ms >= 0 &&
+            (le->timestamp - logger->last_fflush_time) > logger->fflush_interval_ms*1000) {
+            fflush(logger->log->f);
+            logger->last_fflush_time = le->timestamp;
+        }
 
         // bookkeeping, cleanup
         int64_t offset_utime = le->timestamp - logger->time0;
@@ -327,6 +334,8 @@ static void usage ()
             "                             (can be fractional).  This option implies -i.\n"
             "  -c, --channel=CHAN         Channel string to pass to lcm_subscribe.\n"
             "                             (default: \".*\")\n"
+            "      --flush-interval=MS    Flush the log file to disk every MS milliseconds.\n"
+            "                             (default: 100)\n"
             "  -f, --force                Overwrite existing files\n"
             "  -h, --help                 Shows this help text and exits\n"
             "  -i, --increment            Automatically append a suffix to FILE\n"
@@ -361,9 +370,10 @@ int main(int argc, char *argv[])
     char *chan_regex = strdup(".*");
     double max_write_queue_size_mb = DEFAULT_MAX_WRITE_QUEUE_SIZE_MB;
     logger.invert_channels = 0;
+    logger.fflush_interval_ms = 100;
 
     char *lcmurl = NULL;
-    char *optstring = "a:fic:shm:v";
+    char *optstring = "a:fic:shm:vu:";
     int c;
     struct option long_opts[] = {
         { "auto-split-hours", required_argument, 0, 'a' },
@@ -375,6 +385,7 @@ int main(int argc, char *argv[])
         { "max-unwritten-mb", required_argument, 0, 'm' },
         { "strftime", required_argument, 0, 's' },
         { "invert-channels", no_argument, 0, 'v' },
+        { "flush-interval", required_argument, 0,'u'},
         { 0, 0, 0, 0 }
     };
 
@@ -424,6 +435,13 @@ int main(int argc, char *argv[])
                     return 1;
                 }
                 break;
+            case 'u':
+              logger.fflush_interval_ms = atol(optarg);
+              if(logger.fflush_interval_ms <= 0) {
+                  usage();
+                  return 1;
+              }
+              break;
             case 'h':
             default:
                 usage();
