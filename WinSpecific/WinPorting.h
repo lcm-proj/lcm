@@ -2,6 +2,7 @@
 #define _WINPORTING_H_
 
 
+#define strtoll   _strtoi64
 #define	strdup		_strdup
 #define	mode_t		int
 #define snprintf	_snprintf
