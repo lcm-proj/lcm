@@ -1,5 +1,5 @@
 JAVAROOT = build
-JARFILE = lcm$(apiversion).jar
+JARFILE = lcm.jar
 JAVACFLAGS = -source 1.5 -target 1.5
 
 .PHONY classfiles: classdist_noinst.stamp classnoinst.stamp
@@ -26,12 +26,6 @@ lcm-spy: Makefile
 	@echo > $@ "#!/bin/sh"
 	@echo >> $@ "exec java -server -Xincgc -Xmx128m -Xms64m -ea -cp ${jardir}/lcm.jar lcm.spy.Spy \$$*"
 	chmod 755 $@
-
-install-data-hook:
-# install versionless jar symlink
-	cd $(DESTDIR)$(jardir) && \
-		mv -f $(JARFILE) lcm$(apiversion)-$(VERSION).jar && \
-		$(LN_S) lcm$(apiversion)-$(VERSION).jar $(JARFILE)
 
 dist_noinst_JAVA = \
     lcm/lcm/LCMEncodable.java \
