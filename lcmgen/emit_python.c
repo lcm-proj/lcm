@@ -395,6 +395,16 @@ _emit_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
     } else if (!strcmp ("double", tn)) {
         emit (indent, "buf.write(struct.pack('>d', %s))", accessor);
     } else {
+        if(is_same_type(lm->type, ls->structname)) {
+            emit(indent, "assert %s._get_packed_fingerprint() == %s._get_packed_fingerprint()", accessor,
+                    lm->type->shortname);
+        } else if(is_same_package(ls->structname, lm->type)) {
+            emit(indent, "assert %s._get_packed_fingerprint() == %s.%s._get_packed_fingerprint()",
+                    accessor, lm->type->shortname, lm->type->shortname);
+        } else {
+            emit(indent, "assert %s._get_packed_fingerprint() == %s.%s._get_packed_fingerprint()",
+                    accessor, lm->type->lctypename, lm->type->shortname);
+        }
         emit (indent, "%s._encode_one(buf)", accessor);
     }
 }
