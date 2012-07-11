@@ -29,11 +29,17 @@
 
 #include "glib_util.h"
 
+#ifndef WIN32
+#define USE_SIGHUP
+#endif
+
 #define DEFAULT_MAX_WRITE_QUEUE_SIZE_MB 100
 
 #define SECONDS_PER_HOUR 3600
 
 GMainLoop *_mainloop;
+
+static int _reset_logfile = 0;
 
 static inline int64_t timestamp_seconds(int64_t v)
 {
@@ -181,6 +187,10 @@ write_thread(void *user_data)
           double logsize_mb = (double)logger->logsize / (1 << 20);
           split_log = (logsize_mb > logger->auto_split_mb);
         }
+        if(_reset_logfile) {
+            split_log = 1;
+            _reset_logfile = 0;
+        }
 
         if(split_log) {
             // Yes.  open up a new log file
@@ -314,6 +324,13 @@ message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 
     g_async_queue_push(logger->write_queue, le);
 }
+
+#ifdef USE_SIGHUP
+static void sighup_handler (int signum)
+{
+    _reset_logfile = 1;
+}
+#endif
 
 static void usage ()
 {
@@ -515,6 +532,10 @@ int main(int argc, char *argv[])
     _mainloop = g_main_loop_new (NULL, FALSE);
     signal_pipe_glib_quit_on_kill ();
     glib_mainloop_attach_lcm (logger.lcm);
+
+#ifdef USE_SIGHUP
+    signal(SIGHUP, sighup_handler);
+#endif
 
     // main loop
     g_main_loop_run (_mainloop);

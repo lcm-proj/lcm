@@ -42,6 +42,7 @@ lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode)
 
 void lcm_eventlog_destroy(lcm_eventlog_t *l)
 {
+    fflush(l->f);
     fclose(l->f);
     free(l);
 }

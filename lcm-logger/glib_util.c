@@ -6,7 +6,6 @@
 
 #ifdef WIN32
 #define SIGKILL 2
-#define SIGHUP  5
 #include <WinPorting.h>
 //#include <Winsock2.h>
 #else
@@ -154,9 +153,6 @@ signal_pipe_glib_quit_on_kill ()
     signal_pipe_add_signal (SIGINT);
     signal_pipe_add_signal (SIGTERM);
     signal_pipe_add_signal (SIGKILL);
-#ifndef WIN32
-    signal_pipe_add_signal (SIGHUP);			// Crashes under Windows
-#endif
     return signal_pipe_attach_glib (spgqok_handler, _mainloop);
 }
 
