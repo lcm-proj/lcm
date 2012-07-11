@@ -53,6 +53,11 @@ Format \fIFILE\fR with strftime.
 .B \-v, \-\-invert-channels
 Invert channels.  Log evertyhing that \fICHAN\fR does not match.
 
+.SH SIGNALS
+.PP
+On platforms defining SIGHUP, lcm-logger will react to HUP by closing the
+active log file and opening a new one.
+
 .SH SEE ALSO
 .BR strftime (3)
 

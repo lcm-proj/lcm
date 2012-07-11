@@ -29,7 +29,7 @@
 
 #include "glib_util.h"
 
-#ifndef WIN32
+#ifdef SIGHUP
 #define USE_SIGHUP
 #endif
 
