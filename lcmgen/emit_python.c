@@ -715,7 +715,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         for (ndirs=0; dirs[ndirs]; ndirs++);
 
         for (int i=0 ; i<ndirs; i++) {
-			char *initpy_fname_parts[1024];
+            char *initpy_fname_parts[1024];
             assert(ndirs + 4 < 1024);
 
             initpy_fname_parts[0] = package_dir_prefix;
@@ -727,6 +727,13 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 
             char *initpy_fname = build_filenamev (initpy_fname_parts);
             int created_initpy = 0;
+
+            // close init_py_fp if already open
+            if(init_py_fp) {
+            	fclose(init_py_fp);
+            	init_py_fp = NULL;
+            }
+
             if (! g_file_test (initpy_fname, G_FILE_TEST_EXISTS)) {
                 // __init__.py does not exist for this package.  Create it.
                 created_initpy = 1;
