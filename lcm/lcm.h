@@ -147,6 +147,13 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
          mode = r | w
              Specifies the log file mode.  Defaults to 'r'
 
+         start_timestamp = USEC
+             Seeks to USEC microseconds in the logfile, where USEC is given in
+             microseconds since 00:00:00 UTC on 1 January 1970.  If USEC is
+             before the first event, then playback begins at the start of the
+             log file.  If it is after the last event, calls to lcm_handle will
+             return -1.
+
      examples:
          "file:///home/albert/path/to/logfile"
              Loads the file "/home/albert/path/to/logfile" as an LCM event
