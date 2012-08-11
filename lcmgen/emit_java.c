@@ -455,7 +455,7 @@ int emit_java(lcmgen_t *lcm)
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public static final long _hashRecursive(ArrayList<Class> clss)");
+        emit(1,"public static final long _hashRecursive(ArrayList<Class<?>> clss)");
         emit(1,"{");
         emit(2,"return LCM_FINGERPRINT;");
         emit(1,"}");
@@ -496,7 +496,22 @@ int emit_java(lcmgen_t *lcm)
 
         emit(0, " ");
         emit(0, "import java.io.*;");
-        emit(0, "import java.nio.*;");
+
+        if (0) {
+            // Determine if we even need the java.nio.* package.
+            int usenio = 0;
+            for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
+                lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+                primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
+                if (pinfo!=NULL && !strcmp(pinfo->storage, "float")) {
+                    usenio = 1;
+                    break;
+                }
+            }
+            if (usenio)
+                emit(0, "import java.nio.*;");
+        }
+
         emit(0, "import java.util.*;");
         emit(0, "import lcm.lcm.*;");
         emit(0, " ");
@@ -580,11 +595,11 @@ int emit_java(lcmgen_t *lcm)
 
         ///////////////// compute fingerprint //////////////////
         emit(1, "static {");
-        emit(2, "LCM_FINGERPRINT = _hashRecursive(new ArrayList<Class>());");
+        emit(2, "LCM_FINGERPRINT = _hashRecursive(new ArrayList<Class<?>>());");
         emit(1, "}");
         emit(0, " ");
 
-        emit(1, "public static long _hashRecursive(ArrayList<Class> classes)");
+        emit(1, "public static long _hashRecursive(ArrayList<Class<?>> classes)");
         emit(1, "{");
         emit(2, "if (classes.contains(%s.class))", make_fqn(lcm, lr->structname->lctypename));
         emit(3,     "return 0L;");
