@@ -106,12 +106,28 @@ public class JScrubber extends JComponent
 
         public void actionPerformed(ActionEvent e)
         {
-            Bookmark b0 = null, b1 = null;
+            Bookmark b0 = new Bookmark(0, BOOKMARK_PLAIN);
+            Bookmark b1 = new Bookmark(1, BOOKMARK_PLAIN);
 
-            if (bookmarks.size() == 2) {
+            if (bookmarks.size() == 0) {
+                System.out.println("didn't find bookmark region");
+                return;
+            } else if (bookmarks.size() == 1){
+            	//if there is only one bookmark, use from beginning/end to it
+            	Bookmark b = bookmarks.get(0);
+            	if (position > b.position)
+            		b0 = b;
+            	else
+            		b1 = b;
+            } else if (bookmarks.size() == 2) {
                 // if there are only two bookmarks, just use those.
                 b0 = bookmarks.get(0);
                 b1 = bookmarks.get(1);
+                if (b0.position>b1.position){ //b0 should be before b1
+                	Bookmark swp = b0;
+                	b0 = b1;
+                	b1 = b0;
+                }
             } else {
                 // find previous and next book marks.
                 for (Bookmark b : bookmarks) {
@@ -122,12 +138,10 @@ public class JScrubber extends JComponent
                 }
             }
 
-            if (b0 == null || b1 == null) {
-                System.out.println("didn't find bookmark region");
-            } else {
-                for (JScrubberListener jsl : listeners)
-                    jsl.scrubberExportRegion(JScrubber.this, b0.position, b1.position);
-            }
+           
+            for (JScrubberListener jsl : listeners)
+                jsl.scrubberExportRegion(JScrubber.this, b0.position, b1.position);
+            
         }
     }
 
