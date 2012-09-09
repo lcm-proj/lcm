@@ -72,6 +72,11 @@ public class BufferedRandomAccessFile
         bufferSeek(pos);
     }
 
+    public void flush() throws IOException
+    {
+        flushBuffer();
+    }
+
     /** Writes the buffer if it contains any dirty data **/
     void flushBuffer() throws IOException
     {

@@ -71,6 +71,14 @@ public class Log
     }
 
     /**
+     * Flush any unwritten data to the underlying file descriptor.
+     **/
+    public void flush() throws IOException
+    {
+        raf.flush();
+    }
+
+    /**
      * Reads the next event in the log file
      *
      * @throws java.io.EOFException if the end of the file has been reached.
