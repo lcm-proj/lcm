@@ -121,7 +121,6 @@ map_type_name(const char *t)
 
 void setup_cpp_options(getopt_t *gopt)
 {
-    getopt_add_string (gopt, 0, "cpp-cpath",    ".",      "Location for .cpp files");
     getopt_add_string (gopt, 0, "cpp-hpath",    ".",      "Location for .hpp files");
     getopt_add_string (gopt, 0, "cpp-include",   "",       "Generated #include lines reference this folder");
 }
