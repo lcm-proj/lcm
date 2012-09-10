@@ -136,7 +136,7 @@ int main(int argc, char **argv)
         if (transmit_interval_usec > 0) {
             // sleep...
 #ifdef WIN32
-			Sleep(transmit_interval_usec / 1000000);
+            Sleep(transmit_interval_usec / 1000);
 #else
             struct timespec ts = {
                 .tv_sec = (int) (transmit_interval_usec / 1000000),
