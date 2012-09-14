@@ -159,7 +159,7 @@ _emit_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
     const char *sn = lm->type->shortname;
     if (!strcmp ("string", tn)) {
         emit (indent, "__%s_len = struct.unpack('>I', buf.read(4))[0]", mn);
-        emit (indent, "%sbuf.read(__%s_len)[:-1].decode('utf-8')%s",
+        emit (indent, "%sbuf.read(__%s_len)[:-1].decode('utf-8', 'replace')%s",
                 accessor, mn, sfx);
     } else if (!strcmp ("byte", tn)) {
         emit (indent, "%sstruct.unpack('B', buf.read(1))[0]%s", accessor, sfx);
