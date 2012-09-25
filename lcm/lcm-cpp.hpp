@@ -20,7 +20,7 @@ namespace lcm {
 
 class Subscription;
 
-class ReceiveBuffer;
+struct ReceiveBuffer;
 
 /**
  * @brief Core communications class for the C++ API.
