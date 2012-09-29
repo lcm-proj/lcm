@@ -455,7 +455,7 @@ int emit_java(lcmgen_t *lcm)
         emit(1,"}");
         emit(0," ");
 
-        emit(1,"public static final long _hashRecursive(ArrayList<Class> clss)");
+        emit(1,"public static final long _hashRecursive(ArrayList<Class<?>> clss)");
         emit(1,"{");
         emit(2,"return LCM_FINGERPRINT;");
         emit(1,"}");
@@ -595,11 +595,11 @@ int emit_java(lcmgen_t *lcm)
 
         ///////////////// compute fingerprint //////////////////
         emit(1, "static {");
-        emit(2, "LCM_FINGERPRINT = _hashRecursive(new ArrayList<Class>());");
+        emit(2, "LCM_FINGERPRINT = _hashRecursive(new ArrayList<Class<?>>());");
         emit(1, "}");
         emit(0, " ");
 
-        emit(1, "public static long _hashRecursive(ArrayList<Class> classes)");
+        emit(1, "public static long _hashRecursive(ArrayList<Class<?>> classes)");
         emit(1, "{");
         emit(2, "if (classes.contains(%s.class))", make_fqn(lcm, lr->structname->lctypename));
         emit(3,     "return 0L;");
