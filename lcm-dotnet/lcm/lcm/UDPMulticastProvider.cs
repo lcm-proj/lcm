@@ -176,8 +176,9 @@ namespace LCM.LCM
 				
 				outs.Write(MAGIC_SHORT);
 				outs.Write(this.msgSeqNumber);
-				
-				outs.WriteStringZ(channel);
+
+                outs.Write(channelBytes, 0, channelBytes.Length);
+                outs.Write((byte) 0);
 				
 				outs.Write(data, offset, length);
 
@@ -194,10 +195,9 @@ namespace LCM.LCM
 					Console.Error.WriteLine("LC error: too much data for a single message");
 					return;
 				}
-				
-				// first fragment is special.  insert channel before data
-				System.IO.MemoryStream bouts = new System.IO.MemoryStream(10 + FRAGMENTATION_THRESHOLD);
-				System.IO.BinaryWriter outs = new System.IO.BinaryWriter(bouts);
+
+                // first fragment is special.  insert channel before data
+                LCMDataOutputStream outs = new LCMDataOutputStream(10 + FRAGMENTATION_THRESHOLD);
 				
 				int fragmentOffset = 0;
 				int fragNo = 0;
@@ -215,25 +215,24 @@ namespace LCM.LCM
 				
 				outs.Write(data, offset, firstfragDatasize);
 
-                sock.Send(bouts.ToArray(), (int) bouts.Length, inetEP);
+                sock.Send(outs.Buffer, outs.Length, inetEP);
 				
 				fragmentOffset += firstfragDatasize;
 				
 				for (fragNo = 1; fragNo < nfragments; fragNo++)
 				{
-					bouts = new System.IO.MemoryStream(10 + FRAGMENTATION_THRESHOLD);
-					outs = new System.IO.BinaryWriter(bouts);
+                    outs = new LCMDataOutputStream(10 + FRAGMENTATION_THRESHOLD);
 					
 					outs.Write(MAGIC_LONG);
 					outs.Write(this.msgSeqNumber);
 					outs.Write(length);
 					outs.Write(fragmentOffset);
-					outs.Write((System.Int16) fragNo);
-					outs.Write((System.Int16) nfragments);
+					outs.Write((short) fragNo);
+					outs.Write((short) nfragments);
 					int fragLen = System.Math.Min(FRAGMENTATION_THRESHOLD, length - fragmentOffset);
 					outs.Write(data, offset + fragmentOffset, fragLen);
 
-                    sock.Send(bouts.ToArray(), (int) bouts.Length, inetEP);
+                    sock.Send(outs.Buffer, outs.Length, inetEP);
 					
 					fragmentOffset += fragLen;
 				}
