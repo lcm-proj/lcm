@@ -16,7 +16,7 @@
 #include "getopt.h"
 
 #ifdef WIN32
-#include <WinPorting.h>
+#include <lcm/windows/WinPorting.h>
 #endif
 
 #define INDENT(n) (4*(n))

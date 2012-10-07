@@ -12,7 +12,7 @@
 #include "eventlog.h"
 
 #ifdef WIN32
-#include <WinPorting.h>
+#include "./windows/WinPorting.h"
 #endif
 
 #define MAGIC ((int32_t) 0xEDA1DA01L)

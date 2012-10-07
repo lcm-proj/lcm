@@ -6,7 +6,7 @@
 
 #ifdef WIN32
 #define SIGKILL 2
-#include <WinPorting.h>
+#include <lcm/windows/WinPorting.h>
 //#include <Winsock2.h>
 #else
 #include <unistd.h>

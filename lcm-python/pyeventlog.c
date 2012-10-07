@@ -2,7 +2,7 @@
 
 #include <lcm/eventlog.h>
 #ifdef WIN32
-#include <WinPorting.h>
+#include <lcm/windows/WinPorting.h>
 #endif
 
 typedef struct {

@@ -5,7 +5,7 @@
 #include <assert.h>
 
 #ifdef WIN32
-#include <WinPorting.h>
+#include <lcm/windows/WinPorting.h>
 #endif
 
 #include "tokenize.h"

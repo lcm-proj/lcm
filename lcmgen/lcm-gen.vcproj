@@ -40,7 +40,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\WinSpecific\include;..\WinSpecific;&quot;$(GLIB_PATH)\include\glib-2.0&quot;;&quot;$(GLIB_PATH)\lib\glib-2.0\include&quot;"
+				AdditionalIncludeDirectories="..;..\WinSpecific\include;&quot;$(GLIB_PATH)\include\glib-2.0&quot;;&quot;$(GLIB_PATH)\lib\glib-2.0\include&quot;"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -118,7 +118,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\WinSpecific\include;..\WinSpecific;&quot;$(GLIB_PATH)\include\glib-2.0&quot;;&quot;$(GLIB_PATH)\lib\glib-2.0\include&quot;"
+				AdditionalIncludeDirectories="..;..\WinSpecific\include;&quot;$(GLIB_PATH)\include\glib-2.0&quot;;&quot;$(GLIB_PATH)\lib\glib-2.0\include&quot;"
 				PreprocessorDefinitions="WIN32;NDEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -403,7 +403,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\WinSpecific\WinPorting.h"
+				RelativePath="..\lcm\windows\WinPorting.h"
 				>
 			</File>
 		</Filter>

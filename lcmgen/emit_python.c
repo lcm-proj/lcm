@@ -10,7 +10,7 @@
 #ifdef WIN32
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
-#include <WinPorting.h>
+#include <lcm/windows/WinPorting.h>
 #include <windows.h>
 #else
 #include <inttypes.h>

@@ -12,7 +12,7 @@
 #ifdef WIN32
 // always use GLib regexes from Windows
 #define USE_GREGEX
-#include <WinPorting.h>
+#include "windows/WinPorting.h"
 #include <winsock2.h>
 #else
 // in POSIX systems, the normal read/write/close/pipe functions are fine for 

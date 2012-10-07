@@ -39,7 +39,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\WinSpecific\include"
+				AdditionalIncludeDirectories="..;..\WinSpecific\include"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -115,7 +115,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="..\WinSpecific\include"
+				AdditionalIncludeDirectories="..;..\WinSpecific\include"
 				PreprocessorDefinitions="WIN32;_CONSOLE"
 				RuntimeLibrary="2"
 				WarningLevel="3"

@@ -11,7 +11,7 @@
 #include <netdb.h>
 #include <sys/time.h>
 #else
-#include <WinPorting.h>
+#include "windows/WinPorting.h"
 #include <winsock2.h>
 #include <Ws2tcpip.h>
 #endif

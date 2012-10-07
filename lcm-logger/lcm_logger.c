@@ -18,7 +18,7 @@
 #ifdef WIN32
 #define USE_GREGEX
 #define __STDC_FORMAT_MACROS            // Enable integer types
-#include <WinPorting.h>
+#include <lcm/windows/WinPorting.h>
 #endif
 
 #include <inttypes.h>

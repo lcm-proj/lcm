@@ -12,7 +12,7 @@
 #ifndef WIN32
 #include <unistd.h>
 #else					// These should be coming from stdint.h - but not working?
-#include <WinPorting.h>
+#include <lcm/windows/WinPorting.h>
 #define INT8_MIN     ((int8_t)_I8_MIN)
 #define INT8_MAX     _I8_MAX
 #define INT16_MIN    ((int16_t)_I16_MIN)
