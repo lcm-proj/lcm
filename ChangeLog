@@ -1,3 +1,132 @@
+2012-10-07  ashuang
+
+	* [r692] WinSpecific/README.txt, WinSpecific/include/lcm: update
+	  WinSpecific/README.txt and remove dead directory
+	* [r691] WinSpecific/WinLCM.cpp, WinSpecific/WinPorting.cpp,
+	  WinSpecific/WinPorting.h, WinSpecific/include/lcm/eventlog.h,
+	  WinSpecific/include/lcm/lcm.h,
+	  WinSpecific/include/lcm/lcm_coretypes.h, lcm-logger/glib_util.c,
+	  lcm-logger/lcm-logger.vcproj, lcm-logger/lcm-logplayer.vcproj,
+	  lcm-logger/lcm_logger.c, lcm-python/pyeventlog.c, lcm/eventlog.c,
+	  lcm/lcm.vcproj, lcm/lcm_file.c, lcm/lcm_internal.h,
+	  lcm/lcm_tcpq.c, lcm/lcm_udp.c, lcm/windows,
+	  lcm/windows/WinLCM.cpp, lcm/windows/WinPorting.cpp,
+	  lcm/windows/WinPorting.h, lcmgen/emit_csharp.c,
+	  lcmgen/emit_java.c, lcmgen/emit_python.c, lcmgen/getopt.c,
+	  lcmgen/lcm-gen.vcproj, lcmgen/lcmgen.c, lcmgen/main.c,
+	  lcmgen/tokenize.c, liblcm-test/lcm-example.vcproj,
+	  liblcm-test/lcm-logfilter.vcproj, liblcm-test/lcm-sink.vcproj,
+	  liblcm-test/lcm-source.vcproj, liblcm-test/lcm-tester.vcproj:
+	  windows: - remove redundant WinSpecific/include/lcm dir. - move
+	  WinSpecific/Win*.{cpp,h} -> lcm/windows/ - adjust vcproj files
+	  accordingly
+
+2012-10-04  jan.hrbacek
+
+	* [r690] examples/csharp/example_t_demo/example_t_transmit.cs:
+	  modify one of the c# examples so that it can be easily used to
+	  test fragmented messages (by increasing num_ranges)
+
+2012-10-02  jan.hrbacek
+
+	* [r685] lcm-dotnet/lcm/lcm/UDPMulticastProvider.cs: lcm-dotnet:
+	  fix publishing fragmented messages
+
+2012-09-29  abachrach@gmail.com
+
+	* [r684] lcmgen/emit_java.c: revert my revert since the errors were
+	  due to stale files on my system path
+
+2012-09-25  ashuang
+
+	* [r683] lcm/lcm-cpp.hpp: lcm-cpp: - change ReceiveBuffer forward
+	  declaration to struct. Fix MSVC error.
+	* [r682] lcm/lcm.vcproj: add LCM C++ files to VS project file
+
+2012-09-21  abachrach@gmail.com
+
+	* [r681] lcmgen/emit_java.c: revert part of change since it is
+	  causing errors when an lcmtype depends on an lcmtype from a
+	  different package
+
+2012-09-14  ashuang
+
+	* [r680] lcmgen/emit_python.c: emit_python: - don't raise
+	  UnicodeError when decoding non-utf8 strings.
+
+2012-09-10  ashuang
+
+	* [r679] liblcm-test/lcm-source.c: liblcm-test: - lcm-source win32
+	  bugfix. sleep convert to ms correctly.
+	* [r678] lcmgen/emit_cpp.c: lcmgen: - remove --cpp-cpath option
+
+2012-09-09  edwinolson@gmail.com
+
+	* [r677] lcm-java/lcm/logging/Log.java,
+	  lcm-java/lcm/util/BufferedRandomAccessFile.java: expose flush()
+	  method in lcm.logging.Log
+
+2012-08-31  abachrach@gmail.com
+
+	* [r676] lcm-java/lcm/logging/JScrubber.java: fix the export
+	  snippet to work with two bookmarks that were created out of
+	  order. also make it default to selecting the beginning/end to
+	  bookmark if only 1 bookmark exists
+
+2012-08-11  ashuang
+
+	* [r675] lcm/lcm.h: update comment docs to describe start_timestamp
+	  option
+	* [r674] lcmgen/emit_java.c: re #49 apply patch from jamoozy to
+	  reduce eclipse compiler warnings.
+
+2012-08-09  ashuang
+
+	* [r673] lcmgen/emit_python.c: re #50 apply patch from tprk77
+	  bugfix in __init__.py import generation.
+
+2012-07-11  ashuang
+
+	* [r672] lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c: document
+	  SIGHUP usage in man page.
+	* [r671] lcm-logger/glib_util.c, lcm-logger/lcm_logger.c,
+	  lcm/eventlog.c: lcm-logger: - close and re-open logfile when
+	  SIGHUP is received. Should make it easier to use lcm-logger with
+	  logrotate.
+
+2012-06-17  ashuang
+
+	* [r666] configure.in, examples/python/gen-types.sh,
+	  lcm-java/Makefile.am: lcm-java: install jar file as
+	  share/lcm.jar, not share/lcm-x.y.z.jar with a share/lcm.jar as a
+	  symlink.
+	* [r665] lcmgen/emit_python.c: re #47 python encode checks
+	  fingerprints of nested types
+
+2012-05-31  abachrach@gmail.com
+
+	* [r664] examples/matlab/listener.m: the java string should be
+	  wrapped in a char() call
+
+2012-05-25  ashuang
+
+	* [r663] WinSpecific/WinPorting.h: re #46
+	  
+	  in WinPorting.h, #define strtoll _strtoi64
+
+2012-05-14  ashuang
+
+	* [r662] lcm-logger/lcm-logger.1, lcm-logger/lcm_logger.c:
+	  lcm-logger: add --flush-interval option to periodically flush log
+	  file to disk.
+
+2012-05-06  ashuang
+
+	* [r661] NEWS: LCM release 0.9.0 (again, but this time with a NEWS
+	  file)
+	* [r659] ChangeLog, configure.in, lcm-python/setup.py, lcm/lcm.h:
+	  LCM release 0.9.0
+
 2012-05-04  jan.hrbacek
 
 	* [r658] lcmgen/emit_csharp.c: emit_csharp in lcm-gen - one more

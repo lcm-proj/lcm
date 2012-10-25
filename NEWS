@@ -1,3 +1,55 @@
+Oct 24, 2012
+============
+
+ Release 0.9.1
+
+ This is a bugfix and maintenance release.
+
+ C:
+   - update comment docs to describe start_timestamp option
+
+ C++:
+   - change ReceiveBuffer forward declaration to struct.  Fix MSVC error.
+
+ C# / .NET:
+   - lcm-dotnet: fix publishing fragmented messages
+   - modify one of the c# examples so that it can be easily used to test
+     fragmented messages (by increasing num_ranges)
+
+ Java:
+   - install jar file as share/lcm.jar, not share/lcm-x.y.z.jar with a
+     share/lcm.jar as a symlink.
+   - fix the export snippet to work with two bookmarks that were created out of
+     order.  also make it default to selecting the beginning/end to bookmark if
+     only 1 bookmark exists
+   - expose flush() method in lcm.logging.Log
+
+ lcm-gen:
+  Python:
+    - python encode checks fingerprints of nested types (re #47)
+    - apply patch from tprk77 bugfix in __init__.py import generation. (re #50)
+    - don't raise UnicodeError when decoding non-utf8 strings.
+  Java:
+    - apply patch from jamoozy to reduce eclipse compiler warnings. (re #49)
+  C++:
+    - remove --cpp-cpath option
+
+ Windows:
+   - in WinPorting.h, #define strtoll _strtoi64 (re #46)
+   - add LCM C++ files to VS project file
+   - remove redundant WinSpecific/include/lcm dir.
+   - move WinSpecific/Win*.{cpp,h} -> lcm/windows/
+   - adjust vcproj files accordingly
+   - update WinSpecific/README.txt and remove dead directory
+
+ lcm-logger:
+   - add --flush-interval option to periodically flush log file to disk.
+   - close and re-open logfile when SIGHUP is received.  Should make it easier
+     to use lcm-logger with logrotate.
+
+ liblcm-test:
+   - lcm-source win32 bugfix.  sleep convert to ms correctly.
+
 May 6, 2012
 ===========
 

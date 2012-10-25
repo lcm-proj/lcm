@@ -7,7 +7,7 @@ LDFLAGS=`pkg-config --libs lcm`
 
 msg_types=../lcm/*.lcm
 
-all: exlcm/example_t.hpp \
+all: exlcm/example_t.hpp exlcm/example_list_t.hpp \
 	listener \
 	send-message \
 	read-log
