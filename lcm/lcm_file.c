@@ -198,6 +198,11 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
 
     // only start the reader thread if not in write mode
     if (!lr->writer){
+        if(lr->start_timestamp > 0){
+            dbg (DBG_LCM, "Seeking to timestamp: %lld\n", (long long)lr->start_timestamp);
+            lcm_eventlog_seek_to_timestamp(lr->log, lr->start_timestamp);
+        }
+
         if (load_next_event (lr) < 0) {
             fprintf (stderr, "Error: Failed to read first event from log\n");
             lcm_logprov_destroy (lr);
@@ -218,8 +223,8 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
         }
 
         if(lr->start_timestamp > 0){
-            dbg (DBG_LCM, "Seeking to timestamp: %lld\n", (long long)lr->start_timestamp);
-            lcm_eventlog_seek_to_timestamp(lr->log, lr->start_timestamp);
+        //    dbg (DBG_LCM, "Seeking to timestamp: %lld\n", (long long)lr->start_timestamp);
+        //    lcm_eventlog_seek_to_timestamp(lr->log, lr->start_timestamp);
         }
     }
 

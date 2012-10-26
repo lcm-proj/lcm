@@ -35,8 +35,9 @@ Usage: %s [OPTION...] FILE\n\
   Reads packets from an LCM log file and publishes them to LCM.\n\
 \n\
 Options:\n\
-  -v, --verbose       Print information about each packet.\n\
+  -v, --verbose       qPrint information about each packet.\n\
   -s, --speed=NUM     Playback speed multiplier.  Default is 1.0.\n\
+  -t, --time=NUM      Playback from this timestamp. Default is start of log.\n\
   -e, --regexp=EXPR   GLib regular expression of channels to play.\n\
   -l, --lcm-url=URL   Play logged messages on the specified LCM URL.\n\
   -h, --help          Shows some help text and exits.\n\
@@ -50,9 +51,11 @@ main(int argc, char ** argv)
     double speed = 1.0;
     int c;
     char * expression = NULL;
+    char * start_timestamp = "0";
     struct option long_opts[] = { 
         { "help", no_argument, 0, 'h' },
         { "speed", required_argument, 0, 's' },
+        { "time", required_argument, 0, 't' },
         { "lcm-url", required_argument, 0, 'l' },
         { "verbose", no_argument, 0, 'v' },
         { "regexp", required_argument, 0, 'e' },
@@ -61,11 +64,14 @@ main(int argc, char ** argv)
 
     char *lcmurl = NULL;
     memset (&l, 0, sizeof (logplayer_t));
-    while ((c = getopt_long (argc, argv, "hp:s:ve:", long_opts, 0)) >= 0)
+    while ((c = getopt_long (argc, argv, "hp:s:t:ve:", long_opts, 0)) >= 0)
     {
         switch (c) {
             case 's':
                 speed = strtod (optarg, NULL);
+                break;
+            case 't':
+                start_timestamp = strdup (optarg);
                 break;
             case 'l':
                 free(lcmurl);
@@ -75,6 +81,9 @@ main(int argc, char ** argv)
                 l.verbose = 1;
                 break;
             case 'e':
+                expression = strdup (optarg);
+                break;
+            case 'b':
                 expression = strdup (optarg);
                 break;
             case 'h':
@@ -98,7 +107,8 @@ main(int argc, char ** argv)
 #else
     char url_in[2048];
 #endif
-    sprintf (url_in, "file://%s?speed=%f", argv[optind], speed);
+    sprintf (url_in, "file://%s?speed=%f&start_timestamp=%s", argv[optind], speed,start_timestamp);
+    //printf("%s is the url_in\n",url_in);
     l.lcm_in = lcm_create (url_in);
     if (!l.lcm_in) {
         fprintf (stderr, "Error: Failed to open %s\n", file);
