@@ -50,7 +50,6 @@ main(int argc, char ** argv)
     double speed = 1.0;
     int c;
     char * expression = NULL;
-    char * start_timestamp = "0";
     struct option long_opts[] = { 
         { "help", no_argument, 0, 'h' },
         { "speed", required_argument, 0, 's' },
