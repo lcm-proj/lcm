@@ -1,3 +1,24 @@
+2012-10-27  ashuang
+
+	* [r697] lcm-logger/lcm_logplayer.c: revert commits r696, r695
+
+2012-10-26  mauricefallon@gmail.com
+
+	* [r696] lcm-logger/lcm_logplayer.c, lcm/lcm_file.c: reverting my
+	  change earlier
+	* [r695] lcm-logger/lcm_logplayer.c, lcm/lcm_file.c: modification
+	  of lcm_file to seek (with start_timestamp) before reading first
+	  message, this allows for seeking when speed!=0. previously when
+	  speed!=0 the 1st message is read, then the log was read back but
+	  not published until the start_timestamp. now start_tiemstamp has
+	  the same effect fo rdifferent speed values. also added this as a
+	  new argument to lcm_logger tool
+
+2012-10-25  ashuang
+
+	* [r693] ChangeLog, NEWS, configure.in, examples/cpp/Makefile,
+	  lcm-python/setup.py, lcm/lcm.h: LCM release 0.9.1
+
 2012-10-07  ashuang
 
 	* [r692] WinSpecific/README.txt, WinSpecific/include/lcm: update
