@@ -63,12 +63,12 @@ namespace LCM.LCM
 			string[] addrport = up.Get("network", DEFAULT_NETWORK).Split(':');
 			if (addrport.Length == 1)
 			{
-                inetAddr = System.Net.Dns.GetHostEntry(addrport[0]).AddressList[0];
+                inetAddr = System.Net.Dns.GetHostAddresses(addrport[0])[0];
 				inetPort = 7700;
 			}
 			else if (addrport.Length == 2)
 			{
-                inetAddr = System.Net.Dns.GetHostEntry(addrport[0]).AddressList[0];
+                inetAddr = System.Net.Dns.GetHostAddresses(addrport[0])[0];
 				inetPort = Int32.Parse(addrport[1]);
 			}
 			else

@@ -23,7 +23,7 @@ namespace LCM.LCM
 		public TCPService(int port)
 		{
 			TcpListener tempTCPListener;
-			tempTCPListener = new TcpListener(System.Net.Dns.GetHostEntry(System.Net.Dns.GetHostName()).AddressList[0], port);
+			tempTCPListener = new TcpListener(System.Net.Dns.GetHostAddresses(System.Net.Dns.GetHostName())[0], port);
 			tempTCPListener.Start();
 			serverSocket = tempTCPListener;
             // serverSocket.setReuseAddress(true);

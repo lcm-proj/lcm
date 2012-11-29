@@ -63,7 +63,7 @@ namespace LCM.LCM
 			
 			string[] addrport = up.Get("network", DEFAULT_NETWORK).Split(':');
 			
-			inetAddr = Dns.GetHostEntry(addrport[0]).AddressList[0];
+			inetAddr = Dns.GetHostAddresses(addrport[0])[0];
 			inetPort = Int32.Parse(addrport[1]);
             inetEP = new IPEndPoint(inetAddr, inetPort);
 
