@@ -131,8 +131,17 @@ static void make_accessor(lcm_member_t *lm, const char *obj, char *s)
     s[0] = 0;
 
     pos += sprintf(s, "%s%s%s", obj, obj[0]==0 ? "" : ".", lm->membername);
-    for (int d = 0 ; d < ndim; d++) 
-        pos += sprintf(&s[pos],"[%c]", 'a'+d);
+	if (ndim > 0)
+	{
+		pos += sprintf(&s[pos], "[");
+		for (int d = 0 ; d < ndim; d++)
+		{
+			pos += sprintf(&s[pos],"%c", 'a'+d);
+			if (d < (ndim-1))
+				pos += sprintf(&s[pos], ",");
+		}
+		pos += sprintf(&s[pos], "]");
+	}
 }
 
 static int struct_has_string_member(lcm_struct_t *lr) 
@@ -357,8 +366,13 @@ int emit_csharp(lcmgen_t *lcm)
                 emit_continue("%s", pinfo->storage);
             }
 
-            for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++)
-                emit_continue("[]");
+			if (g_ptr_array_size(lm->dimensions) > 0)
+			{
+				emit_continue("[");
+				for (unsigned int i = 0; i < (g_ptr_array_size(lm->dimensions)-1); i++)
+					emit_continue(",");
+				emit_continue("]");
+			}
             emit_continue(" %s", lm->membername);
             emit_end(";");
         }
@@ -382,11 +396,14 @@ int emit_csharp(lcmgen_t *lcm)
             else 
                 emit_continue("%s", make_fqn_csharp(lcm, lm->type->lctypename));
       
+			emit_continue("[");
             for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
-                emit_continue("[%s]", dim->size);
+                emit_continue("%s", dim->size);
+				if (i < (g_ptr_array_size(lm->dimensions)-1))
+					emit_continue(",");
             }
-            emit_end(";");
+            emit_end("];");
         }
         emit(2,"}");
         emit(0," ");
@@ -536,10 +553,17 @@ int emit_csharp(lcmgen_t *lcm)
                 else
                     emit_continue("%s", make_fqn_csharp(lcm, lm->type->lctypename));
 
-                for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
-                    lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
-                    emit_continue("[(int) %s]", dim->size);
-                }
+				if (g_ptr_array_size(lm->dimensions) > 0)
+				{
+					emit_continue("[");
+					for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
+						lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
+						emit_continue("(int) %s", dim->size);
+						if (i < (g_ptr_array_size(lm->dimensions)-1))
+							emit_continue(",");
+					}
+					emit_continue("]");
+				}
                 emit_end(";");
             }
 
@@ -589,10 +613,17 @@ int emit_csharp(lcmgen_t *lcm)
                 else
                     emit_continue("%s", make_fqn_csharp(lcm, lm->type->lctypename));
 
-                for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
-                    lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
-                    emit_continue("[(int) %s]", dim->size);
-                }
+				if (g_ptr_array_size(lm->dimensions) > 0)
+				{
+					emit_continue("[");
+					for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
+						lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
+						emit_continue("(int) %s", dim->size);
+						if (i < (g_ptr_array_size(lm->dimensions)-1))
+							emit_continue(",");
+					}
+					emit_continue("]");
+				}
                 emit_end(";");
             }
 
@@ -605,15 +636,29 @@ int emit_csharp(lcmgen_t *lcm)
             
             if (pinfo != NULL) {
 
-                emit_start(3+g_ptr_array_size(lm->dimensions), "outobj.%s", lm->membername);
-                for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
-                    emit_continue("[%c]", 'a'+i);
-                }
+				emit_start(3+g_ptr_array_size(lm->dimensions), "outobj.%s", lm->membername);
+				if (g_ptr_array_size(lm->dimensions) > 0)
+				{
+					emit_continue("[");
+					for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
+						emit_continue("%c", 'a'+i);
+						if (i < (g_ptr_array_size(lm->dimensions)-1))
+							emit_continue(",");
+					}
+					emit_continue("]");
+				}
+
                 emit_continue(" = this.%s", lm->membername);
-                
-                for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
-                    emit_continue("[%c]", 'a'+i);
-                }
+				if (g_ptr_array_size(lm->dimensions) > 0)
+				{
+					emit_continue("[");
+					for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++) {
+						emit_continue("%c", 'a'+i);
+						if (i < (g_ptr_array_size(lm->dimensions)-1))
+							emit_continue(",");
+					}
+					emit_continue("]");
+				}
 
                 emit_end(";");
                 
