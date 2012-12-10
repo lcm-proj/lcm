@@ -841,8 +841,7 @@ udp_read_packet (lcm_udpm_t *lcm)
         while (!lcmb->recv_utime && cmsg) {
             if (cmsg->cmsg_level == SOL_SOCKET &&
                     cmsg->cmsg_type == SCM_TIMESTAMP) {
-                // GTimeVal is identical to struct timeval, so this cast is ok
-                GTimeVal * t = (GTimeVal*) CMSG_DATA (cmsg);  
+                struct timeval * t = (struct timeval*) CMSG_DATA (cmsg);
                 lcmb->recv_utime = (int64_t) t->tv_sec * 1000000 + t->tv_usec;
                 got_utime = 1;
                 break;
