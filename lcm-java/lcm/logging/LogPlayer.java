@@ -196,7 +196,8 @@ public class LogPlayer extends JComponent
 
     void setSpeed(double v)
     {
-        speedLabel.setText(""+v);
+        v = Math.max(1.0/1024, v); // minimum supported speed (0.000977x)
+        speedLabel.setText(String.format("%.3f", v));
         speed = v;
     }
     
@@ -781,31 +782,52 @@ public class LogPlayer extends JComponent
                     Log.Event e = log.readNext();
 
                     if (speed != lastspeed) {
+                        //System.out.printf("Speed changed. Old %12.6f new %12.6f\n",
+                        //                  lastspeed, speed);
                         logOffset = e.utime;
                         localOffset = System.nanoTime()/1000;
                         lastspeed = speed;
                     }
 
                     long logRelativeTime = (long) (e.utime - logOffset);
-                    long clockRelativeTime = System.nanoTime()/1000 - localOffset;
+                    long now = System.nanoTime();
+                    long clockRelativeTime = now/1000 - localOffset;
 
-                    long speed_scale = (long) (speed*16.0);
-                    long waitTime = logRelativeTime - speed_scale*clockRelativeTime/16;
+                    // we don't support playback below a rate of 1/1024x
+                    long speed_scale = (long) Math.max(1, (speed*1024.0));
+                    long waitTime = (1024*logRelativeTime/speed_scale - clockRelativeTime);
+
+                    long waitms = waitTime / 1000;
+                    waitms = Math.max(0, waitms);
+
+                    /*System.out.printf("Now 0x%016X ns, %12.6fx playback, %8d/1024 playback, %10dus rel log time, %10dus, %10dus rel clock, "+
+                                      "wait %10dus (%10dms)\n",
+                                      now,
+                                      speed,
+                                      speed_scale,
+                                      logRelativeTime,
+                                      1024*logRelativeTime/speed_scale,
+                                      clockRelativeTime,
+                                      waitTime,
+                                      waitms);*/
 
                     last_e_utime = e.utime;
 
                     try {
-                        long waitms = waitTime / 1000;
-
                         // We might have a very long wait, but
                         // only sleep for relatively short amounts
                         // of time so that we remain responsive to
                         // seek/speed changes.
                         while (waitms > 0 && !stopflag) {
-                            long thiswaitms = Math.min(50, waitms);
 
-                            Thread.sleep(thiswaitms);
-                            waitms -= thiswaitms;
+                            if (waitms > 50) {
+                                Thread.sleep(50);
+                                waitms -= 50;
+                            }
+                            else {
+                                Thread.sleep(waitms);
+                                waitms = 0;
+                            }
                         }
                     } catch (InterruptedException ex) {
                         System.out.println("Interrupted");
