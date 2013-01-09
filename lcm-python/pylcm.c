@@ -239,6 +239,10 @@ pylcm_handle (PyLCMObject *lcm_obj)
 {
     dbg ("%s %p\n", __FUNCTION__, lcm_obj);
     int fd = lcm_get_fileno (lcm_obj->lcm);
+    if(fd < 0) {
+      PyErr_SetFromErrno(PyExc_IOError);
+      return NULL;
+    }
     fd_set fds;
     FD_ZERO (&fds);
     FD_SET (fd, &fds);
