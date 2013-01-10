@@ -25,7 +25,7 @@ public class TCPProvider implements Provider
     InetAddress inetAddr;
     int         inetPort;
 
-    ReaderThread reader;
+    TCPThread tcp;
 
     public static final int MAGIC_SERVER = 0x287617fa; // first word sent by server
     public static final int MAGIC_CLIENT = 0x287617fb; // first word sent by client
@@ -33,6 +33,8 @@ public class TCPProvider implements Provider
     public static final int MESSAGE_TYPE_PUBLISH = 1;
     public static final int MESSAGE_TYPE_SUBSCRIBE = 2;
     public static final int MESSAGE_TYPE_UNSUBSCRIBE = 3;
+
+    HashSet<String> subscriptions = new HashSet<String>();
 
     public TCPProvider(LCM lcm, URLParser up) throws IOException
     {
@@ -50,8 +52,8 @@ public class TCPProvider implements Provider
             System.exit(-1);
         }
 
-        reader = new ReaderThread();
-        reader.start();
+        tcp = new TCPThread();
+        tcp.start();
     }
 
     /** Publish a message synchronously. However, if the server is not
@@ -62,16 +64,26 @@ public class TCPProvider implements Provider
         try {
             publishEx(channel, data, offset, length);
         } catch (Exception ex) {
-            System.err.println("ex: "+ex);
+            System.err.println("TCPProvider ex: "+ex);
         }
     }
 
-    private void sockWriteAndFlush(byte[] b)
+    byte[] stringToBytes(String s)
+    {
+        try {
+            return s.getBytes("US-ASCII");
+        } catch(UnsupportedEncodingException ex) {
+            System.err.println("lcm.TCPProvider: Bad channel name" + s);
+            throw new RuntimeException("Don't know how to recover from this");
+        }
+    }
+
+/*    private void sockWriteAndFlush(byte[] b)
     {
         // try to send message on socket. If the socket is not
-        // connected, we'll simply fail. The readerthread is
+        // connected, we'll simply fail. The tcpthread is
         // responsible for maintaining a connection to the hub.
-        OutputStream sockOuts = reader.getOutputStream();
+        OutputStream sockOuts = tcp.getOutputStream();
         if (sockOuts != null) {
             try {
                 sockOuts.write(b);
@@ -80,64 +92,30 @@ public class TCPProvider implements Provider
             }
         }
     }
-
+*/
     public synchronized void subscribe(String channel)
     {
-        byte[] channel_bytes;
-        try {
-            channel_bytes = channel.getBytes("US-ASCII");
-        } catch(UnsupportedEncodingException ex) {
-            System.err.println("lcm.TCPProvider: Bad channel name" + channel);
-            return;
-        }
-
-        try {
-            ByteArrayOutputStream bouts = new ByteArrayOutputStream(channel.length() + 8);
-            DataOutputStream outs = new DataOutputStream(bouts);
-
-            outs.writeInt(MESSAGE_TYPE_SUBSCRIBE);
-            outs.writeInt(channel_bytes.length);
-            outs.write(channel_bytes, 0, channel_bytes.length);
-
-            sockWriteAndFlush(bouts.toByteArray());
-        } catch (IOException ex) {
-        }
+        subscriptions.add(channel);
+        tcp.sendSubscribe(channel);
     }
 
     public synchronized void unsubscribe(String channel)
     {
-        byte[] channel_bytes;
-        try {
-            channel_bytes = channel.getBytes("US-ASCII");
-        } catch(UnsupportedEncodingException ex) {
-            System.err.println("lcm.TCPProvider: Bad channel name" + channel);
-            return;
-        }
-
-        try {
-            ByteArrayOutputStream bouts = new ByteArrayOutputStream(channel.length() + 8);
-            DataOutputStream outs = new DataOutputStream(bouts);
-
-            outs.writeInt(MESSAGE_TYPE_UNSUBSCRIBE);
-            outs.writeInt(channel_bytes.length);
-            outs.write(channel_bytes, 0, channel_bytes.length);
-
-            sockWriteAndFlush(bouts.toByteArray());
-        } catch (IOException ex) {
-        }
+        subscriptions.remove(channel);
+        tcp.sendUnsubscribe(channel);
     }
 
     public synchronized void close()
     {
-        if (null != reader) {
-            reader.close();
+        if (null != tcp) {
+            tcp.close();
             try {
-                reader.join();
+                tcp.join();
             } catch (InterruptedException ex) {
             }
         }
 
-        reader = null;
+        tcp = null;
     }
 
     static final void safeSleep(int ms)
@@ -150,7 +128,7 @@ public class TCPProvider implements Provider
 
     void publishEx(String channel, byte data[], int offset, int length) throws Exception
     {
-        byte[] channel_bytes = channel.getBytes("US-ASCII");
+        byte[] channel_bytes = stringToBytes(channel);
 
         int payload_size = channel_bytes.length + length;
 
@@ -165,10 +143,11 @@ public class TCPProvider implements Provider
         outs.writeInt(length);
         outs.write(data, offset, length);
 
-        sockWriteAndFlush(bouts.toByteArray());
+        tcp.write(bouts.toByteArray());
     }
 
-    class ReaderThread extends Thread
+    // synchronize on writes and to changes in subscription state.
+    class TCPThread extends Thread
     {
         Socket sock;
         DataInputStream ins;
@@ -176,36 +155,94 @@ public class TCPProvider implements Provider
         boolean exit = false;
         int serverVersion;
 
+        TCPThread()
+        {
+        }
+
+        synchronized void write(byte b[]) throws IOException
+        {
+            // if our connection is dead or not yet up, we just drop
+            // this message.  (subscribes will be setup again when the
+            // connection comes back up).
+            if (outs == null)
+                return;
+
+            outs.write(b);
+            outs.flush();
+        }
+
+        synchronized void sendSubscribe(String channel)
+        {
+            byte channel_bytes[] = stringToBytes(channel);
+
+            try {
+                ByteArrayOutputStream bouts = new ByteArrayOutputStream(channel.length() + 8);
+                DataOutputStream outs = new DataOutputStream(bouts);
+
+                outs.writeInt(MESSAGE_TYPE_SUBSCRIBE);
+                outs.writeInt(channel_bytes.length);
+                outs.write(channel_bytes, 0, channel_bytes.length);
+
+                write(bouts.toByteArray());
+            } catch (IOException ex) {
+                System.out.println("ex: "+ex);
+            }
+        }
+
+        synchronized void sendUnsubscribe(String channel)
+        {
+            byte channel_bytes[] = stringToBytes(channel);
+
+            try {
+                ByteArrayOutputStream bouts = new ByteArrayOutputStream(channel.length() + 8);
+                DataOutputStream outs = new DataOutputStream(bouts);
+
+                outs.writeInt(MESSAGE_TYPE_UNSUBSCRIBE);
+                outs.writeInt(channel_bytes.length);
+                outs.write(channel_bytes, 0, channel_bytes.length);
+
+                write(bouts.toByteArray());
+            } catch (IOException ex) {
+            }
+        }
+
         public void run()
         {
             while (!exit) {
 
-                //////////////////////////////////
-                // reconnect
-                try {
-                    sock = new Socket(inetAddr, inetPort);
-                    OutputStream _outs = sock.getOutputStream();
-                    DataOutputStream _douts = new DataOutputStream(_outs);
-                    _douts.writeInt(MAGIC_CLIENT);
-                    _douts.writeInt(VERSION);
-                    _douts.flush();
-                    outs = _outs;
-                    ins = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
+                synchronized (this) {
+                    //////////////////////////////////
+                    // reconnect
+                    try {
+                        sock = new Socket(inetAddr, inetPort);
+                        OutputStream _outs = sock.getOutputStream();
+                        DataOutputStream _douts = new DataOutputStream(_outs);
+                        _douts.writeInt(MAGIC_CLIENT);
+                        _douts.writeInt(VERSION);
+                        _douts.flush();
+                        outs = _outs;
+                        ins = new DataInputStream(new BufferedInputStream(sock.getInputStream()));
 
-                    int magic = ins.readInt();
-                    if (magic != MAGIC_SERVER) {
-                        sock.close();
+                        int magic = ins.readInt();
+                        if (magic != MAGIC_SERVER) {
+                            sock.close();
+                            continue;
+                        }
+
+                        serverVersion = ins.readInt();
+
+                    } catch (IOException ex) {
+                        System.err.println("lcm.TCPProvider: Unable to connect to "+inetAddr+":"+inetPort);
+                        safeSleep(500);
+
+                        // try connecting again.
                         continue;
                     }
 
-                    serverVersion = ins.readInt();
-
-                } catch (IOException ex) {
-                    System.err.println("lcm.TCPProvider: Unable to connect to "+inetAddr+":"+inetPort);
-                    safeSleep(500);
-
-                    // try connecting again.
-                    continue;
+                    for (String sub : subscriptions) {
+                        System.out.println("resending subscription "+sub);
+                        sendSubscribe(sub);
+                    }
                 }
 
                 //////////////////////////////////
