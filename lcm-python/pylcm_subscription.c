@@ -1,5 +1,9 @@
 #include "pylcm_subscription.h"
 
+#ifndef Py_RETURN_NONE
+#define Py_RETURN_NONE  do { Py_INCREF( Py_None ); return Py_None; } while(0)
+#endif
+
 PyDoc_STRVAR (_class_doc,
 "The LCMSubscription class represents a single subscription of a message\n\
 handler to an LCM channel.\n\
