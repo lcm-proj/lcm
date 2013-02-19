@@ -41,7 +41,7 @@ LIB_SOCKET_NSL
 AC_SEARCH_LIBS([nanosleep], [rt])
 
 # inet_aton might need special linkage
-AC_SEARCH_LIBS([inet_aton],[resolv])
+AC_SEARCH_LIBS([inet_aton], [resolv])
 
 dnl ------------------
 dnl Python support
@@ -84,6 +84,31 @@ INSTALLED_CLASSPATH=\${jardir}/lcm.jar
 AC_SUBST(INSTALLED_CLASSPATH)
 AC_SUBST(java_apiversion)
 
+dnl ---------------
+dnl Lua support
+dnl ---------------
+AC_ARG_WITH(lua,
+            [AS_HELP_STRING([--without-lua],
+                [Do not compile lcm-lua bindings even if Lua is available])],
+            [], [with_lua=yes])
+
+AS_IF([test "x$with_lua" != 'xno'],
+  [ AX_PROG_LUA([5.1], [], [lua_interp='yes'], [lua_interp='no'])
+    
+    AS_IF([test "x$lua_interp" = 'xyes'],
+      [ AX_LUA_HEADERS([lua_headers='yes'], [lua_headers='no'])
+        AX_LUA_LIBS([lua_libs='yes'], [lua_libs='no'])
+      ])
+
+    AS_IF([test "x$lua_interp" = 'xyes' &&
+           test "x$lua_headers" = 'xyes' &&
+           test "x$lua_libs" = 'xyes'],
+      [with_lua='yes'],
+      [with_lua='no'])
+  ])
+
+AM_CONDITIONAL(HAVE_LUA, test "x$with_lua" = "xyes")
+
 dnl -------------------------------------------------
 dnl Maybe the user doesn't want to build the examples
 dnl -------------------------------------------------
@@ -124,6 +149,7 @@ AC_OUTPUT([
   lcm-java/Makefile
   lcm-java/lcm-java.pc
   lcm-python/Makefile
+  lcm-lua/Makefile
   examples/Makefile
   m4/Makefile
   po/Makefile.in
@@ -142,6 +168,12 @@ else
     PYTHON_STR="Disabled"
 fi
 
+if test "$with_lua" = "yes"; then
+    LUA_STR="Enabled"
+else
+    LUA_STR="Disabled"
+fi
+
 echo "
 
 Configuration (LCM):
@@ -150,4 +182,5 @@ Configuration (LCM):
 	Compiler:              ${CC}
 	Java Support:          ${JAVA_STR}
 	Python Support:        ${PYTHON_STR}
+	Lua Support:           ${LUA_STR}
 "

@@ -1,0 +1,82 @@
+
+*** Linux ***
+
+The LCM Lua module is normally built by the LCM Autotools build. The LCM Lua
+module can also be built by LuaRocks. A rockspec has been provided for your
+convenience.
+
+Do not build the LCM Lua modules with both the Autotools build and LuaRocks.
+This will cause the module to be installed twice in two different places. You
+should really only use one or the other, so avoid confusion later when
+updating, uninstalling, etc.
+
+The rock depends on glib-2.0 and gthread-2.0, like the lcm library itself. The
+rock does not depend on the lcm library; the LCM sources are compiled in.
+
+LuaRocks will look for...
+
+  glib.h in GLIB_INCDIR
+  glibconfig.h in GLIB_CONFIG_INCDIR
+  libglib-2.0.so in GLIB_LIBDIR
+
+Depending your machine, you may need to specify these directories. On my
+machine, LuaRocks must be invoked in the following way:
+
+$ luarocks make lcm-0.9.2-0.rockspec \
+GLIB_INCDIR=/usr/include/glib-2.0 \
+GLIB_CONFIG_INCDIR=/usr/lib/i386-linux-gnu/glib-2.0/include \
+GLIB_LIBDIR=/usr/lib/i386-linux-gnu
+
+If you don't know where your glib files are, try to locate them like this:
+
+$ locate glib.h
+$ locate glibconfig.h
+
+If the build fails because of initializers in for loops, you will need to
+add a C99 flag to the CC variable, like `CC="CC -std=gnu99"`.
+
+If all else fails, try this:
+
+$ luarocks make lcm-0.9.2-0.rockspec \
+CC="gcc -std=gnu99" \
+GLIB_INCDIR="$(dirname $(locate -n 1 glib.h))" \
+GLIB_CONFIG_INCDIR="$(dirname $(locate -n 1 glibconfig.h))" \
+GLIB_LIBDIR="$(dirname $(locate -n 1 -r 'libglib-2.0.so$'))"
+
+
+*** Windows ***
+
+If you are trying to build this rock on windows... Good luck! But seriously,
+it's just like the linux procedure with a few extra twists. This has been
+tested with the windows compiler; the MinGW compiler has not been tested.
+
+First, you will need to install GLib. The all-in-one package is recommended.
+You can get it here:
+
+  http://www.gtk.org/download/win32.php
+
+Once GLib is installed (to somewhere like C:\GLIB) you will need to add the bin
+directory to your PATH. This is necessary so Lua will be able to find
+libglib-2.0-0.dll and other DLLs.
+
+If you haven't done so already, you will need to open up a command prompt and
+prepare it for compiling. For some strange reason, Microsoft's compiler doesn't
+work until some random batch script has been run: vcvars32.bat. Run it, and
+then cl.exe should work as expected. On my system it was here:
+
+  C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\vcvars32.bat
+
+One last thing: you will need to build the sources as C++. You can do this by
+setting CFLAGS to "/TP".
+
+You should invoke LuaRocks like this (all on one line):
+
+> luarocks make lcm-0.9.2-0.rockspec
+GLIB_LIBDIR=C:\GLIB\lib
+GLIB_INCDIR=C:\GLIB\include\glib-2.0
+GLIB_CONFIG_INCDIR=C:\GLIB\lib\glib-2.0\include
+CFLAGS="/TP"
+
+You will also probably need to tell the Lua interpreter where to find the rock.
+You will most likely need to modify the LUA_CPATH environment variable.
+

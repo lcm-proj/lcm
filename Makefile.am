@@ -8,9 +8,13 @@ if HAVE_PYTHON
 SUBDIRS += lcm-python
 endif
 
+if HAVE_LUA
+SUBDIRS += lcm-lua
+endif
+
 if WITH_EXAMPLES
 SUBDIRS += examples
 endif
 
-EXTRA_DIST = WinSpecific lcm-dotnet lcmgen-test lcm-lite docs test
+EXTRA_DIST = WinSpecific lcm-dotnet lcm-lite docs test
 ACLOCAL_AMFLAGS = -I m4
