@@ -45,6 +45,7 @@ languages, consult the following sections for language-specific tutorials.
  - \ref tut_java "Steps 2-4: Java"
  - \ref tut_matlab "Steps 2-4: MATLAB"
  - \ref tut_python "Steps 2-4: Python"
+ - \ref tut_lua "Steps 2-4: Lua"
 
 Note that C and C++ are considered to be separate programming languages.  It is
 possible to use the C bindings from C++, but there are also LCM bindings

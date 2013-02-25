@@ -11,6 +11,10 @@
 \li \ref LcmC
 \li \ref LcmCpp
 
+\section other_api_ref Other APIs
+
+\li \ref lua_api
+
 \section main_other Other
 
 \li \ref type_specification

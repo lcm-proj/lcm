@@ -29,6 +29,9 @@ int emit_java(lcmgen_t *lcm);
 void setup_python_options(getopt_t *gopt);
 int emit_python(lcmgen_t *lcm);
 
+void setup_lua_options(getopt_t *gopt);
+int emit_lua(lcmgen_t *lcm);
+
 void setup_csharp_options(getopt_t *gopt);
 int emit_csharp(lcmgen_t *lcm);
 
@@ -62,6 +65,10 @@ int main(int argc, char *argv[])
     getopt_add_spacer(gopt, "**** Python options ****");
     getopt_add_bool  (gopt, 'p', "python",      0,     "Emit Python code");
     setup_python_options(gopt);
+
+    getopt_add_spacer(gopt, "**** Lua options ****");
+    getopt_add_bool  (gopt, 'l', "lua",      0,     "Emit Lua code");
+    setup_lua_options(gopt);
 
     getopt_add_spacer(gopt, "**** C#.NET options ****");
     getopt_add_bool  (gopt, 0, "csharp",      0,     "Emit C#.NET code");
@@ -122,6 +129,13 @@ int main(int argc, char *argv[])
         if (emit_python(lcm)) {
             printf("An error occurred while emitting Python code.\n");
         }
+    }
+
+    if (getopt_get_bool(gopt, "lua")) {
+    	did_something = 1;
+    	if (emit_lua(lcm)) {
+    		printf("An error occurred while emitting Lua code.\n");
+    	}
     }
 
     if (getopt_get_bool(gopt, "csharp")) {
