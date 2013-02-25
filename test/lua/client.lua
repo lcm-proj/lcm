@@ -6,51 +6,16 @@ package.path = './?/init.lua;' .. package.path
 
 local lcmtest = require('lcmtest')
 
-function check_field(value, expectedvalue, name)
+local function info(text)
+	print("client: " .. text)
+end
+
+local function check_field(value, expectedvalue, name)
+
 	if value ~= expectedvalue then
 		error(string.format("%s does not equal %s for field %s!", tostring(value), tostring(expectedvalue), name))
 	end
 end
-
-
-
-local SubmoduleTest = {}
-SubmoduleTest.__index = SubmoduleTest
-
-function SubmoduleTest:new()
-	
-	local obj = {}
-	obj.name = "submodule test"
-	obj.msgtype = lcmtest.type1_t
-	obj.num_iterations = 5
-	setmetatable(obj, SubmoduleTest)
-
-	return obj
-end
-
-function SubmoduleTest:make_message(iteration)
-	
-	local msg = lcmtest.type1_t:new()
-
-	msg.sx = lcmtest.package1.type2_t:new()
-	msg.sy = lcmtest.package2.type3_t:new()
-	msg.sy.sx = lcmtest.package2.subpackage1.type4_t:new()
-	msg.sy.sy = lcmtest.package2.subpackage2.type5_t:new()
-	msg.syy = lcmtest.package2.subpackage1.type4_t:new()
-	msg.sz = lcmtestx.typeA_t:new()
-	msg.sN = lcmtest.typeN_t:new()
-
-	return msg
-end
-
-function SubmoduleTest:check_reply(msg, iteration)
-	-- do nothing
-end
-
-
-
-
-
 
 local MultidimTest = {}
 MultidimTest.__index = MultidimTest
@@ -67,7 +32,7 @@ function MultidimTest:new()
 end
 
 function MultidimTest:make_message(iteration)
-	
+
 	local msg = self.msgtype:new()
 
 	msg.size_a = iteration
@@ -99,10 +64,10 @@ function MultidimTest:make_message(iteration)
 end
 
 function MultidimTest:check_reply(msg, iteration)
-	
-	check_field(msg.size_a, iteration, "size_a")
-	check_field(msg.size_b, iteration, "size_b")
-	check_field(msg.size_c, iteration, "size_c")
+
+	check_field(msg.size_a, iteration + 1, "size_a")
+	check_field(msg.size_b, iteration + 1, "size_b")
+	check_field(msg.size_c, iteration + 1, "size_c")
 
 	local n = 0
 	for i = 1, msg.size_a do
@@ -138,11 +103,10 @@ function NodeTest:new()
 end
 
 function NodeTest:make_message(iteration)
-	
+
 	local msg = self.msgtype:new()
 
-	-- lua indecies start at 1
-	msg.num_children = iteration - 1
+	msg.num_children = iteration
 
 	msg.children = {}
 	for i = 1, msg.num_children do
@@ -152,13 +116,17 @@ function NodeTest:make_message(iteration)
 	return msg
 end
 
-function NodeTest:check_reply(msg, iteration)
-	
-	-- lua indecies start at 1
-	check_field(msg.num_children, iteration - 1, "num_children")
+function NodeTest:check_reply(msg, iteration, decendant)
+
+	if not decendant then
+		-- this is only used for the root of the message
+		check_field(msg.num_children, iteration + 1, "num_children")
+	else
+		check_field(msg.num_children, iteration, "num_children")
+	end
 
 	for _, childmsg in pairs(msg.children) do
-		self:check_reply(childmsg, msg.num_children - 1)
+		self:check_reply(childmsg, msg.num_children - 1, true)
 	end
 end
 
@@ -177,40 +145,43 @@ function PrimitivesListTest:new()
 end
 
 function PrimitivesListTest:make_message(iteration)
-	
+
 	local msg = self.msgtype:new()
 
 	msg.num_items = iteration
 
 	msg.items = {}
-	for n = 1, msg.num_items do
-		
+	for ix = 1, msg.num_items do
+
 		local submsg = lcmtest.primitives_t:new()
 
-		submsg.i8 = -(n % 100)
-		submsg.i16 = -n * 10
-		submsg.i64 = -n * 10000
-		submsg.position[1] = -n
-		submsg.position[2] = -n
-		submsg.position[3] = -n
-		submsg.orientation[1] = -n
-		submsg.orientation[2] = -n
-		submsg.orientation[3] = -n
-		submsg.orientation[4] = -n
-		submsg.num_ranges = n
-		
+		-- make i start at zero
+		local i = ix - 1
+
+		submsg.i8 = -(i % 100)
+		submsg.i16 = -i * 10
+		submsg.i64 = -i * 10000
+		submsg.position[1] = -i
+		submsg.position[2] = -i
+		submsg.position[3] = -i
+		submsg.orientation[1] = -i
+		submsg.orientation[2] = -i
+		submsg.orientation[3] = -i
+		submsg.orientation[4] = -i
+		submsg.num_ranges = i
+
 		submsg.ranges = {}
-		for i = 1, submsg.num_ranges do
-				submsg.ranges[i] = -i
+		for j = 1, submsg.num_ranges do
+				submsg.ranges[j] = -(j - 1)
 		end
-		
-		submsg.name = tostring(-n)
+
+		-- +0 is to avoid issues with tostring(-0)
+		submsg.name = tostring(-i + 0)
 
 		-- because Lua evaluates 0 as true
-		submsg.enabled = (((n + 1) % 2) ~= 0)
+		submsg.enabled = (((i + 1) % 2) ~= 0)
 
-
-		msg.items[n] = submsg
+		msg.items[ix] = submsg
 	end
 
 	return msg
@@ -218,33 +189,37 @@ end
 
 function PrimitivesListTest:check_reply(msg, iteration)
 
-	check_field(msg.num_items, iteration, "num_items")
+	check_field(msg.num_items, iteration + 1, "num_items")
 
-	for n = 1, msg.num_items do
+	for ix = 1, msg.num_items do
 
-		local submsg = msg.items[n]
-		local prefix = string.format("items[%d].", n)
+		local submsg = msg.items[ix]
+		local prefix = string.format("items[%d].", ix)
 
-		check_field(submsg.i8, -(n % 100), prefix .. "i8")
-		check_field(submsg.i16, -n * 10, prefix .. "i16")
-		check_field(submsg.i64, -n * 10000, prefix .. "i64")
-		check_field(submsg.position[1], -n, prefix .. "position[1]")
-		check_field(submsg.position[2], -n, prefix .. "position[2]")
-		check_field(submsg.position[3], -n, prefix .. "position[3]")
-		check_field(submsg.orientation[1], -n, prefix .. "orientation[1]")
-		check_field(submsg.orientation[2], -n, prefix .. "orientation[2]")
-		check_field(submsg.orientation[3], -n, prefix .. "orientation[3]")
-		check_field(submsg.orientation[4], -n, prefix .. "orientation[4]")
-		check_field(submsg.num_ranges, n, prefix .. "num_ranges")
+		-- make i start at zero
+		local i = ix - 1
 
-		for i = 1, submsg.num_ranges do
-	    check_field(submsg.ranges[i], -i, prefix .. string.format("ranges[%d]", i))
+		check_field(submsg.i8, -(i % 100), prefix .. "i8")
+		check_field(submsg.i16, -(i * 10), prefix .. "i16")
+		check_field(submsg.i64, -(i * 10000), prefix .. "i64")
+		check_field(submsg.position[1], -i, prefix .. "position[1]")
+		check_field(submsg.position[2], -i, prefix .. "position[2]")
+		check_field(submsg.position[3], -i, prefix .. "position[3]")
+		check_field(submsg.orientation[1], -i, prefix .. "orientation[1]")
+		check_field(submsg.orientation[2], -i, prefix .. "orientation[2]")
+		check_field(submsg.orientation[3], -i, prefix .. "orientation[3]")
+		check_field(submsg.orientation[4], -i, prefix .. "orientation[4]")
+		check_field(submsg.num_ranges, i, prefix .. "num_ranges")
+
+		for j = 1, submsg.num_ranges do
+			check_field(submsg.ranges[j], -(j - 1), prefix .. string.format("ranges[%d]", j))
 		end
 
-		check_field(submsg.name, tostring(-n), prefix .. "name")
+		-- +0 is to avoid issues with tostring(-0)
+		check_field(submsg.name, tostring(-i + 0), prefix .. "name")
 
 		-- because Lua evaluates 0 as true
-		check_field(submsg.enabled, (((n + 1) % 2) ~= 0), prefix .. "enabled")
+		check_field(submsg.enabled, (((i + 1) % 2) ~= 0), prefix .. "enabled")
 	end
 end
 
@@ -263,7 +238,7 @@ function PrimitivesTest:new()
 end
 
 function PrimitivesTest:make_message(iteration)
-	
+
 	local msg = self.msgtype:new()
 	local n = iteration
 
@@ -281,7 +256,7 @@ function PrimitivesTest:make_message(iteration)
 
 	msg.ranges = {}
 	for i = 1, msg.num_ranges do
-			msg.ranges[i] = i
+			msg.ranges[i] = i - 1
 	end
 	
 	msg.name = tostring(n)
@@ -293,29 +268,29 @@ function PrimitivesTest:make_message(iteration)
 end
 
 function PrimitivesTest:check_reply(msg, iteration)
-	
+
 	local n = iteration
 
-	check_field(msg.i8, n % 100, "i8")
-	check_field(msg.i16, n * 10, "i16");
-	check_field(msg.i64, n * 10000, "i64");
-	check_field(msg.position[1], n, "position[1]");
-	check_field(msg.position[2], n, "position[2]");
-	check_field(msg.position[3], n, "position[3]");
-	check_field(msg.orientation[1], n, "orientation[1]");
-	check_field(msg.orientation[2], n, "orientation[2]");
-	check_field(msg.orientation[3], n, "orientation[3]");
-	check_field(msg.orientation[4], n, "orientation[4]");
-	check_field(msg.num_ranges, n, "num_ranges");
+	check_field(msg.i8, (n + 1) % 100, "i8")
+	check_field(msg.i16, (n + 1) * 10, "i16");
+	check_field(msg.i64, (n + 1) * 10000, "i64");
+	check_field(msg.position[1], n + 1, "position[1]");
+	check_field(msg.position[2], n + 1, "position[2]");
+	check_field(msg.position[3], n + 1, "position[3]");
+	check_field(msg.orientation[1], n + 1, "orientation[1]");
+	check_field(msg.orientation[2], n + 1, "orientation[2]");
+	check_field(msg.orientation[3], n + 1, "orientation[3]");
+	check_field(msg.orientation[4], n + 1, "orientation[4]");
+	check_field(msg.num_ranges, n + 1, "num_ranges");
 
-	for i = 1, n do
-		check_field(msg.ranges[i], i, string.format("ranges[%d]", i))
+	for i = 1, n + 1 do
+		check_field(msg.ranges[i], i - 1, string.format("ranges[%d]", i))
 	end
 
-	check_field(msg.name, tostring(n), "name")
+	check_field(msg.name, tostring(n + 1), "name")
 
 	-- because Lua evaluates 0 as true
-	check_field(msg.enabled, ((n % 2) ~= 0), "enabled")
+	check_field(msg.enabled, (((n + 1) % 2) ~= 0), "enabled")
 end
 
 local StandardTester = {}
@@ -335,13 +310,13 @@ function StandardTester:new(lc, test)
 end
 
 function StandardTester:handler(channel, data)
-	
-	function process_msg()
+
+	local function process_msg()
 		-- this will error if something goes wrong
 		self.test:check_reply(self.test.msgtype.decode(data), self.iteration)
 	end
 
-	function process_err(argerr)
+	local function process_err(argerr)
 		-- set the objects error, testerr
 		self.testerr = argerr
 	end
@@ -351,21 +326,21 @@ function StandardTester:handler(channel, data)
 end
 
 function StandardTester:run()
-	
+
 	self.testerr = nil
 	self.response_count = 0
 	self.iteration = 0
 
-	local channel = string.format("chnl_%s_%s", self.test.name, self.test.msgtype.shortname)
+	local channel = string.format("test_lcmtest_%s", self.test.msgtype.shortname)
+	local reply_channel = string.format("test_lcmtest_%s_reply", self.test.msgtype.shortname)
+
 	local handler_closure = function(channel, data) self:handler(channel, data) end
-	local sub = self.lc:subscribe(channel, handler_closure)
+	local sub = self.lc:subscribe(reply_channel, handler_closure)
 
 	for i = 1, self.test.num_iterations do
-		
-		self.iteration = i
 
 		-- send a message
-		local msg = self.test:make_message(i)
+		local msg = self.test:make_message(self.iteration)
 		self.lc:publish(channel, msg:encode())
 
 		-- get the message, check result
@@ -376,13 +351,16 @@ function StandardTester:run()
 
 		-- check for an error
 		if self.testerr then
-			print(string.format("%s failed on iteration %d!\n...\n%s", self.test.name, self.iteration, tostring(self.testerr)))
+			info(string.format("%s failed on iteration %d!", self.test.name, self.iteration))
+			info("error: " .. tostring(self.testerr))
 			self.lc:unsubscribe(sub)
 			return false
 		end
+
+		self.iteration = self.iteration + 1
 	end
 
-	print(string.format("%s passed! :-)", self.test.name))
+	info(string.format("lcmtest_%-17s : PASSED :-)", self.test.msgtype.shortname))
 	self.lc:unsubscribe(sub)
 	return true
 end
@@ -403,16 +381,16 @@ function EchoTester:new(lc)
 end
 
 function EchoTester:handler(channel, data)
-	if data ~= self.data then
-		return
+
+	if data == self.data then
+		self.response_count = self.response_count + 1
 	end
-	self.response_count = self.response_count + 1
 end
 
 function EchoTester:run()
-	
+
 	local handler_closure = function(channel, data) self:handler(channel, data) end
-	local sub = self.lc:subscribe("TEST_ECHO", handler_closure)
+	local sub = self.lc:subscribe("TEST_ECHO_REPLY", handler_closure)
 
 	for i = 1, self.num_iterations do
 		local datalen = math.random(10, 10000)
@@ -424,13 +402,13 @@ function EchoTester:run()
 		self.lc:publish("TEST_ECHO", self.data)
 
 		if not self.lc:timedhandle(500000) or self.response_count ~= i then
-			print(string.format("echo test failed to receive a response on iteration %d!", i))
+			info(string.format("echo test failed to receive a response on iteration %d!", i))
 			self.lc:unsubscribe(sub)
 			return false
 		end
 	end
 
-	print("echo test passed! :-)")
+	info(string.format("%-25s : PASSED :-)", "echo test"))
 	self.lc:unsubscribe(sub)
 	return true
 end
@@ -447,6 +425,7 @@ function Tester:new()
 end
 
 function Tester:run()
+
 	-- make lcm connection
 	local lc = lcm.lcm.new()
 
@@ -462,6 +441,8 @@ function Tester:run()
 	for i = 1, 1000 do
 		collectgarbage()
 	end
+
+	info("All tests passed.")
 end
 
 -- now to actually do something
