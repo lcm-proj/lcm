@@ -53,6 +53,7 @@ table to generate bindings for the programming language of your choice.
 <tr><td>C</td><td><tt>lcm-gen -c example_t.lcm</tt></tr>
 <tr><td>C++</td><td><tt>lcm-gen -x example_t.lcm</tt></tr>
 <tr><td>Java</td><td><tt>lcm-gen -j example_t.lcm</tt></tr>
+<tr><td>Lua</td><td><tt>lcm-gen -l example_t.lcm</tt></tr>
 <tr><td>Python</td><td><tt>lcm-gen -p example_t.lcm</tt></tr>
 <tr><td>C#</td><td><tt>lcm-gen --csharp example_t.lcm</tt></tr>
 <tr><td>MATLAB</td><td>Generate Java code</tr>
