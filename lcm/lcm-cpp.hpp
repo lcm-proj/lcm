@@ -11,7 +11,7 @@ namespace lcm {
  * @defgroup LcmCpp C++ API Reference
  *
  * THe %LCM C++ API provides classes and data structures for communicating with
- * other %LCM clients, as well as reading and writing %LCM log files.  It is a 
+ * other %LCM clients, as well as reading and writing %LCM log files.  It is a
  * pure header wrapper around the C API, and has the same linking requirements
  * as the C API.
  *
@@ -24,8 +24,7 @@ struct ReceiveBuffer;
 
 /**
  * @brief Core communications class for the C++ API.
- * @ingroup BotCoreMathGeom
- * 
+ *
  */
 class LCM {
     public:
@@ -75,12 +74,12 @@ class LCM {
          *
          * @return 0 on success, -1 on failure.
          */
-        inline int publish(const std::string& channel, void *data, 
+        inline int publish(const std::string& channel, void *data,
                 unsigned int datalen);
 
         /**
          * @brief Publishes a message with automatic message encoding.
-         * 
+         *
          * This template method is designed for use with C++ classes generated
          * by lcm-gen.
          *
@@ -144,7 +143,7 @@ class LCM {
          * #include <lcm/lcm-cpp.hpp>
          *
          * class MyMessageHandler {
-         *   void onMessage(const lcm::ReceiveBuffer* rbuf, const std::string& channel, 
+         *   void onMessage(const lcm::ReceiveBuffer* rbuf, const std::string& channel,
          *           const exlcm::example_t* msg) {
          *      // do something with the message
          *   }
@@ -173,7 +172,7 @@ class LCM {
          * is destroyed.
          */
         template <class MessageType, class MessageHandlerClass>
-        Subscription* subscribe(const std::string& channel, 
+        Subscription* subscribe(const std::string& channel,
             void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel, const MessageType* msg),
             MessageHandlerClass* handler);
 
@@ -229,7 +228,7 @@ class LCM {
             void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer* rbuf, const std::string& channel),
             MessageHandlerClass* handler);
 
-        /** 
+        /**
          * @brief Subscribe a function callback to a channel, with automatic
          * message decoding.
          *
@@ -276,7 +275,7 @@ class LCM {
          * regular expression implicitly surrounded by '^' and '$'.
          * @param handler A function pointer identifying the callback
          * function.
-         * @param context A context variable that will be passed to the 
+         * @param context A context variable that will be passed to the
          * callback function.  This can be used to pass state or other
          * information to the callback function.  If not needed, then @c
          * ContextClass @c can be set to void*, and this argument set to NULL.
@@ -286,11 +285,11 @@ class LCM {
          * the LCM class, and is automatically destroyed when its LCM instance
          * is destroyed.
          */
-        template <class MessageType, class ContextClass> 
+        template <class MessageType, class ContextClass>
         Subscription* subscribeFunction(const std::string& channel,
-                void (*handler)(const ReceiveBuffer* rbuf, 
-                                const std::string& channel, 
-                                const MessageType *msg, 
+                void (*handler)(const ReceiveBuffer* rbuf,
+                                const std::string& channel,
+                                const MessageType *msg,
                                 ContextClass context),
                 ContextClass context);
 
@@ -324,7 +323,7 @@ class LCM {
          * regular expression implicitly surrounded by '^' and '$'.
          * @param handler A function pointer identifying the callback
          * function.
-         * @param context A context variable that will be passed to the 
+         * @param context A context variable that will be passed to the
          * callback function.  This can be used to pass state or other
          * information to the callback function.  If not needed, then @c
          * ContextClass @c can be set to void*, and this argument set to NULL.
@@ -399,7 +398,7 @@ struct ReceiveBuffer {
  *
  * This class is not meant to be instantiated by the user, and instead is
  * constructed and returned by a call to LCM::subscribe() or
- * LCM::subscribeFunction().  
+ * LCM::subscribeFunction().
  *
  * To unsubscribe, pass the instance to LCM::unsubscribe().  Once unsubscribed,
  * the object is destroyed and can not be used anymore.
@@ -410,8 +409,8 @@ class Subscription {
 
         /**
          * @brief Adjusts the maximum number of received messages that can be
-         * queued up for this subscription.  
-         * 
+         * queued up for this subscription.
+         *
          * @param num_messages the maximum queue size, in messages.  The
          * default is 30.
          *
