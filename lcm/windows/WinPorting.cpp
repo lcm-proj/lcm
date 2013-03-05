@@ -98,7 +98,7 @@ timeval			tv;
 	}
 //	Both sockets are ready now to complete the connection.
 
-	sendSoc = accept ( listSoc, (LPSOCKADDR) &list_addr, (int*)&list_addr );
+	sendSoc = accept(listSoc, (LPSOCKADDR) &list_addr, NULL);
 	closesocket ( listSoc );	// This port is now in use - clear listener
 
 //	Restore the sockets to blocking (default behavior).
