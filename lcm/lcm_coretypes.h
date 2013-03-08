@@ -47,8 +47,9 @@ struct ___lcm_hash_ptr
 #define __byte_decode_array_cleanup(p, sz) {}
 #define byte_encoded_size(p) ( sizeof(int64_t) + sizeof(uint8_t) )
 
-static inline int __byte_encoded_array_size(const uint8_t *, int elements)
+static inline int __byte_encoded_array_size(const uint8_t *p, int elements)
 {
+    (void)p;
     return sizeof(uint8_t) * elements;
 }
 
@@ -86,8 +87,9 @@ static inline int __byte_clone_array(const uint8_t *p, uint8_t *q, int elements)
 #define __int8_t_decode_array_cleanup(p, sz) {}
 #define int8_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int8_t) )
 
-static inline int __int8_t_encoded_array_size(const int8_t *, int elements)
+static inline int __int8_t_encoded_array_size(const int8_t *p, int elements)
 {
+    (void)p;
     return sizeof(int8_t) * elements;
 }
 
@@ -126,8 +128,9 @@ static inline int __int8_t_clone_array(const int8_t *p, int8_t *q, int elements)
 #define __int16_t_decode_array_cleanup(p, sz) {}
 #define int16_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int16_t) )
 
-static inline int __int16_t_encoded_array_size(const int16_t *, int elements)
+static inline int __int16_t_encoded_array_size(const int16_t *p, int elements)
 {
+    (void)p;
     return sizeof(int16_t) * elements;
 }
 
@@ -181,8 +184,9 @@ static inline int __int16_t_clone_array(const int16_t *p, int16_t *q, int elemen
 #define __int32_t_decode_array_cleanup(p, sz) {}
 #define int32_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int32_t) )
 
-static inline int __int32_t_encoded_array_size(const int32_t *, int elements)
+static inline int __int32_t_encoded_array_size(const int32_t *p, int elements)
 {
+    (void)p;
     return sizeof(int32_t) * elements;
 }
 
@@ -238,8 +242,9 @@ static inline int __int32_t_clone_array(const int32_t *p, int32_t *q, int elemen
 #define __int64_t_decode_array_cleanup(p, sz) {}
 #define int64_t_encoded_size(p) ( sizeof(int64_t) + sizeof(int64_t) )
 
-static inline int __int64_t_encoded_array_size(const int64_t *, int elements)
+static inline int __int64_t_encoded_array_size(const int64_t *p, int elements)
 {
+    (void)p;
     return sizeof(int64_t) * elements;
 }
 
@@ -302,8 +307,9 @@ static inline int __int64_t_clone_array(const int64_t *p, int64_t *q, int elemen
 #define __float_decode_array_cleanup(p, sz) {}
 #define float_encoded_size(p) ( sizeof(int64_t) + sizeof(float) )
 
-static inline int __float_encoded_array_size(const float *, int elements)
+static inline int __float_encoded_array_size(const float *p, int elements)
 {
+    (void)p;
     return sizeof(float) * elements;
 }
 
@@ -330,8 +336,9 @@ static inline int __float_clone_array(const float *p, float *q, int elements)
 #define __double_decode_array_cleanup(p, sz) {}
 #define double_encoded_size(p) ( sizeof(int64_t) + sizeof(double) )
 
-static inline int __double_encoded_array_size(const double *, int elements)
+static inline int __double_encoded_array_size(const double *p, int elements)
 {
+    (void)p;
     return sizeof(double) * elements;
 }
 

@@ -431,14 +431,16 @@ static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
 static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char* sn = ls->structname->shortname;
-    emit(0, "int %s::_encodeNoHash(void *buf, int offset, int maxlen) const", sn);
-    emit(0, "{");
     if(0 == g_ptr_array_size(ls->members)) {
+        emit(0, "int %s::_encodeNoHash(void *, int, int) const", sn);
+        emit(0, "{");
         emit(1,     "return 0;");
-        emit(0,"}");
-        emit(0,"");
+        emit(0, "}");
+        emit(0, "");
         return;
     }
+    emit(0, "int %s::_encodeNoHash(void *buf, int offset, int maxlen) const", sn);
+    emit(0, "{");
     emit(1,     "int pos = 0, tlen;");
     emit(0, "");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
@@ -586,14 +588,16 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
 static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char* sn = ls->structname->shortname;
-    emit(0, "int %s::_decodeNoHash(const void *buf, int offset, int maxlen)", sn);
-    emit(0, "{");
     if(0 == g_ptr_array_size(ls->members)) {
+        emit(0, "int %s::_decodeNoHash(const void *, int, int)", sn);
+        emit(0, "{");
         emit(1,     "return 0;");
-        emit(0,"}");
-        emit(0,"");
+        emit(0, "}");
+        emit(0, "");
         return;
     }
+    emit(0, "int %s::_decodeNoHash(const void *buf, int offset, int maxlen)", sn);
+    emit(0, "{");
     emit(1,     "int pos = 0, tlen;");
     emit(0, "");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
