@@ -62,7 +62,7 @@ If an error occurs initializing LCM, then the initializer will throw a Lua error
 When you create an LCM data type and generate Lua code with <tt>lcm-gen</tt>,
 that data type will then be available as a Lua class with the same name.  For
 <tt>example_t</tt>, the Lua class that gets generated looks like this:
-    
+
 \verbatim
 local example_t = {}
 example_t.__index = example_t
@@ -98,9 +98,9 @@ end
 Notice here that fixed-length arrays in LCM appear as Lua table arrays initialized
 to the appropriate length, and variable length arrays start off as empty lists.
 All other fields are initialized to some reasonable defaults.
-    
+
 We can instantiate and then publish some sample data as follows:
-    
+
 \verbatim
 local lcm = require('lcm')
 
@@ -200,9 +200,9 @@ The full example is available in runnable form as
 
 After initializing the LCM object, the application subscribes to a channel by
 passing a callback function to the \ref lcm_userdata_subscribe
-method.  
+method.
 
-The example application then repeatedly calls 
+The example application then repeatedly calls
 \ref lcm_userdata_handle,
 which simply waits for a message of interest to arrive and then invokes the
 appropriate callback functions.
@@ -212,7 +212,7 @@ synchronization.
 If your application has other work to do while waiting for messages (e.g.,
 print out a message every few seconds or check for input somewhere else), you
 can use the \ref lcm_userdata_timedhandle method. This method will block for
-up to the specified number of milliseconds, and then return a boolean: true if
+up to the specified number of seconds, and then return a boolean: true if
 a message was recieved and handled, and false otherwise.
 
 **/

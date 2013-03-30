@@ -269,7 +269,7 @@ static int impl_lcm_publish(lua_State * L){
  * @return The number of return values on the Lua stack.
  */
 static int impl_lcm_subscribe(lua_State * L){
-	
+
 	/* we expect 3 arguments */
 	lua_settop(L, 3);
 
@@ -327,7 +327,7 @@ static int impl_lcm_subscribe(lua_State * L){
  * @throws Lua error if the message cannot be handled.
  */
 static int impl_lcm_handle(lua_State * L){
-	
+
 	/* we expect 1 argument */
 	lua_settop(L, 1);
 
@@ -362,8 +362,7 @@ static int impl_lcm_handle(lua_State * L){
  * @see lcm_handle
  *
  * @pre The Lua arguments on the stack:
- *     A LCM userdata (self), and an integer holding the amount of  time to
- *     block (in milliseconds).
+ *     A LCM userdata (self), and a number for the seconds to block.
  *
  * @post The Lua return values on the stack:
  *     A boolean: true if a message was handled, false otherwise.
@@ -381,8 +380,8 @@ static int impl_lcm_timedhandle(lua_State * L){
 	/* get the lcm userdata */
 	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
 
-	/* check for a integer timeout */
-	int timeout_microsec = luaL_checkint(L, 2);
+	/* check for a floating point timeout */
+	double timeout_sec = luaL_checknumber(L, 2);
 
 	/* update the lua state */
 	lcmu->handler_lua_State = L;
@@ -392,7 +391,9 @@ static int impl_lcm_timedhandle(lua_State * L){
 	FD_ZERO(&fds);
 	FD_SET(fd, &fds);
 
-	struct timeval timeout = { 0, timeout_microsec };
+	/* convert the timeout to microseconds */
+	struct timeval timeout = {0};
+	timeout.tv_usec = timeout_sec * 1000000.0;
 
 	int status = select(fd + 1, &fds, 0, 0, &timeout);
 
@@ -440,7 +441,7 @@ static int impl_lcm_timedhandle(lua_State * L){
  *
  * @post The Lua return values on the stack:
  *     A LCM userdata.
- * 
+ *
  * @post On exit, the Lua stack is the same as it was on entrance.
  *
  * @param recv_buf The receive buffer containing the message.
@@ -503,7 +504,7 @@ static void impl_lcm_c_handler(const lcm_recv_buf_t * recv_buf,
  * @throws Lua error if the subscription cannot be unsubscribed.
  */
 static int impl_lcm_unsubscribe(lua_State * L){
-	
+
 	/* we expect 2 arguments */
 	lua_settop(L, 2);
 
@@ -576,7 +577,7 @@ static int impl_lcm_tostring(lua_State * L){
  * @return The number of return values on the Lua stack.
  */
 static int impl_lcm_gc(lua_State * L){
-	
+
 	/* we expect 1 argument */
 	lua_settop(L, 1);
 

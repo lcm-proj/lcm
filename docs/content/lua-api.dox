@@ -179,7 +179,7 @@ lc:handle()
 
 \em Parameters
 
-\li \c time_ms The time to block, in milliseconds.
+\li \c time The time to block, in seconds.
 
 <em>Return Values</em>
 
@@ -187,7 +187,7 @@ lc:handle()
 
 \em Description
 
-This method is like the normal \ref lcm_userdata_handle "handle" except it only blocks for a specified amount of time, in milliseconds.
+This method is like the normal \ref lcm_userdata_handle "handle" except it only blocks for a specified amount of time.
 
 <em>Example Code</em>
 
@@ -196,7 +196,7 @@ local lcm = require('lcm')
 
 local lc = lcm.lcm.new()
 
-local ok = lc:timedhandle(500)
+local ok = lc:timedhandle(0.5)
 if not ok then
   print('timed out!')
  end
