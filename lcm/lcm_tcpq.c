@@ -63,7 +63,7 @@ timestamp_now (void)
     return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
 }
 
-static int 
+static int
 _recv_fully(int fd, void *b, int len)
 {
     int cnt=0;
@@ -84,7 +84,7 @@ _recv_fully(int fd, void *b, int len)
     return cnt;
 }
 
-static int 
+static int
 _send_fully(int fd, const void *b, int len)
 {
     int cnt=0;
@@ -143,21 +143,21 @@ _connect_to_server(lcm_tcpq_t *self)
     if(self->socket)
         _close_socket(self->socket);
 
-	self->socket=socket(AF_INET,SOCK_STREAM,0);
+    self->socket=socket(AF_INET,SOCK_STREAM,0);
     if(self->socket < 0) {
         perror("lcm_tcpq socket");
         return -1;
     }
 
-	struct sockaddr_in sa;
+    struct sockaddr_in sa;
     sa.sin_family = AF_INET;
-	sa.sin_port=self->server_port;
-	sa.sin_addr=self->server_addr;
+    sa.sin_port=self->server_port;
+    sa.sin_addr=self->server_addr;
 
-	if(0 != connect(self->socket, (struct sockaddr *)&sa, sizeof(sa))) {
+    if(0 != connect(self->socket, (struct sockaddr *)&sa, sizeof(sa))) {
         perror("lcm_tcpq connect");
         goto fail;
-	}
+    }
 
     if(_send_uint32(self->socket, MAGIC_CLIENT) ||
        _send_uint32(self->socket, PROTOCOL_VERSION)) {
@@ -224,8 +224,8 @@ lcm_tcpq_create(lcm_t * parent, const char *network, const GHashTable *args)
         // DNS lookup
         struct hostent *host=gethostbyname(self->server_addr_str);
         if(!host) {
-            fprintf(stderr, 
-                    "LCM tcpq: Couldn't resolve server IP address \"%s\"\n", 
+            fprintf(stderr,
+                    "LCM tcpq: Couldn't resolve server IP address \"%s\"\n",
                     self->server_addr_str);
             g_strfreev (words);
             lcm_tcpq_destroy(self);
@@ -262,17 +262,17 @@ lcm_tcpq_get_fileno(lcm_tcpq_t *self)
 }
 
 static int
-_sub_unsub_helper(lcm_tcpq_t *self, const char *channel, uint32_t msg_type) 
+_sub_unsub_helper(lcm_tcpq_t *self, const char *channel, uint32_t msg_type)
 {
     if(self->socket < 0) {
         fprintf(stderr, "LCM not connected (%d)\n", self->socket);
         return -1;
     }
-    
+
     uint32_t channel_len = strlen(channel);
-    if(_send_uint32(self->socket, msg_type) || 
+    if(_send_uint32(self->socket, msg_type) ||
        _send_uint32(self->socket, channel_len) ||
-       (channel_len != _send_fully(self->socket, channel, channel_len))) 
+       (channel_len != _send_fully(self->socket, channel, channel_len)))
     {
         perror("LCM tcpq");
         dbg(DBG_LCM, "Disconnected!\n");
@@ -353,12 +353,12 @@ lcm_tcpq_handle(lcm_tcpq_t * self)
     uint32_t channel_len;
     if(_recv_uint32(self->socket, &channel_len))
         goto disconnected;
-    if(_ensure_buf_capacity((void**)&self->recv_channel_buf, 
+    if(_ensure_buf_capacity((void**)&self->recv_channel_buf,
                 &self->recv_channel_buf_len, channel_len+1)) {
         fprintf(stderr, "Memory allocation error\n");
         return -1;
     }
-    if(channel_len != _recv_fully(self->socket, self->recv_channel_buf, 
+    if(channel_len != _recv_fully(self->socket, self->recv_channel_buf,
                 channel_len))
         goto disconnected;
     self->recv_channel_buf[channel_len] = 0;
@@ -404,7 +404,7 @@ lcm_tcpq_publish(lcm_tcpq_t *self, const char *channel, const void *data,
        _send_uint32(self->socket, channel_len) ||
        (channel_len != _send_fully(self->socket, channel, channel_len)) ||
        _send_uint32(self->socket, datalen) ||
-       (datalen != _send_fully(self->socket, data, datalen))) 
+       (datalen != _send_fully(self->socket, data, datalen)))
     {
         perror("LCM tcpq send");
         dbg(DBG_LCM, "Disconnected!\n");
@@ -422,7 +422,7 @@ static lcm_provider_info_t tcpq_info;
 void
 lcm_tcpq_provider_init (GPtrArray * providers)
 {
-	tcpq_vtable.create      = lcm_tcpq_create;
+    tcpq_vtable.create      = lcm_tcpq_create;
     tcpq_vtable.destroy     = lcm_tcpq_destroy;
     tcpq_vtable.subscribe   = lcm_tcpq_subscribe;
     tcpq_vtable.unsubscribe = lcm_tcpq_unsubscribe;
@@ -430,7 +430,7 @@ lcm_tcpq_provider_init (GPtrArray * providers)
     tcpq_vtable.handle      = lcm_tcpq_handle;
     tcpq_vtable.get_fileno  = lcm_tcpq_get_fileno;
 
-	tcpq_info.name = "tcpq";
+    tcpq_info.name = "tcpq";
     tcpq_info.vtable = &tcpq_vtable;
 
     g_ptr_array_add (providers, &tcpq_info);
