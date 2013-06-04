@@ -40,7 +40,10 @@ struct _lcm_provider_t {
     char *server_addr_str;
     struct in_addr server_addr;
     uint16_t server_port;
+    GSList* subs;
 };
+
+static int _sub_unsub_helper(lcm_tcpq_t *self, const char *channel, uint32_t msg_type);
 
 static int
 _close_socket(int fd)
@@ -122,6 +125,7 @@ _send_uint32(int fd, uint32_t v)
 static void
 lcm_tcpq_destroy (lcm_tcpq_t *self)
 {
+    g_slist_free(self->subs);
     if(self->socket >= 0)
         _close_socket(self->socket);
     if(self->server_addr_str)
@@ -134,6 +138,8 @@ lcm_tcpq_destroy (lcm_tcpq_t *self)
 static int
 _connect_to_server(lcm_tcpq_t *self)
 {
+    fprintf(stderr, "LCM tcpq: connecting...\n");
+
     if(self->socket)
         _close_socket(self->socket);
 
@@ -170,11 +176,20 @@ _connect_to_server(lcm_tcpq_t *self)
         goto fail;
     }
 
-    dbg(DBG_LCM, "LCM tcpq: connected (%d)\n", self->socket);
+    for(GSList* elem=self->subs; elem; elem=elem->next) {
+        gchar* channel = (char*)elem->data;
+        if(0 != _sub_unsub_helper(self, channel, MESSAGE_TYPE_SUBSCRIBE))
+        {
+            fprintf(stderr, "LCM tcpq: error while subscribing to %s\n", channel);
+            goto fail;
+        }
+    }
 
+    dbg(DBG_LCM, "LCM tcpq: connected (%d)\n", self->socket);
     return 0;
 
 fail:
+        fprintf(stderr, "LCM tcpq: Unable to connect to server\n");
         _close_socket(self->socket);
         self->socket = -1;
         return -1;
@@ -183,6 +198,10 @@ fail:
 static lcm_provider_t *
 lcm_tcpq_create(lcm_t * parent, const char *network, const GHashTable *args)
 {
+#ifndef WIN32
+    signal(SIGPIPE, SIG_IGN);
+#endif
+
     lcm_tcpq_t * self = (lcm_tcpq_t *) calloc (1, sizeof (lcm_tcpq_t));
     self->lcm = parent;
     self->socket = -1;
@@ -193,6 +212,7 @@ lcm_tcpq_create(lcm_t * parent, const char *network, const GHashTable *args)
 
     self->data_buf_len = 1024;
     self->data_buf = calloc(1, self->data_buf_len);
+    self->subs = NULL;
 
     // parse server address and port
     if (!network || !strlen(network)) {
@@ -230,11 +250,7 @@ lcm_tcpq_create(lcm_t * parent, const char *network, const GHashTable *args)
     dbg(DBG_LCM, "Server address %s:%d\n", inet_ntoa(self->server_addr),
             ntohs(self->server_port));
 
-    if(0 != _connect_to_server(self)) {
-        fprintf(stderr, "LCM tcpq: Unable to connect to server\n");
-        lcm_tcpq_destroy(self);
-        return NULL;
-    }
+    _connect_to_server(self);
 
     return self;
 }
@@ -252,9 +268,9 @@ _sub_unsub_helper(lcm_tcpq_t *self, const char *channel, uint32_t msg_type)
         fprintf(stderr, "LCM not connected (%d)\n", self->socket);
         return -1;
     }
-
+    
     uint32_t channel_len = strlen(channel);
-    if(_send_uint32(self->socket, msg_type) ||
+    if(_send_uint32(self->socket, msg_type) || 
        _send_uint32(self->socket, channel_len) ||
        (channel_len != _send_fully(self->socket, channel, channel_len))) 
     {
@@ -271,13 +287,41 @@ _sub_unsub_helper(lcm_tcpq_t *self, const char *channel, uint32_t msg_type)
 static int
 lcm_tcpq_subscribe(lcm_tcpq_t *self, const char *channel)
 {
-    return _sub_unsub_helper(self, channel, MESSAGE_TYPE_SUBSCRIBE);
+    self->subs = g_slist_append(self->subs, g_strdup(channel));
+
+    if(self->socket < 0) {
+        _connect_to_server(self);
+    } else {
+        _sub_unsub_helper(self, channel, MESSAGE_TYPE_SUBSCRIBE);
+    }
+
+    return 0;
 }
 
 static int
 lcm_tcpq_unsubscribe(lcm_tcpq_t *self, const char *channel)
 {
-    return _sub_unsub_helper(self, channel, MESSAGE_TYPE_SUBSCRIBE);
+    GSList* elem = self->subs;
+    int found = 0;
+    for(; elem; elem=elem->next) {
+        if(0 == g_strcmp0(channel, (gchar*)elem->data)) {
+            g_free(elem->data);
+            self->subs = g_slist_delete_link(self->subs, elem);
+            found = 1;
+            break;
+        }
+    }
+    if(!found) {
+        return -1;
+    }
+
+    if(self->socket < 0) {
+        _connect_to_server(self);
+    } else {
+        _sub_unsub_helper(self, channel, MESSAGE_TYPE_UNSUBSCRIBE);
+    }
+
+    return 0;
 }
 
 static int
@@ -296,8 +340,7 @@ _ensure_buf_capacity(void **buf, uint32_t *cur_size, int req_size)
 static int
 lcm_tcpq_handle(lcm_tcpq_t * self)
 {
-    if(self->socket < 0) {
-        fprintf(stderr, "LCM not connected\n");
+    if(self->socket < 0 && 0 != _connect_to_server(self)) {
         return -1;
     }
 
@@ -351,9 +394,8 @@ static int
 lcm_tcpq_publish(lcm_tcpq_t *self, const char *channel, const void *data,
         unsigned int datalen)
 {
-    if(self->socket < 0) {
-        fprintf(stderr, "LCM not connected (%d)\n", self->socket);
-        return -1;
+    if(self->socket < 0 && 0 != _connect_to_server(self)) {
+            return -1;
     }
 
     uint32_t channel_len = strlen(channel);
