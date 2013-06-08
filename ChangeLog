@@ -1,3 +1,106 @@
+2013-06-04  ashuang
+
+	* [r721] lcm/lcm_tcpq.c: fix whitespace
+	* [r720] lcm/lcm_tcpq.c: re issue #68 tcpq: - unsubscribe correctly
+	  send unsubscribe request to server, not subscribe. -
+	  automatically reconnect when possible.
+
+2013-03-30  tprk77@gmail.com
+
+	* [r718] docs/content/lua-api.dox, docs/content/tutorial-lua.dox,
+	  lcm-lua/lualcm_lcm.c: Modified the Lua function timedhandle to
+	  take seconds, instead of microseconds. This was done to make the
+	  API a little more standard.
+
+2013-03-08  ashuang
+
+	* [r716] lcm/lcm_coretypes.h, lcmgen/emit_cpp.c: lcm_coretypes use
+	  void casting to avoid unused parameter warning instead of unnamed
+	  parameter. emit_cpp avoid unused parameter warnings in generated
+	  types
+
+2013-03-05  ashuang
+
+	* [r715] lcm/eventlog.h, lcm/lcm-cpp-impl.hpp, lcm/lcm-cpp.hpp,
+	  lcm/lcm.h, lcm/lcm_coretypes.h: remove unused parameter names,
+	  fix whitespace
+	* [r714] lcm/windows/WinPorting.cpp: fix lcm_internal_pipe in
+	  windows - don't use addrlen param in accept()
+
+2013-02-25  ashuang
+
+	* [r713] docs/content/tutorial-lcmgen.dox: add lua entry to
+	  tutorial-lcmgen
+	* [r712] ., Makefile.am, configure.in, docs/content/lua-api.dox,
+	  docs/content/main.dox, docs/content/tutorial-lua.dox,
+	  docs/content/tutorial.dox, examples/Makefile.am, examples/lua,
+	  examples/lua/cleanup.sh, examples/lua/gen-types.sh,
+	  examples/lua/listener.lua, examples/lua/send-message.lua,
+	  lcm-lua, lcm-lua/Makefile.am, lcm-lua/debug_support.h,
+	  lcm-lua/init.c, lcm-lua/lua_ref_helper.c,
+	  lcm-lua/lua_ref_helper.h, lcm-lua/lua_ver_helper.h,
+	  lcm-lua/lualcm_hash.c, lcm-lua/lualcm_hash.h,
+	  lcm-lua/lualcm_lcm.c, lcm-lua/lualcm_lcm.h,
+	  lcm-lua/lualcm_pack.c, lcm-lua/lualcm_pack.h, lcm-lua/rock,
+	  lcm-lua/rock/LUAROCKS_INSTALL, lcm-lua/rock/lcm-0.9.2-0.rockspec,
+	  lcm-lua/test_unref.c, lcm-lua/utf8_check.c, lcmgen/Makefile.am,
+	  lcmgen/emit_lua.c, lcmgen/lcm-gen.vcproj, lcmgen/main.c,
+	  m4/ax_lua.m4, m4/ax_version_compare.m4, test/lua,
+	  test/lua/cleanup.sh, test/lua/client.lua, test/lua/gen-types.sh:
+	  reintegrate lua branch
+
+2013-02-21  ashuang
+
+	* [r710] lcm/lcm_udp.c: re #60 Windows: Ignore the return value of
+	  setsockopt() when joining the mc group for the send fd.
+
+2013-01-18  ashuang
+
+	* [r707] lcm-python/pylcm_subscription.c: Apply patch from
+	  chrismurf to #define Py_RETURN_NONE if it's not already defined.
+
+2013-01-10  edwinolson@gmail.com
+
+	* [r706] lcm-java/lcm/lcm/TCPProvider.java: refactor TCPProvider so
+	  that subscriptions are re-sent if the TCP connection has been
+	  restarted.
+
+2013-01-09  ashuang
+
+	* [r705] lcm-python/pylcm.c: pylcm: lcm_handle raise IOError if
+	  lcm_get_fileno() fails
+
+2013-01-07  ashuang
+
+	* [r704] lcm-java/lcm/logging/LogPlayer.java: Apply patch from
+	  Andrew Richardson to improve low-rate playback performance.
+
+2012-12-10  ashuang
+
+	* [r703] lcm/lcm_udp.c: re #58 Cast to struct timeval and not
+	  GTimeVal when getting packet timestamp.
+
+2012-11-30  jan.hrbacek
+
+	* [r702] lcmgen/emit_csharp.c: emit_csharp in lcm-gen: fix
+	  generation of multidimensional arrays
+
+2012-11-29  jan.hrbacek
+
+	* [r701] lcm-dotnet/lcm/lcm/TCPProvider.cs,
+	  lcm-dotnet/lcm/lcm/TCPService.cs,
+	  lcm-dotnet/lcm/lcm/UDPMulticastProvider.cs: lcm-dotnet: replace
+	  Dns.GetHostEntry by Dns.GetHostAddresses - it should solve
+	  problems with reverse DNS lookups
+
+2012-11-29  ashuang
+
+	* [r700] ChangeLog, NEWS, configure.in, lcm-python/setup.py,
+	  lcm/lcm.h: LCM release 0.9.2
+	* [r699] Makefile.am, examples/Makefile.am, lcm/Makefile.am: add
+	  missing directories to EXTRA_DIST: - lcm/windows - lcm-lite -
+	  lcmgen-test - examples/cpp - examples/csharp
+
 2012-10-27  ashuang
 
 	* [r697] lcm-logger/lcm_logplayer.c: revert commits r696, r695

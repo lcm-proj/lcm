@@ -1,3 +1,42 @@
+Jun 8, 2013
+===========
+
+ Release 1.0
+
+ This release adds experimental support for Lua (contributed by Tim Perkins)
+
+  C:
+  - tcpq provider:
+    - unsubscribe correctly send unsubscribe request to server, not subscribe.
+    - automatically reconnect when possible.
+  - fix lcm_internal_pipe in windows - don't use addrlen param in accept()
+  - lcm_coretypes use void casting to avoid unused parameter warning instead of
+    unnamed parameter.
+  - Windows: Ignore the return value of setsockopt() when joining the mc group
+    for the send fd.
+  - Cast to struct timeval and not GTimeVal when getting packet timestamp.
+
+  C# / .NET:
+  - replace Dns.GetHostEntry by Dns.GetHostAddresses - should solve problems
+    with reverse DNS lookups
+
+  lcm-gen:
+  - C
+    - avoid unused parameter warnings in generated types
+  - C#
+    - emit_csharp in lcm-gen: fix generation of multidimensional arrays
+
+  Python:
+  - #define Py_RETURN_NONE if it's not already defined (chrismurf).
+  - lcm_handle raise IOError if lcm_get_fileno() fails
+
+  Java:
+  - refactor TCPProvider so that subscriptions are re-sent if the TCP
+    connection has been restarted.
+
+  lcm-logplayer-gui:
+  - improve low-rate playback performance (Andrew Richardson).
+
 Nov 29, 2012
 ============
 
