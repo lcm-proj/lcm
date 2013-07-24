@@ -19,11 +19,13 @@
 
 lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode)
 {
-    assert(!strcmp(mode, "r") || !strcmp(mode, "w"));
-    if(*mode == 'w') 
+    assert(!strcmp(mode, "r") || !strcmp(mode, "w") || !strcmp(mode, "a"));
+    if(*mode == 'w')
         mode = "wb";
     else if(*mode == 'r')
         mode = "rb";
+    else if(*mode == 'a')
+        mode = "ab";
     else
         return NULL;
 

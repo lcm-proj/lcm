@@ -81,7 +81,7 @@ struct _lcm_eventlog_event_t {
  * Open a log file for reading or writing.
  *
  * @param path Log file to open
- * @param mode "r" (read mode) or "w" (write mode)
+ * @param mode "r" (read mode), "w" (write mode), or "a" (append mode)
  *
  * @return a newly allocated lcm_eventlog_t, or NULL on failure.
  */

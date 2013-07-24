@@ -7,6 +7,7 @@
 #include <getopt.h>
 
 #include <glib.h>
+#include <glib/gstdio.h>
 
 #include <lcm/lcm.h>
 
@@ -66,11 +67,12 @@ struct logger
     int64_t max_write_queue_size;
     int auto_increment;
     int next_increment_num;
-    double auto_split_hours;
     double auto_split_mb;
     int force_overwrite;
     int use_strftime;
     int fflush_interval_ms;
+    int rotate;
+    int quiet;
 
     GThread *write_thread;
     GAsyncQueue *write_queue;
@@ -101,6 +103,36 @@ struct logger
     int64_t last_drop_report_utime;
     int64_t last_drop_report_count;
 };
+
+static void
+rotate_logfiles(logger_t* logger)
+{
+    if(!logger->quiet) {
+        printf("Rotating log files\n");
+    }
+    // delete log files that have fallen off the end of the rotation
+    gchar* tomove = g_strdup_printf("%s.%d", logger->fname_prefix,
+            logger->rotate-1);
+    if(g_file_test(tomove, G_FILE_TEST_EXISTS)) {
+        if(0 != g_unlink(tomove)) {
+            fprintf(stderr, "ERROR! Unable to delete [%s]\n", tomove);
+        }
+    }
+    g_free(tomove);
+
+    // Rotate away any existing log files
+    for(int file_num = logger->rotate-1; file_num>=0; file_num--) {
+        gchar* newname = g_strdup_printf("%s.%d", logger->fname_prefix, file_num);
+        tomove = g_strdup_printf("%s.%d", logger->fname_prefix, file_num-1);
+        if(g_file_test(tomove, G_FILE_TEST_EXISTS)) {
+            if(0 != g_rename(tomove, newname)) {
+                fprintf(stderr, "ERROR!  Unable to rotate [%s]\n", tomove);
+            }
+        }
+        g_free(newname);
+        g_free(tomove);
+    }
+}
 
 static int
 open_logfile(logger_t* logger)
@@ -134,6 +166,8 @@ open_logfile(logger_t* logger)
             perror ("Error: checking for previous logs");
             return 1;
         }
+    } else if(logger->rotate > 0) {
+        snprintf(logger->fname, sizeof(logger->fname), "%s.0", logger->fname_prefix);
     } else {
         strcpy(logger->fname, logger->fname_prefix);
         if (! logger->force_overwrite) {
@@ -153,10 +187,14 @@ open_logfile(logger_t* logger)
     }
     g_free (dirpart);
 
-    fprintf (stderr, "Opening log file \"%s\"\n", logger->fname);
+    if(!logger->quiet) {
+        printf("Opening log file \"%s\"\n", logger->fname);
+    }
 
-    // open output file
-    logger->log = lcm_eventlog_create(logger->fname, "w");
+    // open output file in append mode if we're rotating log files, or write
+    // mode if not.
+    const char* logmode = (logger->rotate > 0) ? "a" : "w";
+    logger->log = lcm_eventlog_create(logger->fname, logmode);
     if (logger->log == NULL) {
         perror ("Error: fopen failed");
         return 1;
@@ -172,18 +210,13 @@ write_thread(void *user_data)
     GTimeVal start_time;
     g_get_current_time(&start_time);
     int num_splits = 0;
-    int64_t next_split_sec = start_time.tv_sec + logger->auto_split_hours * SECONDS_PER_HOUR;
 
     while(1) {
         void *msg = g_async_queue_pop(logger->write_queue);
 
         // Is it time to start a new logfile?
         int split_log = 0;
-        if(logger->auto_split_hours) {
-            GTimeVal now;
-            g_get_current_time(&now);
-            split_log = (now.tv_sec > next_split_sec);
-        } else if(logger->auto_split_mb) {
+        if(logger->auto_split_mb) {
           double logsize_mb = (double)logger->logsize / (1 << 20);
           split_log = (logsize_mb > logger->auto_split_mb);
         }
@@ -195,11 +228,11 @@ write_thread(void *user_data)
         if(split_log) {
             // Yes.  open up a new log file
             lcm_eventlog_destroy(logger->log);
+            if(logger->rotate > 0)
+                rotate_logfiles(logger);
             if(0 != open_logfile(logger))
               exit(1);
             num_splits++;
-            int64_t log_duration_sec = logger->auto_split_hours * SECONDS_PER_HOUR;
-            next_split_sec = start_time.tv_sec + (num_splits + 1) * log_duration_sec;
             logger->logsize = 0;
             logger->last_report_logsize = 0;
         }
@@ -246,7 +279,7 @@ write_thread(void *user_data)
 
         free(le);
 
-        if (offset_utime - logger->last_report_time > 1000000) {
+        if (!logger->quiet && (offset_utime - logger->last_report_time > 1000000)) {
             double dt = (offset_utime - logger->last_report_time)/1000000.0;
 
             double tps =  logger->events_since_last_report / dt;
@@ -296,8 +329,9 @@ message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
         int rc = logger->dropped_packets_count - logger->last_drop_report_count;
 
         if(now - logger->last_drop_report_utime > 1000000 && rc > 0) {
-            printf("Can't write to log fast enough.  Dropped %d packet%s\n",
-                    rc, rc==1?"":"s");
+            if(!logger->quiet)
+                printf("Can't write to log fast enough.  Dropped %d packet%s\n",
+                        rc, rc==1?"":"s");
             logger->last_drop_report_utime = now;
             logger->last_drop_report_count = logger->dropped_packets_count;
         }
@@ -343,12 +377,6 @@ static void usage ()
             "\n"
             "Options:\n"
             "\n"
-            "      --auto-split-hours=N   Automatically start writing to a new log\n"
-            "                             file every N hours (can be fractional).\n"
-            "                             This option implies -i.\n"
-            "      --auto-split-mb=N      Automatically start writing to a new log\n"
-            "                             file once the log file exceeds N MB in size\n"
-            "                             (can be fractional).  This option implies -i.\n"
             "  -c, --channel=CHAN         Channel string to pass to lcm_subscribe.\n"
             "                             (default: \".*\")\n"
             "      --flush-interval=MS    Flush the log file to disk every MS milliseconds.\n"
@@ -357,14 +385,38 @@ static void usage ()
             "  -h, --help                 Shows this help text and exits\n"
             "  -i, --increment            Automatically append a suffix to FILE\n"
             "                             such that the resulting filename does not\n"
-            "                             already exist.  This option precludes -f\n"
+            "                             already exist.  This option precludes -f and\n"
+            "                             --rotate\n"
             "  -l, --lcm-url=URL          Log messages on the specified LCM URL\n"
             "  -m, --max-unwritten-mb=SZ  Maximum size of received but unwritten\n"
             "                             messages to store in memory before dropping\n"
             "                             messages.  (default: 100 MB)\n"
+            "      --rotate=NUM           When creating a new log file, rename existing files\n"
+            "                             out of the way and always write to FILE.0.  If\n"
+            "                             FILE.0 already exists, it is renamed to FILE.1.  If\n"
+            "                             FILE.1 exists, it is renamed to FILE.2, etc.  If\n"
+            "                             FILE.NUM exists, then it is deleted.  This option\n"
+            "                             precludes -i.\n"
+            "      --split-mb=N           Automatically start writing to a new log\n"
+            "                             file once the log file exceeds N MB in size\n"
+            "                             (can be fractional).  This option requires -i\n"
+            "                             or --rotate.\n"
+            "  -q, --quiet                Suppress normal output and only report errors.\n"
             "  -s, --strftime             Format FILE with strftime.\n"
             "  -v, --invert-channels      Invert channels.  Log everything that CHAN\n"
             "                             does not match.\n"
+            "\n"
+            "Rotating / splitting log files\n"
+            "==============================\n"
+            "    For long-term logging, lcm-logger can rotate through a fixed number of\n"
+            "    log files, moving to a new log file as existing files reach a maximum size.\n"
+            "    To do this, use --rotate and --split-mb.  For example:\n"
+            "\n"
+            "        # Rotate through logfile.0, logfile.1, ... logfile.4\n"
+            "        lcm-logger --rotate=5 --split-mb=2 logfile\n"
+            "\n"
+            "    Moving to a new file happens either when the current log file size exceeds\n"
+            "    the limit specified by --split-mb, or when lcm-logger receives a SIGHUP.\n"
             "\n");
 }
 
@@ -388,19 +440,22 @@ int main(int argc, char *argv[])
     double max_write_queue_size_mb = DEFAULT_MAX_WRITE_QUEUE_SIZE_MB;
     logger.invert_channels = 0;
     logger.fflush_interval_ms = 100;
+    logger.rotate = -1;
+    logger.quiet = 0;
 
     char *lcmurl = NULL;
     char *optstring = "a:fic:shm:vu:";
     int c;
     struct option long_opts[] = {
-        { "auto-split-hours", required_argument, 0, 'a' },
-        { "auto-split-mb", required_argument, 0, 'b' },
+        { "split-mb", required_argument, 0, 'b' },
         { "channel", required_argument, 0, 'c' },
         { "force", no_argument, 0, 'f' },
         { "increment", required_argument, 0, 'i' },
         { "lcm-url", required_argument, 0, 'l' },
         { "max-unwritten-mb", required_argument, 0, 'm' },
+        { "rotate", required_argument, 0, 'r' },
         { "strftime", required_argument, 0, 's' },
+        { "quiet", no_argument, 0, 'q' },
         { "invert-channels", no_argument, 0, 'v' },
         { "flush-interval", required_argument, 0,'u'},
         { 0, 0, 0, 0 }
@@ -409,17 +464,8 @@ int main(int argc, char *argv[])
     while ((c = getopt_long (argc, argv, optstring, long_opts, 0)) >= 0)
     {
         switch (c) {
-            case 'a':
-                logger.auto_split_hours = strtod(optarg, NULL);
-                logger.auto_increment = 1;
-                if(logger.auto_split_hours <= 0) {
-                    usage();
-                    return 1;
-                }
-                break;
             case 'b':
                 logger.auto_split_mb = strtod(optarg, NULL);
-                logger.auto_increment = 1;
                 if(logger.auto_split_mb <= 0) {
                     usage();
                     return 1;
@@ -442,6 +488,9 @@ int main(int argc, char *argv[])
                 free(lcmurl);
                 lcmurl = strdup(optarg);
                 break;
+            case 'q':
+                logger.quiet = 1;
+                break;
             case 'v':
                 logger.invert_channels = 1;
                 break;
@@ -450,6 +499,16 @@ int main(int argc, char *argv[])
                 if(max_write_queue_size_mb <= 0) {
                     usage();
                     return 1;
+                }
+                break;
+            case 'r':
+                {
+                  char* eptr = NULL;
+                  logger.rotate = strtol(optarg, &eptr, 10);
+                  if(*eptr) {
+                      usage();
+                      return 1;
+                  }
                 }
                 break;
             case 'u':
@@ -474,6 +533,16 @@ int main(int argc, char *argv[])
         strncpy (logger.input_fname, argv[optind], sizeof (logger.input_fname));
     } else if (optind < argc-1) {
         usage ();
+        return 1;
+    }
+
+
+    if(logger.auto_split_mb > 0 && !(logger.auto_increment || (logger.rotate > 0))) {
+        fprintf(stderr, "ERROR.  --split-mb requires either --increment or --rotate\n");
+        return 1;
+    }
+    if(logger.rotate > 0 && logger.auto_increment) {
+        fprintf(stderr, "ERROR.  --increment and --rotate can't both be used\n");
         return 1;
     }
 
