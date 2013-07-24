@@ -15,14 +15,6 @@ then a filename is automatically chosen.
 .SH OPTIONS
 The following options are provided by \fBlcm-logger\fR
 .TP
-.B      \-\-auto\-split\-hours=\fIN\fR
-Automatically start writing to a new log file every N hours (can be
-fractional).  This option implies -i.
-.TP
-.B      \-\-auto\-split\-mb=\fIN\fR
-Automatically start writing to a new log file once the log file
-exceeds N MB in size (can be fractional).  This option implies -i.
-.TP
 .B \-c, \-\-channel=\fICHAN\fR
 Channel string to pass to lcm_subscribe. (default: ".*")
 .TP
@@ -38,7 +30,7 @@ Shows some help text and exits
 .TP
 .B \-i, \-\-increment
 Automatically append a suffix to \fIFILE\fR such that the resulting filename
-does not already exist.  This option precludes -f.
+does not already exist.  This option precludes -f and --rotate.
 .TP
 .B \-l, \-\-lcm\-url=\fIURL\fR
 Log messages on the specified LCM URL
@@ -47,11 +39,36 @@ Log messages on the specified LCM URL
 Maximum size of received but unwritten messages to store in memory before
 dropping messages.  (default: 100 MB)
 .TP
+.B \-\-rotate=\fINUM\fR
+When creating a new log file, rename existing files out of the way and always write to FILE.0.  If
+FILE.0 already exists, it is renamed to FILE.1.  If FILE.1 exists, it is
+renamed to FILE.2, etc.  If FILE.NUM exists, then it is deleted.  This option
+precludes -i.
+.TP
+.B \-\-split\-mb=\fIN\fR
+Automatically start writing to a new log file once the log file exceeds N MB in size
+(can be fractional).  This option requires -i or --rotate.
+.TP
+.B \-q, \-\-quiet
+Suppress normal output and only report errors.
+.TP
 .B \-s, \-\-strftime
 Format \fIFILE\fR with strftime.
 .TP
 .B \-v, \-\-invert-channels
 Invert channels.  Log evertyhing that \fICHAN\fR does not match.
+
+.SH ROTATING AND SPLITTING
+.PP
+For long-term logging, lcm-logger can rotate through a fixed number of log
+files, moving to a new log file as existing files reach a maximum size.  To do
+this, use --rotate and --split-mb.  For example:
+
+    # Rotate through logfile.0, logfile.1, ... logfile.4
+    lcm-logger --rotate=5 --split-mb=2 logfile
+
+Moving to a new file happens either when the current log file size exceeds the
+limit specified by --split-mb, or when lcm-logger receives a SIGHUP.
 
 .SH SIGNALS
 .PP
