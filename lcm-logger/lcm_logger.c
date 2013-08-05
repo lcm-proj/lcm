@@ -444,7 +444,7 @@ int main(int argc, char *argv[])
     logger.quiet = 0;
 
     char *lcmurl = NULL;
-    char *optstring = "a:fic:shm:vu:";
+    char *optstring = "a:fic:shm:vu:q";
     int c;
     struct option long_opts[] = {
         { "split-mb", required_argument, 0, 'b' },
