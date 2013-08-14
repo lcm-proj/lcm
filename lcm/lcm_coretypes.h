@@ -12,14 +12,14 @@ extern "C" {
 
 union float_uint32
 {
-	float     f;
-	uint32_t  i;
+    float     f;
+    uint32_t  i;
 };
 
 union double_uint64
 {
-	double    f;
-	uint64_t  i;
+    double    f;
+    uint64_t  i;
 };
 
 typedef struct ___lcm_hash_ptr __lcm_hash_ptr;
@@ -222,7 +222,7 @@ static inline int __int32_t_decode_array(const void *_buf, int offset, int maxle
         return -1;
 
     for (element = 0; element < elements; element++) {
-        p[element] = (buf[pos+0]<<24) + (buf[pos+1]<<16) + (buf[pos+2]<<8) + buf[pos+3];
+        p[element] = (((int32_t)buf[pos+0])<<24) + (((int32_t)buf[pos+1])<<16) + (((int32_t)buf[pos+2])<<8) + ((int32_t)buf[pos+3]);
         pos+=4;
     }
 
@@ -284,9 +284,9 @@ static inline int __int64_t_decode_array(const void *_buf, int offset, int maxle
         return -1;
 
     for (element = 0; element < elements; element++) {
-        int64_t a = (buf[pos+0]<<24) + (buf[pos+1]<<16) + (buf[pos+2]<<8) + buf[pos+3];
+        int64_t a = (((int32_t)buf[pos+0])<<24) + (((int32_t)buf[pos+1])<<16) + ((int32_t)buf[pos+2]<<8) + (int32_t)buf[pos+3];
         pos+=4;
-        int64_t b = (buf[pos+0]<<24) + (buf[pos+1]<<16) + (buf[pos+2]<<8) + buf[pos+3];
+        int64_t b = (((int32_t)buf[pos+0])<<24) + (((int32_t)buf[pos+1])<<16) + ((int32_t)buf[pos+2]<<8) + (int32_t)buf[pos+3];
         pos+=4;
         p[element] = (a<<32) + (b&0xffffffff);
     }
@@ -392,7 +392,7 @@ static inline int __string_encode_array(void *_buf, int offset, int maxlen, char
     int element;
 
     for (element = 0; element < elements; element++) {
-        int length = strlen(p[element]) + 1; // length includes \0
+        int32_t length = strlen(p[element]) + 1; // length includes \0
 
         thislen = __int32_t_encode_array(_buf, offset + pos, maxlen - pos, &length, 1);
         if (thislen < 0) return thislen; else pos += thislen;
@@ -410,7 +410,7 @@ static inline int __string_decode_array(const void *_buf, int offset, int maxlen
     int element;
 
     for (element = 0; element < elements; element++) {
-        int length;
+        int32_t length;
 
         // read length including \0
         thislen = __int32_t_decode_array(_buf, offset + pos, maxlen - pos, &length, 1);
