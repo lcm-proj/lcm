@@ -167,7 +167,7 @@ struct _lcm_provider_t {
      * so we don't have to do any mallocs */
     lcm_ringbuf_t * ringbuf;
 
-    GStaticRecMutex mutex; /* Must be locked when reading/writing to the
+    GRecMutex mutex; /* Must be locked when reading/writing to the
                               above three queues. */
 
     int thread_created;
@@ -175,13 +175,13 @@ struct _lcm_provider_t {
     int notify_pipe[2];         // pipe to notify application when messages arrive
     int thread_msg_pipe[2];     // pipe to notify read thread when to quit
 
-    GStaticMutex transmit_lock; // so that only thread at a time can transmit
+    GMutex transmit_lock; // so that only thread at a time can transmit
 
     /* synchronization variables used only while allocating receive resources
      */
     int creating_read_thread;
-    GCond* create_read_thread_cond;
-    GMutex* create_read_thread_mutex;
+    GCond create_read_thread_cond;
+    GMutex create_read_thread_mutex;
 
     /* other variables */
     GHashTable  *frag_bufs;
@@ -200,7 +200,7 @@ struct _lcm_provider_t {
 
 static int _setup_recv_thread (lcm_udpm_t *lcm);
 
-static GStaticPrivate CREATE_READ_THREAD_PKEY = G_STATIC_PRIVATE_INIT;
+static GPrivate CREATE_READ_THREAD_PKEY;
 
 // utility functions
 
@@ -392,6 +392,8 @@ _destroy_recv_parts (lcm_udpm_t *lcm)
         }
         lcm->read_thread = NULL;
         lcm->thread_created = 0;
+        g_mutex_clear(&lcm->create_read_thread_mutex);
+        g_cond_clear(&lcm->create_read_thread_cond);
     }
 
     if (lcm->thread_msg_pipe[0] >= 0) {
@@ -436,12 +438,8 @@ lcm_udpm_destroy (lcm_udpm_t *lcm)
     lcm_internal_pipe_close(lcm->notify_pipe[0]);
     lcm_internal_pipe_close(lcm->notify_pipe[1]);
 
-    g_static_rec_mutex_free (&lcm->mutex);
-    g_static_mutex_free (&lcm->transmit_lock);
-    if(lcm->create_read_thread_mutex) {
-        g_mutex_free(lcm->create_read_thread_mutex);
-        g_cond_free(lcm->create_read_thread_cond);
-    }
+    g_rec_mutex_clear(&lcm->mutex);
+    g_mutex_clear(&lcm->transmit_lock);
     free (lcm);
 }
 
@@ -625,9 +623,9 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
         // yes, transfer the message into the lcm_buf_t
  
         // deallocate the ringbuffer-allocated buffer
-        g_static_rec_mutex_lock (&lcm->mutex);
+        g_rec_mutex_lock (&lcm->mutex);
         lcm_buf_free_data(lcm, lcmb);
-        g_static_rec_mutex_unlock (&lcm->mutex);
+        g_rec_mutex_unlock (&lcm->mutex);
 
         // transfer ownership of the message's payload buffer
         lcmb->buf = fbuf->data;
@@ -754,7 +752,7 @@ udp_read_packet (lcm_udpm_t *lcm)
         assert (FD_ISSET (lcm->recvfd, &fds));
 
         if (!lcmb) {
-            g_static_rec_mutex_lock (&lcm->mutex);
+            g_rec_mutex_lock (&lcm->mutex);
 
             // first allocate a buffer struct for the packet metadata
 
@@ -795,7 +793,7 @@ udp_read_packet (lcm_udpm_t *lcm)
 
                 dbg(DBG_LCM, "Allocated new ringbuffer size %u\n", new_capacity);
             }
-            g_static_rec_mutex_unlock (&lcm->mutex);
+            g_rec_mutex_unlock (&lcm->mutex);
 
             // zero the last byte so that strlen never segfaults
             lcmb->buf[65535] = 0; 
@@ -870,9 +868,9 @@ udp_read_packet (lcm_udpm_t *lcm)
     // required.  That way, we do not use 64k of the ringbuffer for every
     // incoming message.
     if (lcmb->ringbuf) {
-        g_static_rec_mutex_lock (&lcm->mutex);
+        g_rec_mutex_lock (&lcm->mutex);
         lcm_ringbuf_shrink_last(lcmb->ringbuf, lcmb->buf, sz);
-        g_static_rec_mutex_unlock (&lcm->mutex);
+        g_rec_mutex_unlock (&lcm->mutex);
     }
 
     return lcmb;
@@ -894,7 +892,7 @@ recv_thread (void * user)
          * only want one character in the pipe at a time to avoid blocking
          * writes, so we only do this when the queue transitions from empty to
          * non-empty. */
-        g_static_rec_mutex_lock (&lcm->mutex);
+        g_rec_mutex_lock (&lcm->mutex);
 
         if (is_buf_queue_empty (lcm->inbufs_filled))
             if (lcm_internal_pipe_write(lcm->notify_pipe[1], "+", 1) < 0)
@@ -903,7 +901,7 @@ recv_thread (void * user)
         /* Queue the packet for future retrieval by lcm_handle (). */
         lcm_buf_enqueue (lcm->inbufs_filled, lcmb);
         
-        g_static_rec_mutex_unlock (&lcm->mutex);
+        g_rec_mutex_unlock (&lcm->mutex);
     }
     dbg (DBG_LCM, "read thread exiting\n");
     return NULL;
@@ -939,7 +937,7 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
     if (payload_size < LCM_SHORT_MESSAGE_MAX_SIZE) {
         // message is short.  send in a single packet
 
-        g_static_mutex_lock (&lcm->transmit_lock);
+        g_mutex_lock (&lcm->transmit_lock);
 
         lcm2_header_short_t hdr;
         hdr.magic = htonl (LCM2_MAGIC_SHORT);
@@ -970,7 +968,7 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
         int status = sendmsg(lcm->sendfd, &msg, 0);
 
         lcm->msg_seqno ++;
-        g_static_mutex_unlock (&lcm->transmit_lock);
+        g_mutex_unlock (&lcm->transmit_lock);
 
         if (status == packet_size) return 0;
         else return status;
@@ -996,7 +994,7 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
         // acquire transmit lock so that all fragments are transmitted
         // together, and so that no other message uses the same sequence number
         // (at least until the sequence # rolls over)
-        g_static_mutex_lock (&lcm->transmit_lock);
+        g_mutex_lock (&lcm->transmit_lock);
         dbg (DBG_LCM_MSG, "transmitting %d byte [%s] payload in %d fragments\n",
                 payload_size, channel, nfragments);
 
@@ -1066,7 +1064,7 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
         }
 
         lcm->msg_seqno ++;
-        g_static_mutex_unlock (&lcm->transmit_lock);
+        g_mutex_unlock (&lcm->transmit_lock);
     }
 
     return 0;
@@ -1093,13 +1091,13 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
     }
 
     /* Dequeue the next received packet */
-    g_static_rec_mutex_lock (&lcm->mutex);
+    g_rec_mutex_lock (&lcm->mutex);
     lcm_buf_t * lcmb = lcm_buf_dequeue (lcm->inbufs_filled);
 
     if (!lcmb) {
         fprintf (stderr, 
                 "Error: no packet available despite getting notification.\n");
-        g_static_rec_mutex_unlock (&lcm->mutex);
+        g_rec_mutex_unlock (&lcm->mutex);
         return -1;
     }
 
@@ -1108,7 +1106,7 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
     if (!is_buf_queue_empty (lcm->inbufs_filled))
         if (lcm_internal_pipe_write(lcm->notify_pipe[1], "+", 1) < 0)
             perror ("write to notify");
-    g_static_rec_mutex_unlock (&lcm->mutex);
+    g_rec_mutex_unlock (&lcm->mutex);
 
     lcm_recv_buf_t rbuf;
     rbuf.data = (uint8_t*) lcmb->buf + lcmb->data_offset;
@@ -1125,10 +1123,10 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
         lcm_dispatch_handlers (lcm->lcm, &rbuf, lcmb->channel_name);
     }
 
-    g_static_rec_mutex_lock (&lcm->mutex);
+    g_rec_mutex_lock (&lcm->mutex);
     lcm_buf_free_data(lcm, lcmb);
     lcm_buf_enqueue (lcm->inbufs_empty, lcmb);
-    g_static_rec_mutex_unlock (&lcm->mutex);
+    g_rec_mutex_unlock (&lcm->mutex);
 
     return 0;
 }
@@ -1201,7 +1199,7 @@ udpm_self_test (lcm_udpm_t *lcm)
 static int
 _setup_recv_thread (lcm_udpm_t *lcm)
 {
-    g_static_rec_mutex_lock(&lcm->mutex);
+    g_rec_mutex_lock(&lcm->mutex);
 
     // some thread synchronization code to ensure that only one thread sets up the
     // receive thread, and that all threads entering this function after the thread
@@ -1209,38 +1207,38 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     if(lcm->creating_read_thread) {
         // check if this thread is the one creating the receive thread.
         // If so, just return.
-        if(g_static_private_get(&CREATE_READ_THREAD_PKEY)) {
-            g_static_rec_mutex_unlock(&lcm->mutex);
+        if(g_private_get(&CREATE_READ_THREAD_PKEY)) {
+            g_rec_mutex_unlock(&lcm->mutex);
             return 0;
         }
 
         // ugly bit with two mutexes because we can't use a GStaticRecMutex with a GCond
-        g_mutex_lock(lcm->create_read_thread_mutex);
-        g_static_rec_mutex_unlock(&lcm->mutex);
+        g_mutex_lock(&lcm->create_read_thread_mutex);
+        g_rec_mutex_unlock(&lcm->mutex);
 
         // wait for the thread creating the read thread to finish
         while(lcm->creating_read_thread) {
-            g_cond_wait(lcm->create_read_thread_cond, lcm->create_read_thread_mutex);
+            g_cond_wait(&lcm->create_read_thread_cond, &lcm->create_read_thread_mutex);
         }
-        g_mutex_unlock(lcm->create_read_thread_mutex);
-        g_static_rec_mutex_lock(&lcm->mutex);
+        g_mutex_unlock(&lcm->create_read_thread_mutex);
+        g_rec_mutex_lock(&lcm->mutex);
 
         // if we've gotten here, then either the read thread is created, or it
         // was not possible to do so.  Figure out which happened, and return.
         int result = lcm->thread_created ? 0 : -1;
-        g_static_rec_mutex_unlock(&lcm->mutex);
+        g_rec_mutex_unlock(&lcm->mutex);
         return result;
     } else if(lcm->thread_created) {
-        g_static_rec_mutex_unlock(&lcm->mutex);
+        g_rec_mutex_unlock(&lcm->mutex);
         return 0;
     }
 
     // no other thread is trying to create the read thread right now.  claim that task.
     lcm->creating_read_thread = 1;
-    lcm->create_read_thread_mutex = g_mutex_new();
-    lcm->create_read_thread_cond = g_cond_new();
+    g_mutex_init(&lcm->create_read_thread_mutex);
+    g_cond_init(&lcm->create_read_thread_cond);
     // mark this thread as the one creating the read thread
-    g_static_private_set(&CREATE_READ_THREAD_PKEY, GINT_TO_POINTER(1), NULL);
+    g_private_set(&CREATE_READ_THREAD_PKEY, GINT_TO_POINTER(1));
 
     dbg (DBG_LCM, "allocating resources for receiving messages\n");
 
@@ -1367,18 +1365,22 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     fcntl (lcm->thread_msg_pipe[1], F_SETFL, O_NONBLOCK);
 
     /* Start the reader thread */
+#ifdef GLIB_VERSION_2_32
+    lcm->read_thread = g_thread_new ("lcm_udp", recv_thread, lcm);
+#else
     lcm->read_thread = g_thread_create (recv_thread, lcm, TRUE, NULL);
+#endif
     if (!lcm->read_thread) {
         fprintf (stderr, "Error: LCM failed to start reader thread\n");
         goto setup_recv_thread_fail;
     }
     lcm->thread_created = 1;
-    g_static_rec_mutex_unlock(&lcm->mutex);
+    g_rec_mutex_unlock(&lcm->mutex);
 
     // conduct a self-test just to make sure everything is working.
     dbg (DBG_LCM, "LCM: conducting self test\n");
     int self_test_results = udpm_self_test(lcm);
-    g_static_rec_mutex_lock(&lcm->mutex);
+    g_rec_mutex_lock(&lcm->mutex);
 
     if (0 == self_test_results) {
         dbg (DBG_LCM, "LCM: self test successful\n");
@@ -1390,17 +1392,17 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     }
 
     // notify threads waiting for the read thread to be created
-    g_mutex_lock(lcm->create_read_thread_mutex);
+    g_mutex_lock(&lcm->create_read_thread_mutex);
     lcm->creating_read_thread = 0;
-    g_cond_broadcast(lcm->create_read_thread_cond);
-    g_mutex_unlock(lcm->create_read_thread_mutex);
-    g_static_rec_mutex_unlock(&lcm->mutex);
+    g_cond_broadcast(&lcm->create_read_thread_cond);
+    g_mutex_unlock(&lcm->create_read_thread_mutex);
+    g_rec_mutex_unlock(&lcm->mutex);
 
     return self_test_results;
 
 setup_recv_thread_fail:
     _destroy_recv_parts (lcm);
-    g_static_rec_mutex_unlock(&lcm->mutex);
+    g_rec_mutex_unlock(&lcm->mutex);
     return -1;
 }
 
@@ -1523,8 +1525,6 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 
     // synchronization variables used when allocating receive resources
     lcm->creating_read_thread = 0;
-    lcm->create_read_thread_mutex = NULL;
-    lcm->create_read_thread_cond = NULL;
 
     // internal notification pipe
     if(0 != lcm_internal_pipe_create(lcm->notify_pipe)) {
@@ -1535,8 +1535,8 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     }
     fcntl (lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
 
-    g_static_rec_mutex_init (&lcm->mutex);
-    g_static_mutex_init (&lcm->transmit_lock);
+    g_rec_mutex_init (&lcm->mutex);
+    g_mutex_init (&lcm->transmit_lock);
 
     dbg (DBG_LCM, "Initializing LCM UDPM context...\n");
     dbg (DBG_LCM, "Multicast %s:%d\n", inet_ntoa(params.mc_addr), ntohs (params.mc_port));

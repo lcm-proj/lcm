@@ -205,7 +205,11 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
         }
 
         /* Start the reader thread */
+#ifdef GLIB_VERSION_2_32
+        lr->timer_thread = g_thread_new ("lcm_file", timer_thread, lr);
+#else
         lr->timer_thread = g_thread_create (timer_thread, lr, TRUE, NULL);
+#endif
         if (!lr->timer_thread) {
             fprintf (stderr, "Error: LCM failed to start timer thread\n");
             lcm_logprov_destroy (lr);
