@@ -101,6 +101,13 @@ static const char * dim_size_prefix(const char *dim_size) {
         return "this->";
 }
 
+static int is_dim_size_fixed(const char* dim_size) {
+    char *eptr = NULL;
+    long asdf = strtol(dim_size, &eptr, 0);
+    (void) asdf;  // suppress compiler warnings
+    return (*eptr == '\0');
+}
+
 // Some types do not have a 1:1 mapping from lcm types to native C
 // storage types. Do not free the string pointers returned by this
 // function.
@@ -384,48 +391,49 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "");
 }
 
-static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int depth)
+static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int depth, int extra_indent)
 {
+    int indent = extra_indent + 1 + depth;
     // primitive array
     if (depth+1 == g_ptr_array_size(lm->dimensions) &&
             lcm_is_primitive_type(lm->type->lctypename) &&
             strcmp(lm->type->lctypename, "string")) {
         lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
-        emit_start(1 + depth, "tlen = __%s_encode_array(buf, offset + pos, maxlen - pos, &this->%s",
+        emit_start(indent, "tlen = __%s_encode_array(buf, offset + pos, maxlen - pos, &this->%s",
                 lm->type->lctypename, lm->membername);
         for(int i=0; i<depth; i++)
             emit_continue("[a%d]", i);
         emit_end("[0], %s%s);", dim_size_prefix(dim->size), dim->size);
 
-        emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
+        emit(indent, "if(tlen < 0) return tlen; else pos += tlen;");
         return;
     }
     //
     if(depth == g_ptr_array_size(lm->dimensions)) {
         if(!strcmp(lm->type->lctypename, "string")) {
-            emit_start(1 + depth, "char* __cstr = (char*) this->%s", lm->membername);
+            emit_start(indent, "char* __cstr = (char*) this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
             emit_end(".c_str();");
-            emit(1 + depth, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &__cstr, 1);");
+            emit(indent, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &__cstr, 1);");
         } else {
-            emit_start(1 + depth, "tlen = this->%s", lm->membername);
+            emit_start(indent, "tlen = this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
             emit_end("._encodeNoHash(buf, offset + pos, maxlen - pos);");
         }
-        emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
+        emit(indent, "if(tlen < 0) return tlen; else pos += tlen;");
         return;
     }
 
     lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
 
-    emit(1+depth, "for (int a%d = 0; a%d < %s%s; a%d++) {",
+    emit(indent, "for (int a%d = 0; a%d < %s%s; a%d++) {",
             depth, depth, dim_size_prefix(dim->size), dim->size, depth);
 
-    _encode_recursive(lcm, f, lm, depth+1);
+    _encode_recursive(lcm, f, lm, depth+1, extra_indent);
 
-    emit(1+depth, "}");
+    emit(indent, "}");
 }
 
 static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -445,8 +453,9 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "");
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
+        int num_dims = g_ptr_array_size(lm->dimensions);
 
-        if (0 == g_ptr_array_size(lm->dimensions) && lcm_is_primitive_type(lm->type->lctypename)) {
+        if (0 == num_dims && lcm_is_primitive_type(lm->type->lctypename)) {
             if(!strcmp(lm->type->lctypename, "string")) {
                 emit(1, "char* %s_cstr = (char*) this->%s.c_str();", lm->membername, lm->membername);
                 emit(1, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &%s_cstr, 1);",
@@ -457,7 +466,20 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             }
             emit(1, "if(tlen < 0) return tlen; else pos += tlen;");
         } else {
-            _encode_recursive(lcm, f, lm, 0);
+            lcm_dimension_t *last_dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, num_dims - 1);
+
+            // for non-string primitive types with variable size final
+            // dimension, add an optimization to only call the primitive encode
+            // functions only if the final dimension size is non-zero.
+            if(lcm_is_primitive_type(lm->type->lctypename) &&
+                    strcmp(lm->type->lctypename, "string") &&
+                    !is_dim_size_fixed(last_dim->size)) {
+                emit(1, "if(%s%s > 0) {", dim_size_prefix(last_dim->size), last_dim->size);
+                _encode_recursive(lcm, f, lm, 0, 1);
+                emit(1, "}");
+            } else {
+                _encode_recursive(lcm, f, lm, 0, 0);
+            }
         }
 
         emit(0,"");
