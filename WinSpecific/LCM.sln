@@ -1,5 +1,5 @@
-Microsoft Visual Studio Solution File, Format Version 9.00
-# Visual Studio 2005
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm", "..\lcm\lcm.vcproj", "{6C7970F3-262A-439D-854C-CF3A82EFC824}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
@@ -13,78 +13,78 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm-gen", "..\lcmgen\lcm-ge
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm-tester", "..\liblcm-test\lcm-tester.vcproj", "{386ECC72-B71F-4D8C-B79D-253E38BABFCA}"
+	ProjectSection(ProjectDependencies) = postProject
+		{6C7970F3-262A-439D-854C-CF3A82EFC824} = {6C7970F3-262A-439D-854C-CF3A82EFC824}
+	EndProjectSection
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(ProjectDependencies) = postProject
-		{6C7970F3-262A-439D-854C-CF3A82EFC824} = {6C7970F3-262A-439D-854C-CF3A82EFC824}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm-logfilter", "..\liblcm-test\lcm-logfilter.vcproj", "{EFC83290-5045-4BCD-BFB3-145EA98CD2AE}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{0C5D451D-5EE0-4195-80AA-86735880D577} = {0C5D451D-5EE0-4195-80AA-86735880D577}
 		{6C7970F3-262A-439D-854C-CF3A82EFC824} = {6C7970F3-262A-439D-854C-CF3A82EFC824}
+	EndProjectSection
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm-logger", "..\lcm-logger\lcm-logger.vcproj", "{7BCECF84-F481-4B6F-919F-95CFEF742801}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{0C5D451D-5EE0-4195-80AA-86735880D577} = {0C5D451D-5EE0-4195-80AA-86735880D577}
 		{6C7970F3-262A-439D-854C-CF3A82EFC824} = {6C7970F3-262A-439D-854C-CF3A82EFC824}
 	EndProjectSection
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "getopt", "..\WinSpecific\getopt\getopt.vcproj", "{0C5D451D-5EE0-4195-80AA-86735880D577}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "getopt", "getopt\getopt.vcproj", "{0C5D451D-5EE0-4195-80AA-86735880D577}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm-logplayer", "..\lcm-logger\lcm-logplayer.vcproj", "{E85E8C39-292B-4700-A277-969F2DE6D06A}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{0C5D451D-5EE0-4195-80AA-86735880D577} = {0C5D451D-5EE0-4195-80AA-86735880D577}
 		{6C7970F3-262A-439D-854C-CF3A82EFC824} = {6C7970F3-262A-439D-854C-CF3A82EFC824}
+	EndProjectSection
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm-example", "..\liblcm-test\lcm-example.vcproj", "{7AA0D313-91F1-46CE-8677-1933A9732113}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{6C7970F3-262A-439D-854C-CF3A82EFC824} = {6C7970F3-262A-439D-854C-CF3A82EFC824}
 		{0C5D451D-5EE0-4195-80AA-86735880D577} = {0C5D451D-5EE0-4195-80AA-86735880D577}
+	EndProjectSection
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm-sink", "..\liblcm-test\lcm-sink.vcproj", "{EE0A7CF5-DD3E-415E-8C5D-31425A256537}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{6C7970F3-262A-439D-854C-CF3A82EFC824} = {6C7970F3-262A-439D-854C-CF3A82EFC824}
 		{0C5D451D-5EE0-4195-80AA-86735880D577} = {0C5D451D-5EE0-4195-80AA-86735880D577}
+	EndProjectSection
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "lcm-source", "..\liblcm-test\lcm-source.vcproj", "{B42A46B6-2274-4FEB-8FAD-283DC9FAA2C4}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
 	ProjectSection(ProjectDependencies) = postProject
 		{0C5D451D-5EE0-4195-80AA-86735880D577} = {0C5D451D-5EE0-4195-80AA-86735880D577}
 		{6C7970F3-262A-439D-854C-CF3A82EFC824} = {6C7970F3-262A-439D-854C-CF3A82EFC824}
+	EndProjectSection
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
 Global

@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="getopt"
 	ProjectGUID="{0C5D451D-5EE0-4195-80AA-86735880D577}"
 	RootNamespace="getopt"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform

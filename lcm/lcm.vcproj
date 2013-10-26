@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8.00"
+	Version="9.00"
 	Name="lcm"
 	ProjectGUID="{6C7970F3-262A-439D-854C-CF3A82EFC824}"
 	RootNamespace="lcm"
 	Keyword="Win32Proj"
+	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
 		<Platform
@@ -66,6 +67,8 @@
 				OutputFile="$(OutDir)\$(ProjectName)d.dll"
 				AdditionalLibraryDirectories="$(GLIB_PATH)\lib"
 				GenerateDebugInformation="true"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -84,9 +87,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -139,6 +139,8 @@
 				AdditionalOptions=" /SECTION:.winlcm,RWS"
 				AdditionalDependencies="Ws2_32.lib winmm.lib glib-2.0.lib gthread-2.0.lib"
 				AdditionalLibraryDirectories="$(GLIB_PATH)\lib"
+				RandomizedBaseAddress="1"
+				DataExecutionPrevention="0"
 			/>
 			<Tool
 				Name="VCALinkTool"
@@ -157,9 +159,6 @@
 			/>
 			<Tool
 				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCWebDeploymentTool"
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
@@ -321,7 +320,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\lcm.h"
+				RelativePath=".\lcm-cpp-impl.hpp"
 				>
 			</File>
 			<File
@@ -329,7 +328,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\lcm-cpp-impl.hpp"
+				RelativePath=".\lcm.h"
 				>
 			</File>
 			<File

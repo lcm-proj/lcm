@@ -76,7 +76,7 @@ struct logger
 
     GThread *write_thread;
     GAsyncQueue *write_queue;
-    GMutex mutex;
+    GMutex * mutex;
 
     // variables for inverted matching (e.g., logging all but some channels)
     int invert_channels;
@@ -238,16 +238,16 @@ write_thread(void *user_data)
         }
 
         // Should the write thread exit?
-        g_mutex_lock(&logger->mutex);
+        g_mutex_lock(logger->mutex);
         if(logger->write_thread_exit_flag) {
-            g_mutex_unlock(&logger->mutex);
+            g_mutex_unlock(logger->mutex);
             return NULL;
         }
         // nope.  write the event to disk
         lcm_eventlog_event_t *le = (lcm_eventlog_event_t*) msg;
         int64_t sz = sizeof(lcm_eventlog_event_t) + le->channellen + 1 + le->datalen;
         logger->write_queue_size -= sz;
-        g_mutex_unlock(&logger->mutex);
+        g_mutex_unlock(logger->mutex);
 
         if(0 != lcm_eventlog_write_event(logger->log, le)) {
             static int64_t last_spew_utime = 0;
@@ -316,12 +316,12 @@ message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
     // check if the backlog of unwritten messages is too big.  If so, then
     // ignore this event
     int64_t mem_sz = sizeof(lcm_eventlog_event_t) + channellen + 1 + rbuf->data_size;
-    g_mutex_lock(&logger->mutex);
+    g_mutex_lock(logger->mutex);
     int64_t mem_required = mem_sz + logger->write_queue_size;
 
     if(mem_required > logger->max_write_queue_size) {
         // can't write to logfile fast enough.  drop packet.
-        g_mutex_unlock(&logger->mutex);
+        g_mutex_unlock(logger->mutex);
 
         // maybe print an informational message to stdout
         int64_t now = timestamp_now();
@@ -338,7 +338,7 @@ message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
         return;
     } else {
         logger->write_queue_size = mem_required;
-        g_mutex_unlock(&logger->mutex);
+        g_mutex_unlock(logger->mutex);
     }
 
     // queue up the message for writing to disk by the write thread
@@ -547,9 +547,7 @@ int main(int argc, char *argv[])
     }
 
     // initialize GLib threading
-#ifndef GLIB_VERSION_2_32
     g_thread_init(NULL);
-#endif
 
     logger.time0 = timestamp_now();
     logger.max_write_queue_size = (int64_t)(max_write_queue_size_mb * (1 << 20));
@@ -559,14 +557,10 @@ int main(int argc, char *argv[])
 
     // create write thread
     logger.write_thread_exit_flag = 0;
-    g_mutex_init(&logger.mutex);
+    logger.mutex = g_mutex_new();
     logger.write_queue_size = 0;
     logger.write_queue = g_async_queue_new();
-#ifdef GLIB_VERSION_2_32
-    logger.write_thread = g_thread_new("write_thread", write_thread, &logger);
-#else
     logger.write_thread = g_thread_create(write_thread, &logger, TRUE, NULL);
-#endif
 
     // begin logging
     logger.lcm = lcm_create (lcmurl);
@@ -618,12 +612,12 @@ int main(int argc, char *argv[])
     fprintf(stderr, "Logger exiting\n");
 
     // stop the write thread
-    g_mutex_lock(&logger.mutex);
+    g_mutex_lock(logger.mutex);
     logger.write_thread_exit_flag = 1;
-    g_mutex_unlock(&logger.mutex);
+    g_mutex_unlock(logger.mutex);
     g_async_queue_push(logger.write_queue, &logger.write_thread_exit_flag);
     g_thread_join(logger.write_thread);
-    g_mutex_clear(&logger.mutex);
+    g_mutex_free(logger.mutex);
 
     // cleanup.  This isn't strictly necessary, do it to be pedantic and so that
     // leak checkers don't complain
