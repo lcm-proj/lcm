@@ -455,16 +455,20 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
         int num_dims = g_ptr_array_size(lm->dimensions);
 
-        if (0 == num_dims && lcm_is_primitive_type(lm->type->lctypename)) {
-            if(!strcmp(lm->type->lctypename, "string")) {
-                emit(1, "char* %s_cstr = (char*) this->%s.c_str();", lm->membername, lm->membername);
-                emit(1, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &%s_cstr, 1);",
-                        lm->membername);
-            } else {
-            emit(1, "tlen = __%s_encode_array(buf, offset + pos, maxlen - pos, &this->%s, 1);",
-                lm->type->lctypename, lm->membername);
-            }
-            emit(1, "if(tlen < 0) return tlen; else pos += tlen;");
+        if (0 == num_dims) {
+            if (lcm_is_primitive_type(lm->type->lctypename)) {
+                if(!strcmp(lm->type->lctypename, "string")) {
+                    emit(1, "char* %s_cstr = (char*) this->%s.c_str();", lm->membername, lm->membername);
+                    emit(1, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &%s_cstr, 1);",
+                            lm->membername);
+                } else {
+                emit(1, "tlen = __%s_encode_array(buf, offset + pos, maxlen - pos, &this->%s, 1);",
+                    lm->type->lctypename, lm->membername);
+                }
+                emit(1, "if(tlen < 0) return tlen; else pos += tlen;");
+          } else {
+            _encode_recursive(lcm, f, lm, 0, 0);
+          }
         } else {
             lcm_dimension_t *last_dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, num_dims - 1);
 
