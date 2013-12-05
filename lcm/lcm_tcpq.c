@@ -10,6 +10,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/time.h>
+#include <signal.h>
 #else
 #include "windows/WinPorting.h"
 #include <winsock2.h>
