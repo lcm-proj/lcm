@@ -161,11 +161,6 @@ open_logfile(logger_t* logger)
                     logger->fname_prefix, logger->next_increment_num);
             logger->next_increment_num++;
         } while(g_file_test(logger->fname, G_FILE_TEST_EXISTS));
-
-        if (errno != ENOENT) {
-            perror ("Error: checking for previous logs");
-            return 1;
-        }
     } else if(logger->rotate > 0) {
         snprintf(logger->fname, sizeof(logger->fname), "%s.0", logger->fname_prefix);
     } else {
