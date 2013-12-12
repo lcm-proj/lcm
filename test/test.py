@@ -8,12 +8,24 @@ import time
 client = "c"
 server = "c"
 
-def dotest(client_dir, server_dir):
-    server_args = [ "%s/server" % server_dir ]
-    client_args = [ "%s/client" % client_dir ]
-    server_proc = subprocess.Popen(server_args)
+tests = { \
+        "c" : ("c/server", "c/client"),
+        "python" : (None, "python python/client.py")
+        }
+
+def dotest(client_name, server_name):
+    global tests
+    server_args = tests[server_name][0]
+    client_args = tests[client_name][1]
+    if server_args is None:
+        print("server test not defined for %s" % server_name)
+        sys.exit(2)
+    if client_args is None:
+        print("client test not defined for %s" % client_name)
+        sys.exit(2)
+    server_proc = subprocess.Popen(server_args, shell=True)
     time.sleep(0.1)
-    client_proc = subprocess.Popen(client_args)
+    client_proc = subprocess.Popen(client_args, shell=True)
 
     server_status = server_proc.wait()
     client_status = client_proc.wait()
@@ -48,3 +60,4 @@ for o, a in opts:
 #print "remaining args: %s" % args
 
 dotest("c", "c")
+dotest("python", "c")

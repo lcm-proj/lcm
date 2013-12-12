@@ -318,3 +318,20 @@ clear_lcmtest_primitives_t(lcmtest_primitives_t* msg)
     free(msg->name);
 }
 
+int
+check_lcmtest2_cross_package_t(const lcmtest2_cross_package_t* msg, int expected)
+{
+    return check_lcmtest_primitives_t(&msg->primitives, expected);
+}
+
+void
+fill_lcmtest2_cross_package_t(int n, lcmtest2_cross_package_t* msg)
+{
+    fill_lcmtest_primitives_t(n, &msg->primitives);
+}
+
+void
+clear_lcmtest2_cross_package_t(lcmtest2_cross_package_t* msg)
+{
+    clear_lcmtest_primitives_t(&msg->primitives);
+}

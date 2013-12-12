@@ -7,6 +7,7 @@ import select
 import lcm
 
 import lcmtest
+import lcmtest2
 
 def _lcm_handle_timeout(lc, ms):
     try:
@@ -25,9 +26,30 @@ def check_field(actual, expected, field):
     if actual != expected:
         raise ValueError("reply.%s : Expected %s, got %s" % (field, actual, expected))
 
+class CrossPackageTest(object):
+    def get_message_type(self):
+        return lcmtest2.cross_package_t
+
+    def get_message_package(self):
+        return "lcmtest2"
+
+    def get_num_iters(self):
+        return 100
+
+    def make_message(self, iteration):
+        msg = lcmtest2.cross_package_t()
+        msg.primitives = PrimitivesTest().make_message(iteration)
+        return msg
+
+    def check_reply(self, reply, iteration):
+        PrimitivesTest().check_reply(reply.primitives, iteration)
+
 class MultidimArrayTest(object):
     def get_message_type(self):
         return lcmtest.multidim_array_t
+
+    def get_message_package(self):
+        return "lcmtest"
 
     def get_num_iters(self):
         return 5
@@ -81,6 +103,9 @@ class NodeTest(object):
     def get_message_type(self):
         return lcmtest.node_t
 
+    def get_message_package(self):
+        return "lcmtest"
+
     def get_num_iters(self):
         return 7
 
@@ -100,6 +125,9 @@ class NodeTest(object):
 class PrimitivesListTest(object):
     def get_message_type(self):
         return lcmtest.primitives_list_t
+
+    def get_message_package(self):
+        return "lcmtest"
 
     def get_num_iters(self):
         return 100
@@ -150,6 +178,9 @@ class PrimitivesListTest(object):
 class PrimitivesTest(object):
     def get_message_type(self):
         return lcmtest.primitives_t
+
+    def get_message_package(self):
+        return "lcmtest"
 
     def get_num_iters(self):
         return 1000
@@ -203,14 +234,15 @@ class StandardTester(object):
         try:
             self.test.check_reply(self.msg_type.decode(data), self.iteration + 1)
             self.response_count += 1
-        except ValueError, xcp:
+        except ValueError as xcp:
             self.failed = True
             info(str(xcp))
 
     def run(self):
         self.response_count = 0
-        pub_channel = "test_lcmtest_%s" % self.msg_name
-        subs = self.lc.subscribe("test_lcmtest_%s_reply" % self.msg_name, self.handler)
+        pkg_name = self.test.get_message_package()
+        pub_channel = "test_%s_%s" % (pkg_name, self.msg_name)
+        subs = self.lc.subscribe("test_%s_%s_reply" % (pkg_name, self.msg_name), self.handler)
         for iteration in range(self.test.get_num_iters()):
             self.iteration = iteration
             msg = self.test.make_message(iteration)
@@ -224,7 +256,7 @@ class StandardTester(object):
                 return False
 
         self.lc.unsubscribe(subs)
-        info("lcmtest_%-17s : PASSED" % self.msg_name)
+        info("%s_%-17s : PASSED" % (pkg_name, self.msg_name))
         return True
 
 
@@ -264,6 +296,7 @@ class Tester(object):
         StandardTester(self.lc, PrimitivesListTest()).run()
         StandardTester(self.lc, NodeTest()).run()
         StandardTester(self.lc, MultidimArrayTest()).run()
+        StandardTester(self.lc, CrossPackageTest()).run()
         info("All tests passed")
 
 if __name__ == "__main__":

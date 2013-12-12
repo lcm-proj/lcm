@@ -1,0 +1,8 @@
+// This type tests cross-package referencing - including a message from a
+// different package
+package lcmtest2;
+
+struct cross_package_t
+{
+    lcmtest.primitives_t primitives;
+}

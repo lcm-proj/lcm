@@ -1,3 +1,3 @@
 #!/bin/sh
 
-lcm-gen -l ../types/*.lcm
+lcm-gen -l ../types/lcmtest/*.lcm

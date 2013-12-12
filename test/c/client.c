@@ -56,6 +56,7 @@ do_##type##_test(void) \
     return result; \
 }
 
+MAKE_CLIENT_TEST(lcmtest2_cross_package_t, 100);
 MAKE_CLIENT_TEST(lcmtest_multidim_array_t, 5);
 MAKE_CLIENT_TEST(lcmtest_node_t, 7);
 MAKE_CLIENT_TEST(lcmtest_primitives_list_t, 100);
@@ -135,6 +136,9 @@ main(int argc, char ** argv)
         goto failed;
 
     if(!do_lcmtest_multidim_array_t_test())
+        goto failed;
+
+    if(!do_lcmtest2_cross_package_t_test())
         goto failed;
 
     info("All tests passed.\n");

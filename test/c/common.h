@@ -5,6 +5,7 @@
 #include "lcmtest_primitives_list_t.h"
 #include "lcmtest_node_t.h"
 #include "lcmtest_multidim_array_t.h"
+#include "lcmtest2_cross_package_t.h"
 
 char* _strdup(const char* src);
 int _lcm_handle_timeout(lcm_t* lcm, int ms);
@@ -24,5 +25,9 @@ void clear_lcmtest_primitives_list_t(lcmtest_primitives_list_t* msg);
 int check_lcmtest_primitives_t(const lcmtest_primitives_t* msg, int expected);
 void fill_lcmtest_primitives_t(int n, lcmtest_primitives_t* msg);
 void clear_lcmtest_primitives_t(lcmtest_primitives_t* msg);
+
+int check_lcmtest2_cross_package_t(const lcmtest2_cross_package_t* msg, int expected);
+void fill_lcmtest2_cross_package_t(int n, lcmtest2_cross_package_t* msg);
+void clear_lcmtest2_cross_package_t(lcmtest2_cross_package_t* msg);
 
 #endif

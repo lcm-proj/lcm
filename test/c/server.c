@@ -59,7 +59,8 @@ begin_##type##_test() \
     g_##type##_subscription = type##_subscribe(g_lcm, "test_" #type, & type##_handler, NULL); \
 }
 
-MAKE_TEST(lcmtest_multidim_array_t, 5, all_tests_passed);
+MAKE_TEST(lcmtest2_cross_package_t, 100, all_tests_passed);
+MAKE_TEST(lcmtest_multidim_array_t, 5, begin_lcmtest2_cross_package_t_test);
 MAKE_TEST(lcmtest_node_t, 7, begin_lcmtest_multidim_array_t_test);
 MAKE_TEST(lcmtest_primitives_list_t, 100, begin_lcmtest_node_t_test);
 MAKE_TEST(lcmtest_primitives_t, 1000, begin_lcmtest_primitives_list_t_test);

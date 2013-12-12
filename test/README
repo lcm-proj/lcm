@@ -166,3 +166,45 @@ follows, for n from 0 to 4:
 The server should reply to each message with an lcmtest.multidim_array_t
 message on channel "test_lcmtest_multidim_array_t_reply".  The reply should be
 similar to the client message, but with as if the client was on message (n+1).
+
+5. cross_package_t
+===================
+
+This tests nested datatypes crossing package boundaries.
+
+Client publishes 1000 lcmtest2.cross_package_t messages to channel
+"test_lcmtest2_cross_package_t".  Message number n should be populated as follows for
+n from 0 to 999:
+  .primitives.i8             = n % 100
+  .primitives.i16            = n * 10
+  .primitives.i64            = n * 10000
+  .primitives.position[0]    = n
+  .primitives.position[1]    = n
+  .primitives.position[2]    = n
+  .primitives.orientation[0] = n
+  .primitives.orientation[1] = n
+  .primitives.orientation[2] = n
+  .primitives.orientation[3] = n
+  .primitives.num_ranges     = n
+  .primitives.ranges[i]      = i         (i = 0 ... n-1)
+  .primitives.name           = <string representation of n>
+  .primitives.enabled        = n % 2
+
+The server should reply to each message with an lcmtest2.cross_package_t message on
+channel "test_lcmtest2_cross_package_t".  The reply should be populated as
+follows:
+  .primitives.i8             = (n + 1) % 100
+  .primitives.i16            = (n + 1) * 10
+  .primitives.i64            = (n + 1) * 10000
+  .primitives.position[0]    = n + 1
+  .primitives.position[1]    = n + 1
+  .primitives.position[2]    = n + 1
+  .primitives.orientation[0] = n + 1
+  .primitives.orientation[1] = n + 1
+  .primitives.orientation[2] = n + 1
+  .primitives.orientation[3] = n + 1
+  .primitives.num_ranges     = n + 1
+  .primitives.ranges[i]      = i         (i = 0 ... n-1)
+  .primitives.name           = <string representation of n+1>
+  .primitives.enabled        = (n+1) % 2
+

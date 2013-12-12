@@ -5,9 +5,10 @@ CC=gcc
 CFLAGS=`pkg-config --cflags lcm` -std=c99 -g
 LDFLAGS=`pkg-config --libs lcm`
 
-types:=exampleconst_t primitives_t primitives_list_t multidim_array_t node_t
-types_obj:=$(types:%=lcmtest_%.o)
-types_src:=$(types:%=lcmtest_%.c) $(types:%=lcmtest_%.h)
+types1:=exampleconst_t primitives_t primitives_list_t multidim_array_t node_t
+types2:=cross_package_t
+types_obj:=$(types1:%=lcmtest_%.o) $(types2:%=lcmtest2_%.o)
+types_src:=$(types1:%=lcmtest_%.c) $(types1:%=lcmtest_%.h) $(types2:%=lcmtest2_%.c) $(types2:%=lcmtest2_%.h)
 
 all: server \
 	client
@@ -31,7 +32,10 @@ server.o: server.c $(types_src)
 lcmtest_%.o: lcmtest_%.c lcmtest_%.h
 	$(CC) $(CFLAGS) -c $<
 
-lcmtest_%.c lcmtest_%.h: ../types/%.lcm
+lcmtest_%.c lcmtest_%.h: ../types/lcmtest/%.lcm
+	lcm-gen -c $<
+
+lcmtest2_%.c lcmtest2_%.h: ../types/lcmtest2/%.lcm
 	lcm-gen -c $<
 
 clean:
