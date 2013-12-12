@@ -78,6 +78,7 @@ void setup_c_options(getopt_t *gopt)
     getopt_add_string (gopt, 0, "c-hpath",    ".",      "Location for .h files");
     getopt_add_string (gopt, 0, "cinclude",   "",       "Generated #include lines reference this folder");
     getopt_add_bool   (gopt, 0, "c-no-pubsub",   0,     "Do not generate _publish and _subscribe functions");
+    getopt_add_bool   (gopt, 0, "c-typeinfo",   0,      "Generate typeinfo functions for each type");
 }
 
 /** Emit output that is common to every header file **/
@@ -218,6 +219,12 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(0,"int  %s_decode(const void *buf, int offset, int maxlen, %s *p);", tn_, tn_);
     emit(0,"int  %s_decode_cleanup(%s *p);", tn_, tn_);
     emit(0,"int  %s_encoded_size(const %s *p);", tn_, tn_);
+    if(getopt_get_bool(lcmgen->gopt, "c-typeinfo")) {
+        emit(0,"size_t %s_struct_size(void);", tn_);
+        emit(0,"int  %s_num_fields(void);", tn_);
+        emit(0,"int  %s_get_field(const %s *p, int i, lcm_field_t *f);", tn_, tn_);
+        emit(0,"const lcm_type_info_t *%s_get_type_info(void);", tn_);
+    }
     emit(0,"");
 
     emit(0,"// LCM support functions. Users should not call these");
@@ -564,6 +571,129 @@ static void emit_c_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0,"");
 }
 
+static void emit_c_num_fields(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    char *tn = ls->structname->lctypename;
+    char *tn_ = dots_to_underscores(tn);
+
+    emit(0,"int %s_num_fields(void)", tn_);
+    emit(0,"{");
+    emit(1, "return %d;", g_ptr_array_size(ls->members));
+    emit(0,"}");
+    emit(0,"");
+}
+
+static void emit_c_struct_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    char *tn = ls->structname->lctypename;
+    char *tn_ = dots_to_underscores(tn);
+
+    emit(0,"size_t %s_struct_size(void)", tn_);
+    emit(0,"{");
+    emit(1, "return sizeof(%s);", tn_);
+    emit(0,"}");
+    emit(0,"");
+}
+
+static inline char *str_toupper(char *s)
+{
+    for(char *p = s; *p; p++)
+        *p = toupper(*p);
+    return s;
+}
+
+static void emit_c_get_field(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    char buffer[256];
+
+    char *tn = ls->structname->lctypename;
+    char *tn_ = dots_to_underscores(tn);
+
+    emit(0,"int %s_get_field(const %s *p, int i, lcm_field_t *f)", tn_, tn_);
+    emit(0,"{");
+    emit(1,"if (0 > i || i >= %s_num_fields())", tn_);
+    emit(2,"return 1;");
+    emit(1,"");
+
+    emit(1,"switch (i) {");
+    emit(1,"");
+
+    int num_fields = g_ptr_array_size(ls->members);
+    for(int i = 0; i < num_fields; i++) {
+        emit(2,"case %d: {", i);
+
+        lcm_member_t *m = g_ptr_array_index(ls->members, i);
+
+        const char *type_val = NULL;
+        if(lcm_is_primitive_type(m->type->shortname)) {
+            snprintf(buffer, 256, "LCM_FIELD_%s", m->type->shortname);
+            type_val = str_toupper(buffer);
+        } else {
+            emit(3,"/* %s */", m->type->shortname);
+            type_val = "LCM_FIELD_USER_TYPE";
+        }
+
+        emit(3,"f->name = \"%s\";", m->membername);
+        emit(3,"f->type = %s;", type_val);
+        emit(3,"f->typestr = \"%s\";", m->type->shortname);
+
+        int num_dim = g_ptr_array_size(m->dimensions);
+        emit(3,"f->num_dim = %d;", num_dim);
+
+        if(num_dim != 0) {
+
+            for(int j = 0; j < num_dim; j++) {
+                lcm_dimension_t *d = g_ptr_array_index(m->dimensions, j);
+                if(d->mode == LCM_VAR)
+                    emit(3,"f->dim_size[%d] = p->%s;", j, d->size);
+                else
+                    emit(3,"f->dim_size[%d] = %s;", j, d->size);
+            }
+
+            for(int j = 0; j < num_dim; j++) {
+                lcm_dimension_t *d = g_ptr_array_index(m->dimensions, j);
+                emit(3,"f->dim_is_variable[%d] = %d;", j, d->mode == LCM_VAR);
+            }
+
+        }
+
+        emit(3, "f->data = (void *) &p->%s;", m->membername);
+
+        emit(3, "return 0;");
+        emit(2,"}");
+        emit(2,"");
+    }
+    emit(2,"default:");
+    emit(3,"return 1;");
+    emit(1,"}");
+    emit(0,"}");
+    emit(0,"");
+}
+
+static void emit_c_get_type_info(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    char *tn = ls->structname->lctypename;
+    char *tn_ = dots_to_underscores(tn);
+
+    emit(0,"const lcm_type_info_t *%s_get_type_info(void)", tn_);
+    emit(0,"{");
+    emit(1,"static int init = 0;");
+    emit(1,"static lcm_type_info_t typeinfo;");
+    emit(1,"if (!init) {");
+    emit(2,"typeinfo.encode         = (lcm_encode_t) %s_encode;", tn_);
+    emit(2,"typeinfo.decode         = (lcm_decode_t) %s_decode;", tn_);
+    emit(2,"typeinfo.decode_cleanup = (lcm_decode_cleanup_t) %s_decode_cleanup;", tn_);
+    emit(2,"typeinfo.encoded_size   = (lcm_encoded_size_t) %s_encoded_size;", tn_);
+    emit(2,"typeinfo.struct_size    = (lcm_struct_size_t)  %s_struct_size;", tn_);
+    emit(2,"typeinfo.num_fields     = (lcm_num_fields_t) %s_num_fields;", tn_);
+    emit(2,"typeinfo.get_field      = (lcm_get_field_t) %s_get_field;", tn_);
+    emit(2,"typeinfo.get_hash       = (lcm_get_hash_t) __%s_get_hash;", tn_);
+    emit(1,"}");
+    emit(1,"");
+    emit(1,"return &typeinfo;");
+    emit(0,"}");
+}
+
 static void emit_c_clone_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
     char *tn = lr->structname->lctypename;
@@ -642,6 +772,7 @@ static void emit_c_struct_publish(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "      return status;\n"
             "}\n\n", tn_, tn_, tn_, tn_);
 }
+
 
 static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
@@ -943,6 +1074,13 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *lr)
         emit_c_encode(lcmgen, f, lr);
         emit_c_encoded_array_size(lcmgen, f, lr);
         emit_c_encoded_size(lcmgen, f, lr);
+
+        if(getopt_get_bool(lcmgen->gopt, "c-typeinfo")) {
+            emit_c_struct_size(lcmgen, f, lr);
+            emit_c_num_fields(lcmgen, f, lr);
+            emit_c_get_field(lcmgen, f, lr);
+            emit_c_get_type_info(lcmgen, f, lr);
+        }
 
         emit_c_decode_array(lcmgen, f, lr);
         emit_c_decode_array_cleanup(lcmgen, f, lr);

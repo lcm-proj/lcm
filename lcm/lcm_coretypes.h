@@ -443,6 +443,99 @@ static inline void *lcm_malloc(size_t sz)
     return NULL;
 }
 
+/**
+ * TYPE INFO/INTROSPECTION
+ */
+
+typedef enum _lcm_field_type_t lcm_field_type_t;
+enum _lcm_field_type_t {
+    LCM_FIELD_INT8_T,
+    LCM_FIELD_INT16_T,
+    LCM_FIELD_INT32_T,
+    LCM_FIELD_INT64_T,
+    LCM_FIELD_BYTE,
+    LCM_FIELD_FLOAT,
+    LCM_FIELD_DOUBLE,
+    LCM_FIELD_STRING,
+    LCM_FIELD_BOOLEAN,
+    LCM_FIELD_USER_TYPE
+};
+
+#define LCM_TYPE_FIELD_MAX_DIM 50
+
+/**
+ * Describes a single lcmtype field's datatype and array dimmensions
+ */
+typedef struct _lcm_field_t lcm_field_t;
+struct _lcm_field_t
+{
+    /**
+     * name of the field
+     */
+    const char *name;
+
+    /**
+     * datatype of the field
+     **/
+    lcm_field_type_t type;
+
+    /**
+     * datatype of the field (in string format)
+     * this should be the same as in the lcm type decription file
+     */
+    const char *typestr;
+
+    /**
+     * number of array dimensions
+     * if the field is scalar, num_dim should equal 0
+     */
+    int num_dim;
+
+    /**
+     * the size of each dimension. Valid on [0:num_dim-1].
+     */
+    int32_t dim_size[LCM_TYPE_FIELD_MAX_DIM];
+
+    /**
+     * a boolean describing whether the dimension is
+     * variable. Valid on [0:num_dim-1].
+     */
+    int8_t  dim_is_variable[LCM_TYPE_FIELD_MAX_DIM];
+
+    /**
+     * a data pointer to the start of this field
+     */
+    void *data;
+};
+
+
+typedef int (*lcm_encode_t)(void *buf, int offset, int maxlen, const void *p);
+typedef int (*lcm_decode_t)(const void *buf, int offset, int maxlen, void *p);
+typedef int (*lcm_decode_cleanup_t)(void *p);
+typedef int (*lcm_encoded_size_t)(const void *p);
+typedef int (*lcm_struct_size_t)(void);
+typedef int (*lcm_num_fields_t)(void);
+typedef int (*lcm_get_field_t)(const void *p, int i, lcm_field_t *f);
+typedef int64_t (*lcm_get_hash_t)(void);
+
+/**
+ * Describes an lcmtype info, enabling introspection
+ */
+typedef struct _lcm_type_info_t lcm_type_info_t;
+struct _lcm_type_info_t
+{
+    lcm_encode_t          encode;
+    lcm_decode_t          decode;
+    lcm_decode_cleanup_t  decode_cleanup;
+    lcm_encoded_size_t    encoded_size;
+    lcm_struct_size_t     struct_size;
+    lcm_num_fields_t      num_fields;
+    lcm_get_field_t       get_field;
+    lcm_get_hash_t        get_hash;
+
+};
+
+
 #ifdef __cplusplus
 }
 #endif
