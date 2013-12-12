@@ -1,3 +1,4 @@
+#include <Python.h> // include first because it contains pre-processor defs
 #ifndef WIN32
 #include <sys/socket.h>
 #include <sys/select.h>
@@ -16,6 +17,16 @@
 
 //#define dbg(...) fprintf (stderr, __VA_ARGS__)
 #define dbg(...) 
+
+// to support python 2.5 and earlier
+#ifndef Py_TYPE
+    #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
+#endif
+
+// to support python 3 where all ints are long
+#if PY_MAJOR_VERSION >= 3
+    #define PyInt_FromLong PyLong_FromLong
+#endif
 
 PyDoc_STRVAR (pylcm_doc,
 "The LCM class provides a connection to an LCM network.\n\
@@ -69,12 +80,17 @@ pylcm_msg_handler (const lcm_recv_buf_t *rbuf, const char *channel,
 {
     // if an exception has occurred, then abort.
     if (PyErr_Occurred ()) return;
-	
+
 	//MSVC requires explicit cast
     PyLCMSubscriptionObject *subs_obj = (PyLCMSubscriptionObject*) userdata;
 
-    PyObject *arglist = Py_BuildValue ("ss#", channel, 
+    #if PY_MAJOR_VERSION >= 3
+    PyObject *arglist = Py_BuildValue ("sy#", channel, // build from bytes
             rbuf->data, rbuf->data_size);
+    #else
+    PyObject *arglist = Py_BuildValue ("ss#", channel, // build from string
+            rbuf->data, rbuf->data_size);
+    #endif
 
     PyObject *result  = PyEval_CallObject (subs_obj->handler, arglist);
     Py_DECREF (arglist);
@@ -305,7 +321,7 @@ pylcm_dealloc (PyLCMObject *lcm_obj)
         lcm_obj->lcm = NULL;
     }
     Py_DECREF (lcm_obj->all_handlers);
-    lcm_obj->ob_type->tp_free ((PyObject*)lcm_obj);
+    Py_TYPE (lcm_obj)->tp_free ((PyObject*)lcm_obj);
 }
 
 static int
@@ -330,8 +346,12 @@ pylcm_initobj (PyObject *self, PyObject *args, PyObject *kwargs)
 
 /* Type object for socket objects. */
 PyTypeObject pylcm_type = {
+#if PY_MAJOR_VERSION >= 3
+    PyVarObject_HEAD_INIT (0, 0) /* size is now part of macro */
+#else
     PyObject_HEAD_INIT (0)   /* Must fill in type value later */
     0,                  /* ob_size */
+#endif
     "LCM",            /* tp_name */
     sizeof (PyLCMObject),     /* tp_basicsize */
     0,                  /* tp_itemsize */

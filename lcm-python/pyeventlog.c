@@ -5,6 +5,16 @@
 #include <lcm/windows/WinPorting.h>
 #endif
 
+// to support python 2.5 and earlier
+#ifndef Py_TYPE
+    #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
+#endif
+
+// to support python 3 where strings are bytes
+#if PY_MAJOR_VERSION < 3
+    #define PyBytes_FromString PyString_FromString
+#endif
+
 typedef struct {
     PyObject_HEAD
 
@@ -51,12 +61,19 @@ pylog_read_next_event (PyLogObject *self)
         return Py_None;
     }
 
+    #if PY_MAJOR_VERSION >= 3
+PyObject *result = Py_BuildValue ("LLs#y#", // build from bytes
+            next_event->eventnum,
+            next_event->timestamp,
+            next_event->channel, next_event->channellen,
+            next_event->data, next_event->datalen);
+    #else
     PyObject *result = Py_BuildValue ("LLs#s#", 
             next_event->eventnum,
             next_event->timestamp,
             next_event->channel, next_event->channellen,
             next_event->data, next_event->datalen);
-
+    #endif
     lcm_eventlog_free_event (next_event);
 
     return result;
@@ -192,7 +209,7 @@ pylog_repr(PyLogObject *s)
     char buf[512];
     PyOS_snprintf(buf, sizeof(buf),
                 "<Log object ... TODO>");
-    return PyString_FromString(buf);
+    return PyBytes_FromString(buf);
 }
 
 static PyObject *
@@ -215,7 +232,7 @@ pylog_dealloc(PyLogObject *self)
     if (self->eventlog) {
         lcm_eventlog_destroy (self->eventlog);
     }
-    self->ob_type->tp_free((PyObject*)self);
+    Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static int
@@ -252,8 +269,12 @@ pylog_initobj(PyObject *s, PyObject *args, PyObject *kwds)
 
 /* Type object */
 PyTypeObject pylcmeventlog_type = {
+#if PY_MAJOR_VERSION >= 3
+    PyVarObject_HEAD_INIT(0, 0) /* size is now part of macro */
+#else
     PyObject_HEAD_INIT(0)   /* Must fill in type value later */
     0,                  /* ob_size */
+#endif
     "EventLog",            /* tp_name */
     sizeof(PyLogObject),     /* tp_basicsize */
     0,                  /* tp_itemsize */
@@ -293,4 +314,3 @@ PyTypeObject pylcmeventlog_type = {
     pylog_new,             /* tp_new */
     PyObject_Del,               /* tp_free */
 };
-

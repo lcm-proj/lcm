@@ -4,6 +4,16 @@
 #define Py_RETURN_NONE  do { Py_INCREF( Py_None ); return Py_None; } while(0)
 #endif
 
+// to support python 2.5 and earlier
+#ifndef Py_TYPE
+    #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
+#endif
+
+// to support python 3 where all ints are long
+#if PY_MAJOR_VERSION >= 3
+    #define PyInt_AsLong PyLong_AsLong
+#endif
+
 PyDoc_STRVAR (_class_doc,
 "The LCMSubscription class represents a single subscription of a message\n\
 handler to an LCM channel.\n\
@@ -59,7 +69,7 @@ _dealloc (PyLCMSubscriptionObject *s)
         s->handler = NULL;
     }
     // ignore s->subscription and s->lcm_obj
-    s->ob_type->tp_free ((PyObject*)s);
+    Py_TYPE(s)->tp_free ((PyObject*)s);
 }
 
 static PyObject *
@@ -81,8 +91,12 @@ _init (PyObject *self, PyObject *args, PyObject *kwargs)
 
 /* Type object for socket objects. */
 PyTypeObject pylcm_subscription_type = {
+#if PY_MAJOR_VERSION >= 3
+    PyVarObject_HEAD_INIT (0, 0) /* size is now part of macro */
+#else
     PyObject_HEAD_INIT (0)   /* Must fill in type value later */
     0,                  /* ob_size */
+#endif
     "LCMSubscription",            /* tp_name */
     sizeof (PyLCMSubscriptionObject),     /* tp_basicsize */
     0,                  /* tp_itemsize */

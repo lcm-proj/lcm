@@ -43,8 +43,8 @@ AC_DEFUN([AM_CHECK_PYTHON_HEADERS],
 [AC_REQUIRE([AM_PATH_PYTHON])
 AC_MSG_CHECKING(for headers required to compile python extensions)
 dnl deduce PYTHON_INCLUDES
-py_prefix=`$PYTHON -c "import sys; print sys.prefix"`
-py_exec_prefix=`$PYTHON -c "import sys; print sys.exec_prefix"`
+py_prefix=`$PYTHON -c "import sys; sys.stdout.write(sys.prefix)"`
+py_exec_prefix=`$PYTHON -c "import sys; sys.stdout.write(sys.exec_prefix)"`
 if test -x "$PYTHON-config"; then
 PYTHON_INCLUDES=`$PYTHON-config --includes 2>/dev/null`
 else

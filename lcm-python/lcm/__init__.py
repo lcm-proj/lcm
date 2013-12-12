@@ -1,6 +1,6 @@
 import os
 
-from _lcm import LCM, LCMSubscription
+from ._lcm import LCM, LCMSubscription
 
 class Event(object):
     """Data structure representing a single event in an LCM EventLog
@@ -108,6 +108,14 @@ to next() returning the next L{Event<lcm.Event>} in the log.
         self.c_eventlog.seek (0)
         return self
     
+    def __next__ (self):
+        """
+        Python 2.6 - 3.x version for iterators
+        
+        @rtype: L{Event<lcm.Event>}
+        """
+        return self.next()
+
     def next (self):
         """
         @rtype: L{Event<lcm.Event>}

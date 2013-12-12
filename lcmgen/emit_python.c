@@ -360,7 +360,7 @@ emit_python_decode (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit (2, "if hasattr(data, 'read'):");
     emit (3,     "buf = data");
     emit (2, "else:");
-    emit (3,     "buf = StringIO.StringIO(data)");
+    emit (3,     "buf = BytesIO(data)");
     emit (2, "if buf.read(8) != %s._get_packed_fingerprint():", 
             ls->structname->shortname);
     emit (3,     "raise ValueError(\"Decode error\")");
@@ -379,7 +379,7 @@ _emit_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
         emit (indent, "__%s_encoded = %s.encode('utf-8')", mn, accessor);
         emit (indent, "buf.write(struct.pack('>I', len(__%s_encoded)+1))", mn);
         emit (indent, "buf.write(__%s_encoded)", mn);
-        emit (indent, "buf.write(\"\\0\")");
+        emit (indent, "buf.write(b\"\\0\")");
     } else if (!strcmp ("byte", tn)) {
         emit (indent, "buf.write(struct.pack('B', %s))", accessor);
     } else if (!strcmp ("int8_t", tn) || !strcmp ("boolean", tn)) {
@@ -402,8 +402,8 @@ _emit_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
             emit(indent, "assert %s._get_packed_fingerprint() == %s.%s._get_packed_fingerprint()",
                     accessor, lm->type->shortname, lm->type->shortname);
         } else {
-            emit(indent, "assert %s._get_packed_fingerprint() == %s.%s._get_packed_fingerprint()",
-                    accessor, lm->type->lctypename, lm->type->shortname);
+            emit(indent, "assert %s._get_packed_fingerprint() == %s._get_packed_fingerprint()",
+				    accessor, lm->type->lctypename);
         }
         emit (indent, "%s._encode_one(buf)", accessor);
     }
@@ -536,7 +536,7 @@ static void
 emit_python_encode (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(1, "def encode(self):");
-    emit(2, "buf = StringIO.StringIO()");
+    emit(2, "buf = BytesIO()");
     emit(2, "buf.write(%s._get_packed_fingerprint())", 
             ls->structname->shortname);
     emit(2, "self._encode_one(buf)");
@@ -605,7 +605,7 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             } else if (is_same_package (lm->type, ls->structname)) {
                 emit_continue ("+ %s.%s.%s", msn, msn, ghr);
             } else {
-                emit_continue ("+ %s.%s", lm->type->lctypename, ghr);
+                emit_continue ("+ %s.%s.%s", lm->type->package, msn, ghr);
             }
         }
     }
@@ -650,7 +650,18 @@ emit_python_dependencies (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     GPtrArray *deps = _hash_table_get_vals (dependencies);
     for (int i=0; i<deps->len; i++) {
         const char *package = (char *) g_ptr_array_index (deps, i);
-        emit (0, "import %s\n", package);
+        gchar ** pack_type = g_strsplit(package, ".", 0); // split into package and type
+        gchar * pack = pack_type[0];
+        gchar * type = pack_type[1];
+
+        if (!strcmp((char *) ls->structname->shortname, package)) {
+            // we don't have to import ourself
+        } else if (type == NULL ) {
+            emit(0, "from . import %s\n", package);
+        } else {
+            emit(0, "import %s.%s\n", pack, type); // from different package
+        }
+        g_strfreev(pack_type);
     }
     g_ptr_array_free (deps, TRUE);
     g_hash_table_destroy (dependencies);
@@ -730,8 +741,8 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 
             // close init_py_fp if already open
             if(init_py_fp) {
-            	fclose(init_py_fp);
-            	init_py_fp = NULL;
+                fclose(init_py_fp);
+                init_py_fp = NULL;
             }
 
             if (! g_file_test (initpy_fname, G_FILE_TEST_EXISTS)) {
@@ -785,7 +796,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                     if(!words[0] || !words[1] || !words[2] || !words[3])
                         continue;
                     if(!strcmp(words[0], "from") && !strcmp(words[2], "import")) {
-                        char *module_name = strdup(words[1]);
+                        char *module_name = strdup(words[1]+1); // ignore leading dot
                         g_hash_table_insert(init_py_imports, module_name, 
                                 module_name);
                     }
@@ -808,7 +819,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 
         if(init_py_fp && 
            !g_hash_table_lookup(init_py_imports, le->enumname->shortname))
-            fprintf(init_py_fp, "from %s import %s\n", 
+            fprintf(init_py_fp, "from .%s import %s\n", 
                     le->enumname->shortname,
                     le->enumname->shortname);
 
@@ -823,7 +834,10 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                 "DO NOT MODIFY BY HAND!!!!\n"
                 "\"\"\"\n"
                 "\n"
-                "import cStringIO as StringIO\n"
+                "try:\n"
+                "    import cStringIO.StringIO as BytesIO\n"
+                "except ImportError:\n"
+                "    from io import BytesIO\n"
                 "import struct\n");
 
         // enums always encoded as int32
@@ -862,7 +876,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         emit (2,     "if hasattr (data, 'read'):");
         emit (3,         "buf = data");
         emit (2,     "else:");
-        emit (3,         "buf = StringIO.StringIO(data)");
+        emit (3,         "buf = BytesIO(data)");
         emit (2,     "if buf.read(8) != %s._packed_fingerprint:", 
                 le->enumname->shortname);
         emit (3,         "raise ValueError(\"Decode error\")");
@@ -889,7 +903,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
 
         if(init_py_fp && 
            !g_hash_table_lookup(init_py_imports, ls->structname->shortname))
-            fprintf(init_py_fp, "from %s import %s\n", 
+            fprintf(init_py_fp, "from .%s import %s\n", 
                     ls->structname->shortname,
                     ls->structname->shortname);
 
@@ -904,7 +918,10 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                 "DO NOT MODIFY BY HAND!!!!\n"
                 "\"\"\"\n"
                 "\n"
-                "import cStringIO as StringIO\n"
+                "try:\n"
+                "    import cStringIO.StringIO as BytesIO\n"
+                "except ImportError:\n"
+                "    from io import BytesIO\n"
                 "import struct\n\n");
 
         emit_python_dependencies (lcm, f, ls);
