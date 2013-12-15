@@ -444,11 +444,9 @@ static inline void *lcm_malloc(size_t sz)
 }
 
 /**
- * TYPE INFO/INTROSPECTION
+ * Describes the type of a single field in an LCM message.
  */
-
-typedef enum _lcm_field_type_t lcm_field_type_t;
-enum _lcm_field_type_t {
+typedef enum {
     LCM_FIELD_INT8_T,
     LCM_FIELD_INT16_T,
     LCM_FIELD_INT32_T,
@@ -459,7 +457,7 @@ enum _lcm_field_type_t {
     LCM_FIELD_STRING,
     LCM_FIELD_BOOLEAN,
     LCM_FIELD_USER_TYPE
-};
+} lcm_field_type_t;
 
 #define LCM_TYPE_FIELD_MAX_DIM 50
 
