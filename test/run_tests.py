@@ -10,7 +10,8 @@ server = "c"
 
 tests = { \
         "c" : ("c/server", "c/client"),
-        "python" : (None, "python python/client.py")
+        "python" : (None, "python python/client.py"),
+        "cpp" : ("cpp/server", "cpp/client"),
         }
 
 def dotest(client_name, server_name):
@@ -29,9 +30,10 @@ def dotest(client_name, server_name):
 
     server_status = server_proc.wait()
     client_status = client_proc.wait()
-    print("server: %d" % server_status)
-    print("client: %d" % client_status)
-
+    print("server %s returned: %d" % (server_name, server_status))
+    print("client %s returned: %d" % (client_name, client_status))
+    print
+    
 def usage():
     print("Usage:  %s [options] [client] [server]" % sys.argv[0])
     print("")
@@ -61,3 +63,4 @@ for o, a in opts:
 
 dotest("c", "c")
 dotest("python", "c")
+dotest("cpp", "c")

@@ -224,7 +224,6 @@ fill_lcmtest_primitives_list_t(int num, lcmtest_primitives_list_t* msg)
     msg->items = (lcmtest_primitives_t*) malloc(msg->num_items * sizeof(lcmtest_primitives_t));
     for(n=0; n<num; n++) {
         lcmtest_primitives_t* ex = &msg->items[n];
-        ex->ranges = (int16_t*) malloc(n * sizeof(int16_t));
         ex->i8 = -(n % 100);
         ex->i16 = -n * 10;
         ex->i64 = -n * 10000;

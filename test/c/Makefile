@@ -1,5 +1,6 @@
 # This Makefile was tested with GNU Make
 CC=gcc
+LCM_GEN=../../lcmgen/lcm-gen
 
 # Use pkg-config to lookup the proper compiler and linker flags for LCM
 CFLAGS=`pkg-config --cflags lcm` -std=c99 -g
@@ -33,10 +34,10 @@ lcmtest_%.o: lcmtest_%.c lcmtest_%.h
 	$(CC) $(CFLAGS) -c $<
 
 lcmtest_%.c lcmtest_%.h: ../types/lcmtest/%.lcm
-	lcm-gen -c $<
+	$(LCM_GEN) -c $<
 
 lcmtest2_%.c lcmtest2_%.h: ../types/lcmtest2/%.lcm
-	lcm-gen -c $<
+	$(LCM_GEN) -c $<
 
 clean:
 	rm -f client server
