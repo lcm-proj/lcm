@@ -7,7 +7,7 @@ CFLAGS=`pkg-config --cflags lcm` -std=c99 -g
 LDFLAGS=`pkg-config --libs lcm`
 
 types1:=exampleconst_t primitives_t primitives_list_t multidim_array_t node_t
-types2:=cross_package_t
+types2:=another_type_t cross_package_t
 types_obj:=$(types1:%=lcmtest_%.o) $(types2:%=lcmtest2_%.o)
 types_src:=$(types1:%=lcmtest_%.c) $(types1:%=lcmtest_%.h) $(types2:%=lcmtest2_%.c) $(types2:%=lcmtest2_%.h)
 

@@ -26,6 +26,24 @@ def check_field(actual, expected, field):
     if actual != expected:
         raise ValueError("reply.%s : Expected %s, got %s" % (field, actual, expected))
 
+class AnotherTypeTest(object):
+    def get_message_type(self):
+        return lcmtest2.another_type_t
+
+    def get_message_package(self):
+        return "lcmtest2"
+
+    def get_num_iters(self):
+        return 100
+
+    def make_message(self, iteration):
+        msg = lcmtest2.another_type_t()
+        msg.val = iteration
+        return msg
+
+    def check_reply(self, reply, iteration):
+        check_field(reply.val, iteration, "val")
+
 class CrossPackageTest(object):
     def get_message_type(self):
         return lcmtest2.cross_package_t
@@ -39,10 +57,12 @@ class CrossPackageTest(object):
     def make_message(self, iteration):
         msg = lcmtest2.cross_package_t()
         msg.primitives = PrimitivesTest().make_message(iteration)
+        msg.another = AnotherTypeTest().make_message(iteration)
         return msg
 
     def check_reply(self, reply, iteration):
         PrimitivesTest().check_reply(reply.primitives, iteration)
+        AnotherTypeTest().check_reply(reply.another, iteration)
 
 class MultidimArrayTest(object):
     def get_message_type(self):

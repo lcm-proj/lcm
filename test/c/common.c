@@ -318,19 +318,42 @@ clear_lcmtest_primitives_t(lcmtest_primitives_t* msg)
 }
 
 int
+check_lcmtest2_another_type_t(const lcmtest2_another_type_t* msg, int expected)
+{
+    int n = expected;
+    CHECK_FIELD(msg->val, n, "%d");
+    return 1;
+}
+
+void
+fill_lcmtest2_another_type_t(int n, lcmtest2_another_type_t* msg)
+{
+    msg->val = n;
+}
+
+void
+clear_lcmtest2_another_type_t(lcmtest2_another_type_t* msg)
+{
+    return;
+}
+
+int
 check_lcmtest2_cross_package_t(const lcmtest2_cross_package_t* msg, int expected)
 {
-    return check_lcmtest_primitives_t(&msg->primitives, expected);
+    return check_lcmtest_primitives_t(&msg->primitives, expected) &&
+        check_lcmtest2_another_type_t(&msg->another, expected);
 }
 
 void
 fill_lcmtest2_cross_package_t(int n, lcmtest2_cross_package_t* msg)
 {
     fill_lcmtest_primitives_t(n, &msg->primitives);
+    fill_lcmtest2_another_type_t(n, &msg->another);
 }
 
 void
 clear_lcmtest2_cross_package_t(lcmtest2_cross_package_t* msg)
 {
     clear_lcmtest_primitives_t(&msg->primitives);
+    clear_lcmtest2_another_type_t(&msg->another);
 }

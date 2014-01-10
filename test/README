@@ -190,6 +190,8 @@ n from 0 to 999:
   .primitives.name           = <string representation of n>
   .primitives.enabled        = n % 2
 
+  .another.val               = n
+
 The server should reply to each message with an lcmtest2.cross_package_t message on
 channel "test_lcmtest2_cross_package_t".  The reply should be populated as
 follows:
@@ -207,4 +209,6 @@ follows:
   .primitives.ranges[i]      = i         (i = 0 ... n-1)
   .primitives.name           = <string representation of n+1>
   .primitives.enabled        = (n+1) % 2
+
+  .another.val               = n + 1
 
