@@ -30,4 +30,8 @@ int CheckLcmType(const lcmtest2::cross_package_t* msg, int expected);
 void FillLcmType(int n, lcmtest2::cross_package_t* msg);
 void ClearLcmType(lcmtest2::cross_package_t* msg);
 
+int CheckLcmType(const lcmtest2::another_type_t* msg, int expected);
+void FillLcmType(int n, lcmtest2::another_type_t* msg);
+void ClearLcmType(lcmtest2::another_type_t* msg);
+
 #endif

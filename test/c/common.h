@@ -30,4 +30,8 @@ int check_lcmtest2_cross_package_t(const lcmtest2_cross_package_t* msg, int expe
 void fill_lcmtest2_cross_package_t(int n, lcmtest2_cross_package_t* msg);
 void clear_lcmtest2_cross_package_t(lcmtest2_cross_package_t* msg);
 
+int check_lcmtest2_another_type_t(const lcmtest2_another_type_t* msg, int expected);
+void fill_lcmtest2_another_type_t(int n, lcmtest2_another_type_t* msg);
+void clear_lcmtest2_another_type_t(lcmtest2_another_type_t* msg);
+
 #endif

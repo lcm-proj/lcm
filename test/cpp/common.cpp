@@ -282,13 +282,32 @@ void ClearLcmType(lcmtest::primitives_t* msg) {
 }
 
 int CheckLcmType(const lcmtest2::cross_package_t* msg, int expected) {
-  return CheckLcmType(&msg->primitives, expected);
+  return CheckLcmType(&msg->primitives, expected) &&
+      CheckLcmType(&msg->another, expected);
 }
 
 void FillLcmType(int n, lcmtest2::cross_package_t* msg) {
   FillLcmType(n, &msg->primitives);
+  FillLcmType(n, &msg->another);
 }
 
 void ClearLcmType(lcmtest2::cross_package_t* msg) {
   ClearLcmType(&msg->primitives);
+  ClearLcmType(&msg->another);
+}
+
+int CheckLcmType(const lcmtest2::another_type_t* msg, int expected) {
+    int n = expected;
+    CHECK_FIELD(msg->val, n, "%d");
+    return 1;
+}
+
+void FillLcmType(int n, lcmtest2::another_type_t* msg)
+{
+    msg->val = n;
+}
+
+void ClearLcmType(lcmtest2::another_type_t* msg)
+{
+    return;
 }

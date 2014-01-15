@@ -7,7 +7,7 @@ CFLAGS=`pkg-config --cflags lcm`  -g -I .
 LDFLAGS=`pkg-config --libs lcm`
 
 types1:=exampleconst_t primitives_t primitives_list_t multidim_array_t node_t
-types2:=cross_package_t
+types2:=another_type_t cross_package_t
 types_src:=$(types1:%=lcmtest/%.hpp) $(types2:%=lcmtest2/%.hpp)
 
 all: client
