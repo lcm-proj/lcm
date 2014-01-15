@@ -100,10 +100,10 @@ is_same_type (const lcm_typename_t *tn1, const lcm_typename_t *tn2) {
     return ! strcmp (tn1->lctypename, tn2->lctypename);
 }
 
-static int
-is_same_package (const lcm_typename_t *tn1, const lcm_typename_t *tn2) {
-    return ! strcmp (tn1->package, tn2->package);
-}
+//static int
+//is_same_package (const lcm_typename_t *tn1, const lcm_typename_t *tn2) {
+//    return ! strcmp (tn1->package, tn2->package);
+//}
 
 static const char *
 nil_initializer_string(const lcm_typename_t *type)
@@ -178,8 +178,6 @@ _emit_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
     } else {
         if (is_same_type (lm->type, ls->structname)) {
             emit (indent, "%s%s._decode_one(buf)%s", accessor, sn, sfx);
-        } else if (is_same_package (lm->type, ls->structname)) {
-            emit (indent, "%s%s.%s._decode_one(buf)%s", accessor, sn, sn, sfx);
         } else {
             emit (indent, "%s%s._decode_one(buf)%s", accessor, tn, sfx);
         }
@@ -395,15 +393,13 @@ _emit_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
     } else if (!strcmp ("double", tn)) {
         emit (indent, "buf.write(struct.pack('>d', %s))", accessor);
     } else {
+        const char *sn = lm->type->shortname;
+        const char *gpf = "_get_packed_fingerprint()";
         if(is_same_type(lm->type, ls->structname)) {
-            emit(indent, "assert %s._get_packed_fingerprint() == %s._get_packed_fingerprint()", accessor,
-                    lm->type->shortname);
-        } else if(is_same_package(ls->structname, lm->type)) {
-            emit(indent, "assert %s._get_packed_fingerprint() == %s.%s._get_packed_fingerprint()",
-                    accessor, lm->type->shortname, lm->type->shortname);
+            emit(indent, "assert %s.%s == %s.%s", accessor, gpf, sn, gpf);
         } else {
-            emit(indent, "assert %s._get_packed_fingerprint() == %s._get_packed_fingerprint()",
-				    accessor, lm->type->lctypename);
+            emit(indent, "assert %s.%s == %s.%s",
+                 accessor, gpf, lm->type->lctypename, gpf);
         }
         emit (indent, "%s._encode_one(buf)", accessor);
     }
@@ -416,7 +412,7 @@ _emit_encode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
 {
     const char *tn = lm->type->lctypename;
     if (!strcmp ("byte", tn)) {
-        emit (indent, "buf.write(%s[:%s%s])", 
+        emit (indent, "buf.write(bytearray(%s[:%s%s]))", 
                 accessor, (fixed_len?"":"self."), len);
         return;
     } else if (!strcmp ("boolean", tn) ||
@@ -602,8 +598,6 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             const char *ghr = "_get_hash_recursive(newparents)";
             if (is_same_type (lm->type, ls->structname)) {
                 emit_continue ("+ %s.%s", msn, ghr);
-            } else if (is_same_package (lm->type, ls->structname)) {
-                emit_continue ("+ %s.%s.%s", msn, msn, ghr);
             } else {
                 emit_continue ("+ %s.%s.%s", lm->type->package, msn, ghr);
             }
@@ -633,35 +627,17 @@ emit_python_dependencies (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     GHashTable *dependencies = g_hash_table_new (g_str_hash, g_str_equal);
     for (unsigned int m=0; m<ls->members->len; m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index (ls->members, m);
-        if (! lcm_is_primitive_type (lm->type->lctypename)) {
-            if (strlen (lm->type->package) && 
-                ! is_same_package (ls->structname, lm->type)) {
-                if (! g_hash_table_lookup (dependencies, lm->type->lctypename)) {
-                    g_hash_table_insert (dependencies, lm->type->lctypename, 
-                            lm->type->lctypename);
-                }
-            } else if (! g_hash_table_lookup (dependencies, 
-                        lm->type->shortname)){
-                g_hash_table_insert (dependencies, lm->type->shortname, 
-                        lm->type->shortname);
-            }
+        if (! lcm_is_primitive_type (lm->type->lctypename) &&
+            ! g_hash_table_lookup (dependencies, lm->type->lctypename)) {
+            g_hash_table_insert (dependencies, lm->type->lctypename,
+                                 lm->type->lctypename);
         }
     }
+
     GPtrArray *deps = _hash_table_get_vals (dependencies);
     for (int i=0; i<deps->len; i++) {
         const char *package = (char *) g_ptr_array_index (deps, i);
-        gchar ** pack_type = g_strsplit(package, ".", 0); // split into package and type
-        gchar * pack = pack_type[0];
-        gchar * type = pack_type[1];
-
-        if (!strcmp((char *) ls->structname->shortname, package)) {
-            // we don't have to import ourself
-        } else if (type == NULL ) {
-            emit(0, "from . import %s\n", package);
-        } else {
-            emit(0, "import %s.%s\n", pack, type); // from different package
-        }
-        g_strfreev(pack_type);
+        emit(0, "import %s\n", package);
     }
     g_ptr_array_free (deps, TRUE);
     g_hash_table_destroy (dependencies);
@@ -838,7 +814,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                 "    import cStringIO.StringIO as BytesIO\n"
                 "except ImportError:\n"
                 "    from io import BytesIO\n"
-                "import struct\n");
+                "import struct\n\n");
 
         // enums always encoded as int32
         emit (0, "class %s(object):", le->enumname->shortname);
