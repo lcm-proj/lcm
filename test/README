@@ -9,6 +9,11 @@ successfully, then the test succeeds.
 The client test program for any language should be compatible with the server
 test program for any other language.
 
+Every language can be tested using the run-tests.py python script:
+
+    make  # builds each language's LCM type bindings and client/server
+    python run-tests.py
+
 
 1. Echo test
 ============

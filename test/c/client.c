@@ -7,7 +7,7 @@
 
 #include "common.h"
 
-#define info(...) do { printf("client: "); printf(__VA_ARGS__); } while(0)
+#define info(...) do { printf("c_client: "); printf(__VA_ARGS__); } while(0)
 
 static lcm_t* g_lcm = NULL;
 
@@ -49,9 +49,9 @@ do_##type##_test(void) \
     } \
     type##_unsubscribe(g_lcm, subs); \
     if(result) { \
-        info("%-25s : PASSED\n", #type); \
+        info("%-32s : PASSED\n", #type); \
     } else { \
-        info("%-25s : FAILED\n", #type); \
+        info("%-32s : FAILED\n", #type); \
     } \
     return result; \
 }
@@ -104,7 +104,7 @@ do_echo_test(void)
         }
     }
 
-    info("%-25s : PASSED\n", "echo test");
+    info("%-32s : PASSED\n", "echo test");
     lcm_unsubscribe(g_lcm, subs);
     free(g_echo_data);
     return 1;

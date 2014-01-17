@@ -143,6 +143,7 @@ clear_lcmtest_multidim_array_t(lcmtest_multidim_array_t* msg)
         }
         free(msg->strarray[i]);
     }
+    free(msg->strarray);
 }
 
 int

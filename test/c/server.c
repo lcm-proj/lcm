@@ -17,7 +17,7 @@ static lcm_t* g_lcm = NULL;
 static int g_test_complete = 0;
 static int g_test_passed = 0;
 
-#define info(...) do { fprintf(stderr, "server: "); fprintf(stderr, __VA_ARGS__); } while(0)
+#define info(...) do { fprintf(stderr, "c_server: "); fprintf(stderr, __VA_ARGS__); } while(0)
 
 static void
 all_tests_passed(void)
@@ -48,7 +48,7 @@ type##_handler(const lcm_recv_buf_t* rbuf, const char* channel, \
     g_##type##_count++; \
     if(g_##type##_count == num_iters) { \
         type##_unsubscribe(g_lcm, g_##type##_subscription); \
-        info("%-25s : PASSED\n", #type); \
+        info("%-32s : PASSED\n", #type); \
         success_func(); \
     } \
 } \
@@ -73,7 +73,7 @@ static lcm_subscription_t* g_echo_subscription = NULL;
 static void
 end_echo_test()
 {
-    info("%-25s : PASSED\n", "echo test");
+    info("%-32s : PASSED\n", "echo test");
     lcm_unsubscribe(g_lcm, g_echo_subscription);
     begin_lcmtest_primitives_t_test();
 }

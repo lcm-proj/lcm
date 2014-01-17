@@ -58,9 +58,9 @@ class LcmTypeTest : public LcmTest {
     }
     lcm_->unsubscribe(subscription);
     if (result) {
-      info("%-25s : PASSED\n", test_channel_.c_str());
+      info("%-30s : PASSED\n", test_channel_.c_str());
     } else {
-      info("%-25s : FAILED\n", test_channel_.c_str());
+      info("%-30s : FAILED\n", test_channel_.c_str());
     }
     return result;
   }
@@ -104,7 +104,7 @@ class EchoTest : public LcmTest {
       }
     }
 
-    info("%-25s : PASSED\n", "echo test");
+    info("%-30s : PASSED\n", "echo test");
     lcm_->unsubscribe(subscription_);
     free(echo_data_);
     return 1;

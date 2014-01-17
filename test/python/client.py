@@ -20,7 +20,7 @@ def _lcm_handle_timeout(lc, ms):
         return False
 
 def info(txt):
-    sys.stderr.write("client: %s\n" % txt)
+    sys.stderr.write("py_client: %s\n" % txt)
 
 def check_field(actual, expected, field):
     if actual != expected:
@@ -269,14 +269,14 @@ class StandardTester(object):
             self.lc.publish(pub_channel, msg.encode())
 
             if not _lcm_handle_timeout(self.lc, 500):
-                info("%-17s : Timeout waiting for reply (iteration %d)" % (self.msg_name, iteration));
+                info("%-20s : Timeout waiting for reply (iteration %d)" % (self.msg_name, iteration));
                 return False
             elif self.failed:
-                info("%-17s : Error on iteration %d" % (self.msg_name, iteration))
+                info("%-20s : Error on iteration %d" % (self.msg_name, iteration))
                 return False
 
         self.lc.unsubscribe(subs)
-        info("%s_%-17s : PASSED" % (pkg_name, self.msg_name))
+        info("%-31s : PASSED" % (pkg_name + "_" + self.msg_name))
         return True
 
 
@@ -303,7 +303,7 @@ class EchoTester(object):
             if not _lcm_handle_timeout(self.lc, 500) or self.response_count != i + 1:
                 print("echo test failed to receive a response on iteration %d" % i)
                 raise RuntimeError()
-        info("%-25s : PASSED" % "echo test")
+        info("%-31s : PASSED" % "echo test")
         self.lc.unsubscribe(self.subs)
 
 class Tester(object):
