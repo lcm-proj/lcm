@@ -10,7 +10,7 @@
 #include <inttypes.h>
 
 #include "lcmgen.h"
-#include "sprintfalloc.h"
+
 
 #define INDENT(n) (4*(n))
 
@@ -306,15 +306,15 @@ static char *make_accessor(lcm_member_t *lm, const char *n, int dim)
 static char *make_array_size(lcm_member_t *lm, const char *n, int dim)
 {
     if (g_ptr_array_size(lm->dimensions) == 0)
-        return sprintfalloc("1");
+        return g_strdup_printf("1");
     else {
         lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
         switch (ld->mode)
         {
         case LCM_CONST:
-            return sprintfalloc("%s", ld->size);
+            return g_strdup_printf("%s", ld->size);
         case LCM_VAR:
-            return sprintfalloc("%s[element].%s", n, ld->size);
+            return g_strdup_printf("%s[element].%s", n, ld->size);
         }
     }
     assert(0);
@@ -857,8 +857,8 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *le)
 {
     char *tn = le->enumname->lctypename;
     char *tn_ = dots_to_underscores(tn);
-    char *header_name = sprintfalloc("%s/%s.h", getopt_get_string(lcmgen->gopt, "c-hpath"), tn_);
-    char *c_name      = sprintfalloc("%s/%s.c", getopt_get_string(lcmgen->gopt, "c-cpath"), tn_);
+    char *header_name = g_strdup_printf("%s/%s.h", getopt_get_string(lcmgen->gopt, "c-hpath"), tn_);
+    char *c_name      = g_strdup_printf("%s/%s.c", getopt_get_string(lcmgen->gopt, "c-cpath"), tn_);
 
     // ENUM header file
     if (lcm_needs_generation(lcmgen, le->lcmfile, header_name)) {
@@ -1039,8 +1039,8 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *lr)
 {
     char *tn = lr->structname->lctypename;
     char *tn_ = dots_to_underscores(tn);
-    char *header_name = sprintfalloc("%s/%s.h", getopt_get_string(lcmgen->gopt, "c-hpath"), tn_);
-    char *c_name      = sprintfalloc("%s/%s.c", getopt_get_string(lcmgen->gopt, "c-cpath"), tn_);
+    char *header_name = g_strdup_printf("%s/%s.h", getopt_get_string(lcmgen->gopt, "c-hpath"), tn_);
+    char *c_name      = g_strdup_printf("%s/%s.c", getopt_get_string(lcmgen->gopt, "c-cpath"), tn_);
 
     if (lcm_needs_generation(lcmgen, lr->lcmfile, header_name)) {
         FILE *f = fopen(header_name, "w");

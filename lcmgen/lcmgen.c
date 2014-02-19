@@ -28,7 +28,7 @@
 
 #include "lcmgen.h"
 #include "tokenize.h"
-#include "sprintfalloc.h"
+
 
 #ifdef WIN32
 #define	strtoll	_strtoui64
@@ -165,7 +165,7 @@ lcm_typename_t *lcm_typename_create(lcmgen_t *lcmgen, const char *lctypename)
         } else {
             // we're overriding the package name using the last directive.
             lt->package = strdup(lcmgen->package);
-            lt->lctypename = sprintfalloc("%s%s%s", lt->package, 
+            lt->lctypename = g_strdup_printf("%s%s%s", lt->package, 
                                           strlen(lcmgen->package)>0 ? "." : "",
                                           lt->shortname);
         }

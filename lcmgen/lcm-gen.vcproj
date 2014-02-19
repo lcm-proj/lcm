@@ -360,26 +360,6 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\sprintfalloc.c"
-				>
-				<FileConfiguration
-					Name="Debug|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-				<FileConfiguration
-					Name="Release|Win32"
-					>
-					<Tool
-						Name="VCCLCompilerTool"
-						CompileAs="2"
-					/>
-				</FileConfiguration>
-			</File>
-			<File
 				RelativePath=".\tokenize.c"
 				>
 				<FileConfiguration
@@ -411,10 +391,6 @@
 			</File>
 			<File
 				RelativePath=".\lcmgen.h"
-				>
-			</File>
-			<File
-				RelativePath=".\sprintfalloc.h"
 				>
 			</File>
 			<File

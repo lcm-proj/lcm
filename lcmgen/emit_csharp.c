@@ -12,7 +12,7 @@
 #include <sys/types.h>
 
 #include "lcmgen.h"
-#include "sprintfalloc.h"
+
 #include "getopt.h"
 
 #ifdef WIN32
@@ -94,7 +94,7 @@ const char *make_fqn_csharp(lcmgen_t *lcm, const char *type_name)
 	char *root_nsp = getopt_get_string(lcm->gopt, "csharp-root-nsp");
 
     if (strchr(type_name, '.') != NULL)
-        return sprintfalloc("%s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), type_name);
+        return g_strdup_printf("%s%s%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), type_name);
 
     if (!ndefaultpkg_warned && !getopt_was_specified(lcm->gopt, "csharp-default-nsp")) {
         printf("Notice: enclosing LCM types without package into C#.NET namespace '%s'.\n", getopt_get_string(lcm->gopt, "csharp-default-nsp"));
@@ -103,9 +103,9 @@ const char *make_fqn_csharp(lcmgen_t *lcm, const char *type_name)
 
 	char *def_nsp = getopt_get_string(lcm->gopt, "csharp-default-nsp");
 	if (strlen(def_nsp) > 0)
-		return sprintfalloc("%s%s%s.%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"), type_name);
+		return g_strdup_printf("%s%s%s.%s", root_nsp, (root_nsp[0] == 0 ? "" : "."), getopt_get_string(lcm->gopt, "csharp-default-nsp"), type_name);
 	else
-		return sprintfalloc("%s.%s", root_nsp, type_name);
+		return g_strdup_printf("%s.%s", root_nsp, type_name);
 }
 
 /** # -> replace1
@@ -202,7 +202,7 @@ int emit_csharp(lcmgen_t *lcm)
         lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index(lcm->enums, en);
         
         const char *classname = make_fqn_csharp(lcm, le->enumname->lctypename);
-        char *path = sprintfalloc("%s%s%s.cs", 
+        char *path = g_strdup_printf("%s%s%s.cs", 
                                   getopt_get_string(lcm->gopt, "csharp-path"),
                                   strlen(getopt_get_string(lcm->gopt, "csharp-path")) > 0 ? G_DIR_SEPARATOR_S : "",
 								  dots_to_slashes((getopt_get_bool(lcm->gopt, "csharp-strip-dirs") ? le->enumname->lctypename : classname)));
@@ -312,7 +312,7 @@ int emit_csharp(lcmgen_t *lcm)
         lcm_struct_t *lr = (lcm_struct_t *) g_ptr_array_index(lcm->structs, st);
 
         const char *classname = make_fqn_csharp(lcm, lr->structname->lctypename);
-        char *path = sprintfalloc("%s%s%s.cs", 
+        char *path = g_strdup_printf("%s%s%s.cs", 
                                   getopt_get_string(lcm->gopt, "csharp-path"), 
                                   strlen(getopt_get_string(lcm->gopt, "csharp-path")) > 0 ? "/" : "",
 								  dots_to_slashes((getopt_get_bool(lcm->gopt, "csharp-strip-dirs") ? lr->structname->lctypename : classname)));

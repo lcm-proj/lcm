@@ -13,7 +13,7 @@
 #include <sys/types.h>
 
 #include "lcmgen.h"
-#include "sprintfalloc.h"
+
 
 #define INDENT(n) (4*(n))
 
@@ -669,7 +669,7 @@ int emit_cpp(lcmgen_t *lcmgen)
         char *tn_ = dots_to_slashes(tn);
 
         // compute the target filename
-        char *header_name = sprintfalloc("%s%s%s.hpp",
+        char *header_name = g_strdup_printf("%s%s%s.hpp",
                 getopt_get_string(lcmgen->gopt, "cpp-hpath"),
                 strlen(getopt_get_string(lcmgen->gopt, "cpp-hpath")) > 0 ? G_DIR_SEPARATOR_S : "",
                 tn_);

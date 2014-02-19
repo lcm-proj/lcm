@@ -12,7 +12,7 @@
 #include <sys/types.h>
 
 #include "lcmgen.h"
-#include "sprintfalloc.h"
+
 #include "getopt.h"
 
 #ifdef WIN32
@@ -97,7 +97,7 @@ const char *make_fqn(lcmgen_t *lcm, const char *type_name)
         jdefaultpkg_warned = 1;
     }
 
-    return sprintfalloc("%s.%s", getopt_get_string(lcm->gopt, "jdefaultpkg"), type_name);
+    return g_strdup_printf("%s.%s", getopt_get_string(lcm->gopt, "jdefaultpkg"), type_name);
 }
 
 /** # -> replace1
@@ -368,7 +368,7 @@ int emit_java(lcmgen_t *lcm)
         lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index(lcm->enums, en);
 
         const char *classname = make_fqn(lcm, le->enumname->lctypename);
-        char *path = sprintfalloc("%s%s%s.java",
+        char *path = g_strdup_printf("%s%s%s.java",
                                   getopt_get_string(lcm->gopt, "jpath"),
                                   strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? G_DIR_SEPARATOR_S : "",
                                   dots_to_slashes(classname));
@@ -469,7 +469,7 @@ int emit_java(lcmgen_t *lcm)
         lcm_struct_t *lr = (lcm_struct_t *) g_ptr_array_index(lcm->structs, st);
 
         const char *classname = make_fqn(lcm, lr->structname->lctypename);
-        char *path = sprintfalloc("%s%s%s.java",
+        char *path = g_strdup_printf("%s%s%s.java",
                                   getopt_get_string(lcm->gopt, "jpath"),
                                   strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? G_DIR_SEPARATOR_S : "",
                                   dots_to_slashes(classname));

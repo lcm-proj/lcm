@@ -3,8 +3,6 @@ INCLUDES = $(GLIB_CFLAGS)
 bin_PROGRAMS = lcm-gen
 
 lcm_gen_SOURCES = main.c \
-				 sprintfalloc.c \
-				 sprintfalloc.h \
 				 lcmgen.c \
 				 lcmgen.h \
 				 getopt.c \
