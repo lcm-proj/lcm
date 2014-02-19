@@ -263,6 +263,8 @@ write_thread(void *user_data)
         if (logger->fflush_interval_ms >= 0 &&
             (le->timestamp - logger->last_fflush_time) > logger->fflush_interval_ms*1000) {
             fflush(logger->log->f);
+            // Perform a full fsync operation after flush
+            fdatasync(fileno(logger->log->f));
             logger->last_fflush_time = le->timestamp;
         }
 
