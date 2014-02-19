@@ -6,12 +6,11 @@
 
 // GRegex was new in GLib 2.14.0
 #if GLIB_CHECK_VERSION(2,14,0)
-#define USE_GREGEX
+#else
+#error "LCM requires a glib version >= 2.14.0"
 #endif
 
 #ifdef WIN32
-// always use GLib regexes from Windows
-#define USE_GREGEX
 #include "windows/WinPorting.h"
 #include <winsock2.h>
 #else
@@ -22,11 +21,6 @@
 #define lcm_internal_pipe_read read
 #define lcm_internal_pipe_close close
 #define lcm_internal_pipe_create pipe
-#endif
-
-// if we're not using GLib regexes, then use POSIX regexes
-#ifndef USE_GREGEX
-#include <regex.h>
 #endif
 
 typedef struct _lcm_provider_t lcm_provider_t;

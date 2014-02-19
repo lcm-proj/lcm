@@ -38,90 +38,10 @@ typedef int SOCKET;
 #include "lcm_internal.h"
 #include "dbg.h"
 #include "ringbuffer.h"
+#include "udpm_util.h"
 
-
-#define LCM_RINGBUF_SIZE (200*1024)
-
-#define LCM_DEFAULT_RECV_BUFS 2000
-
-#define LCM2_MAGIC_SHORT 0x4c433032   // hex repr of ascii "LC02" 
-#define LCM2_MAGIC_LONG  0x4c433033   // hex repr of ascii "LC03" 
-
-#define LCM_SHORT_MESSAGE_MAX_SIZE 1400
 
 #define SELF_TEST_CHANNEL "LCM_SELF_TEST"
-
-// HUGE is not defined on cygwin as of 2008-03-05
-#ifndef HUGE
-#define HUGE 3.40282347e+38F
-#endif
-
-#ifdef __APPLE__
-#define USE_REUSEPORT
-#else
-#ifdef __FreeBSD__
-#define USE_REUSEPORT
-#endif
-#endif
-
-
-typedef struct _lcm2_header_short lcm2_header_short_t;
-struct _lcm2_header_short {
-    uint32_t magic;
-    uint32_t msg_seqno;
-};
-
-typedef struct _lcm2_header_long lcm2_header_long_t;
-struct _lcm2_header_long {
-    uint32_t magic;
-    uint32_t msg_seqno;
-    uint32_t msg_size;
-    uint32_t fragment_offset;
-    uint16_t fragment_no;
-    uint16_t fragments_in_msg;
-};
-// if fragment_no == 0, then header is immediately followed by NULL-terminated
-// ASCII-encoded channel name, followed by the payload data
-// if fragment_no > 0, then header is immediately followed by the payload data
-
-typedef struct _lcm_frag_buf {
-    char      channel[LCM_MAX_CHANNEL_NAME_LENGTH+1];
-    struct    sockaddr_in from;
-    char      *data;
-    uint32_t  data_size;
-    uint16_t  fragments_remaining;
-    uint32_t  msg_seqno;
-    GTimeVal last_packet_time;
-    int64_t   first_packet_utime;
-} lcm_frag_buf_t;
-
-typedef struct _lcm_buf {
-    char  channel_name[LCM_MAX_CHANNEL_NAME_LENGTH+1];
-    int   channel_size;      // length of channel name
-
-    int64_t recv_utime;      // timestamp of first datagram receipt
-    char *buf;               // pointer to beginning of message.  This includes 
-                             // the header for unfragmented messages, and does
-                             // not include the header for fragmented messages.
-
-    int   data_offset;       // offset to payload
-    int   data_size;         // size of payload
-    lcm_ringbuf_t *ringbuf;  // the ringbuffer used to allocate buf.  NULL if
-                             // not allocated from ringbuf
-
-    int   packet_size;       // total bytes received
-    int   buf_size;          // bytes allocated 
-
-    struct sockaddr from;    // sender
-    socklen_t fromlen;
-    struct _lcm_buf *next;
-} lcm_buf_t;
-
-typedef struct _lcm_buf_queue {
-    lcm_buf_t * head;
-    lcm_buf_t ** tail;
-    int count;
-} lcm_buf_queue_t;
 
 /**
  * udpm_params_t:
@@ -168,7 +88,7 @@ struct _lcm_provider_t {
     lcm_ringbuf_t * ringbuf;
 
     GStaticRecMutex mutex; /* Must be locked when reading/writing to the
-                              above three queues. */
+                              above three queues */
 
     int thread_created;
     GThread *read_thread;
@@ -183,11 +103,9 @@ struct _lcm_provider_t {
     GCond* create_read_thread_cond;
     GMutex* create_read_thread_mutex;
 
+
     /* other variables */
-    GHashTable  *frag_bufs;
-    uint32_t    frag_bufs_total_size;
-    uint32_t    frag_bufs_max_total_size;
-    uint32_t    max_n_frag_bufs;
+    lcm_frag_buf_store * frag_bufs;
 
     uint32_t     udp_rx;            // packets received and processed
     uint32_t     udp_discarded_bad; // packets discarded because they were bad 
@@ -198,186 +116,9 @@ struct _lcm_provider_t {
     uint32_t     msg_seqno; // rolling counter of how many messages transmitted
 };
 
-static int _setup_recv_thread (lcm_udpm_t *lcm);
+static int _setup_recv_parts (lcm_udpm_t *lcm);
 
 static GStaticPrivate CREATE_READ_THREAD_PKEY = G_STATIC_PRIVATE_INIT;
-
-// utility functions
-
-// returns:    1      a > b
-//            -1      a < b
-//             0      a == b
-static inline int
-_timeval_compare (const GTimeVal *a, const GTimeVal *b) {
-    if (a->tv_sec == b->tv_sec && a->tv_usec == b->tv_usec) return 0;
-    if (a->tv_sec > b->tv_sec || 
-            (a->tv_sec == b->tv_sec && a->tv_usec > b->tv_usec)) 
-        return 1;
-    return -1;
-}
-
-static inline void
-_timeval_add (const GTimeVal *a, const GTimeVal *b, GTimeVal *dest) 
-{
-    dest->tv_sec = a->tv_sec + b->tv_sec;
-    dest->tv_usec = a->tv_usec + b->tv_usec;
-    if (dest->tv_usec > 999999) {
-        dest->tv_usec -= 1000000;
-        dest->tv_sec++;
-    }
-}
-
-static inline void
-_timeval_subtract (const GTimeVal *a, const GTimeVal *b, GTimeVal *dest)
-{
-    dest->tv_sec = a->tv_sec - b->tv_sec;
-    dest->tv_usec = a->tv_usec - b->tv_usec;
-    if (dest->tv_usec < 0) {
-        dest->tv_usec += 1000000;
-        dest->tv_sec--;
-    }
-}
-
-static inline int64_t 
-_timestamp_now()
-{
-    GTimeVal tv;
-    g_get_current_time(&tv);
-    return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
-}
-
-/******************** fragment buffer **********************/
-
-static lcm_frag_buf_t *
-lcm_frag_buf_new (struct sockaddr_in from, const char *channel, 
-        uint32_t msg_seqno, uint32_t data_size, uint16_t nfragments,
-        int64_t first_packet_utime)
-{
-    lcm_frag_buf_t *fbuf = (lcm_frag_buf_t*) malloc (sizeof (lcm_frag_buf_t));
-    strncpy (fbuf->channel, channel, sizeof (fbuf->channel));
-    fbuf->from = from;
-    fbuf->msg_seqno = msg_seqno;
-    fbuf->data = (char*)malloc (data_size);
-    fbuf->data_size = data_size;
-    fbuf->fragments_remaining = nfragments;
-    fbuf->first_packet_utime = first_packet_utime;
-    return fbuf;
-}
-
-static void
-lcm_frag_buf_destroy (lcm_frag_buf_t *fbuf)
-{
-    free (fbuf->data);
-    free (fbuf);
-}
-
-/*** Functions for managing a queue of buffers ***/
-
-static lcm_buf_queue_t *
-lcm_buf_queue_new (void)
-{
-    lcm_buf_queue_t * q = (lcm_buf_queue_t *) malloc (sizeof (lcm_buf_queue_t));
-
-    q->head = NULL;
-    q->tail = &q->head;
-    q->count = 0;
-    return q;
-}
-
-static lcm_buf_t *
-lcm_buf_dequeue (lcm_buf_queue_t * q)
-{
-    lcm_buf_t * el;
-
-    el = q->head;
-    if (!el)
-        return NULL;
-
-    q->head = el->next;
-    el->next = NULL;
-    if (!q->head)
-        q->tail = &q->head;
-    q->count--;
-
-    return el;
-}
-
-static void
-lcm_buf_enqueue (lcm_buf_queue_t * q, lcm_buf_t * el)
-{
-    * (q->tail) = el;
-    q->tail = &el->next;
-    el->next = NULL;
-    q->count++;
-}
-
-static void
-lcm_buf_free_data(lcm_udpm_t *lcm, lcm_buf_t *lcmb) 
-{
-    if(!lcmb->buf)
-        return;
-    if (lcmb->ringbuf) {
-        lcm_ringbuf_dealloc (lcmb->ringbuf, lcmb->buf);
-
-        // if the packet was allocated from an obsolete and empty ringbuffer,
-        // then deallocate the old ringbuffer as well.
-        if(lcmb->ringbuf != lcm->ringbuf && !lcm_ringbuf_used(lcmb->ringbuf)) {
-            lcm_ringbuf_free(lcmb->ringbuf);
-            dbg(DBG_LCM, "Destroying unused orphan ringbuffer %p\n", lcmb->ringbuf);
-        }
-    } else {
-        free (lcmb->buf);
-    }
-    lcmb->buf = NULL;
-    lcmb->buf_size = 0;
-    lcmb->ringbuf = NULL;
-}
-
-static void
-lcm_buf_queue_free (lcm_udpm_t *lcm, lcm_buf_queue_t * q)
-{
-    lcm_buf_t * el;
-    while ( (el = lcm_buf_dequeue (q))) {
-        lcm_buf_free_data(lcm, el);
-        free (el);
-    }
-    free (q);
-}
-
-static int
-is_buf_queue_empty (lcm_buf_queue_t * q)
-{
-    return q->head == NULL ? 1 : 0;
-}
-
-static guint
-_sockaddr_in_hash (const void * key)
-{
-    struct sockaddr_in *addr = (struct sockaddr_in*) key;
-    int v = addr->sin_port * addr->sin_addr.s_addr;
-    return g_int_hash (&v);
-}
-
-static gboolean
-_sockaddr_in_equal (const void * a, const void *b)
-{
-    struct sockaddr_in *a_addr = (struct sockaddr_in*) a;
-    struct sockaddr_in *b_addr = (struct sockaddr_in*) b;
-
-    return a_addr->sin_addr.s_addr == b_addr->sin_addr.s_addr &&
-           a_addr->sin_port        == b_addr->sin_port &&
-           a_addr->sin_family      == b_addr->sin_family;
-}
-
-static int
-_close_socket(SOCKET fd)
-{
-#ifdef WIN32
-    return closesocket(fd);
-#else
-    return close(fd);
-#endif
-}
 
 static void
 _destroy_recv_parts (lcm_udpm_t *lcm)
@@ -401,21 +142,21 @@ _destroy_recv_parts (lcm_udpm_t *lcm)
     }
 
     if (lcm->recvfd >= 0) {
-        _close_socket(lcm->recvfd);
+        lcm_close_socket(lcm->recvfd);
         lcm->recvfd = -1;
     }
 
     if (lcm->frag_bufs) {
-        g_hash_table_destroy (lcm->frag_bufs);
+        lcm_frag_buf_store_destroy(lcm->frag_bufs);
         lcm->frag_bufs = NULL;
     }
 
     if (lcm->inbufs_empty) {
-        lcm_buf_queue_free (lcm, lcm->inbufs_empty);
+        lcm_buf_queue_free (lcm->inbufs_empty, lcm->ringbuf);
         lcm->inbufs_empty = NULL;
     }
     if (lcm->inbufs_filled) {
-        lcm_buf_queue_free (lcm, lcm->inbufs_filled);
+        lcm_buf_queue_free (lcm->inbufs_filled, lcm->ringbuf);
         lcm->inbufs_filled = NULL;
     }
     if (lcm->ringbuf) {
@@ -431,7 +172,7 @@ lcm_udpm_destroy (lcm_udpm_t *lcm)
     _destroy_recv_parts (lcm);
 
     if (lcm->sendfd >= 0)
-        _close_socket(lcm->sendfd);
+        lcm_close_socket(lcm->sendfd);
 
     lcm_internal_pipe_close(lcm->notify_pipe[0]);
     lcm_internal_pipe_close(lcm->notify_pipe[1]);
@@ -494,38 +235,10 @@ new_argument (gpointer key, gpointer value, gpointer user)
         fprintf (stderr, "%s:%d -- transmit_only option is now obsolete\n",
                 __FILE__, __LINE__);
     }
-}
-
-static void
-_destroy_fragment_buffer (lcm_udpm_t *lcm, lcm_frag_buf_t *fbuf)
-{
-    lcm->frag_bufs_total_size -= fbuf->data_size;
-    g_hash_table_remove (lcm->frag_bufs, &fbuf->from);
-}
-
-static void
-_find_lru_frag_buf (gpointer key, gpointer value, void *user_data)
-{
-    lcm_frag_buf_t **lru_fbuf = (lcm_frag_buf_t**) user_data;
-    lcm_frag_buf_t *c_fbuf = (lcm_frag_buf_t*) value;
-    if (! *lru_fbuf || _timeval_compare (&c_fbuf->last_packet_time, 
-                &(*lru_fbuf)->last_packet_time) < 0) {
-        *lru_fbuf = c_fbuf;
+    else {
+        fprintf(stderr, "%s:%d -- unknown provider argument %s\n",
+                __FILE__, __LINE__, (char *)key);
     }
-}
-
-static void
-_add_fragment_buffer (lcm_udpm_t *lcm, lcm_frag_buf_t *fbuf)
-{
-    while (lcm->frag_bufs_total_size > lcm->frag_bufs_max_total_size ||
-            g_hash_table_size (lcm->frag_bufs) > lcm->max_n_frag_bufs) {
-        // find and remove the least recently updated fragment buffer
-        lcm_frag_buf_t *lru_fbuf = NULL;
-        g_hash_table_foreach (lcm->frag_bufs, _find_lru_frag_buf, &lru_fbuf);
-        if (lru_fbuf) _destroy_fragment_buffer (lcm, lru_fbuf);
-    }
-    g_hash_table_insert (lcm->frag_bufs, &fbuf->from, fbuf);
-    lcm->frag_bufs_total_size += fbuf->data_size;
 }
 
 static int 
@@ -534,7 +247,8 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     lcm2_header_long_t *hdr = (lcm2_header_long_t*) lcmb->buf;
 
     // any existing fragment buffer for this message source?
-    lcm_frag_buf_t *fbuf = (lcm_frag_buf_t *) g_hash_table_lookup (lcm->frag_bufs, &lcmb->from);
+    lcm_frag_buf_t *fbuf = lcm_frag_buf_store_lookup(lcm->frag_bufs,
+            &lcmb->from);
 
     uint32_t msg_seqno = ntohl (hdr->msg_seqno);
     uint32_t data_size = ntohl (hdr->msg_size);
@@ -547,7 +261,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     // discard any stale fragments from previous messages
     if (fbuf && ((fbuf->msg_seqno != msg_seqno) ||
                  (fbuf->data_size != data_size))) {
-        _destroy_fragment_buffer (lcm, fbuf);
+        lcm_frag_buf_store_remove (lcm->frag_bufs, fbuf);
         fbuf = NULL;
     }
 
@@ -577,7 +291,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
         fbuf = lcm_frag_buf_new (*((struct sockaddr_in*) &lcmb->from),
                 channel, msg_seqno, data_size, fragments_in_msg,
                 lcmb->recv_utime);
-        _add_fragment_buffer (lcm, fbuf);
+        lcm_frag_buf_store_add (lcm->frag_bufs, fbuf);
         data_start += channel_sz + 1;
         frag_size -= (channel_sz + 1);
     }
@@ -603,7 +317,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     if (fragment_offset + frag_size > fbuf->data_size) {
         dbg (DBG_LCM, "dropping invalid fragment (off: %d, %d / %d)\n",
                 fragment_offset, frag_size, fbuf->data_size);
-        _destroy_fragment_buffer (lcm, fbuf);
+        lcm_frag_buf_store_remove (lcm->frag_bufs, fbuf);
         return 0;
     }
 
@@ -618,7 +332,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
         // wants it?  (i.e., does any subscriber have space in its queue?)
         if(!lcm_try_enqueue_message(lcm->lcm, fbuf->channel)) {
             // no... sad... free the fragment buffer and return
-            _destroy_fragment_buffer (lcm, fbuf);
+            lcm_frag_buf_store_remove (lcm->frag_bufs, fbuf);
             return 0;
         }
 
@@ -626,7 +340,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
  
         // deallocate the ringbuffer-allocated buffer
         g_static_rec_mutex_lock (&lcm->mutex);
-        lcm_buf_free_data(lcm, lcmb);
+        lcm_buf_free_data(lcmb, lcm->ringbuf);
         g_static_rec_mutex_unlock (&lcm->mutex);
 
         // transfer ownership of the message's payload buffer
@@ -640,7 +354,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
         lcmb->recv_utime = fbuf->first_packet_utime;
 
         // don't need the fragment buffer anymore
-        _destroy_fragment_buffer (lcm, fbuf);
+        lcm_frag_buf_store_remove (lcm->frag_bufs, fbuf);
 
         return 1;
     }
@@ -755,50 +469,8 @@ udp_read_packet (lcm_udpm_t *lcm)
 
         if (!lcmb) {
             g_static_rec_mutex_lock (&lcm->mutex);
-
-            // first allocate a buffer struct for the packet metadata
-
-            if(is_buf_queue_empty(lcm->inbufs_empty)) {
-                // allocate additional buffer structs if needed
-                int i;
-                for (i = 0; i < LCM_DEFAULT_RECV_BUFS; i++) {
-                    lcm_buf_t * nbuf = (lcm_buf_t *) calloc (1, sizeof(lcm_buf_t));
-                    lcm_buf_enqueue (lcm->inbufs_empty, nbuf);
-                }
-            }
-
-            lcmb = lcm_buf_dequeue (lcm->inbufs_empty);
-            assert(lcmb);
-
-            // next allocate space on the ringbuffer for the packet data.
-            // give it the maximum possible size for an unfragmented packet
-            lcmb->buf = lcm_ringbuf_alloc(lcm->ringbuf, 65536); 
-            lcmb->ringbuf = lcm->ringbuf;
-//            int rb_used = lcm_ringbuf_used(lcm->ringbuf);
-//            int rb_capacity = lcm_ringbuf_capacity(lcm->ringbuf);
-//            int rb_free = rb_capacity - rb_used;
-//            printf("ringbuf: %7d / %7d (%7d)\n", rb_used, rb_capacity, rb_free);
-
-            if (!lcmb->buf) {
-                // ringbuffer is full.  allocate a larger ringbuffer
-
-                // Can't free the old ringbuffer yet because it's in use (i.e., full)
-                // Must wait until later to free it.
-                assert(lcm_ringbuf_used(lcm->ringbuf) > 0);
-                dbg(DBG_LCM, "Orphaning ringbuffer %p\n", lcm->ringbuf);
-
-                unsigned int old_capacity = lcm_ringbuf_capacity(lcm->ringbuf);
-                unsigned int new_capacity = (unsigned int)(old_capacity * 1.5);
-                lcm->ringbuf = lcm_ringbuf_new(new_capacity);
-                lcmb->buf = lcm_ringbuf_alloc(lcm->ringbuf, 65536);
-                lcmb->ringbuf = lcm->ringbuf;
-
-                dbg(DBG_LCM, "Allocated new ringbuffer size %u\n", new_capacity);
-            }
+            lcmb = lcm_buf_allocate_data(lcm->inbufs_empty, &lcm->ringbuf);
             g_static_rec_mutex_unlock (&lcm->mutex);
-
-            // zero the last byte so that strlen never segfaults
-            lcmb->buf[65535] = 0; 
         }
         struct iovec        vec;
         vec.iov_base = lcmb->buf;
@@ -850,7 +522,7 @@ udp_read_packet (lcm_udpm_t *lcm)
         }
 #endif
         if (!got_utime)
-            lcmb->recv_utime = _timestamp_now ();
+            lcmb->recv_utime = lcm_timestamp_now ();
 
         lcm2_header_short_t *hdr2 = (lcm2_header_short_t*) lcmb->buf;
         uint32_t rcvd_magic = ntohl(hdr2->magic);
@@ -896,7 +568,7 @@ recv_thread (void * user)
          * non-empty. */
         g_static_rec_mutex_lock (&lcm->mutex);
 
-        if (is_buf_queue_empty (lcm->inbufs_filled))
+        if (lcm_buf_queue_is_empty (lcm->inbufs_filled))
             if (lcm_internal_pipe_write(lcm->notify_pipe[1], "+", 1) < 0)
                 perror ("write to notify");
 
@@ -912,16 +584,13 @@ recv_thread (void * user)
 static int 
 lcm_udpm_get_fileno (lcm_udpm_t *lcm)
 {
-    int status = _setup_recv_thread(lcm);
-    if(0 != status)
-        return -1;
     return lcm->notify_pipe[0];
 }
 
 static int
 lcm_udpm_subscribe (lcm_udpm_t *lcm, const char *channel)
 {
-    return _setup_recv_thread (lcm);
+    return _setup_recv_parts (lcm);
 }
 
 static int 
@@ -1077,7 +746,7 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
 {
     int status;
     char ch;
-    if(0 != _setup_recv_thread (lcm))
+    if(0 != _setup_recv_parts (lcm))
         return -1;
 
     /* Read one byte from the notify pipe.  This will block if no packets are
@@ -1105,7 +774,7 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
 
     /* If there are still packets in the queue, put something back in the pipe
      * so that future invocations will get called. */
-    if (!is_buf_queue_empty (lcm->inbufs_filled))
+    if (!lcm_buf_queue_is_empty (lcm->inbufs_filled))
         if (lcm_internal_pipe_write(lcm->notify_pipe[1], "+", 1) < 0)
             perror ("write to notify");
     g_static_rec_mutex_unlock (&lcm->mutex);
@@ -1126,7 +795,7 @@ lcm_udpm_handle (lcm_udpm_t *lcm)
     }
 
     g_static_rec_mutex_lock (&lcm->mutex);
-    lcm_buf_free_data(lcm, lcmb);
+    lcm_buf_free_data(lcmb, lcm->ringbuf);
     lcm_buf_enqueue (lcm->inbufs_empty, lcmb);
     g_static_rec_mutex_unlock (&lcm->mutex);
 
@@ -1162,23 +831,23 @@ udpm_self_test (lcm_udpm_t *lcm)
     // periodically retransmit, just in case
     GTimeVal retransmit_interval = { 0, 100000 };
     GTimeVal next_retransmit;
-    _timeval_add (&now, &retransmit_interval, &next_retransmit);
+    lcm_timeval_add (&now, &retransmit_interval, &next_retransmit);
 
     int recvfd = lcm->notify_pipe[0];
 
     do {
         GTimeVal selectto;
-        _timeval_subtract (&next_retransmit, &now, &selectto);
+        lcm_timeval_subtract (&next_retransmit, &now, &selectto);
 
         fd_set readfds;
         FD_ZERO (&readfds);
         FD_SET (recvfd,&readfds);
 
         g_get_current_time(&now);
-        if (_timeval_compare (&now, &next_retransmit) > 0) {
+        if (lcm_timeval_compare (&now, &next_retransmit) > 0) {
             status = lcm_udpm_publish (lcm, SELF_TEST_CHANNEL, (uint8_t*)msg, 
                     strlen (msg));
-            _timeval_add (&now, &retransmit_interval, &next_retransmit);
+            lcm_timeval_add (&now, &retransmit_interval, &next_retransmit);
         }
 
         status=select (recvfd + 1,&readfds,0,0, (struct timeval*) &selectto);
@@ -1187,7 +856,7 @@ udpm_self_test (lcm_udpm_t *lcm)
         }
         g_get_current_time(&now);
 
-    } while (! success && _timeval_compare (&now, &endtime) < 0);
+    } while (! success && lcm_timeval_compare (&now, &endtime) < 0);
 
     lcm_unsubscribe (lcm->lcm, h);
 
@@ -1199,7 +868,7 @@ udpm_self_test (lcm_udpm_t *lcm)
 }
 
 static int
-_setup_recv_thread (lcm_udpm_t *lcm)
+_setup_recv_parts (lcm_udpm_t *lcm)
 {
     g_static_rec_mutex_lock(&lcm->mutex);
 
@@ -1243,6 +912,10 @@ _setup_recv_thread (lcm_udpm_t *lcm)
     g_static_private_set(&CREATE_READ_THREAD_PKEY, GINT_TO_POINTER(1), NULL);
 
     dbg (DBG_LCM, "allocating resources for receiving messages\n");
+
+    // allocate the fragment buffer hashtable
+    lcm->frag_bufs = lcm_frag_buf_store_new(MAX_FRAG_BUF_TOTAL_SIZE,
+            MAX_NUM_FRAG_BUFS);
 
     // allocate multicast socket
     lcm->recvfd = socket (AF_INET, SOCK_DGRAM, 0);
@@ -1404,93 +1077,6 @@ setup_recv_thread_fail:
     return -1;
 }
 
-#ifdef __linux__
-static inline int _parse_inaddr(const char *addr_str, struct in_addr *addr)
-{
-    char buf[] = {
-        '0', 'x',
-        addr_str[6], addr_str[7],
-        addr_str[4], addr_str[5],
-        addr_str[2], addr_str[3],
-        addr_str[0], addr_str[1],
-        0
-    };
-    return inet_aton(buf, addr);
-}
-
-static void
-linux_check_routing_table(struct in_addr lcm_mcaddr)
-{
-    FILE *fp = fopen("/proc/net/route", "r");
-    if(!fp) {
-        perror("Unable to open routing table (fopen)");
-        goto show_route_cmds;
-    }
-
-    // read and ignore the first line of the routing table file
-    char buf[1024];
-    if(!fgets(buf, sizeof(buf), fp)) {
-        perror("Unable to read routing table (fgets)");
-        fclose(fp);
-        goto show_route_cmds;
-    }
-
-    // each line is a routing table entry
-    while(!feof(fp)) {
-        memset(buf, 0, sizeof(buf));
-        if(!fgets(buf, sizeof(buf)-1, fp))
-            break;
-        gchar **words = g_strsplit(buf, "\t", 0);
-
-        // each line should have 11 words
-        int nwords;
-        for(nwords=0; words[nwords] != NULL; nwords++);
-        if(nwords != 11) {
-            g_strfreev(words); 
-            fclose(fp);
-            fprintf(stderr, "Unable to parse routing table!  Strange format.");
-            goto show_route_cmds;
-        }
-
-        // destination is 2nd word, netmask is 8th word
-        struct in_addr dest, mask;
-        if(!_parse_inaddr(words[1], &dest) || !_parse_inaddr(words[7], &mask)) {
-            fprintf(stderr, "Unable to parse routing table!");
-            g_strfreev(words); 
-            fclose(fp);
-            goto show_route_cmds;
-        }
-        g_strfreev(words);
-
-//        fprintf(stderr, "checking route (%s/%X)\n", inet_ntoa(dest), ntohl(mask.s_addr));
-
-        // does this routing table entry match the LCM URL?
-        if((lcm_mcaddr.s_addr & mask.s_addr) == (dest.s_addr & mask.s_addr)) {
-            // yes, so there is a valid multicast route
-            fclose(fp);
-            return;
-        }
-    }
-    fclose(fp);
-
-show_route_cmds:
-    // if we get here, then none of the routing table entries matched the 
-    // LCM destination URL.
-    fprintf(stderr, 
-"\nNo route to %s\n\n"
-"LCM requires a valid multicast route.  If this is a Linux computer and is\n"
-"simply not connected to a network, the following commands are usually\n"
-"sufficient as a temporary solution:\n"
-"\n"
-"   sudo ifconfig lo multicast\n"
-"   sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev lo\n"
-"\n"
-"For more information, visit:\n"
-"   http://lcm.googlecode.com/svn/www/reference/lcm/multicast.html\n\n",
-inet_ntoa(lcm_mcaddr));
-}
-#endif
-
 lcm_provider_t * 
 lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 {
@@ -1515,11 +1101,7 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     lcm->kernel_rbuf_sz = 0;
     lcm->warned_about_small_kernel_buf = 0;
 
-    lcm->frag_bufs = g_hash_table_new_full (_sockaddr_in_hash, 
-            _sockaddr_in_equal, NULL, (GDestroyNotify) lcm_frag_buf_destroy);
-    lcm->frag_bufs_total_size = 0;
-    lcm->frag_bufs_max_total_size = 1 << 24; // 16 megabytes
-    lcm->max_n_frag_bufs = 1000;
+    lcm->frag_bufs = NULL;
 
     // synchronization variables used when allocating receive resources
     lcm->creating_read_thread = 0;
@@ -1529,8 +1111,7 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     // internal notification pipe
     if(0 != lcm_internal_pipe_create(lcm->notify_pipe)) {
         perror(__FILE__ " pipe(create)");
-        g_hash_table_destroy(lcm->frag_bufs);
-        free(lcm);
+        lcm_udpm_destroy (lcm);
         return NULL;
     }
     fcntl (lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
@@ -1559,7 +1140,7 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 #endif
         return NULL;
     }
-    _close_socket(testfd);
+    lcm_close_socket(testfd);
 
     // create a transmit socket
     //
