@@ -19,12 +19,14 @@
 
 lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode)
 {
-    assert(!strcmp(mode, "r") || !strcmp(mode, "w") || !strcmp(mode, "a"));
-    if(*mode == 'w')
+    assert(!strcmp(mode, "r") || !strcmp(mode, "w") || !strcmp(mode, "rw") || !strcmp(mode, "a"));
+    if (!strcmp(mode, "rw"))
+        mode = "wb+";
+    else if(!strcmp(mode, "w"))
         mode = "wb";
-    else if(*mode == 'r')
+    else if(!strcmp(mode, "r"))
         mode = "rb";
-    else if(*mode == 'a')
+    else if(!strcmp(mode, "a"))
         mode = "ab";
     else
         return NULL;
@@ -37,7 +39,10 @@ lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode)
         return NULL;
     }
 
-    l->eventcount = 0;
+    l->write_event_count = 0;
+
+	// Start with f in read mode. If we write first, the read position will get saved.
+    l->f_at_read_pos = 1;
 
     return l;
 }
@@ -51,6 +56,13 @@ void lcm_eventlog_destroy(lcm_eventlog_t *l)
 
 lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
 {
+    // Move the file pointer to the read position if need be
+    if (!l->f_at_read_pos) {
+        if(fsetpos(l->f, &l->read_pos)) 
+            return -1;
+        l->f_at_read_pos = 1;
+    }
+
     lcm_eventlog_event_t *le = 
         (lcm_eventlog_event_t*) calloc(1, sizeof(lcm_eventlog_event_t));
     
@@ -70,15 +82,6 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
 
     assert (le->channellen < 1000);
 
-    if (l->eventcount != le->eventnum) {
-        // these warnings will spew unnecessarily for log files that have been
-        // filtered through lcm-logplayer-gui since it preserves event numbers
-//        printf ("Mismatch: eventcount %"PRId64" eventnum %"PRId64"\n", 
-//                l->eventcount, le->eventnum);
-//        printf ("file offset %"PRId64"\n", ftello (l->f));
-        l->eventcount = le->eventnum;
-    }
-
     le->channel = (char *) calloc(1, le->channellen+1);
     if (fread(le->channel, 1, le->channellen, l->f) != (size_t) le->channellen)
         goto eof;
@@ -87,8 +90,6 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
     if (fread(le->data, 1, le->datalen, l->f) != (size_t) le->datalen)
         goto eof;
     
-    l->eventcount++;
-
     return le;
 
 eof:
@@ -100,9 +101,18 @@ eof:
 
 int lcm_eventlog_write_event(lcm_eventlog_t *l, lcm_eventlog_event_t *le)
 {
+    // Move the file pointer to the write position if need be
+    if (l->f_at_read_pos) {
+        if (0 != fgetpos(l->f, &l->read_pos)) 
+            return -1;
+        l->f_at_read_pos = 0;
+        if (0 != fseek(l->f, 0, SEEK_END))
+            return -1;
+    }
+
     if (0 != fwrite32(l->f, MAGIC)) return -1;
 
-    le->eventnum = l->eventcount;
+    le->eventnum = l->write_event_count;
 
     if (0 != fwrite64(l->f, le->eventnum)) return -1;
     if (0 != fwrite64(l->f, le->timestamp)) return -1;
@@ -114,7 +124,7 @@ int lcm_eventlog_write_event(lcm_eventlog_t *l, lcm_eventlog_event_t *le)
     if (le->datalen != fwrite(le->data, 1, le->datalen, l->f))
         return -1;
 
-    l->eventcount++;
+    l->write_event_count++;
 
     return 0;
 }
@@ -146,8 +156,6 @@ static int64_t get_event_time(lcm_eventlog_t *l)
     if (0 != fread64(l->f, &timestamp)) return -1;
     fseeko (l->f, -20, SEEK_CUR);
 
-    l->eventcount = event_num;
-
     return timestamp;
 
 eof:
@@ -157,6 +165,15 @@ eof:
 
 int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *l, int64_t timestamp)
 {
+    if (timestamp <= 0){
+        // The binary search below has issues searching to the begging of the
+        // log due to how it searches for the timestamp in log events.
+        // TODO: Fix the logic below somehow, or add functions such as
+        // lcm_eventlog_seek_to_fraction() or lcm_eventlog_seek_to_eventnum()?
+        fseeko (l->f, 0, SEEK_SET);
+        return 0;
+    }
+
     fseeko (l->f, 0, SEEK_END);
     off_t file_len = ftello(l->f);
 

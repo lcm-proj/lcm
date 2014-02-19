@@ -14,16 +14,29 @@
 #include "dbg.h"
 #include "eventlog.h"
 
+typedef enum{
+  LCM_FILE_READ_ONLY = 0,
+  LCM_FILE_WRITE_ONLY,
+  LCM_FILE_READ_WRITE,
+} lcm_file_mode_t;
+
 typedef struct _lcm_provider_t lcm_logprov_t;
 struct _lcm_provider_t {
     lcm_t * lcm;
 
     char * filename;
-    int8_t writer;
+    lcm_file_mode_t file_mode;
 
+    // The parent LCM object enforces that handle() cannot be called recursively
+    // or from multiple threads... so we only need to protect the eventlog
     lcm_eventlog_t * log;
+    GStaticMutex log_lock; // the eventlog functions are not threadsafe
+
     lcm_eventlog_event_t * event;
 
+
+    // these are only used in handle(), and recursive calls to lcm_handle()
+    // are not allowed
     double speed;
     int64_t next_clock_time;
     int64_t start_timestamp;
@@ -57,6 +70,8 @@ lcm_logprov_destroy (lcm_logprov_t *lr)
         lcm_eventlog_free_event (lr->event);
     if (lr->log)
         lcm_eventlog_destroy (lr->log);
+
+    g_static_mutex_free (&lr->log_lock);
 
     free (lr->filename);
     free (lr);
@@ -127,10 +142,17 @@ new_argument (gpointer key, gpointer value, gpointer user)
             fprintf (stderr, "Warning: Invalid value for start_timestamp\n");
     } else if (!strcmp ((char *) key, "mode")) {
         const char *mode = (char *) value;
-        if(!strcmp(mode, "w")) {
-            lr->writer=1;
+        if(!strcmp(mode, "r")) {
+            lr->file_mode = LCM_FILE_READ_ONLY;
+        }
+        else if(!strcmp(mode, "w")) {
+            lr->file_mode = LCM_FILE_WRITE_ONLY;
+        }
+        else if(!strcmp(mode, "rw")) {
+            lr->file_mode = LCM_FILE_READ_WRITE;
         } else {
-            fprintf(stderr, "Warning: Invalid value for mode\n");
+            fprintf(stderr, "Warning: Invalid %s value for mode."
+                    "Defaulting to READ_ONLY\n", value);
         }
     } else {
         fprintf(stderr, "Warning: unrecognized option: [%s]\n",
@@ -143,8 +165,11 @@ load_next_event (lcm_logprov_t * lr)
 {
     if (lr->event)
         lcm_eventlog_free_event (lr->event);
-
+        
+    // hold lock to read from the underlying eventlog
+    g_static_mutex_lock(&lr->log_lock);
     lr->event = lcm_eventlog_read_next_event (lr->log);
+    g_static_mutex_unlock(&lr->log_lock);
     if (!lr->event)
         return -1;
 
@@ -166,6 +191,8 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
     lr->next_clock_time = -1;
     lr->start_timestamp = -1;
 
+    g_static_mutex_init (&lr->log_lock);
+
     g_hash_table_foreach ((GHashTable*) args, new_argument, lr);
 
     dbg (DBG_LCM, "Initializing LCM log provider context...\n");
@@ -183,28 +210,42 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
     }
     //fcntl (lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
 
-    if (!lr->writer) {
-        lr->log = lcm_eventlog_create (lr->filename, "r");
+    const char* file_mode;
+    if (lr->file_mode == LCM_FILE_READ_WRITE) {
+      file_mode = "rw";
+    } else if (lr->file_mode == LCM_FILE_WRITE_ONLY) {
+      file_mode = "w";
     } else {
-        lr->log = lcm_eventlog_create (lr->filename, "w");
+      file_mode = "r";
     }
 
+    lr->log = lcm_eventlog_create (lr->filename, file_mode);
     if (!lr->log) {
-        fprintf (stderr, "Error: Failed to open %s: %s\n", lr->filename,
-                strerror (errno));
+        fprintf (stderr, "Error: Failed to open %s: %s in mode: %s\n", lr->filename,
+                 file_mode, strerror (errno));
         lcm_logprov_destroy (lr);
         return NULL;
     }
 
-    // only start the reader thread if not in write mode
-    if (!lr->writer){
-        if (load_next_event (lr) < 0) {
+    if (lr->file_mode == LCM_FILE_READ_ONLY){
+        // only check that we can read a message if we're in read only mode
+        if (load_next_event (lr) == 0) {
+            // rewind back to beginning
+            lcm_eventlog_seek_to_timestamp(lr->log, 0);
+        } else {
             fprintf (stderr, "Error: Failed to read first event from log\n");
             lcm_logprov_destroy (lr);
             return NULL;
         }
+        
+        if(lr->start_timestamp > 0){
+            dbg (DBG_LCM, "Seeking to timestamp: %lld\n", (long long)lr->start_timestamp);
+            lcm_eventlog_seek_to_timestamp(lr->log, lr->start_timestamp);
+        }
+    }
 
-        /* Start the reader thread */
+    if (lr->file_mode != LCM_FILE_WRITE_ONLY) {
+        /* Start the timer thread */
         lr->timer_thread = g_thread_create (timer_thread, lr, TRUE, NULL);
         if (!lr->timer_thread) {
             fprintf (stderr, "Error: LCM failed to start timer thread\n");
@@ -212,17 +253,7 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
             return NULL;
         }
         lr->thread_created = 1;
-
-        if(lcm_internal_pipe_write(lr->notify_pipe[1], "+", 1) < 0) {
-            perror(__FILE__ " - write (reader create)");
-        }
-
-        if(lr->start_timestamp > 0){
-            dbg (DBG_LCM, "Seeking to timestamp: %lld\n", (long long)lr->start_timestamp);
-            lcm_eventlog_seek_to_timestamp(lr->log, lr->start_timestamp);
-        }
     }
-
     return lr;
 }
 
@@ -235,20 +266,18 @@ lcm_logprov_get_fileno (lcm_logprov_t *lr)
 static int
 lcm_logprov_handle (lcm_logprov_t * lr)
 {
-    lcm_recv_buf_t rbuf;
-
-    if (!lr->event)
-        return -1;
-
-    char ch;
-    int status = lcm_internal_pipe_read(lr->notify_pipe[0], &ch, 1);
-    if (status == 0) {
-        fprintf (stderr, "Error: lcm_handle read 0 bytes from notify_pipe\n");
+    if(lr->file_mode == LCM_FILE_WRITE_ONLY) {
         return -1;
     }
-    else if (status < 0) {
-        fprintf (stderr, "Error: lcm_handle read: %s\n", strerror (errno));
-        return -1;
+
+    int have_msg_to_dispatch = 0;
+    while (!have_msg_to_dispatch) {
+        if (load_next_event(lr) < 0 || lr->event == NULL ) {
+            return -1;
+        }
+        if (lcm_try_enqueue_message(lr->lcm, lr->event->channel)) {
+            have_msg_to_dispatch = 1;
+        }
     }
 
     int64_t now = timestamp_now ();
@@ -256,25 +285,7 @@ lcm_logprov_handle (lcm_logprov_t * lr)
     if (lr->next_clock_time < 0)
         lr->next_clock_time = now;
 
-//    rbuf.channel = lr->event->channel,
-    rbuf.data = (uint8_t*) lr->event->data;
-    rbuf.data_size = lr->event->datalen;
-    rbuf.recv_utime = lr->next_clock_time;
-    rbuf.lcm = lr->lcm;
-
-    if(lcm_try_enqueue_message(lr->lcm, lr->event->channel))
-        lcm_dispatch_handlers (lr->lcm, &rbuf, lr->event->channel);
-
     int64_t prev_log_time = lr->event->timestamp;
-    if (load_next_event (lr) < 0) {
-        /* end-of-file reached.  This call succeeds, but next call to
-         * _handle will fail */
-        lr->event = NULL;
-        if(lcm_internal_pipe_write(lr->notify_pipe[1], "+", 1) < 0) {
-            perror(__FILE__ " - write(notify)");
-        }
-        return 0;
-    }
 
     /* Compute the wall time for the next event */
     if (lr->speed > 0)
@@ -284,16 +295,32 @@ lcm_logprov_handle (lcm_logprov_t * lr)
         lr->next_clock_time = now;
 
     if (lr->next_clock_time > now) {
+        // Tell the timer thread what time it should wake us up.
         int wstatus = lcm_internal_pipe_write(lr->timer_pipe[1], &lr->next_clock_time, 8);
         if(wstatus < 0) {
             perror(__FILE__ " - write(timer_pipe)");
         }
-    } else {
-        int wstatus = lcm_internal_pipe_write(lr->notify_pipe[1], "+", 1);
-        if(wstatus < 0) {
-            perror(__FILE__ " - write(notify_pipe)");
+
+        // Wait for timer to wake us
+        char ch;
+        int status = lcm_internal_pipe_read(lr->notify_pipe[0], &ch, 1);
+        if (status == 0) {
+            fprintf (stderr, "Error: lcm_handle read 0 bytes from notify_pipe\n");
+            return -1;
+        }
+        else if (status < 0) {
+            fprintf (stderr, "Error: lcm_handle read: %s\n", strerror (errno));
+            return -1;
         }
     }
+
+    // actually dispatch the message
+    lcm_recv_buf_t rbuf;
+    rbuf.data = (uint8_t*) lr->event->data;
+    rbuf.data_size = lr->event->datalen;
+    rbuf.recv_utime = lr->next_clock_time;
+    rbuf.lcm = lr->lcm;
+    lcm_dispatch_handlers(lr->lcm, &rbuf, lr->event->channel);
 
     return 0;
 }
@@ -303,7 +330,7 @@ static int
 lcm_logprov_publish (lcm_logprov_t *lcm, const char *channel, const void *data,
         unsigned int datalen)
 {
-    if(!lcm->writer){
+    if(lcm->file_mode == LCM_FILE_READ_ONLY) {
         fprintf (stderr, "LCM error: lcm file provider is not in write mode\n");
         return -1;
     }
@@ -316,7 +343,7 @@ lcm_logprov_publish (lcm_logprov_t *lcm, const char *channel, const void *data,
 
     GTimeVal tv;
     g_get_current_time(&tv);
-    le->timestamp = (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;;
+    le->timestamp = (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
     le->channellen = channellen;
     le->datalen = datalen;
     // log_write_event will handle le.eventnum.
@@ -327,7 +354,11 @@ lcm_logprov_publish (lcm_logprov_t *lcm, const char *channel, const void *data,
     assert((char*)le->data + datalen == (char*)le + mem_sz);
     memcpy(le->data, data, datalen);
 
+    // hold lock to write to the underlying eventlog
+    g_static_mutex_lock(&lcm->log_lock);
     lcm_eventlog_write_event(lcm->log, le);
+    g_static_mutex_unlock(&lcm->log_lock);
+
     free(le);
 
     return 0;

@@ -25,6 +25,8 @@ extern "C" {
  *
  * Linking: <tt> `pkg-config --libs lcm` </tt>
  *
+ * Note: the lcm_eventlog functions are NOT thread-safe
+ *
  * @{
  */
 
@@ -37,10 +39,22 @@ struct _lcm_eventlog_t
      * rewinding the file pointer to the beginning of the log file.
      */
     FILE *f;
+
+
+    /**
+     * Indicates whether the file pointer is currently at the read pos
+     */
+    int8_t f_at_read_pos;
+
+    /**
+     * Stores the the read_pos
+     */
+    fpos_t read_pos;
+
     /**
      * Do not use.
      */
-    int64_t eventcount;
+    int64_t write_event_count;
 };
 
 /**
@@ -89,7 +103,7 @@ LCM_API_FUNCTION
 lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode);
 
 /**
- * Read the next event in the log file.  Valid in read mode only.  Free the
+ * Read the next event in the log file.  Free the
  * returned structure with lcm_eventlog_free_event() after use.
  *
  * @param eventlog The log file object
