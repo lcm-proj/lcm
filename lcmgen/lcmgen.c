@@ -175,6 +175,15 @@ lcm_typename_t *lcm_typename_create(lcmgen_t *lcmgen, const char *lctypename)
         lt->shortname = &rtmp[1];
     }
 
+    const char* package_prefix = getopt_get_string(lcmgen->gopt, "package-prefix");
+    if (strlen(package_prefix)>0 && !lcm_is_primitive_type(lt->shortname)){
+        lt->package = g_strdup_printf("%s%s%s",
+                                      package_prefix,
+                                      strlen(lt->package) > 0 ? "." : "",
+                                      lt->package);
+        lt->lctypename = g_strdup_printf("%s.%s", lt->package, lt->shortname);
+    }
+
     return lt;
 }
 

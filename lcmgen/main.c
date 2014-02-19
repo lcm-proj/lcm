@@ -46,6 +46,8 @@ int main(int argc, char *argv[])
     getopt_add_bool  (gopt, 't',  "tokenize", 0,    "Show tokenization");
     getopt_add_bool  (gopt, 'd',  "debug",    0,    "Show parsed file");
     getopt_add_bool  (gopt, 0,    "lazy",     0,    "Generate output file only if .lcm is newer");
+    getopt_add_string(gopt, 0,    "package-prefix",     "",
+                      "Add this package name as a prefix to the declared package");
 
     // we only support portable declarations now.
     // getopt_add_bool  (gopt, 0,    "warn-unsafe", 1, "Warn about unportable declarations");
