@@ -72,17 +72,40 @@ and the following usage would publish a message::\n\
 //gives redefinition error in MSVC
 //PyTypeObject pylcm_type;
 
+
+// Work-alike for Py_BEGIN_ALLOW_THREADS
+// that allows us to save the global interpreter lock thread state.
+static void
+pylcm_begin_allow_threads (PyLCMObject *lcm_obj) {
+    lcm_obj->saved_thread_state = PyEval_SaveThread();
+}
+
+// Work-alike for Py_END_ALLOW_THREADS
+// that allows us to save the global interpreter lock thread state.
+// One difference is that this function can be called multiple times for a
+// given pylcm_begin_allow_threads() call
+static void
+pylcm_end_allow_threads (PyLCMObject *lcm_obj){
+    if (lcm_obj->saved_thread_state != NULL) {
+        PyEval_RestoreThread(lcm_obj->saved_thread_state);
+        lcm_obj->saved_thread_state = NULL;
+    }
+}
+
 // all LCM messages subscribed to by all LCM objects pass through this
 // handler first.
 static void
 pylcm_msg_handler (const lcm_recv_buf_t *rbuf, const char *channel, 
         void *userdata)
 {
+    PyLCMSubscriptionObject *subs_obj = (PyLCMSubscriptionObject*) userdata;
+    dbg ("%s %p %p\n", __FUNCTION__, subs_obj, subs_obj->lcm_obj);
+
+    // end_allow_threads so that we can call down into the user's python handler.
+    pylcm_end_allow_threads(subs_obj->lcm_obj);
+
     // if an exception has occurred, then abort.
     if (PyErr_Occurred ()) return;
-
-	//MSVC requires explicit cast
-    PyLCMSubscriptionObject *subs_obj = (PyLCMSubscriptionObject*) userdata;
 
     #if PY_MAJOR_VERSION >= 3
     PyObject *arglist = Py_BuildValue ("sy#", channel, // build from bytes
@@ -217,11 +240,10 @@ pylcm_publish (PyLCMObject *lcm_obj, PyObject *args)
         PyErr_SetString (PyExc_ValueError, "invalid channel");
         return NULL;
     }
-    int status;
 
-    Py_BEGIN_ALLOW_THREADS
-    status = lcm_publish (lcm_obj->lcm, channel, (uint8_t*)data, datalen);
-    Py_END_ALLOW_THREADS
+    pylcm_begin_allow_threads(lcm_obj);
+    int status = lcm_publish (lcm_obj->lcm, channel, (uint8_t*)data, datalen);
+    pylcm_end_allow_threads(lcm_obj);
 
     if (0 != status) {
         PyErr_SetFromErrno (PyExc_IOError);
@@ -254,29 +276,19 @@ static PyObject *
 pylcm_handle (PyLCMObject *lcm_obj)
 {
     dbg ("%s %p\n", __FUNCTION__, lcm_obj);
-    int fd = lcm_get_fileno (lcm_obj->lcm);
-    if(fd < 0) {
-      PyErr_SetFromErrno(PyExc_IOError);
-      return NULL;
-    }
-    fd_set fds;
-    FD_ZERO (&fds);
-    FD_SET (fd, &fds);
-    int status;
+    lcm_obj->exception_raised = 0;
 
-    Py_BEGIN_ALLOW_THREADS
-    status = select (fd+1, &fds, NULL, NULL, NULL);
-    Py_END_ALLOW_THREADS
+    pylcm_begin_allow_threads(lcm_obj);
+    dbg("calling lcm_handle(%p)\n", lcm_obj->lcm);
+    int status = lcm_handle (lcm_obj->lcm);
+    // pylcm_end_allow_threads() may have already been called in pylcm_msg_handler()
+    pylcm_end_allow_threads(lcm_obj);
 
+    if (lcm_obj->exception_raised) { return NULL; }
     if (status < 0) {
-        PyErr_SetFromErrno (PyExc_IOError);
+        PyErr_SetString (PyExc_IOError, "lcm_handle() returned -1");
         return NULL;
     }
-
-    // XXX how to properly use Py_{BEGIN,END}_ALLOW_THREADS here????
-    lcm_obj->exception_raised = 0;
-    lcm_handle (lcm_obj->lcm);
-    if (lcm_obj->exception_raised) return NULL;
     Py_RETURN_NONE;
 }
 PyDoc_STRVAR (pylcm_handle_doc,

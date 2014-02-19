@@ -15,6 +15,10 @@ typedef struct {
     int exception_raised;
 
     PyObject *all_handlers;
+
+    // The stored thread state, so that we can do the equivalent of
+    // Py_BEGIN_ALLOW_THREADS and Py_END_ALLOW_THREADS in different functions.
+    PyThreadState *saved_thread_state;
 } PyLCMObject;
 
 #ifdef __cplusplus
