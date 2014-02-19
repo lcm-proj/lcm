@@ -59,13 +59,13 @@ for o, a in opts:
 #
 #if len(args) > 0):
 #
-#print "remaining args: %s" % args
+#print("remaining args: %s" % args)
 
 dotest("c", "c")
 dotest("python", "c")
 dotest("cpp", "c")
 
 # Call the lcm_file_test independantly
-print "Running the lcm file test."
-print 'NOTE: the message about "lcm file provider is not in write mode" is expected\n'
+print("Running the lcm file test.")
+print('NOTE: the message about "lcm file provider is not in write mode" is expected\n')
 subprocess.check_call("python/lcm_file_test.py", shell=True)

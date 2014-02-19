@@ -282,7 +282,9 @@ write_thread(void *user_data)
             (le->timestamp - logger->last_fflush_time) > logger->fflush_interval_ms*1000) {
             fflush(logger->log->f);
             // Perform a full fsync operation after flush
+#ifndef WIN32
             fdatasync(fileno(logger->log->f));
+#endif
             logger->last_fflush_time = le->timestamp;
         }
 
