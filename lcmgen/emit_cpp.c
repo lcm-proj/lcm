@@ -256,13 +256,20 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
             lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
             assert(lcm_is_legal_const_type(lc->lctypename));
 
-            const char *suffix = "";
-            if (!strcmp(lc->lctypename, "int64_t"))
-              suffix = "LL";
-            char* mapped_typename = map_type_name(lc->lctypename);
-            emit(2, "static const %-8s %s = %s%s;", mapped_typename,
-                lc->membername, lc->val_str, suffix);
-            free(mapped_typename);
+            // For int32_t only, we emit enums instead of static const
+            // values because the former can be passed by reference while
+            // the latter cannot.
+            if (!strcmp(lc->lctypename, "int32_t")) {
+              emit(2, "enum { %s = %s };", lc->membername, lc->val_str);
+            } else {
+              const char *suffix = "";
+              if (!strcmp(lc->lctypename, "int64_t"))
+                suffix = "LL";
+              char* mapped_typename = map_type_name(lc->lctypename);
+              emit(2, "static const %-8s %s = %s%s;", mapped_typename,
+                  lc->membername, lc->val_str, suffix);
+              free(mapped_typename);
+            }
         }
         emit(0, "");
     }
