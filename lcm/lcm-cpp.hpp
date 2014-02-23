@@ -54,7 +54,7 @@ class LCM {
          * Disconnects from the LCM network, and destroys all outstanding
          * Subscription objects.
          */
-        inline ~LCM();
+        inline virtual ~LCM();
 
         /**
          * @brief Checks if initialization succeeded during object
