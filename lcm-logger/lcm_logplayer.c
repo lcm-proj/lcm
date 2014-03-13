@@ -50,7 +50,7 @@ main(int argc, char ** argv)
     double speed = 1.0;
     int c;
     char * expression = NULL;
-    struct option long_opts[] = { 
+    struct option long_opts[] = {
         { "help", no_argument, 0, 'h' },
         { "speed", required_argument, 0, 's' },
         { "lcm-url", required_argument, 0, 'l' },
@@ -61,7 +61,7 @@ main(int argc, char ** argv)
 
     char *lcmurl = NULL;
     memset (&l, 0, sizeof (logplayer_t));
-    while ((c = getopt_long (argc, argv, "hp:s:ve:", long_opts, 0)) >= 0)
+    while ((c = getopt_long (argc, argv, "hp:s:ve:l:", long_opts, 0)) >= 0)
     {
         switch (c) {
             case 's':
