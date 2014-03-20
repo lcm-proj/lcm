@@ -47,7 +47,8 @@ typedef int SOCKET;
 #define LCM2_MAGIC_SHORT 0x4c433032   // hex repr of ascii "LC02" 
 #define LCM2_MAGIC_LONG  0x4c433033   // hex repr of ascii "LC03" 
 
-#define LCM_SHORT_MESSAGE_MAX_SIZE 1400
+#define LCM_SHORT_MESSAGE_MAX_SIZE 65500
+#define LCM_FRAGMENT_MAX_PAYLOAD 65477
 
 #define SELF_TEST_CHANNEL "LCM_SELF_TEST"
 
@@ -943,7 +944,7 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
 
         lcm2_header_short_t hdr;
         hdr.magic = htonl (LCM2_MAGIC_SHORT);
-        hdr.msg_seqno = lcm->msg_seqno;
+        hdr.msg_seqno = htonl(lcm->msg_seqno);
 
         struct iovec sendbufs[3];
         sendbufs[0].iov_base = (char *) &hdr;
@@ -977,20 +978,13 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
     } else {
         // message is large.  fragment into multiple packets
 
-        int fragment_size = LCM_SHORT_MESSAGE_MAX_SIZE;
+        int fragment_size = LCM_FRAGMENT_MAX_PAYLOAD;
         int nfragments = payload_size / fragment_size +
             !!(payload_size % fragment_size);
 
         if (nfragments > 65535) {
-          //message is REALLY big. fragment into bigger packets
-          int max_fragment_size =  65535 - (LCM_MAX_CHANNEL_NAME_LENGTH+1) - sizeof(lcm2_header_long_t);  //UDP uses a short for the length field
-          fragment_size = MIN(max_fragment_size, (payload_size/65534)+1);
-          nfragments = payload_size / fragment_size +
-                      !!(payload_size % fragment_size);
-          if (nfragments > 65535) {
-              fprintf (stderr, "LCM error: too much data for a single message\n");
-              return -1;
-          }
+            fprintf (stderr, "LCM error: too much data for a single message\n");
+            return -1;
         }
 
         // acquire transmit lock so that all fragments are transmitted
