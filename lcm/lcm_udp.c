@@ -47,8 +47,8 @@ typedef int SOCKET;
 #define LCM2_MAGIC_SHORT 0x4c433032   // hex repr of ascii "LC02" 
 #define LCM2_MAGIC_LONG  0x4c433033   // hex repr of ascii "LC03" 
 
-#define LCM_SHORT_MESSAGE_MAX_SIZE 65500
-#define LCM_FRAGMENT_MAX_PAYLOAD 65477
+#define LCM_SHORT_MESSAGE_MAX_SIZE 65499
+#define LCM_FRAGMENT_MAX_PAYLOAD 65487
 
 #define SELF_TEST_CHANNEL "LCM_SELF_TEST"
 
@@ -548,13 +548,15 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     // discard any stale fragments from previous messages
     if (fbuf && ((fbuf->msg_seqno != msg_seqno) ||
                  (fbuf->data_size != data_size))) {
+        dbg(DBG_LCM, "Dropping message (missing %d fragments)\n",
+            fbuf->fragments_remaining);
         _destroy_fragment_buffer (lcm, fbuf);
         fbuf = NULL;
     }
 
 //    printf ("fragment %d/%d (offset %d/%d) seq %d packet sz: %d %p\n",
-//            ntohs(hdr->fragment_no), fragments_in_msg, 
-//            fragment_offset, data_size, msg_seqno, sz, fbuf);
+//        ntohs(hdr->fragment_no) + 1, fragments_in_msg,
+//        fragment_offset, data_size, msg_seqno, sz, fbuf);
 
     if (data_size > LCM_MAX_MESSAGE_SIZE) {
         dbg (DBG_LCM, "rejecting huge message (%d bytes)\n", data_size);
@@ -624,7 +626,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
         }
 
         // yes, transfer the message into the lcm_buf_t
- 
+
         // deallocate the ringbuffer-allocated buffer
         g_static_rec_mutex_lock (&lcm->mutex);
         lcm_buf_free_data(lcm, lcmb);
@@ -937,7 +939,7 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
     }
 
     int payload_size = channel_size + 1 + datalen;
-    if (payload_size < LCM_SHORT_MESSAGE_MAX_SIZE) {
+    if (payload_size <= LCM_SHORT_MESSAGE_MAX_SIZE) {
         // message is short.  send in a single packet
 
         g_static_mutex_lock (&lcm->transmit_lock);
