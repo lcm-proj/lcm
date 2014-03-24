@@ -431,6 +431,8 @@ recv_message_fragment (lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     if (fbuf && ((fbuf->msg_seqno != msg_seqno) ||
             (fbuf->data_size != data_size))) {
         lcm_frag_buf_store_remove (lcm->frag_bufs, fbuf);
+        dbg(DBG_LCM, "Dropping message (missing %d fragments)\n",
+            fbuf->fragments_remaining);
         fbuf = NULL;
     }
 
@@ -1196,11 +1198,11 @@ publish_message_internal (lcm_mpudpm_t *lcm, const char *channel, const void *da
     lcm->dest_addr.sin_port = htons(chan_port);
 
     int payload_size = channel_size + 1 + datalen;
-    if (payload_size < LCM_SHORT_MESSAGE_MAX_SIZE) {
+    if (payload_size <= LCM_SHORT_MESSAGE_MAX_SIZE) {
         // message is short.  send in a single packet
         lcm2_header_short_t hdr;
-        hdr.magic = htonl (LCM2_MAGIC_SHORT);
-        hdr.msg_seqno = lcm->msg_seqno;
+        hdr.magic = htonl(LCM2_MAGIC_SHORT);
+        hdr.msg_seqno = htonl(lcm->msg_seqno);
 
         struct iovec sendbufs[3];
         sendbufs[0].iov_base = (char *) &hdr;
@@ -1222,27 +1224,19 @@ publish_message_internal (lcm_mpudpm_t *lcm, const char *channel, const void *da
         msg.msg_flags = 0;
         int status = sendmsg(lcm->send_fd, &msg, 0);
 
-        lcm->msg_seqno ++;
+        ++lcm->msg_seqno;
 
         if (status == packet_size) return 0;
         else return status;
     } else {
         // message is large.  fragment into multiple packets
-        int fragment_size = LCM_SHORT_MESSAGE_MAX_SIZE;
+        int fragment_size = LCM_FRAGMENT_MAX_PAYLOAD;
         int nfragments = payload_size / fragment_size +
                 !!(payload_size % fragment_size);
 
         if (nfragments > 65535) {
-            //message is REALLY big. fragment into bigger packets
-            int max_fragment_size = 65535 - (LCM_MAX_CHANNEL_NAME_LENGTH + 1)
-                            - sizeof(lcm2_header_long_t); //UDP uses a short for the length field
-            fragment_size = MIN(max_fragment_size, (payload_size/65534)+1);
-            nfragments = payload_size / fragment_size +
-                    !!(payload_size % fragment_size);
-            if (nfragments > 65535) {
-                fprintf (stderr, "LCM error: too much data for a single message\n");
-                return -1;
-            }
+            fprintf (stderr, "LCM error: too much data for a single message\n");
+            return -1;
         }
 
         uint32_t fragment_offset = 0;
@@ -1308,7 +1302,7 @@ publish_message_internal (lcm_mpudpm_t *lcm, const char *channel, const void *da
             assert (fragment_offset == datalen);
         }
 
-        lcm->msg_seqno ++;
+        ++lcm->msg_seqno;
         return 0;
     }
 }

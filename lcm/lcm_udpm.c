@@ -262,12 +262,14 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     if (fbuf && ((fbuf->msg_seqno != msg_seqno) ||
                  (fbuf->data_size != data_size))) {
         lcm_frag_buf_store_remove (lcm->frag_bufs, fbuf);
+        dbg(DBG_LCM, "Dropping message (missing %d fragments)\n",
+            fbuf->fragments_remaining);
         fbuf = NULL;
     }
 
 //    printf ("fragment %d/%d (offset %d/%d) seq %d packet sz: %d %p\n",
-//            ntohs(hdr->fragment_no), fragments_in_msg, 
-//            fragment_offset, data_size, msg_seqno, sz, fbuf);
+//        ntohs(hdr->fragment_no) + 1, fragments_in_msg,
+//        fragment_offset, data_size, msg_seqno, sz, fbuf);
 
     if (data_size > LCM_MAX_MESSAGE_SIZE) {
         dbg (DBG_LCM, "rejecting huge message (%d bytes)\n", data_size);
@@ -337,7 +339,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
         }
 
         // yes, transfer the message into the lcm_buf_t
- 
+
         // deallocate the ringbuffer-allocated buffer
         g_static_rec_mutex_lock (&lcm->mutex);
         lcm_buf_free_data(lcmb, lcm->ringbuf);
@@ -605,14 +607,14 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
     }
 
     int payload_size = channel_size + 1 + datalen;
-    if (payload_size < LCM_SHORT_MESSAGE_MAX_SIZE) {
+    if (payload_size <= LCM_SHORT_MESSAGE_MAX_SIZE) {
         // message is short.  send in a single packet
 
         g_static_mutex_lock (&lcm->transmit_lock);
 
         lcm2_header_short_t hdr;
         hdr.magic = htonl (LCM2_MAGIC_SHORT);
-        hdr.msg_seqno = lcm->msg_seqno;
+        hdr.msg_seqno = htonl(lcm->msg_seqno);
 
         struct iovec sendbufs[3];
         sendbufs[0].iov_base = (char *) &hdr;
@@ -646,20 +648,13 @@ lcm_udpm_publish (lcm_udpm_t *lcm, const char *channel, const void *data,
     } else {
         // message is large.  fragment into multiple packets
 
-        int fragment_size = LCM_SHORT_MESSAGE_MAX_SIZE;
+        int fragment_size = LCM_FRAGMENT_MAX_PAYLOAD;
         int nfragments = payload_size / fragment_size +
             !!(payload_size % fragment_size);
 
         if (nfragments > 65535) {
-          //message is REALLY big. fragment into bigger packets
-          int max_fragment_size =  65535 - (LCM_MAX_CHANNEL_NAME_LENGTH+1) - sizeof(lcm2_header_long_t);  //UDP uses a short for the length field
-          fragment_size = MIN(max_fragment_size, (payload_size/65534)+1);
-          nfragments = payload_size / fragment_size +
-                      !!(payload_size % fragment_size);
-          if (nfragments > 65535) {
-              fprintf (stderr, "LCM error: too much data for a single message\n");
-              return -1;
-          }
+            fprintf (stderr, "LCM error: too much data for a single message\n");
+            return -1;
         }
 
         // acquire transmit lock so that all fragments are transmitted

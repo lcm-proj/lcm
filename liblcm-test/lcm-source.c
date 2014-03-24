@@ -10,12 +10,18 @@
 #include <winsock2.h>
 #endif
 
+#ifndef WIN32
+#include <signal.h>
+#endif
+
 #include <getopt.h>
 #include <time.h>
 
 #include <lcm/lcm.h>
 
 #define DEFAULT_TRANSMIT_INTERVAL_USEC 10000
+
+static int g_quit = 0;
 
 static void
 make_msg_channel (char *buf, int maxlen) 
@@ -51,6 +57,13 @@ usage()
     exit(1);
 }
 
+#ifndef WIN32
+void on_signal(int signum)
+{
+    g_quit = 1;
+}
+#endif
+
 int main(int argc, char **argv)
 {
     int verbose = 0;
@@ -63,6 +76,10 @@ int main(int argc, char **argv)
 
     char *optstring = "hm:p:s:v";
     char c;
+
+#ifndef WIN32
+    signal(SIGINT, on_signal);
+#endif
 
     while ((c = getopt(argc, argv, optstring)) >= 0)
     {
@@ -109,7 +126,7 @@ int main(int argc, char **argv)
     srand(time(NULL));
 
     uint32_t seqno = 0;
-    while(1) {
+    while(!g_quit) {
         int sz = 0;
 
         // pick a random message type if no fixed type was specified...
@@ -149,9 +166,10 @@ int main(int argc, char **argv)
         }
         seqno++;
     }
+    printf("Transmitted %d messages\n", seqno);
     free(data);
 
     lcm_destroy (lcm);
-    
+
     return 0;
 }

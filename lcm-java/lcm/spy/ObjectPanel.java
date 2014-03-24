@@ -79,16 +79,36 @@ public class ObjectPanel extends JPanel
 
                 Font of = g.getFont();
                 g.setFont(of.deriveFont(Font.BOLD));
+                FontMetrics fm = g.getFontMetrics();
 
                 String tok = cs.collapsed ? "+" : "-";
                 g.setColor(Color.white);
                 g.fillRect(x[0] + indent_level*indentpx, y, 1, 1);
                 g.setColor(Color.black);
 
-                g.drawString(tok, x[0] + indent_level*indentpx, y);
-                g.drawString(type,  x[0] + indent_level*indentpx + 10, y);
+                String type_split[] = type.split("\\.");
+                String drawtype = type_split[type_split.length - 1];
+
+                int type_len = fm.stringWidth(drawtype);
+                int name_len = fm.stringWidth(name);
+
+                int tok_pixidx = x[0] + indent_level*indentpx;
+                int type_pixidx = x[0] + indent_level*indentpx + 10;
+
+                g.drawString(tok, tok_pixidx, y);
+                g.drawString(drawtype, type_pixidx, y);
+
+                // check if type field is too long. put name on new line if yes
+                if (type_pixidx + type_len > x[1])
+                    y+= textheight;
                 g.drawString(name,  x[1], y);
+
+                // check if name field is too long.  put value on new line if yes
+                // No need to put it on a new line if value is NULL
+                if (x[1] + name_len > x[2] && value.length() > 0)
+                    y+= textheight;
                 g.drawString(value, x[2], y);
+
                 g.setFont(of);
 
                 // set up the coordinates where clicking will toggle whether
