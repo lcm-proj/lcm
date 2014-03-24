@@ -13,20 +13,16 @@
 
 // GRegex was new in GLib 2.14.0
 #if GLIB_CHECK_VERSION(2,14,0)
-#define USE_GREGEX
+#else
+#error "LCM requires a glib version >= 2.14.0"
 #endif
 
 #ifdef WIN32
-#define USE_GREGEX
 #define __STDC_FORMAT_MACROS            // Enable integer types
 #include <lcm/windows/WinPorting.h>
 #endif
 
 #include <inttypes.h>
-
-#ifndef USE_GREGEX
-#include <regex.h>
-#endif
 
 #include "glib_util.h"
 
@@ -80,11 +76,7 @@ struct logger
 
     // variables for inverted matching (e.g., logging all but some channels)
     int invert_channels;
-#ifdef USE_GREGEX
     GRegex * regex;
-#else
-    regex_t preg;
-#endif
 
     // these members controlled by mutex
     int64_t write_queue_size;
@@ -319,13 +311,8 @@ message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
     logger_t *logger = (logger_t*) u;
 
     if(logger->invert_channels) {
-#ifdef USE_GREGEX
         if(g_regex_match(logger->regex, channel, (GRegexMatchFlags) 0, NULL))
             return;
-#else
-        if(0 == regexec(&logger->preg, channel, 0, NULL, 0))
-            return;
-#endif
     }
 
     int channellen = strlen(channel);
@@ -592,7 +579,6 @@ int main(int argc, char *argv[])
         // callback
         lcm_subscribe(logger.lcm, ".*", message_handler, &logger);
         char *regexbuf = g_strdup_printf("^%s$", chan_regex);
-#ifdef USE_GREGEX
         GError *rerr = NULL;
         logger.regex = g_regex_new(regexbuf, (GRegexCompileFlags) 0, (GRegexMatchFlags) 0, &rerr);
         if(rerr) {
@@ -600,13 +586,6 @@ int main(int argc, char *argv[])
             g_free(regexbuf);
             return 1;
         }
-#else
-        if (0 != regcomp (&logger.preg, regexbuf, REG_NOSUB | REG_EXTENDED)) {
-            fprintf(stderr, "bad regex!\n");
-            g_free(regexbuf);
-            return 1;
-        }
-#endif
         g_free(regexbuf);
     } else {
         // otherwise, let LCM handle the regex
@@ -651,11 +630,7 @@ int main(int argc, char *argv[])
     g_async_queue_unref(logger.write_queue);
 
     if(logger.invert_channels) {
-#ifdef USE_GREGEX
         g_regex_unref(logger.regex);
-#else
-        regfree(&logger.preg);
-#endif
     }
 
     return 0;

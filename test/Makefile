@@ -1,10 +1,14 @@
 all:
+	$(MAKE) test
+
+.buildstamp:
 	$(MAKE) -C c
 	$(MAKE) -C python
 	$(MAKE) -C cpp
 	$(MAKE) -C java
+	touch .buildstamp
 
-test:
+test: .buildstamp
 	./run_tests.py
 
 clean:
@@ -12,4 +16,4 @@ clean:
 	$(MAKE) -C python clean
 	$(MAKE) -C cpp clean
 	$(MAKE) -C java clean
-
+	rm -f .buildstamp
