@@ -16,8 +16,6 @@
 #include <sys/time.h>
 #include <sys/poll.h>
 #include <sys/select.h>
-
-typedef int SOCKET;
 #endif
 
 #include <glib.h>
