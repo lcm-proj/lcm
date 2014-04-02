@@ -54,7 +54,7 @@ class LCM {
          * Disconnects from the LCM network, and destroys all outstanding
          * Subscription objects.
          */
-        inline virtual ~LCM();
+        inline ~LCM();
 
         /**
          * @brief Checks if initialization succeeded during object
@@ -63,7 +63,7 @@ class LCM {
          * @return true if initialization succeeded and the instance appears
          * ready for communication, false if not.
          */
-        inline virtual bool good() const;
+        inline bool good() const;
 
         /**
          * @brief Publishes a raw data message.
@@ -74,7 +74,7 @@ class LCM {
          *
          * @return 0 on success, -1 on failure.
          */
-        inline virtual int publish(const std::string& channel, void *data,
+        inline int publish(const std::string& channel, void *data,
                 unsigned int datalen);
 
         /**
