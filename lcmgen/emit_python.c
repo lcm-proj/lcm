@@ -773,7 +773,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                         continue;
                     if(!strcmp(words[0], "from") && !strcmp(words[2], "import")) {
                         char *module_name = strdup(words[1]+1); // ignore leading dot
-                        g_hash_table_insert(init_py_imports, module_name, 
+                        g_hash_table_replace(init_py_imports, module_name, 
                                 module_name);
                     }
 
