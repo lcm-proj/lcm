@@ -663,6 +663,18 @@ lcm_enum_t *parse_enum(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
     return le;
 }
 
+const lcm_struct_t* find_struct(lcmgen_t* lcmgen, const char* package,
+    const char* name) {
+    for (int i=0; i < lcmgen->structs->len; i++) {
+        lcm_struct_t* lr =
+            (lcm_struct_t*) g_ptr_array_index(lcmgen->structs, i);
+        if (!strcmp(package, lr->structname->package) &&
+            !strcmp(name, lr->structname->shortname))
+            return lr;
+    }
+    return NULL;
+}
+
 /** parse entity (top-level construct), return EOF if eof. **/
 int parse_entity(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
 {
@@ -681,7 +693,20 @@ int parse_entity(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
 
     if (!strcmp(t->token, "struct")) {
         lcm_struct_t *lr = parse_struct(lcmgen, lcmfile, t);
-        g_ptr_array_add(lcmgen->structs, lr);
+
+        // check for duplicate types
+        const lcm_struct_t* prior = find_struct(lcmgen,
+                lr->structname->package, lr->structname->shortname);
+        if (prior) {
+            printf("ERROR:  duplicate type %s declared in %s\n",
+                    lr->structname->lctypename, lcmfile);
+            printf("        %s was previously declared in %s\n",
+                    lr->structname->lctypename, prior->lcmfile);
+            // TODO destroy lr.
+            return 1;
+        } else {
+            g_ptr_array_add(lcmgen->structs, lr);
+        }
         return 0;
     }
 
@@ -692,8 +717,7 @@ int parse_entity(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
     }
 
     parse_error(t,"Missing struct token.");
-    return -1;
-
+    return 1;
 }
 
 int lcmgen_handle_file(lcmgen_t *lcmgen, const char *path)
@@ -717,10 +741,13 @@ int lcmgen_handle_file(lcmgen_t *lcmgen, const char *path)
     int res;
     do {
         res = parse_entity(lcmgen, path, t);
-    } while (res != EOF);
+    } while (res == 0);
 
     tokenize_destroy(t);
-    return 0;
+    if (res == 0 || res == EOF)
+        return 0;
+    else
+        return res;
 }
 
 void lcm_typename_dump(lcm_typename_t *lt)

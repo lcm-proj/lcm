@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
 
         int res = lcmgen_handle_file(lcm, path);
         if (res)
-            return -1;
+            return res;
     }
 
     int did_something = 0;
