@@ -140,7 +140,7 @@ LCM::~LCM() {
 }
 
 inline int
-LCM::publish(const std::string& channel, void *data, unsigned int datalen) {
+LCM::publish(const std::string& channel, const void *data, unsigned int datalen) {
     if(!this->lcm) {
         fprintf(stderr,
             "LCM instance not initialized.  Ignoring call to publish()\n");

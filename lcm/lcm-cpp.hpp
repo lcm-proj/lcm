@@ -74,7 +74,7 @@ class LCM {
          *
          * @return 0 on success, -1 on failure.
          */
-        inline int publish(const std::string& channel, void *data,
+        inline int publish(const std::string& channel, const void *data,
                 unsigned int datalen);
 
         /**
