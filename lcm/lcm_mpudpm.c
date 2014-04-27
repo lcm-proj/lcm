@@ -28,6 +28,13 @@
 
 #include "lcmtypes/channel_port_map_update_t.h"
 
+#ifdef WIN32
+// Windows provides Poll, but calls it WSAPoll
+typedef int nfds_t;
+static inline int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
+	return WSAPoll(fds, nfds, timeout);
+}
+#endif
 
 // Lets reserve channels starting with #! for internal use
 #define RESERVED_CHANNEL_PREFIX "#!"
@@ -989,7 +996,7 @@ publish_channel_mapping_update(lcm_mpudpm_t *lcm){
     }
     lcm->last_mapping_update_utime = lcm_timestamp_now();
 
-    channel_port_map_update_t* msg = calloc(1,
+    channel_port_map_update_t* msg = (channel_port_map_update_t*) calloc(1,
             sizeof(channel_port_map_update_t));
     msg->num_ports = lcm->params.num_mc_ports;
     int table_size = g_hash_table_size(lcm->channel_to_port_map);

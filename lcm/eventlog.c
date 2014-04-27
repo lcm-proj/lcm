@@ -59,7 +59,7 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
     // Move the file pointer to the read position if need be
     if (!l->f_at_read_pos) {
         if(fsetpos(l->f, &l->read_pos)) 
-            return -1;
+            return NULL;
         l->f_at_read_pos = 1;
     }
 

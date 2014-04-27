@@ -622,12 +622,11 @@ static void emit_c_get_field(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     for(int i = 0; i < num_fields; i++) {
         emit(2,"case %d: {", i);
 
-        lcm_member_t *m = g_ptr_array_index(ls->members, i);
+        lcm_member_t *m = (lcm_member_t *)g_ptr_array_index(ls->members, i);
 
         const char *type_val = NULL;
         if(lcm_is_primitive_type(m->type->shortname)) {
-            snprintf(buffer, 256, "LCM_FIELD_%s", m->type->shortname);
-            type_val = str_toupper(buffer);
+            type_val = str_toupper(g_strdup_printf("LCM_FIELD_%s", m->type->shortname));
         } else {
             emit(3,"/* %s */", m->type->shortname);
             type_val = "LCM_FIELD_USER_TYPE";
@@ -643,7 +642,7 @@ static void emit_c_get_field(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         if(num_dim != 0) {
 
             for(int j = 0; j < num_dim; j++) {
-                lcm_dimension_t *d = g_ptr_array_index(m->dimensions, j);
+                lcm_dimension_t *d = (lcm_dimension_t*) g_ptr_array_index(m->dimensions, j);
                 if(d->mode == LCM_VAR)
                     emit(3,"f->dim_size[%d] = p->%s;", j, d->size);
                 else
@@ -651,7 +650,7 @@ static void emit_c_get_field(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             }
 
             for(int j = 0; j < num_dim; j++) {
-                lcm_dimension_t *d = g_ptr_array_index(m->dimensions, j);
+                lcm_dimension_t *d = (lcm_dimension_t*) g_ptr_array_index(m->dimensions, j);
                 emit(3,"f->dim_is_variable[%d] = %d;", j, d->mode == LCM_VAR);
             }
 

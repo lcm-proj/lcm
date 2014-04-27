@@ -7,9 +7,9 @@ extern "C" {
 
 #include <time.h>
 #include <stdlib.h>
-#include <unistd.h>
 
 #ifndef WIN32
+#include <unistd.h>
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/time.h>
