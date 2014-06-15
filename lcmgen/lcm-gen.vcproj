@@ -100,6 +100,7 @@
 			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
+			BuildLogFile="$(IntDir)\BuildLog-lcm-gen.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"

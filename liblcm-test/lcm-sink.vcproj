@@ -97,6 +97,7 @@
 			ConfigurationType="1"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
+			BuildLogFile="$(IntDir)\BuildLog-lcm-sink.htm"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"

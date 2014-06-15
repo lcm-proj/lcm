@@ -775,7 +775,11 @@ recv_thread(void * user) {
                 int sz = recvmsg(recv_fd, &msg, 0);
 
                 if (sz < 0) {
+#ifndef WIN32
                     if (errno != EAGAIN && errno != EWOULDBLOCK) {
+#else
+                    if (WSAGetLastError() != WSAEWOULDBLOCK) {
+#endif
                         perror("udp_read_packet -- recvmsg");
                         lcm->udp_discarded_bad++;
                     }
@@ -1107,7 +1111,8 @@ add_channel_to_subscriber(lcm_mpudpm_t* lcm, mpudpm_subscriber_t * sub,
     subscription_socket->num_subscribers++;
     sub->sockets = g_slist_prepend(sub->sockets,
             subscription_socket);
-    g_hash_table_add(sub->channel_set, strdup(channel));
+    char* key = strdup(channel);
+    g_hash_table_replace(sub->channel_set, key, key);
 }
 
 static void

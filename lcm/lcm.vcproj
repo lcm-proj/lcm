@@ -254,7 +254,27 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath=".\lcm_udp.c"
+				RelativePath=".\lcm_udpm.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath=".\lcm_mpudpm.c"
 				>
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -294,12 +314,72 @@
 				</FileConfiguration>
 			</File>
 			<File
+                RelativePath=".\udpm_util.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
 				RelativePath=".\windows\WinLCM.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\windows\WinPorting.cpp"
 				>
+			</File>
+			<File
+                RelativePath=".\lcmtypes\channel_to_port_t.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+			</File>
+			<File
+                RelativePath=".\lcmtypes\channel_port_map_update_t.c"
+				>
+				<FileConfiguration
+					Name="Debug|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						CompileAs="2"
+					/>
+				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
@@ -340,7 +420,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\udpm_util.h"
+				>
+			</File>
+			<File
 				RelativePath=".\windows\WinPorting.h"
+				>
+			</File>
+			<File
+				RelativePath=".\lcmtypes\channel_port_map_update_t.h"
+				>
+			</File>
+			<File
+				RelativePath=".\lcmtypes\channel_to_port_t.h"
 				>
 			</File>
 		</Filter>
