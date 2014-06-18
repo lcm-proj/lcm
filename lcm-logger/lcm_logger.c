@@ -125,21 +125,6 @@ rotate_logfiles(logger_t* logger)
         g_free(tomove);
     }
 }
-// Returns true if a log exists with the given filename, or if
-// a log exists with the filename plus a ".synced" suffix.
-static int
-log_file_exists(char* filename) {
-  if (g_file_test(filename, G_FILE_TEST_EXISTS)) {
-    return 1;
-  }
-  char synced_filename[1024];
-  snprintf(synced_filename, sizeof(synced_filename), "%s.synced",
-	   filename);
-  if (g_file_test(synced_filename, G_FILE_TEST_EXISTS)) {
-    return 1;
-  }
-  return 0;
-}
 
 static int
 open_logfile(logger_t* logger)
@@ -165,19 +150,16 @@ open_logfile(logger_t* logger)
          * already exist.  This way, we never overwrite an existing file. */
         do {
             snprintf(logger->fname, sizeof(logger->fname), "%s.%02d",
-                     logger->fname_prefix, logger->next_increment_num);
+                    logger->fname_prefix, logger->next_increment_num);
             logger->next_increment_num++;
-        } while(log_file_exists(logger->fname));
-        if (errno != ENOENT) {
-          perror ("Error: checking for previous logs");
-          return 1;
-        }
+        } while(g_file_test(logger->fname, G_FILE_TEST_EXISTS));
     } else if(logger->rotate > 0) {
         snprintf(logger->fname, sizeof(logger->fname), "%s.0", logger->fname_prefix);
     } else {
         strcpy(logger->fname, logger->fname_prefix);
         if (! logger->force_overwrite) {
-            if (g_file_test(logger->fname, G_FILE_TEST_EXISTS)) {
+            if (g_file_test(logger->fname, G_FILE_TEST_EXISTS))
+            {
                 fprintf (stderr, "Refusing to overwrite existing file \"%s\"\n",
                         logger->fname);
                 return 1;
