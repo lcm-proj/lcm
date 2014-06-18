@@ -187,6 +187,7 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
     lcm_logprov_t * lr = (lcm_logprov_t *) calloc (1, sizeof (lcm_logprov_t));
     lr->lcm = parent;
     lr->filename = strdup(target);
+    lr->event = NULL;
     lr->speed = 1;
     lr->next_clock_time = -1;
     lr->start_timestamp = -1;
@@ -270,6 +271,12 @@ lcm_logprov_handle (lcm_logprov_t * lr)
         return -1;
     }
 
+    int64_t prev_log_time;
+    if (lr->event)
+        prev_log_time = lr->event->timestamp;
+    else
+        prev_log_time = 0;
+
     int have_msg_to_dispatch = 0;
     while (!have_msg_to_dispatch) {
         if (load_next_event(lr) < 0 || lr->event == NULL ) {
@@ -285,10 +292,8 @@ lcm_logprov_handle (lcm_logprov_t * lr)
     if (lr->next_clock_time < 0)
         lr->next_clock_time = now;
 
-    int64_t prev_log_time = lr->event->timestamp;
-
     /* Compute the wall time for the next event */
-    if (lr->speed > 0)
+    if (lr->speed > 0 && prev_log_time > 0)
         lr->next_clock_time +=
             (lr->event->timestamp - prev_log_time) / lr->speed;
     else
