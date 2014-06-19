@@ -260,7 +260,7 @@ static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(1, "cp.v = (void*)__%s_get_hash;", tn_);
     emit(1, "(void) cp;");
     emit(0, "");
-    emit(1, "int64_t hash = 0x%016"PRIx64"LL", ls->hash);
+    emit(1, "int64_t hash = (int64_t)0x%016"PRIx64"LL", ls->hash);
 
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
