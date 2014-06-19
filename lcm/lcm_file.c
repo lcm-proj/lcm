@@ -127,36 +127,37 @@ timer_thread (void * user)
 }
 
 static void
-new_argument (gpointer key, gpointer value, gpointer user)
+new_argument (gpointer keyp, gpointer valuep, gpointer user)
 {
+    const char* key = (const char*)keyp;
+    const char* value = (const char*)valuep;
     lcm_logprov_t * lr = (lcm_logprov_t *) user;
-    if (!strcmp ((char *) key, "speed")) {
+    if (!strcmp (key, "speed")) {
         char *endptr = NULL;
-        lr->speed = strtod ((char *) value, &endptr);
+        lr->speed = strtod (value, &endptr);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for speed\n");
-    } else if (!strcmp ((char *) key, "start_timestamp")) {
+    } else if (!strcmp (key, "start_timestamp")) {
         char *endptr = NULL;
-        lr->start_timestamp = strtoll ((char *) value, &endptr, 10);
+        lr->start_timestamp = strtoll (value, &endptr, 10);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for start_timestamp\n");
-    } else if (!strcmp ((char *) key, "mode")) {
-        const char *mode = (char *) value;
-        if(!strcmp(mode, "r")) {
+    } else if (!strcmp (key, "mode")) {
+        if(!strcmp(value, "r")) {
             lr->file_mode = LCM_FILE_READ_ONLY;
         }
-        else if(!strcmp(mode, "w")) {
+        else if(!strcmp(value, "w")) {
             lr->file_mode = LCM_FILE_WRITE_ONLY;
         }
-        else if(!strcmp(mode, "rw")) {
+        else if(!strcmp(value, "rw")) {
             lr->file_mode = LCM_FILE_READ_WRITE;
         } else {
-            fprintf(stderr, "Warning: Invalid %s value for mode."
+            fprintf(stderr, "Warning: Invalid mode \"%s\""
                     "Defaulting to READ_ONLY\n", value);
+            lr->file_mode = LCM_FILE_READ_ONLY;
         }
     } else {
-        fprintf(stderr, "Warning: unrecognized option: [%s]\n",
-                (const char*)key);
+        fprintf(stderr, "Warning: unrecognized option: [%s]\n", key);
     }
 }
 
@@ -165,7 +166,7 @@ load_next_event (lcm_logprov_t * lr)
 {
     if (lr->event)
         lcm_eventlog_free_event (lr->event);
-        
+
     // hold lock to read from the underlying eventlog
     g_static_mutex_lock(&lr->log_lock);
     lr->event = lcm_eventlog_read_next_event (lr->log);

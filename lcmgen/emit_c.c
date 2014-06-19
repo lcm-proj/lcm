@@ -604,8 +604,6 @@ static inline char *str_toupper(char *s)
 
 static void emit_c_get_field(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    char buffer[256];
-
     char *tn = ls->structname->lctypename;
     char *tn_ = dots_to_underscores(tn);
 
