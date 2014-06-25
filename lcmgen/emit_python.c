@@ -548,6 +548,13 @@ emit_member_initializer(const lcmgen_t* lcm, FILE *f, lcm_member_t* lm,
         fprintf(f, "%s", nil_initializer_string(lm->type));
         return;
     }
+    if (dim_num == lm->dimensions->len - 1 &&
+        // Arrays of bytes get treated as strings, so that they can be more
+        // efficiently packed and unpacked.
+        !strcmp(lm->type->lctypename, "byte")) {
+      fprintf(f, "\"\"");
+      return;
+    }
     lcm_dimension_t *dim = 
         (lcm_dimension_t *) g_ptr_array_index (lm->dimensions, dim_num);
     if(dim->mode == LCM_VAR) {
