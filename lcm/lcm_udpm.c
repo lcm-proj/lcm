@@ -555,6 +555,13 @@ udp_read_packet (lcm_udpm_t *lcm)
 static void *
 recv_thread (void * user)
 {
+#ifdef G_OS_UNIX
+    // Mask out all signals on this thread.
+    sigset_t mask;
+    sigfillset(&mask);
+    pthread_sigmask(SIG_SETMASK, &mask, NULL);
+#endif
+
     lcm_udpm_t * lcm = (lcm_udpm_t *) user;
 
     while (1) {

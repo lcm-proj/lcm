@@ -669,6 +669,13 @@ static void dispatch_complete_message(lcm_mpudpm_t * lcm, lcm_buf_t * lcmb,
  * LCM packets from the network and queues them locally. */
 static void *
 recv_thread(void * user) {
+#ifdef G_OS_UNIX
+    // Mask out all signals on this thread.
+    sigset_t mask;
+    sigfillset(&mask);
+    pthread_sigmask(SIG_SETMASK, &mask, NULL);
+#endif
+
     lcm_mpudpm_t * lcm = (lcm_mpudpm_t *) user;
 
     lcm_buf_t *lcmb = NULL;
