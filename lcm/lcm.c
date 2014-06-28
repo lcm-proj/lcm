@@ -45,6 +45,7 @@ extern void lcm_udpm_provider_init (GPtrArray * providers);
 extern void lcm_logprov_provider_init (GPtrArray * providers);
 extern void lcm_tcpq_provider_init (GPtrArray * providers);
 extern void lcm_mpudpm_provider_init(GPtrArray * providers);
+extern void lcm_memq_provider_init(GPtrArray * providers);
 
 lcm_t * 
 lcm_create (const char *url)
@@ -72,6 +73,7 @@ lcm_create (const char *url)
     lcm_logprov_provider_init (providers);
     lcm_tcpq_provider_init (providers);
     lcm_mpudpm_provider_init (providers);
+    lcm_memq_provider_init (providers);
     if (providers->len == 0) {
         fprintf (stderr, "Error: no LCM providers found\n");
         goto fail;
