@@ -32,6 +32,7 @@ dist_noinst_JAVA = \
     lcm/lcm/LCM.java \
     lcm/lcm/LCMSubscriber.java \
     lcm/lcm/URLParser.java \
+    lcm/lcm/MemqProvider.java \
     lcm/lcm/Provider.java \
     lcm/lcm/TCPProvider.java \
     lcm/lcm/UDPMulticastProvider.java \

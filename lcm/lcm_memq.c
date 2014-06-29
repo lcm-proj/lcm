@@ -101,7 +101,8 @@ lcm_memq_handle(lcm_memq_t* self)
     char ch;
     int status = lcm_internal_pipe_read(self->notify_pipe[0], &ch, 1);
     if (status == 0) {
-        fprintf(stderr, "Error: lcm_memq_handle read 0 bytes from notify_pipe\n");
+        fprintf(stderr,
+            "Error: lcm_memq_handle read 0 bytes from notify_pipe\n");
         return -1;
     }
 
@@ -130,6 +131,12 @@ static int
 lcm_memq_publish (lcm_memq_t *self, const char *channel, const void *data,
         unsigned int datalen)
 {
+    if(!lcm_has_handlers(self->lcm, channel)) {
+      dbg(DBG_LCM,
+          "Publishing [%s] size [%d] - dropping (no subscribers)\n",
+          channel, datalen);
+      return 0;
+    }
     dbg(DBG_LCM, "Publishing to [%s] message size [%d]\n", channel, datalen);
     memq_msg_t* msg =
       memq_msg_new(self->lcm, channel, data, datalen, timestamp_now());

@@ -29,14 +29,14 @@ TEST(LCM_C, MemqSimple) {
     std::vector<uint8_t> buf(buf_size);
     std::vector<uint8_t> received_buf;
 
+    lcm_subscribe(lcm, "channel", MemqSimpleHandler, &received_buf);
+
     for (int iter = 0; iter < 10; ++iter) {
         for (int byte_index = 0; byte_index < buf_size; ++byte_index) {
             buf[byte_index] = rand() % 255;
         }
 
         lcm_publish(lcm, "channel", &buf[0], buf_size);
-
-        lcm_subscribe(lcm, "channel", MemqSimpleHandler, &received_buf);
 
         lcm_handle(lcm);
 
@@ -58,6 +58,10 @@ void MemqBufferedHandler(const lcm_recv_buf_t* rbuf, const char* channel,
 TEST(LCM_C, MemqBuffered) {
     // Publish many messages so that they get buffered up, then read them all.
     lcm_t* lcm = lcm_create("memq://");
+    std::vector<std::vector<uint8_t> > received_buffers;
+
+    lcm_subscribe(lcm, "channel", MemqBufferedHandler, &received_buffers);
+
     int num_bufs = 100;
     int buf_size = 100;
     std::vector<std::vector<uint8_t> > buffers(num_bufs);
@@ -69,10 +73,6 @@ TEST(LCM_C, MemqBuffered) {
         }
         lcm_publish(lcm, "channel", &buf[0], buf.size());
     }
-
-    std::vector<std::vector<uint8_t> > received_buffers;
-
-    lcm_subscribe(lcm, "channel", MemqBufferedHandler, &received_buffers);
 
     for (int buf_num = 0; buf_num < num_bufs; ++buf_num) {
         lcm_handle(lcm);
