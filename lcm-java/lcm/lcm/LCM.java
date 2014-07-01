@@ -62,6 +62,8 @@ public class LCM
                 providers.add(new TCPProvider(this, up));
             else if (protocol.equals("file"))
                 providers.add(new LogFileProvider(this, up));
+            else if (protocol.equals("memq"))
+                providers.add(new MemqProvider(this, up));
             else
                 System.err.println("LCM: Unknown URL protocol: "+protocol);
         }

@@ -165,6 +165,23 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
 
  @endverbatim
  *
+ * @verbatim
+ memq://
+    Memory queue test provider
+
+    This provider is primarily useful for testing, especially unit testing code
+    that uses LCM.  It provides a pub/sub interface that is private to the LCM
+    instance, and does _not_ provide any interprocess communication, or even
+    inter-instance communication.  Use this provider to implement unit tests
+    that require deterministic and predictable behavior that is independent of
+    a system's network configuration.
+
+    example:
+        "memq://"
+            This is the only valid way to instantiate this provider.
+
+ @endverbatim
+ *
  * @return a newly allocated lcm_t instance, or NULL on failure.  Free with
  * lcm_destroy() when no longer needed.
  */

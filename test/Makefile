@@ -1,7 +1,7 @@
-all:
-	$(MAKE) test
+all: test
 
 .buildstamp:
+	$(MAKE) -C gtest
 	$(MAKE) -C c
 	$(MAKE) -C python
 	$(MAKE) -C cpp
@@ -12,6 +12,7 @@ test: .buildstamp
 	./run_tests.py
 
 clean:
+	$(MAKE) -C c gtest
 	$(MAKE) -C c clean
 	$(MAKE) -C python clean
 	$(MAKE) -C cpp clean
