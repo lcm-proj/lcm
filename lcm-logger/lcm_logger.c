@@ -20,8 +20,6 @@
 #ifdef WIN32
 #define __STDC_FORMAT_MACROS            // Enable integer types
 #include <lcm/windows/WinPorting.h>
-#else
-#include <unistd.h>
 #endif
 
 #include <inttypes.h>

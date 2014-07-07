@@ -127,37 +127,36 @@ timer_thread (void * user)
 }
 
 static void
-new_argument (gpointer keyp, gpointer valuep, gpointer user)
+new_argument (gpointer key, gpointer value, gpointer user)
 {
-    const char* key = (const char*)keyp;
-    const char* value = (const char*)valuep;
     lcm_logprov_t * lr = (lcm_logprov_t *) user;
-    if (!strcmp (key, "speed")) {
+    if (!strcmp ((char *) key, "speed")) {
         char *endptr = NULL;
-        lr->speed = strtod (value, &endptr);
+        lr->speed = strtod ((char *) value, &endptr);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for speed\n");
-    } else if (!strcmp (key, "start_timestamp")) {
+    } else if (!strcmp ((char *) key, "start_timestamp")) {
         char *endptr = NULL;
-        lr->start_timestamp = strtoll (value, &endptr, 10);
+        lr->start_timestamp = strtoll ((char *) value, &endptr, 10);
         if (endptr == value)
             fprintf (stderr, "Warning: Invalid value for start_timestamp\n");
-    } else if (!strcmp (key, "mode")) {
-        if(!strcmp(value, "r")) {
+    } else if (!strcmp ((char *) key, "mode")) {
+        const char *mode = (char *) value;
+        if(!strcmp(mode, "r")) {
             lr->file_mode = LCM_FILE_READ_ONLY;
         }
-        else if(!strcmp(value, "w")) {
+        else if(!strcmp(mode, "w")) {
             lr->file_mode = LCM_FILE_WRITE_ONLY;
         }
-        else if(!strcmp(value, "rw")) {
+        else if(!strcmp(mode, "rw")) {
             lr->file_mode = LCM_FILE_READ_WRITE;
         } else {
-            fprintf(stderr, "Warning: Invalid mode \"%s\""
+            fprintf(stderr, "Warning: Invalid %s value for mode."
                     "Defaulting to READ_ONLY\n", value);
-            lr->file_mode = LCM_FILE_READ_ONLY;
         }
     } else {
-        fprintf(stderr, "Warning: unrecognized option: [%s]\n", key);
+        fprintf(stderr, "Warning: unrecognized option: [%s]\n",
+                (const char*)key);
     }
 }
 
@@ -166,7 +165,7 @@ load_next_event (lcm_logprov_t * lr)
 {
     if (lr->event)
         lcm_eventlog_free_event (lr->event);
-
+        
     // hold lock to read from the underlying eventlog
     g_static_mutex_lock(&lr->log_lock);
     lr->event = lcm_eventlog_read_next_event (lr->log);
@@ -188,7 +187,6 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
     lcm_logprov_t * lr = (lcm_logprov_t *) calloc (1, sizeof (lcm_logprov_t));
     lr->lcm = parent;
     lr->filename = strdup(target);
-    lr->event = NULL;
     lr->speed = 1;
     lr->next_clock_time = -1;
     lr->start_timestamp = -1;
@@ -272,12 +270,6 @@ lcm_logprov_handle (lcm_logprov_t * lr)
         return -1;
     }
 
-    int64_t prev_log_time;
-    if (lr->event)
-        prev_log_time = lr->event->timestamp;
-    else
-        prev_log_time = 0;
-
     int have_msg_to_dispatch = 0;
     while (!have_msg_to_dispatch) {
         if (load_next_event(lr) < 0 || lr->event == NULL ) {
@@ -293,8 +285,10 @@ lcm_logprov_handle (lcm_logprov_t * lr)
     if (lr->next_clock_time < 0)
         lr->next_clock_time = now;
 
+    int64_t prev_log_time = lr->event->timestamp;
+
     /* Compute the wall time for the next event */
-    if (lr->speed > 0 && prev_log_time > 0)
+    if (lr->speed > 0)
         lr->next_clock_time +=
             (lr->event->timestamp - prev_log_time) / lr->speed;
     else
