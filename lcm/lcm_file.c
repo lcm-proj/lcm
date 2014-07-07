@@ -129,7 +129,7 @@ new_argument (gpointer key, gpointer value, gpointer user)
         const char *mode = (char *) value;
         if(!strcmp(mode, "w")) {
             lr->writer=1;
-        } else {
+        } else if (strcmp(mode, "r")) {
             fprintf(stderr, "Warning: Invalid value for mode\n");
         }
     } else {
@@ -303,8 +303,8 @@ static int
 lcm_logprov_publish (lcm_logprov_t *lcm, const char *channel, const void *data,
         unsigned int datalen)
 {
-    if(!lcm->writer){
-        fprintf (stderr, "LCM error: lcm file provider is not in write mode\n");
+    if(!lcm->writer) {
+        dbg(DBG_ERROR, "Called publish(), but lcm file provider is not in write mode\n");
         return -1;
     }
     int channellen = strlen(channel);

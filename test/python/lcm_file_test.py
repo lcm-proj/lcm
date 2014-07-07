@@ -17,7 +17,7 @@ class TestLcmFile(unittest.TestCase):
         self.msg_type = self.tester.get_message_type()
         self.num_iterations = 100
         self.test_channel = "CHAN"
-        
+
     def tearDown(self):
         os.remove(self.log_filename)
 
@@ -31,36 +31,23 @@ class TestLcmFile(unittest.TestCase):
 
     def test_read_or_write_only(self):
         lc = lcm.LCM("file://%s?mode=w" % self.log_filename)
-        subs = lc.subscribe(self.test_channel, self.handler)
         for iteration in range(self.num_iterations):
             self.iteration = iteration
             msg = self.tester.make_message(iteration)
             lc.publish(self.test_channel, msg.encode())
-            self.assertRaises(IOError, lc.handle)
-        lc.unsubscribe(subs)        
-        
+
+        print("opening read mode")
         lc = lcm.LCM("file://%s?mode=r" % self.log_filename)
         subs = lc.subscribe(self.test_channel, self.handler)
         for iteration in range(self.num_iterations):
             self.iteration = iteration
             msg = self.tester.make_message(iteration)
-            lc.handle() # must not raise an exception
-        self.assertRaises(IOError, lc.handle)
-        with self.assertRaises(IOError):
-                lc.publish(self.test_channel, msg.encode())
-        lc.unsubscribe(subs)
-
-    def test_read_write(self):
-        lc = lcm.LCM("file://%s?mode=rw" % self.log_filename)
-        subs = lc.subscribe(self.test_channel, self.handler)
-        for iteration in range(self.num_iterations):
-            self.iteration = iteration
-            msg = self.tester.make_message(iteration)
-            lc.publish(self.test_channel, msg.encode())
             lc.handle()
-        self.assertRaises(IOError, lc.handle)
+        with self.assertRaises(IOError):
+            lc.handle()
+        with self.assertRaises(IOError):
+            lc.publish(self.test_channel, msg.encode())
         lc.unsubscribe(subs)
-        
 
 
 def main():

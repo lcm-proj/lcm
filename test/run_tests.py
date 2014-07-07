@@ -67,5 +67,4 @@ dotest("cpp", "c")
 
 # Call the lcm_file_test independantly
 print("Running the lcm file test.")
-print('NOTE: the message about "lcm file provider is not in write mode" is expected\n')
 subprocess.check_call("python/lcm_file_test.py", shell=True)
