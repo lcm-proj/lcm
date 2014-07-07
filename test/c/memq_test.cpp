@@ -82,3 +82,32 @@ TEST(LCM_C, MemqBuffered) {
 
     lcm_destroy(lcm);
 }
+
+void MemqTimeoutHandler(const lcm_recv_buf_t* rbuf, const char* channel,
+        void* user_data) {
+    int* msg_handled = (int*)user_data;
+    *msg_handled = 1;
+}
+
+TEST(LCM_C, MemqTimeout) {
+  // Test various usages of lcm_handle_timeout() using the memq provider
+  lcm_t* lcm = lcm_create("memq://");
+
+  // No messages available.  Call should timeout immediately.
+  EXPECT_EQ(0, lcm_handle_timeout(lcm, 0));
+
+  // No messages available.  Call should timeout in a few ms.
+  EXPECT_EQ(0, lcm_handle_timeout(lcm, 10));
+
+  // Invalid timeout specification should result in an error.
+  EXPECT_GT(0, lcm_handle_timeout(lcm, -1));
+
+  // Subscribe to and publish on a channel.  Expect that the message gets
+  // handled with an ample timeout.
+  int msg_handled = 0;
+  lcm_subscribe(lcm, "channel", MemqTimeoutHandler, &msg_handled);
+  lcm_publish(lcm, "channel", "", 0);
+  EXPECT_LT(0, lcm_handle_timeout(lcm, 10000));
+
+  EXPECT_EQ(1, msg_handled);
+}

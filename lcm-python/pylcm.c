@@ -296,8 +296,48 @@ PyDoc_STRVAR (pylcm_handle_doc,
 waits for and dispatches the next incoming message\n\
 ");
 
+static PyObject *
+pylcm_handle_timeout (PyLCMObject *lcm_obj, PyObject *arg)
+{
+    int timeout_millis = PyInt_AsLong(arg);
+    if (timeout_millis == -1 && PyErr_Occurred())
+        return NULL;
+    if (timeout_millis < 0) {
+        PyErr_SetString (PyExc_ValueError, "invalid timeout");
+        return NULL;
+    }
+
+    dbg ("%s %p\n", __FUNCTION__, lcm_obj);
+    lcm_obj->exception_raised = 0;
+
+    pylcm_begin_allow_threads(lcm_obj);
+    dbg("calling lcm_handle_timeout(%p)\n", lcm_obj->lcm);
+    int status = lcm_handle_timeout(lcm_obj->lcm, timeout_millis);
+    // pylcm_end_allow_threads() may have already been called in pylcm_msg_handler()
+    pylcm_end_allow_threads(lcm_obj);
+
+    if (lcm_obj->exception_raised) { return NULL; }
+    if (status < 0) {
+        PyErr_SetString (PyExc_IOError, "lcm_handle_timeout() returned -1");
+        return NULL;
+    }
+    return PyInt_FromLong(status);
+}
+PyDoc_STRVAR (pylcm_handle_timeout_doc,
+"handle_timeout(timeout_millis) -> int\n\
+waits for and dispatches the next incoming message, with a timeout.\n\
+\n\
+Raises ValueError if @p timeout_millis is invalid, or IOError if another\n\
+error occurs.\n\
+\n\
+@param timeout_millis: the amount of time to wait, in milliseconds.\n\
+@return 0 if the function timed out, >1 if a message was handled.\n\
+");
+
 static PyMethodDef pylcm_methods[] = {
     { "handle", (PyCFunction)pylcm_handle, METH_NOARGS, pylcm_handle_doc },
+    { "handle_timeout", (PyCFunction)pylcm_handle_timeout, METH_O,
+      pylcm_handle_timeout_doc },
     { "subscribe", (PyCFunction)pylcm_subscribe, METH_VARARGS, 
         pylcm_subscribe_doc },
     { "unsubscribe", (PyCFunction)pylcm_unsubscribe, METH_VARARGS,

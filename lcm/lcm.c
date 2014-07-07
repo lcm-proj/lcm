@@ -11,6 +11,14 @@
 #include "lcm_internal.h"
 #include "dbg.h"
 
+#ifdef WIN32
+#include "windows/WinPorting.h"
+#include <winsock2.h>
+#else
+#include <sys/select.h>
+typedef int SOCKET;
+#endif
+
 #define LCM_DEFAULT_URL "udpm://239.255.76.67:7667?ttl=0"
 
 struct _lcm_t {
@@ -211,6 +219,29 @@ lcm_handle (lcm_t * lcm)
         return ret;
     } else
         return -1;
+}
+
+int
+lcm_handle_timeout (lcm_t *lcm, int timeout_milis)
+{
+  fd_set fds;
+  FD_ZERO(&fds);
+  SOCKET lcm_fd = lcm_get_fileno(lcm);
+  FD_SET(lcm_fd, &fds);
+
+  struct timeval timeout;
+  timeout.tv_sec = timeout_milis / 1000;
+  timeout.tv_usec = (timeout_milis % 1000) * 1000;
+
+  int select_result = select(lcm_fd + 1, &fds, NULL, NULL, &timeout);
+  if (select_result > 0) {
+      int lcm_handle_result = lcm_handle(lcm);
+      return lcm_handle_result == 0 ? 1 : lcm_handle_result;
+  } else if (select_result == 0) {
+      return 0;
+  } else {
+      return select_result;
+  }
 }
 
 int
