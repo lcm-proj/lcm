@@ -304,7 +304,7 @@ lcm_logprov_publish (lcm_logprov_t *lcm, const char *channel, const void *data,
         unsigned int datalen)
 {
     if(!lcm->writer) {
-        dbg(DBG_ERROR, "Called publish(), but lcm file provider is not in write mode\n");
+        dbg(DBG_LCM, "Called publish(), but lcm file provider is not in write mode\n");
         return -1;
     }
     int channellen = strlen(channel);

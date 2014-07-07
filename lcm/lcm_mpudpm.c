@@ -875,6 +875,9 @@ recv_thread(void * user) {
 int
 lcm_mpudpm_get_fileno (lcm_mpudpm_t *lcm)
 {
+    if (setup_recv_parts(lcm) < 0) {
+        return -1;
+    }
     return lcm->notify_pipe[0];
 }
 
