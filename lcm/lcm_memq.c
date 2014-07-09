@@ -54,7 +54,7 @@ lcm_memq_destroy (lcm_memq_t *self)
     if(self->notify_pipe[1] >= 0) lcm_internal_pipe_close(self->notify_pipe[1]);
 
     while (!g_queue_is_empty(self->queue)) {
-        memq_msg_t* msg = g_queue_pop_head(self->queue);
+        memq_msg_t* msg = (memq_msg_t*) g_queue_pop_head(self->queue);
         memq_msg_destroy(msg);
     }
     g_queue_free(self->queue);
