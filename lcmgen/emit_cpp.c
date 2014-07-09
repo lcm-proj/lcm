@@ -703,7 +703,7 @@ int emit_cpp(lcmgen_t *lcmgen)
 
             fclose(f);
         }
-        free(header_name);
+        g_free(header_name);
         free(tn_);
     }
 

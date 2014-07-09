@@ -88,7 +88,7 @@ int tokenize_next_char(tokenize_t *t)
         // reminder: fgets will store the newline in the buffer.
         if (fgets(t->buffer, MAX_LINE_LEN, t->f)==NULL)
             return EOF;
-        t->buffer_len = strlen(t->buffer);
+        t->buffer_len = (int) strlen(t->buffer);
         t->buffer_line++;
         t->buffer_column = 0;
     }
@@ -252,7 +252,7 @@ restart:
             res = tokenize_next_internal(t);
             if (res == EOF)
                 return -10;
-            int len = strlen(t->token);
+            int len = (int) strlen(t->token);
             if (len >= 2 && !strncmp(&t->token[len-2],"*/", 2))
                 break;
         }
