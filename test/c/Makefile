@@ -14,7 +14,8 @@ types_src:=$(types1:%=lcmtest_%.c) $(types1:%=lcmtest_%.h) $(types2:%=lcmtest2_%
 
 all: server \
 	client \
-	memq_test
+	memq_test \
+	eventlog_test
 
 server: server.o common.o $(types_obj)
 	echo $(types_obj)
@@ -31,6 +32,12 @@ client.o: client.c $(types_src)
 
 server.o: server.c $(types_src)
 	$(CC) $(CFLAGS) -c $<
+
+eventlog_test: eventlog_test.o
+	$(CXX) -o $@ $^ $(LDFLAGS) $(GTEST_LIBS)
+
+eventlog_test.o: eventlog_test.cpp
+	$(CXX) `pkg-config --cflags lcm` -g -I../gtest/include -c $<
 
 memq_test: memq_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(GTEST_LIBS)

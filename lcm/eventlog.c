@@ -63,20 +63,21 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
         magic = (magic << 8) | r;
     } while( magic != MAGIC );
 
-    fread64(l->f, &le->eventnum);
-    fread64(l->f, &le->timestamp);
-    fread32(l->f, &le->channellen);
-    fread32(l->f, &le->datalen);
+    if (0 != fread64(l->f, &le->eventnum) ||
+        0 != fread64(l->f, &le->timestamp) ||
+        0 != fread32(l->f, &le->channellen) ||
+        0 != fread32(l->f, &le->datalen)) {
+        return NULL;
+    }
 
-    assert (le->channellen < 1000);
-
-    if (l->eventcount != le->eventnum) {
-        // these warnings will spew unnecessarily for log files that have been
-        // filtered through lcm-logplayer-gui since it preserves event numbers
-//        printf ("Mismatch: eventcount %"PRId64" eventnum %"PRId64"\n", 
-//                l->eventcount, le->eventnum);
-//        printf ("file offset %"PRId64"\n", ftello (l->f));
-        l->eventcount = le->eventnum;
+    // Sanity check the channel length and data length
+    if (le->channellen < 0 || le->channellen >= 1000) {
+        fprintf(stderr, "Log event has invalid channel length: %d\n", le->channellen);
+        return NULL;
+    }
+    if (le->datalen < 0) {
+        fprintf(stderr, "Log event has invalid data length: %d\n", le->datalen);
+        return NULL;
     }
 
     le->channel = (char *) calloc(1, le->channellen+1);
@@ -86,8 +87,16 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
     le->data = calloc(1, le->datalen+1);
     if (fread(le->data, 1, le->datalen, l->f) != (size_t) le->datalen)
         goto eof;
-    
-    l->eventcount++;
+
+    // Check that there's a valid event or the EOF after this event.
+    int32_t next_magic;
+    if (0 == fread32(l->f, &next_magic)) {
+        if (next_magic != MAGIC) {
+            fprintf(stderr, "Invalid header after log data\n");
+            return NULL;
+        }
+        fseeko (l->f, -4, SEEK_CUR);
+    }
 
     return le;
 
