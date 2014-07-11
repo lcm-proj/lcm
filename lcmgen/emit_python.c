@@ -105,21 +105,6 @@ is_same_type (const lcm_typename_t *tn1, const lcm_typename_t *tn2) {
 //    return ! strcmp (tn1->package, tn2->package);
 //}
 
-static const char *
-nil_initializer_string(const lcm_typename_t *type)
-{
-    if (!strcmp(type->lctypename, "byte")) return "0";
-    if (!strcmp(type->lctypename, "boolean")) return "False";
-    if (!strcmp(type->lctypename, "int8_t")) return "0";
-    if (!strcmp(type->lctypename, "int16_t")) return "0";
-    if (!strcmp(type->lctypename, "int32_t")) return "0";
-    if (!strcmp(type->lctypename, "int64_t")) return "0";
-    if (!strcmp(type->lctypename, "float")) return "0.0";
-    if (!strcmp(type->lctypename, "double")) return "0.0";
-    if (!strcmp(type->lctypename, "string")) return "\"\"";
-    else return "None";
-}
-
 static char
 _struct_format (lcm_member_t *lm) 
 {
@@ -545,7 +530,23 @@ emit_member_initializer(const lcmgen_t* lcm, FILE *f, lcm_member_t* lm,
         int dim_num)
 {
     if(dim_num == lm->dimensions->len) {
-        fprintf(f, "%s", nil_initializer_string(lm->type));
+        const char* tn = lm->type->lctypename;
+        const char* initializer = NULL;
+        if (!strcmp(tn, "byte")) initializer = "0";
+        else if (!strcmp(tn, "boolean")) initializer = "False";
+        else if (!strcmp(tn, "int8_t")) initializer = "0";
+        else if (!strcmp(tn, "int16_t")) initializer = "0";
+        else if (!strcmp(tn, "int32_t")) initializer = "0";
+        else if (!strcmp(tn, "int64_t")) initializer = "0";
+        else if (!strcmp(tn, "float")) initializer = "0.0";
+        else if (!strcmp(tn, "double")) initializer = "0.0";
+        else if (!strcmp(tn, "string")) initializer = "\"\"";
+
+        if (initializer != NULL) {
+            fprintf(f, "%s", initializer);
+        } else {
+            fprintf(f, "%s()", tn);
+        }
         return;
     }
     if (dim_num == lm->dimensions->len - 1 &&
