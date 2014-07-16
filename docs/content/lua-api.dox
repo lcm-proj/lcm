@@ -18,7 +18,8 @@ The LCM userdata manages an internal \ref LcmC_lcm_t "lcm_t" and any number of s
 \li \ref lcm_userdata_subscribe "subscribe"
 \li \ref lcm_userdata_unsubscribe "unsubscribe"
 \li \ref lcm_userdata_handle "handle"
-\li \ref lcm_userdata_timedhandle "timedhandle"
+\li \ref lcm_userdata_handle_timeout "handle_timeout"
+\li \ref lcm_userdata_timedhandle "timedhandle (Deprecated)"
 
 <hr>
 
@@ -175,7 +176,38 @@ lc:handle()
 
 <hr>
 
-\subsection lcm_userdata_timedhandle timedhandle
+\subsection lcm_userdata_handle_timeout handle_timeout
+
+\em Parameters
+
+\li \c time The time to block, in milliseconds.
+
+<em>Return Values</em>
+
+\li A boolean: \c true if a message was received and handled, \c false otherwise.
+
+\em Description
+
+This method is like the normal \ref lcm_userdata_handle "handle" except it only blocks for a specified amount of time.
+
+<em>Example Code</em>
+
+\verbatim
+local lcm = require('lcm')
+
+local lc = lcm.lcm.new()
+
+local ok = lc:handle_timeout(500)
+if not ok then
+  print('timed out!')
+ end
+\endverbatim
+
+<hr>
+
+\subsection lcm_userdata_timedhandle timedhandle (Deprecated)
+
+This function is deprecated! Please use \ref lcm_userdata_handle_timeout "handle_timeout" instead!
 
 \em Parameters
 

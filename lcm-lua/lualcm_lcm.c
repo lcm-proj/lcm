@@ -51,7 +51,8 @@ static int impl_lcm_subscribe(lua_State *);
 static int impl_lcm_unsubscribe(lua_State *);
 static int impl_lcm_publish(lua_State *);
 static int impl_lcm_handle(lua_State *);
-static int impl_lcm_timedhandle(lua_State *);
+static int impl_lcm_handle_timeout(lua_State *);
+static int impl_lcm_timedhandle(lua_State *); /* depricated! */
 
 /* metamethods */
 static int impl_lcm_tostring(lua_State *);
@@ -111,6 +112,7 @@ void ll_lcm_makemetatable(lua_State * L){
 		{"unsubscribe", impl_lcm_unsubscribe},
 		{"publish", impl_lcm_publish},
 		{"handle", impl_lcm_handle},
+		{"handle_timeout", impl_lcm_handle_timeout},
 		{"timedhandle", impl_lcm_timedhandle},
 		{NULL, NULL},
 	};
@@ -347,6 +349,72 @@ static int impl_lcm_handle(lua_State * L){
 }
 
 /**
+ * Handles an incoming message. Only blocks for the given amount of time. Calls
+ * lcm_handle_timeout. Just like lcm_handle, handler functions are invoked one
+ * at a time, in the order they were subscribed, during the execution of this
+ * function.
+ *
+ * Notice that the handle method prepares the Lua stack for the handler
+ * functions. When the handler functions execute, the Lua stack contains only
+ * the LCM userdata.
+ *
+ * Recursive calls to handle are not allowed, therefore handlers must not
+ * call handle.
+ *
+ * @see lcm_handle_timeout
+ *
+ * @pre The Lua arguments on the stack:
+ *     A LCM userdata (self), and a number of milliseconds to block.
+ *
+ * @post The Lua return values on the stack:
+ *     A boolean: true if a message was handled, false otherwise.
+ *
+ * @param L The Lua state.
+ * @return The number of return values on the Lua stack.
+ *
+ * @throws Lua error if the message cannot be handled.
+ */
+static int impl_lcm_handle_timeout(lua_State * L){
+
+	/* we expect 2 arguments */
+	lua_settop(L, 2);
+
+	/* get the lcm userdata */
+	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
+
+	/* check for a timeout in milliseconds */
+	lua_Integer timeout_millisec = luaL_checkinteger(L, 2);
+
+	/* update the lua state */
+	lcmu->handler_lua_State = L;
+
+	/* call lcm handle_timeout */
+	int status = lcm_handle_timeout(lcmu->lcm, timeout_millisec);
+
+	if(status == 1){
+
+		/* ok, return true */
+		lua_pushboolean(L, 1);
+
+	}else if(status == 0){
+
+		/* timeout, return false */
+		lua_pushboolean(L, 0);
+
+	}else{
+
+		/* an error occured */
+		lua_pushstring(L, "error lcm handle");
+		lua_error(L);
+	}
+
+	return 1;
+}
+
+/**
+ * This function is deprecated! It was written before lcm_handle_timeout
+ * existed, so now you should use that instead!
+ *
  * Handles an incoming message. Only blocks for the given amount of time. Calls
  * lcm_handle. Just like lcm_handle, handler functions are invoked one at a
  * time, in the order they were subscribed, during the execution of this
