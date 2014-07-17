@@ -16,17 +16,21 @@
 10. Fix any errors that appear in step 10, and repeat as necessary.
 11. Take the resulting tarball, extract it, build it, install it, make sure
     the basic executables run.
-12. Upload the tarball to google code.
+12. Upload the tarball to the Google Drive folder.
 13. Make sure the outstanding changes are commited to SVN.
 14. Update the web site
 
-15. Build docs
-      cd docs
-      doxygen
-      copy built docs to www directory
+15. Build main docs
+  $ cd docs
+  $ doxygen
+  $ copy built docs to www/reference/lcm in the Google Code SVN dir.
 16. Update any mime types if necessary:
       find . -name "*.html" -exec svn propset svn:mime-type text/html {} \;
       find . -name "*.css" -exec svn propset svn:mime-type text/css {} \;
       find . -name "*.js" -exec svn propset svn:mime-type text/javascript {} \;
       find . -name "*.png" -exec svn propset svn:mime-type image/png {} \;
+17. Build Python docs
+  $ cd lcm-python
+  $ epydoc --config epydoc.cfg
+  $ copy built docs to www/reference/lcm-python in the Google Code SVN dir.
 17. Commit the docs
