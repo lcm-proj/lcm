@@ -1,7 +1,57 @@
+Jul 16, 2014
+============
+
+ Release 1.1.0
+
+ General:
+ - Add "memq://" provider to support unit testing code that uses LCM.
+   Supported in C, C++, Python, lua, Java.
+
+ C:
+ - lcm_tcpq.c add missing #include <signal.h>
+ - Add introspection to generated C types
+ - Increase fragmentation threshold.
+ - Add lcm_handle_timeout() function
+
+ C++:
+ - Fix emit_cpp for messages that contain a single non-primitive type
+ - Declare const fields using enums instead of static const int
+ - Some const correctness
+ - Add lcm::LCM::handleTimeout() function
+
+ Python:
+ - Add Python3 compatibility
+ - Add lcm.LCM.handle_timeout() function
+ - Sub-types are initialized to valid instances instead of None
+
+ lua:
+ - Add handle_timeout() function, deprecate timedhandle()
+
+ lcm-logger:
+ - Remove --auto-split-hours option
+ - Rename --auto-split-mb option to --split-mb
+ - Add --rotate option for rotating log files
+ - Add --quiet option
+
+ lcm-gen:
+ - Add --package-prefix option
+ - Detect duplicate types in input.
+ - C emit_hash_recursive function explicit cast result to int64_t (closes #81)
+ - Detect corrupt log files.
+
+ lcm-spy:
+ - Better drawing of long type names
+
+ lcm-logplayer:
+ - Actually accept -l/--lcm-url optin
+
+ misc:
+ - Add more unit tests
+
 Jun 8, 2013
 ===========
 
- Release 1.0
+ Release 1.0.0
 
  This release adds experimental support for Lua (contributed by Tim Perkins)
 

@@ -315,7 +315,7 @@ int lcm_handle (lcm_t *lcm);
  *        milliseconds.  If 0, then dispatches any available messages and then
  *        returns immediately.  Values less than 0 are not allowed.
  *
- * @return >1 if a message was handled, 0 if the function timed out, and <0 if
+ * @return >0 if a message was handled, 0 if the function timed out, and <0 if
  * an error occured.
  */
 LCM_API_FUNCTION

@@ -1,3 +1,394 @@
+2014-07-16  tprk77@gmail.com
+
+	* [r803] docs/content/lua-api.dox, docs/content/tutorial-lua.dox,
+	  lcm-lua/lualcm_lcm.c: Added handle_timeout to the Lua binding.
+	  Deprecated timedhandle. Also updated the doc.
+
+2014-07-11  ashuang
+
+	* [r802] lcmgen/emit_python.c: lcm-gen: - python sub-types are
+	  initialized to valid instances instead of None.
+	  
+	  e.g., for the following types: struct inner_t { int32_t value; }
+	  struct outer_t { inner_t data; }
+	  
+	  the generated .py for outer_t will have: class outer_t(object):
+	  def __init__(self): self.data = inner_t()
+	  
+	  instead of: class outer_t(object): def __init__(self): self.data
+	  = None
+
+2014-07-09  ashuang
+
+	* [r801] lcm/eventlog.c, lcm/eventlog.h, test/c, test/c/Makefile,
+	  test/c/eventlog_test.cpp: robustify eventlog against
+	  corrupt/invalid data files.
+	* [r800] lcmgen/emit_cpp.c, lcmgen/tokenize.c: windows bugfixes
+	* [r799] lcm/lcm.vcproj, lcm/lcm_memq.c: fix windows build
+
+2014-07-07  ashuang
+
+	* [r797] lcm/lcm_file.c, lcm/lcm_mpudpm.c, lcm/lcm_udpm.c: udpm,
+	  mpudpm ensure receive thread is running before returning from
+	  lcm_get_fileno() use DBG_LCM instead of DBG_ERROR
+	* [r796] lcm/lcm_file.c, test/Makefile, test/cpp,
+	  test/cpp/memq_test.cpp, test/python/lcm_file_test.py,
+	  test/run_tests.py: misc bugfixes. restore mode=r in C file://
+	  provider add missing file test/cpp/memq_test.cpp fix
+	  test/python/lcm_file_test.py - no more rw mode
+	* [r795] lcm/eventlog.c, lcm/eventlog.h, lcm/lcm_file.c: revert
+	  r757. selective revert r778 for lcm/eventlog.c
+	  
+	  This reverts file:// rw support
+	* [r794] lcm-logger/lcm_logger.c, lcm/lcm_file.c, lcmgen/emit_c.c,
+	  liblcm-test/lcm-sink.c: Start reverting file:// rw changes.
+	  revert r785, r782
+	* [r793] lcm-python/pylcm.c, lcm/lcm-cpp-impl.hpp, lcm/lcm-cpp.hpp,
+	  lcm/lcm.c, lcm/lcm.h, test/c/memq_test.cpp, test/cpp/Makefile,
+	  test/python/lcm_memq_test.py: C: Add lcm_handle_timeout() C++:
+	  Add lcm::LCM::handleTimeout() Python: Add
+	  lcm.LCM.handle_timeout()
+
+2014-07-01  ashuang
+
+	* [r792] ., lcm-java/Makefile.am, lcm-java/lcm/lcm/LCM.java,
+	  lcm-java/lcm/lcm/MemqProvider.java, lcm/Makefile.am, lcm/lcm.c,
+	  lcm/lcm.h, lcm/lcm_memq.c, test, test/Makefile, test/c,
+	  test/c/Makefile, test/c/memq_test.cpp, test/gtest,
+	  test/gtest/LICENSE, test/gtest/Makefile, test/gtest/README,
+	  test/gtest/include, test/gtest/include/gtest,
+	  test/gtest/include/gtest/gtest-death-test.h,
+	  test/gtest/include/gtest/gtest-message.h,
+	  test/gtest/include/gtest/gtest-param-test.h,
+	  test/gtest/include/gtest/gtest-param-test.h.pump,
+	  test/gtest/include/gtest/gtest-printers.h,
+	  test/gtest/include/gtest/gtest-spi.h,
+	  test/gtest/include/gtest/gtest-test-part.h,
+	  test/gtest/include/gtest/gtest-typed-test.h,
+	  test/gtest/include/gtest/gtest.h,
+	  test/gtest/include/gtest/gtest_pred_impl.h,
+	  test/gtest/include/gtest/gtest_prod.h,
+	  test/gtest/include/gtest/internal,
+	  test/gtest/include/gtest/internal/gtest-death-test-internal.h,
+	  test/gtest/include/gtest/internal/gtest-filepath.h,
+	  test/gtest/include/gtest/internal/gtest-internal.h,
+	  test/gtest/include/gtest/internal/gtest-linked_ptr.h,
+	  test/gtest/include/gtest/internal/gtest-param-util-generated.h,
+	  test/gtest/include/gtest/internal/gtest-param-util-generated.h.pump,
+	  test/gtest/include/gtest/internal/gtest-param-util.h,
+	  test/gtest/include/gtest/internal/gtest-port.h,
+	  test/gtest/include/gtest/internal/gtest-string.h,
+	  test/gtest/include/gtest/internal/gtest-tuple.h,
+	  test/gtest/include/gtest/internal/gtest-tuple.h.pump,
+	  test/gtest/include/gtest/internal/gtest-type-util.h,
+	  test/gtest/include/gtest/internal/gtest-type-util.h.pump,
+	  test/gtest/src, test/gtest/src/gtest-all.cc,
+	  test/gtest/src/gtest-death-test.cc,
+	  test/gtest/src/gtest-filepath.cc,
+	  test/gtest/src/gtest-internal-inl.h,
+	  test/gtest/src/gtest-port.cc, test/gtest/src/gtest-printers.cc,
+	  test/gtest/src/gtest-test-part.cc,
+	  test/gtest/src/gtest-typed-test.cc, test/gtest/src/gtest.cc,
+	  test/gtest/src/gtest_main.cc, test/java, test/python: reintegrate
+	  memq branch. Add memq:// provider to C, Java backends (C also
+	  provides for C++, Python, Lua)
+
+2014-06-27  ashuang
+
+	* [r788] lcm/lcm_mpudpm.c, lcm/lcm_udpm.c: mask out signals in
+	  receive thread
+
+2014-06-25  ashuang
+
+	* [r786] lcmgen/emit_python.c, test/c, test/cpp: emit_python: -
+	  emit arrays of bytes initializer as empty string, not empty list
+
+2014-06-19  ashuang
+
+	* [r785] lcm-logger/lcm_logger.c, lcm/lcm_file.c, lcmgen/emit_c.c,
+	  liblcm-test/lcm-sink.c: fix gcc compile warnings
+	* [r784] lcmgen/emit_c.c: lcmgen: C emit_hash_recursive function
+	  explicit cast result to int64_t closes #81
+
+2014-06-18  ashuang
+
+	* [r783] lcm-logger/lcm_logger.c: revert r755, which introduced
+	  regressions in lcm-logger
+	* [r782] lcm/lcm_file.c: Apply fix to lcm_file.c from riroberts
+
+2014-06-15  ashuang
+
+	* [r781] lcm-logger/lcm-logger.vcproj,
+	  lcm-logger/lcm-logplayer.vcproj, lcm/lcm.vcproj,
+	  lcm/lcm_mpudpm.c, lcmgen/lcm-gen.vcproj,
+	  liblcm-test/lcm-example.vcproj, liblcm-test/lcm-logfilter.vcproj,
+	  liblcm-test/lcm-sink.vcproj, liblcm-test/lcm-source.vcproj,
+	  liblcm-test/lcm-tester.vcproj: windows build fixes
+
+2014-05-05  mrwalter@gmail.com
+
+	* [r780] docs/content/multicast-setup.dox: updated multicast setup
+	  for osx to include settings for outgoing datagram sizes, which
+	  seems necessary as of r768
+
+2014-04-27  abachrach@gmail.com
+
+	* [r779] lcm/lcm-cpp-impl.hpp, lcm/lcm-cpp.hpp: Fix the c++
+	  bindings so that the raw buffer publish() method take a const
+	  pointer
+	* [r778] lcm/eventlog.c, lcm/lcm_mpudpm.c, lcm/udpm_util.h,
+	  lcmgen/emit_c.c: Make some fixes so that LCM builds on windows.
+	  
+	  The visual studio project files still need to be updated to
+	  handle the new and renamed files.
+
+2014-04-21  ashuang
+
+	* [r777] lcmgen/lcmgen.c, lcmgen/main.c: lcmgen: fail if duplicate
+	  types are detected in input.
+
+2014-04-10  ashuang
+
+	* [r776] lcmgen/emit_python.c: emit_python use g_hash_table_replace
+	  instead of g_hash_table_insert
+
+2014-04-02  abachrach@gmail.com
+
+	* [r775] lcm/lcm-cpp.hpp: revert changes that allowed people to
+	  create child classes derived from LCM
+
+2014-03-26  abachrach@gmail.com
+
+	* [r774] lcm/lcm-cpp.hpp: make publish() and good() methods of the
+	  c++ bindings virtual so that child classes can override them.
+
+2014-03-25  mrwalter@gmail.com
+
+	* [r773] lcm/lcm_mpudpm.c, lcm/lcm_udpm.c: removed duplicate
+	  typedef
+
+2014-03-24  abachrach@gmail.com
+
+	* [r771] ., lcm-logger/lcm_logger.c, lcm/Makefile.am, lcm/lcm.c,
+	  lcm/lcm_internal.h, lcm/lcm_mpudpm.c, lcm/lcm_udp.c,
+	  lcm/lcm_udpm.c, lcm/lcmtypes, lcm/udpm_util.c, lcm/udpm_util.h,
+	  liblcm-test/lcm-logfilter.c, test/Makefile: merge the
+	  multiport_udp_multicast branch into trunk.
+
+2014-03-20  ashuang
+
+	* [r769] lcm/lcm_udp.c, liblcm-test/lcm-sink.c,
+	  liblcm-test/lcm-source.c: fragmentation threshold bugfixes
+	  instrument lcm-sink, lcm-source to count messages sent/received
+	  lcm_udp add dbg message to indicate when dropping fragmented
+	  messages
+	* [r768] lcm/lcm_udp.c: increase fragmentation threshold for
+	  C-based bindings
+
+2014-03-13  ashuang
+
+	* [r767] lcm-logger/lcm_logplayer.c: resolves #83 lcm-logplayer
+	  actually accept -l/--lcm-url option
+	* [r766] lcm-java/lcm/spy/ObjectPanel.java: resolves #84 apply
+	  patch from brady.tom315 to better draw long type names in spy
+
+2014-02-23  abachrach@gmail.com
+
+	* [r764] lcm/lcm-cpp.hpp: make the c++ destructor virtual so that
+	  we can create classes derived from the LCM object, and clean up
+	  by calling delete on a pointer to the base class
+
+2014-02-19  abachrach@gmail.com
+
+	* [r761] lcm-logger/lcm_logger.c, test/run_tests.py: minor
+	  portability fixes
+	* [r760] lcmgen/lcmgen.c, lcmgen/main.c: add a --package-prefix
+	  option to lcmgen that adds the supplied package name as a prefix
+	  for all of the generated lcm bidings
+	* [r759] lcmgen/Makefile.am, lcmgen/emit_c.c, lcmgen/emit_cpp.c,
+	  lcmgen/emit_csharp.c, lcmgen/emit_java.c, lcmgen/lcm-gen.vcproj,
+	  lcmgen/lcmgen.c, lcmgen/sprintfalloc.c, lcmgen/sprintfalloc.h:
+	  get rid of sprintfalloc() in place of g_strdup_printf(). There
+	  were incomplete logic paths, and it seemed redundant with the
+	  glib function
+	* [r758] lcm-python/pylcm.c, lcm-python/pylcm.h,
+	  test/python/lcm_file_test.py, test/run_tests.py: Add unit tests
+	  for the lcm_file_provider, and fix the way pylcm managed the
+	  global interpreter lock so that it's lcm_handle() semantics
+	  matched C.
+	  
+	  Previously, the python version of lcm_handle() would block
+	  indefinitely if a call to lcm_handle() would have returned -1.
+	  
+	  This was due to the fact that it internally called select on the
+	  lcm file handle rather than just calling lcm_handle(). It had to
+	  do this because of the way we were previous managing access to
+	  python's global interpreter lock.
+	  
+	  I added functions pylcm_begin_allow_threads() and
+	  pylcm_end_allow_threads(), that worked like
+	  Py_BEGIN_ALLOW_THREADS/Py_END_ALLOW_THREADS, but allowed them to
+	  be called from different functions, so that we could call
+	  pylcm_end_allow_threads() inside pylcm_msg_handler() right before
+	  dispatching to the underlying python handler.
+	* [r757] lcm/eventlog.c, lcm/eventlog.h, lcm/lcm_file.c: Add a
+	  read/write mode to eventlog, and modify the lcm_file provider to
+	  use it.
+	  
+	  The read/write mode allows you to both publish and subscribe to
+	  messages using the file provider.
+	  
+	  If you call lcm_handle() before publishing anything it will
+	  return -1, however once you publish, lcm_handle() will succeed.
+	  
+	  This functionality is useful for writing unit tests where you
+	  want the reliability, determinism, and process separation
+	  provided by using a file for transport.
+	* [r756] lcmgen/emit_cpp.c: For const int32_t fields, declare the
+	  variable using an enum instead of a static const int.
+	  
+	  As it is right now, the variables cause a linker error if you
+	  pass the constant into a function by const reference. The
+	  alternative would be to generate a .cpp file with the static
+	  member definition :-/
+	  
+	  see:
+	  http://stackoverflow.com/questions/3460034/declaring-and-initializing-a-static-int-in-a-header
+	  or
+	  http://stackoverflow.com/questions/3025997/c-defining-static-const-integer-members-in-class-definition
+	  for more info.
+	* [r755] lcm-logger/lcm_logger.c: modify the behavior of the
+	  increment option to count logs with a '.synced' suffix, so that
+	  scripts can mark that logs have been synced from the robot
+	* [r754] lcm-logger/lcm_logger.c: perform a full fdatasync() after
+	  flush to make sure the data gets all the way out to the disk.
+
+2014-01-17  tderensis@gmail.com
+
+	* [r749] test/README, test/c/client.c, test/c/common.c,
+	  test/c/server.c, test/cpp/client.cpp, test/python/client.py: Test
+	  cleanups. Now each client/server also prints it's language and
+	  everything is indented nicely. Fixed a small memory leak in the c
+	  test.
+
+2014-01-15  tderensis@gmail.com
+
+	* [r748] test/Makefile, test/c/common.c, test/c/common.h,
+	  test/cpp/Makefile, test/cpp/common.cpp, test/cpp/common.hpp,
+	  test/java, test/java/Makefile, test/java/lcm-spy.sh: Updated the
+	  cpp tests to work with the new cross_package_t. Added java for
+	  lcm-spy inspection during tests and the apropriate make file.
+	  Tested with python 2.7.6 and 3.3.3.
+	* [r747] lcmgen/emit_python.c: Fixed the python imports bug
+	  detailed in issue 72. Hopefully this completes the python 3
+	  support as well.
+
+2014-01-10  ashuang
+
+	* [r746] test/README, test/c/Makefile, test/c/common.c,
+	  test/python/client.py, test/types/lcmtest2/another_type_t.lcm,
+	  test/types/lcmtest2/cross_package_t.lcm: Apply Python
+	  compatibility patches from tderensis
+	  https://code.google.com/u/118390866925911832845/
+
+2013-12-31  abachrach@gmail.com
+
+	* [r742] test/Makefile, test/c/Makefile, test/c/common.c, test/cpp,
+	  test/cpp/Makefile, test/cpp/client.cpp, test/cpp/common.cpp,
+	  test/cpp/common.hpp, test/python/Makefile,
+	  test/python/cleanup.sh, test/python/gen-types.sh,
+	  test/run_tests.py, test/test.py: Add units tests for the C++
+	  bindings, and add a top level makefile for the unit tests
+
+2013-12-15  ashuang
+
+	* [r739] lcm/lcm_coretypes.h: lcm_field_type_t bugfix
+
+2013-12-12  ashuang
+
+	* [r738] lcm-python/lcm/__init__.py, lcm-python/module.c,
+	  lcm-python/pyeventlog.c, lcm-python/pylcm.c,
+	  lcm-python/pylcm_subscription.c, lcmgen/emit_python.c,
+	  m4/python.m4: apply patch from tderensis for python3
+	  compatibility
+	* [r737] test/README, test/c/Makefile, test/c/client.c,
+	  test/c/common.c, test/c/common.h, test/c/server.c,
+	  test/lua/gen-types.sh, test/python/cleanup.sh,
+	  test/python/client.py, test/python/gen-types.sh, test/test.py,
+	  test/types/exampleconst_t.lcm, test/types/lcmtest,
+	  test/types/lcmtest/exampleconst_t.lcm,
+	  test/types/lcmtest/multidim_array_t.lcm,
+	  test/types/lcmtest/node_t.lcm,
+	  test/types/lcmtest/primitives_list_t.lcm,
+	  test/types/lcmtest/primitives_t.lcm, test/types/lcmtest2,
+	  test/types/lcmtest2/cross_package_t.lcm,
+	  test/types/multidim_array_t.lcm, test/types/node_t.lcm,
+	  test/types/primitives_list_t.lcm, test/types/primitives_t.lcm:
+	  add cross-package unit test for C, Python
+	* [r736] lcm/lcm_coretypes.h, lcmgen/emit_c.c: apply Anthony
+	  Bonkoski's patch for adding type introspection to generated C
+	  types
+
+2013-12-05  ashuang
+
+	* [r735] lcm-logger/lcm_logger.c: re #78 remove unnecessary ENOENT
+	  check for windows compatibility
+	* [r734] lcm/lcm_tcpq.c: lcm_tcpq.c add missing #include <signal.h>
+
+2013-10-26  abachrach@gmail.com
+
+	* [r733] lcmgen/emit_cpp.c: fix emit_cpp for messages that contain
+	  a single non-primitive type
+
+2013-10-26  ashuang
+
+	* [r732] WinSpecific/LCM.sln, WinSpecific/getopt/getopt.vcproj,
+	  lcm-logger/glib_util.c, lcm-logger/lcm-logger.vcproj,
+	  lcm-logger/lcm-logplayer.vcproj, lcm-logger/lcm_logger.c,
+	  lcm/lcm.c, lcm/lcm.vcproj, lcm/lcm_file.c, lcm/lcm_udp.c,
+	  lcmgen/lcm-gen.vcproj, liblcm-test/lcm-example.vcproj,
+	  liblcm-test/lcm-logfilter.vcproj, liblcm-test/lcm-sink.vcproj,
+	  liblcm-test/lcm-source.vcproj, liblcm-test/lcm-tester.vcproj:
+	  revert r730 for compatibility issues
+
+2013-10-21  ashuang
+
+	* [r731] lcmgen/emit_cpp.c: re issue #75 C++: for non-string
+	  primitive types with variable size final dimension, add an
+	  optimization to only call the primitive encode functions only if
+	  the final dimension size is non-zero.
+
+2013-08-23  ashuang
+
+	* [r730] lcm-logger/glib_util.c, lcm-logger/lcm_logger.c,
+	  lcm/lcm.c, lcm/lcm_file.c, lcm/lcm_udp.c: stop using deprecated
+	  GLib symbols.
+
+2013-08-14  ashuang
+
+	* [r729] lcm/lcm_coretypes.h, lcmgen/emit_c.c: apply patch from
+	  spaceMORT to fix compile issues on TI C2000 cross compiler
+	  (cl2000)
+
+2013-08-05  ashuang
+
+	* [r728] lcm-logger/lcm_logger.c: lcm-logger bugfix: allow -q
+
+2013-07-24  ashuang
+
+	* [r727] lcm-logger/lcm-logger.1: update man page
+	* [r726] lcm-logger/lcm_logger.c, lcm/eventlog.c, lcm/eventlog.h:
+	  lcm/eventlog: - add "a" mode for appending
+	  
+	  lcm-logger: - remove --auto-split-hours option - rename
+	  --auto-split-mb to --split-mb - add --rotate option for rotating
+	  log files - add --quiet option
+
+2013-06-08  ashuang
+
+	* [r722] ChangeLog, NEWS, configure.in, lcm-python/setup.py,
+	  lcm/lcm.h: LCM release 1.0.0
+
 2013-06-04  ashuang
 
 	* [r721] lcm/lcm_tcpq.c: fix whitespace
