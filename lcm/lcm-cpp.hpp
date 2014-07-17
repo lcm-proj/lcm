@@ -25,6 +25,7 @@ struct ReceiveBuffer;
 /**
  * @brief Core communications class for the C++ API.
  *
+ * @headerfile lcm/lcm-cpp.hpp
  */
 class LCM {
     public:
@@ -386,6 +387,8 @@ class LCM {
 
 /**
  * @brief Stores the raw bytes and timestamp of a received message.
+ *
+ * @headerfile lcm/lcm-cpp.hpp
  */
 struct ReceiveBuffer {
     /**
@@ -413,6 +416,8 @@ struct ReceiveBuffer {
  *
  * To unsubscribe, pass the instance to LCM::unsubscribe().  Once unsubscribed,
  * the object is destroyed and can not be used anymore.
+ *
+ * @headerfile lcm/lcm-cpp.hpp
  */
 class Subscription {
     public:
@@ -452,6 +457,8 @@ class Subscription {
  * This struct is the C++ counterpart for lcm_eventlog_event_t.
  *
  * @sa lcm_eventlog_event_t
+ *
+ * @headerfile lcm/lcm-cpp.hpp
  */
 struct LogEvent {
     /**
@@ -484,6 +491,8 @@ struct LogEvent {
  * This class is the C++ counterpart for lcm_eventlog_t.
  *
  * @sa lcm_eventlog_t
+ *
+ * @headerfile lcm/lcm-cpp.hpp
  */
 class LogFile {
     public:

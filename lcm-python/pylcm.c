@@ -325,6 +325,8 @@ pylcm_handle_timeout (PyLCMObject *lcm_obj, PyObject *arg)
 }
 PyDoc_STRVAR (pylcm_handle_timeout_doc,
 "handle_timeout(timeout_millis) -> int\n\
+New in LCM 1.1.0\n\
+\n\
 waits for and dispatches the next incoming message, with a timeout.\n\
 \n\
 Raises ValueError if @p timeout_millis is invalid, or IOError if another\n\
