@@ -159,4 +159,10 @@ receive buffer was generally sufficient.
 
 \note http://www.29west.com/docs/THPM/udp-buffer-sizing.html is also a good source of information on UDP buffer sizing.
 
+\section multicast_firewalls Firewalls
+
+Systems with overzealous firewalls may prevent UDP multicast traffic from
+reaching an LCM process.  If you are having trouble receiving messages across
+the network, check your firewall settings.
+
 **/
