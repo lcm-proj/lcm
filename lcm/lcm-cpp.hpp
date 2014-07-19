@@ -123,7 +123,7 @@ class LCM {
          *
          * New in LCM 1.1.0.
          *
-         * @return >1 if a message was handled, 0 if the function timed out,
+         * @return >0 if a message was handled, 0 if the function timed out,
          * and <0 if an error occured.
          * @sa lcm_handle_timeout()
          */
