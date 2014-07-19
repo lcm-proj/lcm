@@ -37,10 +37,10 @@ extern "C" {
 // ================== add debugging modes here ======================
 
 #define DBG_TEST    DBG_MODE(1) /* foo */
-#define DBG_LCM      DBG_MODE(2)
-#define DBG_LCM_MSG  DBG_MODE(3)
+#define DBG_LCM     DBG_MODE(2)
+#define DBG_LCM_MSG DBG_MODE(3)
 #define DBG_MAIN    DBG_MODE(4)
-#define DBG_5       DBG_MODE(5)
+#define DBG_PYTHON  DBG_MODE(5)
 #define DBG_6       DBG_MODE(6)
 #define DBG_7       DBG_MODE(7)
 #define DBG_8       DBG_MODE(8)
@@ -62,7 +62,7 @@ extern "C" {
 { "lc", DBG_LCM }, \
 { "lc_msg", DBG_LCM_MSG }, \
 { "main", DBG_MAIN }, \
-{ "5", DBG_5 }, \
+{ "python", DBG_PYTHON }, \
 { "6", DBG_6 }, \
 { "7", DBG_7 }, \
 { "8",  DBG_8   }, \
@@ -81,7 +81,7 @@ extern "C" {
 { DBG_LCM, _RED_ }, \
 { DBG_LCM_MSG, _RED_ }, \
 { DBG_MAIN, _YELLOW_ }, \
-{ DBG_5, _GREEN_ }, \
+{ DBG_PYTHON, _GREEN_ }, \
 { DBG_6, _BLUE_ }, \
 { DBG_7, _MAGENTA_ }, \
 { DBG_8, _BCYAN_ }, \

@@ -16,8 +16,8 @@ typedef struct {
 
     PyObject *all_handlers;
 
-    // The stored thread state, so that we can do the equivalent of
-    // Py_BEGIN_ALLOW_THREADS and Py_END_ALLOW_THREADS in different functions.
+    // Stores the state of the thread that calls LCM.handle() or
+    // LCM.handle_timeout()
     PyThreadState *saved_thread_state;
 } PyLCMObject;
 
