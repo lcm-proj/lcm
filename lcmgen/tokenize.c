@@ -350,18 +350,19 @@ int tokenize_next_internal(tokenize_t *t)
             // Strip out leading whitespace.
             do {
                 c = tokenize_next_char(t);
-            } while (c != EOF && isspace(c));
+            } while (c != EOF && c == ' ');
 
             pos = 0;
 
             // Place the rest of the line into a comment token.
-            do {
+            while (c != EOF && c != '\n') {
                 if (!ensure_token_capacity(t, pos)) {
                     return TOK_ERR_MEMORY_INSUFFICIENT;
                 }
                 t->token[pos++] = c;
                 c = tokenize_next_char(t);
-            } while (c != EOF && c != '\n');
+            };
+            tokenize_ungetc(t, c);
             goto end_tok;
         }
 
