@@ -5,11 +5,22 @@
 
 typedef struct tokenize tokenize_t;
 
+typedef enum {
+    LCM_TOK_INVALID,
+    LCM_TOK_EOF,
+    LCM_TOK_COMMENT,
+    LCM_TOK_OTHER
+} lcm_token_type_t;
+
 /** Tokenizer incrementally tokenizes an input stream. **/
 struct tokenize
 {
 	// current token
 	char *token;
+
+    // bytes allocated for token.
+    int token_capacity;
+
 	int token_line, token_column;
 
     // info about the last returned character from next_char.
@@ -33,6 +44,8 @@ struct tokenize
 
 	// do we have a token ready?
 	int hasnext;
+
+    lcm_token_type_t token_type;
 };
 
 tokenize_t *tokenize_create(const char *path);

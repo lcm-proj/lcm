@@ -1,8 +1,21 @@
 package lcmtest;
 
+/**
+ * Struct with various constant definitions
+ * Constant values can be defined for numeric types (int8_t, int16_t,
+ * int32_t, int64_t, float, double).
+ *
+ * Constant values for string types and booleans are not supported.
+ */
 struct exampleconst_t
 {
-const int32_t ABC = 1, DEF = 2;
-const double PI=3.1415926, E=2.8718;
-const int64_t LONG = 0xf0f0f0f0;
+    // Declare a constant field with syntax "const <type> <name> = <value>;"
+    const int32_t ABC = 1;
+
+    const int32_t DEF = 2;
+
+    const double PI=3.1415926;
+    const double E=2.8718;
+
+    const int64_t LONG = 0xf0f0f0f0;
 }

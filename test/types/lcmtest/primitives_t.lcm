@@ -1,14 +1,33 @@
 package lcmtest;
 
+/// Contains a number of primitive data types
 struct primitives_t
 {
+    // 8-bit signed integer
     int8_t   i8;
+
+    // 16-bit signed integer
     int16_t  i16;
+
+    // 32-bit signed integer
     int32_t  num_ranges;
+
+    // 64-bit signed integer
     int64_t  i64;
+
+    // variable-length array of 16-bit signed integers.  The length of this
+    // array (# of elements) is specified by the num_ranges field.
     int16_t  ranges[num_ranges];
+
+    // fixed-length array of single precision floats.
     float    position[3];
+
+    // fixed-length array of double precision floats.
     double   orientation[4];
+
+    // variable-length UTF-8 string
     string   name;
+
+    // a single boolean value
     boolean  enabled;
 }

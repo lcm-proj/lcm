@@ -55,6 +55,10 @@ struct lcm_member
 	// an array of lcm_dimension_t. A scalar is a 1-dimensional array
 	// of length 1.
 	GPtrArray *dimensions;
+
+  // Comments in the LCM type definition immediately before a member
+  // declaration are attached to that member
+  char* comment;
 };
 
 /////////////////////////////////////////////////
@@ -64,17 +68,21 @@ typedef struct lcm_struct lcm_struct_t;
 
 struct lcm_struct
 {
-    lcm_typename_t *structname; // name of the data type
-  
-	GPtrArray *members;  // lcm_member_t
+  lcm_typename_t *structname; // name of the data type
 
-       // recursive declaration of structs and enums
-	GPtrArray *structs;  // lcm_struct_t
-	GPtrArray *enums;    // locally-declared enums  DEPRECATED
-	GPtrArray *constants; // lcm_constant_t
+  GPtrArray *members;  // lcm_member_t
 
-	char *lcmfile;       // file/path of function that declared it
-	int64_t hash;
+  // recursive declaration of structs and enums
+  GPtrArray *structs;  // lcm_struct_t
+  GPtrArray *enums;    // locally-declared enums  DEPRECATED
+  GPtrArray *constants; // lcm_constant_t
+
+  char *lcmfile;       // file/path of function that declared it
+  int64_t hash;
+
+  // Comments in the LCM type defition immediately before a struct is declared
+  // are attached to that struct.
+  char* comment;
 };
 
 /////////////////////////////////////////////////
@@ -84,17 +92,21 @@ typedef struct lcm_constant lcm_constant_t;
 
 struct lcm_constant
 {
-    char *lctypename;    // int8_t / int16_t / int32_t / int64_t / float / double
-    char *membername;
-    union {
-        int8_t i8;
-        int16_t i16;
-        int32_t i32;
-        int64_t i64;
-        float f;
-        double d;
-    } val;
-    char *val_str;   // value as a string, as specified in the .lcm file
+  char *lctypename;    // int8_t / int16_t / int32_t / int64_t / float / double
+  char *membername;
+  union {
+    int8_t i8;
+    int16_t i16;
+    int32_t i32;
+    int64_t i64;
+    float f;
+    double d;
+  } val;
+  char *val_str;   // value as a string, as specified in the .lcm file
+
+  // Comments in the LCM type definition immediately before a constant are
+  // attached to the constant.
+  char* comment;
 };
 
 /////////////////////////////////////////////////
@@ -138,9 +150,11 @@ typedef struct lcmgen lcmgen_t;
 struct lcmgen
 {
     char      *package; // remembers the last-specified package name, which is prepended to other types.
-	getopt_t  *gopt;
-	GPtrArray *structs; // lcm_struct_t
-	GPtrArray *enums;   // lcm_enum_t (declared at top level)
+    getopt_t  *gopt;
+    GPtrArray *structs; // lcm_struct_t
+    GPtrArray *enums;   // lcm_enum_t (declared at top level)
+
+    gchar* last_comment;
 };
 
 /////////////////////////////////////////////////

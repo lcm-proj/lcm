@@ -142,6 +142,30 @@ static void emit_auto_generated_warning(FILE *f)
             " **/\n\n");
 }
 
+static void emit_comment(FILE* f, int indent, const char* comment) {
+    if (!comment)
+        return;
+
+    gchar** lines = g_strsplit(comment, "\n", 0);
+    int num_lines = 0;
+    for (num_lines = 0; lines[num_lines]; num_lines++) {}
+
+    if (num_lines == 1) {
+        emit(indent, "/// %s", lines[0]);
+    } else {
+        emit(indent, "/**");
+        for (int line_ind = 0; lines[line_ind]; line_ind++) {
+            if (strlen(lines[line_ind])) {
+                emit(indent, " * %s", lines[line_ind]);
+            } else {
+                emit(indent, " *");
+            }
+        }
+        emit(indent, " */");
+    }
+    g_strfreev(lines);
+}
+
 static void
 emit_package_namespace_start(lcmgen_t* lcmgen, FILE* f, lcm_struct_t* ls)
 {
@@ -213,7 +237,9 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit_package_namespace_start(lcmgen, f, ls);
 
     // define the class
-    emit(0, "\nclass %s", sn);
+    emit(0, "");
+    emit_comment(f, 0, ls->comment);
+    emit(0, "class %s", sn);
     emit(0, "{");
 
     // data members
@@ -222,6 +248,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
         for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
 
+            emit_comment(f, 2, lm->comment);
             char* mapped_typename = map_type_name(lm->type->lctypename);
             int ndim = g_ptr_array_size(lm->dimensions);
             if (ndim == 0) {
@@ -245,6 +272,9 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
                 }
             }
             free(mapped_typename);
+            if (mind < g_ptr_array_size(ls->members) - 1) {
+                emit(0, "");
+            }
         }
         emit(0, "");
     }
@@ -256,6 +286,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
             lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
             assert(lcm_is_legal_const_type(lc->lctypename));
 
+            emit_comment(f, 2, lc->comment);
             // For int32_t only, we emit enums instead of static const
             // values because the former can be passed by reference while
             // the latter cannot.
@@ -275,10 +306,43 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     }
 
     emit(1, "public:");
+    emit(2, "/**");
+    emit(2, " * Encode a message into binary form.");
+    emit(2, " *");
+    emit(2, " * @param buf The output buffer.");
+    emit(2, " * @param offset Encoding starts at thie byte offset into @p buf.");
+    emit(2, " * @param maxlen Maximum number of bytes to write.  This should generally be");
+    emit(2, " *  equal to getEncodedSize().");
+    emit(2, " * @return The number of bytes encoded, or <0 on error.");
+    emit(2, " */");
     emit(2, "inline int encode(void *buf, int offset, int maxlen) const;");
+    emit(0, "");
+    emit(2, "/**");
+    emit(2, " * Check how many bytes are required to encode this message.");
+    emit(2, " */");
     emit(2, "inline int getEncodedSize() const;");
+    emit(0, "");
+    emit(2, "/**");
+    emit(2, " * Decode a message from binary form into this instance.");
+    emit(2, " *");
+    emit(2, " * @param buf The buffer containing the encoded message.");
+    emit(2, " * @param offset The byte offset into @p buf where the encoded message starts.");
+    emit(2, " * @param maxlen The maximum number of bytes to reqad while decoding.");
+    emit(2, " * @return The number of bytes decoded, or <0 if an error occured.");
+    emit(2, " */");
     emit(2, "inline int decode(const void *buf, int offset, int maxlen);");
+    emit(0, "");
+    emit(2, "/**");
+    emit(2, " * Retrieve the 64-bit fingerprint identifying the structure of the message.");
+    emit(2, " * Note that the fingerprint is the same for all instances of the same");
+    emit(2, " * message type, and is a fingerprint on the message type definition, not on");
+    emit(2, " * the message contents.");
+    emit(2, " */");
     emit(2, "inline static int64_t getHash();");
+    emit(0, "");
+    emit(2, "/**");
+    emit(2, " * Returns \"%s\"", ls->structname->shortname);
+    emit(2, " */");
     emit(2, "inline static const char* getTypeName();");
 
     emit(0, "");

@@ -11,10 +11,11 @@
 #include "tokenize.h"
 
 static const char single_char_toks[] = "();\",:\'[]"; // no '.' so that name spaces are one token
-static const char op_chars[] = "!~<>=&|^%*+=/";
+static const char op_chars[] = "!~<>=&|^%*+=";
 
-#define MAX_TOKEN_LEN 1024
 #define MAX_LINE_LEN  1024
+
+#define TOK_ERR_MEMORY_INSUFFICIENT -2
 
 static char unescape(char c)
 {
@@ -43,7 +44,8 @@ tokenize_t *tokenize_create(const char *path)
         return NULL;
     }
 
-    t->token = (char*) calloc(1, MAX_TOKEN_LEN);
+    t->token_capacity = 1024;
+    t->token = (char*) calloc(1, t->token_capacity);
     t->buffer = (char*) calloc(1, MAX_LINE_LEN);
 
     // Line and column indices for the last returned token
@@ -68,7 +70,7 @@ void tokenize_destroy(tokenize_t *t)
 }
 
 /** get the next character, counting line numbers, and columns. **/
-int tokenize_next_char(tokenize_t *t)
+char tokenize_next_char(tokenize_t *t)
 {
     // return an unget() char if one is stored
     if (t->unget_char >= 0) {
@@ -119,20 +121,130 @@ void tokenize_flush_line(tokenize_t *t)
     } while (c!=EOF && c!='\n');
 }
 
+static int ensure_token_capacity(tokenize_t* t, int pos) {
+    if (pos >= t->token_capacity) {
+        t->token_capacity *= 2;
+        t->token = (char*) realloc(t->token, t->token_capacity);
+        if (!t->token) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int add_char_to_token(tokenize_t* t, int pos, char c) {
+    if (!ensure_token_capacity(t, pos)) {
+        return 0;
+    }
+    t->token[pos] = c;
+    return 1;
+}
+
+int tokenize_extended_comment(tokenize_t* t)
+{
+    int pos = 0;
+
+    // So far, the tokenizer has processed "/*"
+    int comment_finished = 0;
+
+    while (!comment_finished) {
+        int pos_line_start = pos;
+
+        // Go through leading whitespace.
+        int c;
+        while (1) {
+            c = tokenize_next_char(t);
+            if (c != EOF && (c == ' ' || c == '\t')) {
+                if (!add_char_to_token(t, pos, c)) {
+                    return TOK_ERR_MEMORY_INSUFFICIENT;
+                }
+                pos++;
+            } else {
+                break;
+            }
+        }
+
+        // Go through asterisks
+        int got_asterisk = 0;
+        while (c == '*') {
+            if (!add_char_to_token(t, pos, c)) {
+                return TOK_ERR_MEMORY_INSUFFICIENT;
+            }
+            pos++;
+            got_asterisk = 1;
+            c = tokenize_next_char(t);
+        }
+
+        // Strip out leading comment characters in the line.
+        if (got_asterisk) {
+            pos = pos_line_start;
+            if (c == '/') {
+                // End of comment?
+                comment_finished = 1;
+                break;
+            } else if (c == ' ') {
+                // If a space immediately followed the leading asterisks, then
+                // skip it.
+                c = tokenize_next_char(t);
+            }
+        }
+
+        // The rest of the line is comment content.
+        while (!comment_finished && c != EOF && c != '\n') {
+            int last_c = c;
+
+            if (!add_char_to_token(t, pos, c)) {
+                return TOK_ERR_MEMORY_INSUFFICIENT;
+            }
+            pos++;
+            c = tokenize_next_char(t);
+
+            if (last_c == '*' && c == '/') {
+                comment_finished = 1;
+                pos--;
+            }
+        }
+
+        if (!comment_finished) {
+            if (c == EOF) {
+                printf("%s : EOF reached while parsing comment\n", t->path);
+                return EOF;
+            }
+
+            assert(c == '\n');
+            if (pos_line_start != pos) {
+              if (!add_char_to_token(t, pos, c)) {
+                return TOK_ERR_MEMORY_INSUFFICIENT;
+              }
+              pos++;
+            }
+        }
+    }
+
+    t->token[pos] = 0;
+    t->token_type = LCM_TOK_COMMENT;
+
+    return pos;
+}
+
 /** chunkify tokens. **/
 int tokenize_next_internal(tokenize_t *t)
 {
     int c;
     int pos = 0; // output char pos
 
-skip_white:
-    c = tokenize_next_char(t);
+    t->token_type = LCM_TOK_INVALID;
 
-    if (c == EOF)
-        return EOF;
+    // Repeatedly read characters until EOF or a non-whitespace character is
+    // reached.
+    do {
+        c = tokenize_next_char(t);
 
-    if (isspace(c))
-        goto skip_white;
+        if (c == EOF) {
+            t->token_type = LCM_TOK_EOF;
+            return EOF;
+        }
+    } while (isspace(c));
 
     // a token is starting. mark its position.
     t->token_line = t->current_line;
@@ -151,6 +263,7 @@ skip_white:
         if (c!='\'')
             return -5;
         t->token[pos++] = c;
+        t->token_type = LCM_TOK_OTHER;
         goto end_tok;
     }
 
@@ -163,11 +276,11 @@ skip_white:
 
         // keep reading until close quote
         while (1) {
-            if (pos >= MAX_TOKEN_LEN)
-                return -2;
+            if (!ensure_token_capacity(t, pos)) {
+                return TOK_ERR_MEMORY_INSUFFICIENT;
+            }
 
             c = tokenize_next_char(t);
-
             if (c == EOF)
                 goto end_tok;
 
@@ -189,40 +302,97 @@ skip_white:
 
             t->token[pos++] = c;
         }
+        t->token_type = LCM_TOK_OTHER;
         goto end_tok;
     }
 
     // is an operator?
     if (strchr(op_chars, c)!=NULL) {
         while (strchr(op_chars, c)!=NULL) {
-            if (pos >= MAX_TOKEN_LEN)
-                return -2;
+            if (!ensure_token_capacity(t, pos)) {
+                return TOK_ERR_MEMORY_INSUFFICIENT;
+            }
             t->token[pos++] = c;
             c = tokenize_next_char(t);
         }
+        t->token_type = LCM_TOK_OTHER;
+        tokenize_ungetc(t, c);
+        goto end_tok;
+    }
+
+    // Is a comment?
+    if (c == '/') {
+        if (!ensure_token_capacity(t, pos)) {
+            return TOK_ERR_MEMORY_INSUFFICIENT;
+        }
+        t->token[pos++] = c;
+
+        c = tokenize_next_char(t);
+        if (c == EOF) {
+            t->token_type = LCM_TOK_OTHER;
+            goto end_tok;
+        }
+
+        // Extended comment '/* ... */'
+        if (c == '*') {
+            return tokenize_extended_comment(t);
+        }
+
+        // Single-line comment
+        if (c == '/') {
+            t->token_type = LCM_TOK_COMMENT;
+
+            // Strip out leading '/' characters
+            do {
+                c = tokenize_next_char(t);
+            } while (c == '/');
+
+            // Strip out leading whitespace.
+            do {
+                c = tokenize_next_char(t);
+            } while (c != EOF && isspace(c));
+
+            pos = 0;
+
+            // Place the rest of the line into a comment token.
+            do {
+                if (!ensure_token_capacity(t, pos)) {
+                    return TOK_ERR_MEMORY_INSUFFICIENT;
+                }
+                t->token[pos++] = c;
+                c = tokenize_next_char(t);
+            } while (c != EOF && c != '\n');
+            goto end_tok;
+        }
+
+        // If the '/' is not followed by a '*' or a '/', then treat it like an
+        // operator
+        t->token_type = LCM_TOK_OTHER;
         tokenize_ungetc(t, c);
         goto end_tok;
     }
 
     // otherwise, all tokens are alpha-numeric blobs
-in_tok:
-    if (pos >= MAX_TOKEN_LEN)
-        return -2;
+    do {
+        if (!ensure_token_capacity(t, pos)) {
+            return TOK_ERR_MEMORY_INSUFFICIENT;
+        }
 
-    t->token[pos++] = c;
+        t->token[pos++] = c;
 
-    if (strchr(single_char_toks,c)!=NULL)
-        goto end_tok;
+        t->token_type = LCM_TOK_OTHER;
 
-    c = tokenize_next_char(t);
-    if (strchr(single_char_toks,c)!=NULL ||
-        strchr(op_chars,c)!=NULL) {
-        tokenize_ungetc(t, c);
-        goto end_tok;
-    }
+        if (strchr(single_char_toks,c)!=NULL)
+            goto end_tok;
 
-    if (!isspace(c) && c != EOF)
-        goto in_tok;
+        c = tokenize_next_char(t);
+        if (strchr(single_char_toks,c)!=NULL ||
+                strchr(op_chars,c)!=NULL) {
+            tokenize_ungetc(t, c);
+            goto end_tok;
+        }
+
+    } while (!isspace(c) && c != EOF);
 
 end_tok:
     t->token[pos] = 0;
@@ -230,7 +400,6 @@ end_tok:
     return pos;
 }
 
-/** remove comments **/
 int tokenize_next(tokenize_t *t)
 {
     int res;
@@ -240,30 +409,10 @@ int tokenize_next(tokenize_t *t)
         return 0;
     }
 
-restart:
     res = tokenize_next_internal(t);
 
     if (res == EOF)
         return EOF;
-
-    // block comment?
-    if (!strncmp(t->token,"/*",2)) {
-        while (1) {
-            res = tokenize_next_internal(t);
-            if (res == EOF)
-                return -10;
-            int len = (int) strlen(t->token);
-            if (len >= 2 && !strncmp(&t->token[len-2],"*/", 2))
-                break;
-        }
-        goto restart;
-    }
-
-    // end of line comment? If so, instantly consume the rest of this line.
-    if (!strncmp(t->token,"//", 2)) {
-        tokenize_flush_line(t);
-        goto restart;
-    }
 
     return res;
 }
@@ -276,7 +425,8 @@ int tokenize_peek(tokenize_t *t)
         return res;
 
     res = tokenize_next(t);
-    t->hasnext = 1;
+    if (res != EOF)
+      t->hasnext = 1;
 
     return res;
 }

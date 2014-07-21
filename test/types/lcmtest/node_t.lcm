@@ -1,10 +1,15 @@
-// This is an example of a recursive type.  You can use this to implement 
-// data structures such as linked lists and trees.
-
 package lcmtest;
 
+// This is an example of a recursive type.  You can use this to implement data
+// structures such as linked lists and trees.
 struct node_t
 {
     int32_t        num_children;
+
+    // Recursive types are allowed in variable-length arrays.
     lcmtest.node_t   children[num_children];
+
+    // Recursive types are not allowed in any other situation.  For example,
+    // this is illegal:
+    //   lcmtest.node_t   subnode;
 }
