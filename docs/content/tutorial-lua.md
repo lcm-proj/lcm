@@ -1,9 +1,8 @@
-/**
-
-\page tut_lua Lua Tutorial
+Lua Tutorial {#tut_lua}
+====
 \brief Sending and receiving LCM messages with Lua
 
-\section tut_lua_intro Introduction
+# Introduction {#tut_lua_intro}
 
 This tutorial will walk you through the main tasks for exchanging LCM messages
 using the Lua API.  The topics covered
@@ -32,7 +31,7 @@ take a moment to open up the files and inspect the generated
 code.  Note that if \c exlcm/init.lua already existed, then it will be
 regenerated as necessary.
 
-\section tut_lua_initialize Initializing LCM
+# Initializing LCM {#tut_lua_initialize}
 
 The first task for any application that uses LCM is to initialize the library.
 In Lua, this is very straightforward:
@@ -57,7 +56,7 @@ data), see the documentation for \ref lcm_create().
 
 If an error occurs initializing LCM, then the initializer will throw a Lua error.
 
-\section tut_lua_publishing Publishing a message
+# Publishing a message {#tut_lua_publishing}
 
 When you create an LCM data type and generate Lua code with <tt>lcm-gen</tt>,
 that data type will then be available as a Lua class with the same name.  For
@@ -140,7 +139,7 @@ transmitted with each packet that identifies the contents to receivers.
 Receivers subscribe to different channels using this identifier, allowing
 uninteresting data to be discarded quickly and efficiently.
 
-\section tut_lua_receive Receiving LCM Messages
+# Receiving LCM Messages {#tut_lua_receive}
 
 As discussed above, each LCM message is transmitted with an attached channel
 name.  You can use these channel names to determine which LCM messages your
@@ -214,5 +213,3 @@ print out a message every few seconds or check for input somewhere else), you
 can use the \ref lcm_userdata_handle_timeout method. This method will block for
 up to the specified number of milliseconds, and then return a boolean: true if
 a message was recieved and handled, and false otherwise.
-
-**/

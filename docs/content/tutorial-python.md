@@ -1,9 +1,8 @@
-/**
-
-\page tut_python Python Tutorial
+Python Tutorial {#tut_python}
+====
 \brief Sending and receiving LCM messages with Python
 
-\section tut_python_intro Introduction
+# Introduction {#tut_python_intro}
 
 This tutorial will walk you through the main tasks for exchanging LCM messages
 using the Python API.  The topics covered
@@ -32,7 +31,7 @@ take a moment to open up the files and inspect the generated
 code.  Note that if \c exlcm/__init__.py already existed, then it will be
 appended to if necessary, and the existing contents left otherwise untouched.
 
-\section tut_python_initialize Initializing LCM
+# Initializing LCM {#tut_python_initialize}
 
 The first task for any application that uses LCM is to initialize the library.
 In Python, this is very straightforward:
@@ -57,7 +56,7 @@ data), see the documentation for \ref lcm_create().
 
 If an error occurs initializing LCM, then an IOError is raised.
 
-\section tut_python_publishing Publishing a message
+# Publishing a message {#tut_python_publishing}
 
 When you create an LCM data type and generate Python code with <tt>lcm-gen</tt>,
 that data type will then be available as a Python class with the same name.  For
@@ -112,7 +111,7 @@ transmitted with each packet that identifies the contents to receivers.
 Receivers subscribe to different channels using this identifier, allowing
 uninteresting data to be discarded quickly and efficiently.
 
-\section tut_python_receive Receiving LCM Messages
+# Receiving LCM Messages {#tut_python_receive}
 
 As discussed above, each LCM message is transmitted with an attached channel
 name.  You can use these channel names to determine which LCM messages your
@@ -177,5 +176,3 @@ conjunction with the Python select module or some other event loop to check
 when LCM messages have arrived.  See
 <tt>examples/python/listener_select.py</tt> in the LCM source distribution for
 an example.
-
-**/

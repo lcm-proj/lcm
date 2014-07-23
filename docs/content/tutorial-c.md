@@ -1,9 +1,8 @@
-/**
-
-\page tutorial_c C Tutorial
+C Tutorial {#tutorial_c}
+====
 \brief Sending and receiving LCM messages with C
 
-\section tutorial_c_intro Introduction
+# Introduction {#tutorial_c_intro}
 
 This tutorial will walk you through the main tasks for exchanging messages
 using the LCM C API.  It covers the following topics:
@@ -26,7 +25,7 @@ package name "exlcm" was prepended to the file name.  This is how LCM emulates
 namespaces in C, and the package name is also prefixed to the generated C struct name.  
 If you have the time, take a moment to open up those two files and inspect the generated code.
 
-\section tutorial_c_initialize Initializing LCM
+# Initializing LCM {#tutorial_c_initialize}
 
 The first task for any application that uses LCM is to
 initialize the library.  Here's an example of that (and how to clean
@@ -62,7 +61,7 @@ see the API reference for lcm_create().
 Once you're all done, it's a good idea to call lcm_destroy() to clean
 up any resources used by LCM.
     
-\section tutorial_c_publishing Publishing a message
+# Publishing a message {#tutorial_c_publishing}
 
 When you create an LCM data type and generate C code with <tt>lcm-gen</tt>,
 that data type will then be available as a C struct with the same name.  For
@@ -140,7 +139,7 @@ transmitted with each packet that identifies the contents to receivers.
 Receivers subscribe to different channels using this identifier, allowing
 uninteresting data to be discarded quickly and efficiently.
 
-\section tutorial_c_receive Receiving LCM Messages
+# Receiving LCM Messages {#tutorial_c_receive}
 
 As discussed above, each LCM message is transmitted with an attached channel
 name.  You can use these channel names to determine which LCM messages your
@@ -216,5 +215,3 @@ descriptor, which can be obtained with lcm_get_fileno().  Whenever this
 file descriptor becomes readable, the application should call lcm_handle()
 which is guaranteed to not block in such a situation.  Additional examples for
 doing this can be found in <tt>examples/c</tt>, in the LCM source distribution.
-
-**/

@@ -1,9 +1,9 @@
-/**
+Java Tutorial {#tut_java}
+====
 
-\page tut_java Java Tutorial
 \brief Sending and receiving LCM messages with Java
 
-\section tut_java_intro Introduction
+# Introduction {#tut_java_intro}
 
 This tutorial will show you how to use all of the core functionality of LCM,
 and is intended for those who have a working knowledge of Java. For detailed
@@ -40,7 +40,7 @@ You should then have a file \c my_types.jar, which is a Java archive containing
 the Java bindings for the example message.  In order to use LCM types, you must
 include the jar file on your classpath.
   
-\section tut_java_initialize Initializing LCM
+# Initializing LCM {#tut_java_initialize}
   
 You will need to make sure that <em>lcm.jar</em> is in your classpath, and
 your Java classes will need to include "import lcm.lcm.*".
@@ -57,7 +57,7 @@ For communication across computers, or other usages such as reading data from
 an LCM logfile (e.g., to post-process or analyze previously collected data),
 see the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/index.html">Java API reference</a>.
 
-\section tut_java_publish Publishing a message
+# Publishing a message {#tut_java_publish}
   
 We can instantiate and then publish some sample data as follows:
     
@@ -102,7 +102,7 @@ Receivers subscribe to different channels using this identifier, allowing
 uninteresting data to be discarded quickly and efficiently.
 
  
-\section tut_java_subscribe Subscribing to messages
+# Subscribing to messages {#tut_java_subscribe}
   
 In order to receive messages, you must implement an <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/LCMSubscriber.html">LCMSubscriber</a> and pass it
 to <a
@@ -143,7 +143,7 @@ The LCM instance has a background thread that constantly listens for messages.
 When a message on channel <tt>"EXAMPLE"</tt> arrives, the LCM thread will
 invoke the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/LCMSubscriber.html#messageReceived(lcm.lcm.LCM, java.lang.String, lcm.lcm.LCMDataInputStream)">messageReceived()</a> method.  
 
-\subsection tut_java_together Putting it all together
+## Putting it all together {#tut_java_together}
 
 Here's an example of a complete subscriber application:
 
@@ -213,7 +213,7 @@ public class MySubscriber implements LCMSubscriber
 The full example is included in the LCM source distribution, in the
 <tt>examples/java</tt> directory.
 
-\section tut_java_compiling_running Compiling and running
+# Compiling and running {#tut_java_compiling_running}
 
 To compile and run the examples, let's assume that the \c lcm.jar file is in the
 current directory, along with \c SendMessage.java,  
@@ -234,9 +234,7 @@ java -cp .:lcm.jar MySubscriber
 java -cp .:lcm.jar SendMessage 
 \endverbatim
 
-\section tut_java_notes Additional notes
+# Additional notes {#tut_java_notes}
 
 See the \ref java_notes "Java notes" page for some additional information
 related to LCM development with Java.
-
-**/

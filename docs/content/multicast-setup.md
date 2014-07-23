@@ -1,9 +1,8 @@
-/**
-
-\page multicast UDP Multicast Setup
+UDP Multicast Setup {#multicast}
+====
 \brief Getting maximum performance on your LAN or local host
 
-\section multicast_single_host Using LCM on a single host
+# Using LCM on a single host {#multicast_single_host}
 
 Since LCM uses UDP Multicast as a transport mechanism, a valid multicast route
 must always be defined.  This means that to use LCM, even for
@@ -26,9 +25,9 @@ following commands:
 Remember, you must always do this to use LCM if your machine is <em>not
 connected</em> to any external network.
 
-\section multicast_multihost Using LCM across multiple hosts
+# Using LCM across multiple hosts {#multicast_multihost}
 
-\subsection multicast_ttl Choosing a TTL
+## Choosing a TTL {#multicast_ttl}
 
 LCM by default uses a time-to-live (TTL) value of 0.  This will prevent any
 LCM packets from being transmitted on the wire.  Only local applications will
@@ -46,7 +45,7 @@ exaple, in the bash shell:
   export LCM_DEFAULT_URL=udpm://239.255.76.67:7667?ttl=1
 \endverbatim
 
-\subsection multicast_igmp Using IGMP snooping
+## Using IGMP snooping {#multicast_igmp}
 
 When the multicast protocol was designed, it was intended that on local
 subnets it would act like broadcast traffic.  However, for high-bandwidth
@@ -67,7 +66,7 @@ this, the hosts will eventually stop sending IGMP subscription requests, and
 the switch will "fail open" causing all multicast traffic to be broadcast
 again.
 
-\subsection multicast_firewalls Firewalls
+## Firewalls {#multicast_firewalls}
 
 If your operating system is running a firewall, then be sure to check its
 settings and make sure that it is allowing UDP Multicast traffic to get
@@ -76,7 +75,7 @@ multicast group and port you're using (defined in the LCM URL).  The exact
 method of doing this depends heavily on the specific firewall software
 installed, so general instructions can't be given here.
 
-\subsection multicast_mixed_speed Mixed-speed networks
+## Mixed-speed networks {#multicast_mixed_speed}
 
 If you have a subnet with devices of different speeds, such as 10Mbps links
 mixed with 100Mbps links, be extra careful using multicast.  LCM traffic will
@@ -95,7 +94,7 @@ consumer-grade switches to managed switches, which often have better buffering
 strategies.  As a last resort, separating the slow devices from high-speed
 devices using two levels of switches can also improve the situation.
 
-\section multicast_kernel_buffer Kernel UDP receive buffer sizing
+# Kernel UDP receive buffer sizing {#multicast_kernel_buffer}
 
 When used on a properly shielded local area network, the most common source of
 dropped and lost packets is not electrical disturbances.  Instead, it will
@@ -159,10 +158,8 @@ receive buffer was generally sufficient.
 
 \note http://www.29west.com/docs/THPM/udp-buffer-sizing.html is also a good source of information on UDP buffer sizing.
 
-\section multicast_firewalls Firewalls
+# Firewalls {#multicast_firewalls}
 
 Systems with overzealous firewalls may prevent UDP multicast traffic from
 reaching an LCM process.  If you are having trouble receiving messages across
 the network, check your firewall settings.
-
-**/

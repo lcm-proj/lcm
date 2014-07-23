@@ -1,9 +1,8 @@
-/**
-
-\page tut_dotnet .NET Tutorial
+.NET Tutorial {#tut_dotnet}
+====
 \brief An example use case in C#.NET
 
-\section tut_dotnet_intro Introduction
+# Introduction {#tut_dotnet_intro}
 
 This tutorial will guide you through the basics of using LCM .NET port. As
 the .NET port is basically a transcription of the original Java library, it
@@ -70,7 +69,7 @@ Besides, the \p lcm-gen utility accepts the following .NET-specific options:
   
 As with all tutorials, we will publish and subscribe to the "EXAMPLE" channel.
   
-\section tut_dotnet_initialize Initializing LCM
+# Initializing LCM {#tut_dotnet_initialize}
   
 There are at least two ways how to use the .NET port of LCM:
   
@@ -118,7 +117,7 @@ For detailed information on the LCM .NET API please see the
 <a href="http://lcm.googlecode.com/svn/www/reference/lcm-dotnet/index.html">.NET
 API reference</a>.
 
-\section tut_dotnet_publish Publishing a message
+# Publishing a message {#tut_dotnet_publish}
   
 In order to use LCM types, you can either build an assembly containing
 generated classes (needed when using LCM from other .NET language then C#), or
@@ -143,7 +142,7 @@ The data are simply assigned to appropriate fields inside the message container.
 Passing the message object to the \p Publish method of the LCM object places
 it to specified channel of the communication bus (channel "EXAMPLE" here).
 
-\section tut_dotnet_subscribe Subscribing to messages
+# Subscribing to messages {#tut_dotnet_subscribe}
   
 In order to receive messages, you have two options:
   
@@ -200,7 +199,7 @@ be used.
 myLCM.SubscribeAll(new SimpleSubscriber());
 \endcode
 
-\section tut_dotnet_together Putting it all together
+# Putting it all together {#tut_dotnet_together}
 
 Distribution of the LCM library includes a directory of examples.  One of them
 is a couple of programs implementing all described features. Please go to
@@ -320,9 +319,7 @@ namespace LCM.Examples
 }
 \endcode
 
-\section tut_dotnet_conclusion Conclusion
+# Conclusion {#tut_dotnet_conclusion}
 
 The tutorial has provided a basic working demonstration of the LCM library
 .NET port. For further information, please see the LCM documentation.
-
-**/

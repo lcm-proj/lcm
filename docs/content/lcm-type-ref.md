@@ -1,10 +1,9 @@
-/**
-
-\page type_specification LCM Type Specification Language
+LCM Type Specification Language {#type_specification}
+====
 
 \brief The usage and features of the LCM type language.
 
-\section type_specification_intro Introduction
+# Introduction {#type_specification_intro}
 
 In addition to providing a set of communications primitives, LCM
 includes utilities for generating platform-independent marshalling
@@ -17,7 +16,7 @@ described elsewhere. Note that it is possible to use the data
 marshalling features of LCM independently of LCM's communication
 facilities.
 
-\subsection type_specification_design_goals Design Goals
+## Design Goals {#type_specification_design_goals}
 
 The primary design goals of the LCM marshalling facility are:
 
@@ -37,7 +36,7 @@ compromises. In some cases, a least-common-denominator approach
 was used to ensure that all platforms supported the features
 provided by LCM.
 
-\section type_specification_spec Type Specifications
+# Type Specifications {#type_specification_spec}
 
 Type specifications are contained in files with an ".lcm" file type. They are
 conventionally named in lower case with underscores between words: e.g., the
@@ -46,7 +45,7 @@ type "wind_speed_t" is defined in the file "wind_speed_t.lcm". The utility
 language-dependent implementation.
   
 
-\subsection type_specification_structs Structs
+## Structs {#type_specification_structs}
     
 LCM structs are compound types consisting of other types. We begin with a
 simple struct named "temperature_t" that contains a 64 bit integer named
@@ -145,7 +144,7 @@ being encoded together. In other words, the array above would be encoded in
 the order <tt> points[0][0], points[0][1], points[1][0], points[1][1],
 points[2][0], points[2][1],</tt> etc.
       
-\subsection type_specification_constants Constants
+## Constants {#type_specification_constants}
     
 LCM provides a simple way of declaring constants that can subsequently be used
 to populate other data fields. Users are free to use these constants in any
@@ -164,7 +163,7 @@ struct my_constants_t
 Note that types must be declared for constants. All integer and floating point
 types are supported.  String constants are not supported.
     
-\section type_specification_namespaces Namespaces
+# Namespaces {#type_specification_namespaces}
   
 LCM allows types to be defined in a namespace, making it easier for users to
 use types from other organizations even if those types have the same name. The
@@ -190,7 +189,7 @@ struct camera_image_t {
 LCM users are encouraged to put their types into a unique namespace and to
 fully-qualify the types of all the member fields.
   
-\section type_specification_performance Performance Considerations
+# Performance Considerations {#type_specification_performance}
   
 The runtime costs of encoding and decoding with LCM are generally not a system
 bottleneck. The marshalling functions are dramatically faster than an XML
@@ -198,7 +197,7 @@ implementation, but since each member must be individually processed (in order
 to ensure correct byte ordering, for example), LCM is more expensive than
 using raw C structs. That said, LCM's first application used over 40MB/s.
   
-\section type_specification_fingerprints Fingerprint Computation
+# Fingerprint Computation {#type_specification_fingerprints}
   
 Fingerprints ensure that the encoding and decoding methods agree on the format
 of a data type. The fingerprints are a function, recursively, of all of the
@@ -295,7 +294,7 @@ C() = R{K_C + R{K_B + R{K_A}}}
 
 Note that without the rotations, B() == C().
 
-\subsection type_specification_related_work Related Work
+## Related Work {#type_specification_related_work}
 
 LCM is most similar to XDR, which is used in RPC and is described by RFC4506.
 Both use a C-like syntax (and even C keywords like "struct"). LCM differs in
@@ -314,7 +313,7 @@ space. A more rigid type definition, along with space-efficient and
 computationally-efficient encodings, are better fits for these types of
 applications.
 
-\subsection type_specification_history Development History
+## Development History {#type_specification_history}
 
 LCM's marshalling facilities were created for use on MIT's DARPA
 Urban Challenge vehicle, with development starting during the
@@ -323,5 +322,3 @@ since been deprecated: reducing the number of extraneous
 features has simplified the code base significantly, since most
 features typically impact several language back-ends (currently
 C, Java, and Python).
-
-**/

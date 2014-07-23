@@ -1,9 +1,8 @@
-/**
-
-\page tutorial_general Tutorial
+Tutorial {#tutorial_general}
+====
 \brief An example use case from start to finish.
 
-\section tutorial_general_intro Introduction
+# Introduction {#tutorial_general_intro}
 
 LCM is a package designed to allow multiple processes to exchange messages in
 a safe and high-performance way.   
@@ -50,5 +49,3 @@ languages, consult the following sections for language-specific tutorials.
 Note that C and C++ are considered to be separate programming languages.  It is
 possible to use the C bindings from C++, but there are also LCM bindings
 specific to C++.
-
-**/

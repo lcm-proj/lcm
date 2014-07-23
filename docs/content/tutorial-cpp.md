@@ -1,9 +1,8 @@
-/**
-
-\page tut_cpp C++ Tutorial
+C++ Tutorial {#tut_cpp}
+====
 \brief Sending and receiving LCM messages with C++
 
-\section tut_cpp_intro Introduction
+# Introduction {#tut_cpp_intro}
 
 This tutorial will walk you through the main tasks for exchanging LCM messages
 using the C++ API.  The C++ API is a header-only wrapper around the C API, and
@@ -27,7 +26,7 @@ message type.  Notice that there is no <tt>.cpp</tt> file generated: the
 binding is a header only.  If you have the time, take a moment to open up the
 file and inspect the generated code.
 
-\section tut_cpp_initialize Initializing LCM
+# Initializing LCM {#tut_cpp_initialize}
 
 The first task for any application that uses LCM is to initialize the library.
 Here's an example:
@@ -65,7 +64,7 @@ The class destructor takes care of releasing resources and cleaning up, so it
 is sufficient to explicitly delete heap-allocated instances or let
 stack-allocated instances go out of scope.
 
-\section tut_cpp_publishing Publishing a message
+# Publishing a message {#tut_cpp_publishing}
 
 When you create an LCM data type and generate C++ code with <tt>lcm-gen</tt>,
 that data type will then be available as a C++ class with the same name.  For
@@ -148,7 +147,7 @@ uninteresting data to be discarded quickly and efficiently.
 The full example is available in runnable form as
 <tt>examples/cpp/send_message.cpp</tt> in the LCM source distribution.
 
-\section tut_cpp_receive Receiving LCM Messages
+# Receiving LCM Messages {#tut_cpp_receive}
 
 As discussed above, each LCM message is transmitted with an attached channel
 name.  You can use these channel names to determine which LCM messages your
@@ -232,5 +231,3 @@ some type of event loop.  In these cases, it is best to monitor the LCM file
 descriptor, which can be obtained with lcm::LCM::getFileno().  Whenever this
 file descriptor becomes readable, the application should call lcm::LCM::handle()
 which is guaranteed to not block in such a situation.
-
-**/

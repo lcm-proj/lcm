@@ -1,10 +1,9 @@
-/**
-
-\page lua_api The Lua LCM API
+The Lua LCM API {#lua_api}
+====
 
 The Lua API wraps the LCM C API, and is meant to mirror its functionality and organization. The bulk of the Lua API is represented by the LCM userdata, which basically wraps \ref LcmC_lcm_t "lcm_t and related functions".
 
-\section lcm_userdata LCM Userdata
+# LCM Userdata {#lcm_userdata}
 
 The LCM userdata manages an internal \ref LcmC_lcm_t "lcm_t" and any number of subscriptions.
 
@@ -23,7 +22,7 @@ The LCM userdata manages an internal \ref LcmC_lcm_t "lcm_t" and any number of s
 
 <hr>
 
-\subsection lcm_userdata_new new
+## new {#lcm_userdata_new}
 
 \em Parameters
 
@@ -48,7 +47,7 @@ local lc2 = lcm.lcm.new('udpm://239.255.76.67:7667?ttl=1')
 
 <hr>
 
-\subsection lcm_userdata_publish publish
+## publish {#lcm_userdata_publish}
 
 \em Parameters
 
@@ -79,7 +78,7 @@ lc:publish('somechannel', encoded_msg)
 
 <hr>
 
-\subsection lcm_userdata_subscribe subscribe
+## subscribe {#lcm_userdata_subscribe}
 
 \em Parameters
 
@@ -114,7 +113,7 @@ local sub = lc:subscribe('somechannel', handler)
 
 <hr>
 
-\subsection lcm_userdata_unsubscribe unsubscribe
+## unsubscribe {#lcm_userdata_unsubscribe}
 
 \em Parameters
 
@@ -150,7 +149,7 @@ lc:unsubscribe(sub)
 
 <hr>
 
-\subsection lcm_userdata_handle handle
+## handle {#lcm_userdata_handle}
 
 \em Parameters
 
@@ -176,7 +175,7 @@ lc:handle()
 
 <hr>
 
-\subsection lcm_userdata_handle_timeout handle_timeout
+## handle_timeout {#lcm_userdata_handle_timeout}
 
 \em Parameters
 
@@ -205,7 +204,7 @@ if not ok then
 
 <hr>
 
-\subsection lcm_userdata_timedhandle timedhandle (Deprecated)
+## timedhandle (Deprecated) {#lcm_userdata_timedhandle}
 
 This function is deprecated! Please use \ref lcm_userdata_handle_timeout "handle_timeout" instead!
 
@@ -233,5 +232,3 @@ if not ok then
   print('timed out!')
  end
 \endverbatim
-
-*/

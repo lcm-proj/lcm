@@ -1,8 +1,7 @@
-/**
+Notes for Java developers {#java_notes}
+====
 
-\page java_notes Notes for Java developers
-
-\section java_lcm_jar Finding lcm.jar
+# Finding lcm.jar {#java_lcm_jar}
 
 The core LCM Java implementation is built to \c lcm.jar.  To use LCM in your
 application, \c lcm.jar must be in your Java classpath.
@@ -15,13 +14,13 @@ often be found installed in <tt>/usr/local/share/java/</tt>.
 Separately, \c lcm.jar can also be found in the \c lcm-java subdirectory of the
 source distribution after compiling LCM from source.
 
-\section java_notes_separately Building lcm.jar separately from the rest of LCM
+# Building lcm.jar separately from the rest of LCM {#java_notes_separately}
 
 It is possible to build \c lcm.jar separately from the rest of LCM.  The \c
 lcm-java subdirectory of the source distribution contains a \c build.xml file,
 which can be used with a build tool like Apache Ant or Eclipse.  
 
-\section tut_java_namespace Namespace issues
+# Namespace issues {#tut_java_namespace}
 
 LCM supports namespaces for data types, making it easier for users to use the
 types defined by others without worry that those types will conflict with
@@ -40,5 +39,3 @@ Note that if you do not specify a package name in your LCM type definition
 file, lcm-gen will (by default) put those types into the "lcmtypes" Java
 package. This is necessary because Java does not officially support packageless
 classes.
-
-**/

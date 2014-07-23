@@ -1,9 +1,8 @@
-/**
-
-\page tut_matlab MATLAB Tutorial
+MATLAB Tutorial {#tut_matlab}
+====
 \brief Sending and receiving LCM messages with MATLAB
 
-\section tut_matlab_intro Introduction
+# Introduction {#tut_matlab_intro}
 
 This tutorial will walk you through the main tasks for exchanging LCM messages
 using the MATLAB API.  The topics covered
@@ -18,7 +17,7 @@ Using LCM with MATLAB is almost identical to using LCM through Java, since the
 MATLAB API relies on the LCM Java bindings.  However, there are some
 differences, which mainly consist of how incoming messages are handled.
 
-\section tut_matlab_setup Setting up MATLAB to use LCM
+# Setting up MATLAB to use LCM {#tut_matlab_setup}
 
 This tutorial uses the \p example_t message type defined in the
 \ref tut_lcmgen "type definition tutorial", and assumes that you have
@@ -57,7 +56,7 @@ javaaddpath my_types.jar
 
 Once this is all setup, you can start using LCM from your MATLAB scripts.
 
-\section tut_matlab_initialize Initializing LCM
+# Initializing LCM {#tut_matlab_initialize}
 
 You can initialize LCM from MATLAB as follows:
 
@@ -69,7 +68,7 @@ The \c lc object now contains the communications context and interface for LCM.
 Since we're simply calling into the Java API here, see the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/index.html">Java API
 documentation</a> for other ways on setting up LCM.
 
-\section tut_matlab_publishing Publishing a message
+# Publishing a message {#tut_matlab_publishing}
 
 We can instantiate and publish some sample data as follows:
     
@@ -102,7 +101,7 @@ uninteresting data to be discarded quickly and efficiently.
 The full example is available in runnable form in the 
 <tt>examples/matlab</tt> directory in the LCM source distribution.
 
-\section tut_matlab_receive Receiving LCM Messages
+# Receiving LCM Messages {#tut_matlab_receive}
 
 As discussed above, each LCM message is transmitted with an attached channel
 name.  You can use these channel names to determine which LCM messages your
@@ -169,5 +168,3 @@ a maximum number of messages to queue up to avoid falling behind real-time.
 
 The full example is available in runnable form in the
 <tt>examples/matlab</tt> directory in the LCM source distribution.
-
-**/

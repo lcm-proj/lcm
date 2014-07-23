@@ -1,6 +1,5 @@
-/**
-
-\page tut_lcmgen Defining a data type - \c example_t
+Defining a data type - \c example_t {#tut_lcmgen}
+====
 
 When exchanging messages between two applications, you may have
 many different types of data.  LCM allows you to define these types as
@@ -43,7 +42,7 @@ referring to any other LCM types in the definition of your struct.  The
 example type definitions.  This feature, and others are all described in more
 detail in the \ref type_specification "LCM type specification".
 
-\section tutorial_general_lcmgen Generating language-specific bindings
+# Generating language-specific bindings {#tutorial_general_lcmgen}
 
 Run <tt>lcm-gen</tt> with the arguments listed in a row from the following
 table to generate bindings for the programming language of your choice.
@@ -62,5 +61,3 @@ table to generate bindings for the programming language of your choice.
 You can pass additional arguments to <tt>lcm-gen</tt> to adjust its behavior
 for each programming language.  Run <tt>lcm-gen -h</tt> to get a full list of
 its available options.
-
-**/
