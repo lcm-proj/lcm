@@ -1,20 +1,20 @@
 #!/usr/bin/python
-import os
-import random
 import struct
-import time
 import unittest
 
-import lcm
 import lcmtest
 
 class TestByteArray(unittest.TestCase):
 
     def test_construct(self):
+        """Verify that a message constructed without explicitly setting any
+        fields can be encoded."""
         msg = lcmtest.byte_array_t()
         msg.encode()
 
     def test_fill(self):
+        """Create a message with a small byte array and encode it.  Decode it
+        and verify that the decoded message matches the original."""
         msg = lcmtest.byte_array_t()
         msg.num_bytes = 5
         msg.data = struct.pack("bbbbb", 1, 2, 3, 4, 5)
