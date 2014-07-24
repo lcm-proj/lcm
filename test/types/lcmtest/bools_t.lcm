@@ -1,0 +1,15 @@
+package lcmtest;
+
+struct bools_t
+{
+    boolean one_bool;
+
+    boolean fixed_array[3];
+
+    int8_t num_a;
+    int8_t num_b;
+
+    boolean one_dim_array[num_a];
+
+    boolean two_dim_array[num_a][num_b];
+}

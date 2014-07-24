@@ -70,6 +70,8 @@ subprocess.check_call("cpp/memq_test", shell=True)
 
 # Call the lcm_file_test independantly
 print("Running Python tests.")
+subprocess.check_call("python/bool_test.py", shell=True)
+subprocess.check_call("python/byte_array_test.py", shell=True)
 subprocess.check_call("python/lcm_file_test.py", shell=True)
 subprocess.check_call("python/lcm_memq_test.py", shell=True)
 subprocess.check_call("python/lcm_thread_test.py", shell=True)

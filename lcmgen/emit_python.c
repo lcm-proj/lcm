@@ -148,7 +148,9 @@ _emit_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
                 accessor, mn, sfx);
     } else if (!strcmp ("byte", tn)) {
         emit (indent, "%sstruct.unpack('B', buf.read(1))[0]%s", accessor, sfx);
-    } else if (!strcmp ("int8_t", tn) || !(strcmp ("boolean", tn))) {
+    } else if (!(strcmp ("boolean", tn))) {
+        emit (indent, "%sbool(struct.unpack('b', buf.read(1))[0])%s", accessor, sfx);
+    } else if (!strcmp ("int8_t", tn)) {
         emit (indent, "%sstruct.unpack('b', buf.read(1))[0]%s", accessor, sfx);
     } else if (!strcmp ("int16_t", tn)) {
         emit (indent, "%sstruct.unpack('>h', buf.read(2))[0]%s", accessor, sfx);
@@ -182,8 +184,18 @@ _emit_decode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
     if (!strcmp ("byte", tn)) {
         emit (indent, "%sbuf.read(%s%s)%s", 
                 accessor, fixed_len ? "":"self.", len, suffix);
+    } else if (!strcmp ("boolean", tn)) {
+        if(fixed_len) {
+            emit (indent, "%smap(bool, struct.unpack('>%s%c', buf.read(%d)))%s",
+                    accessor, len, _struct_format(lm),
+                    atoi(len) * _primitive_type_size(tn),
+                    suffix);
+        } else {
+            emit (indent,
+                    "%smap(bool, struct.unpack('>%%d%c' %% self.%s, buf.read(self.%s)))%s",
+                    accessor, _struct_format(lm), len, len, suffix);
+        }
     } else if (!strcmp ("int8_t", tn) || 
-               !strcmp ("boolean", tn) ||
                !strcmp ("int16_t", tn) ||
                !strcmp ("int32_t", tn) ||
                !strcmp ("int64_t", tn) ||
@@ -251,7 +263,7 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         char fmt = _struct_format (lm);
 
         if (! lm->dimensions->len) {
-            if (fmt) {
+            if (fmt && strcmp(lm->type->lctypename, "boolean")) {
                 g_queue_push_tail (struct_fmt, GINT_TO_POINTER ((int)fmt));
                 g_queue_push_tail (struct_members, lm);
             } else {
