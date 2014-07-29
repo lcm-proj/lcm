@@ -1,3 +1,16 @@
+Jul 29, 2014
+============
+
+ Release 1.1.1
+
+ This is a bugfix and maintenance release.
+
+ Python:
+ - Fix multithreading issue
+
+ lcm-gen:
+ - C / C++ bindings include field comments in generated files.
+
 Jul 16, 2014
 ============
 
