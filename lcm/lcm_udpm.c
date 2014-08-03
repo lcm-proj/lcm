@@ -477,6 +477,7 @@ udp_read_packet (lcm_udpm_t *lcm)
         vec.iov_len = 65535;
 
         struct msghdr msg;
+        memset(&msg, 0, sizeof(struct msghdr));
         msg.msg_name = &lcmb->from;
         msg.msg_namelen = sizeof (struct sockaddr);
         msg.msg_iov = &vec;
