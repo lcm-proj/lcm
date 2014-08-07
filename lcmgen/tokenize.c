@@ -70,7 +70,7 @@ void tokenize_destroy(tokenize_t *t)
 }
 
 /** get the next character, counting line numbers, and columns. **/
-char tokenize_next_char(tokenize_t *t)
+int tokenize_next_char(tokenize_t *t)
 {
     // return an unget() char if one is stored
     if (t->unget_char >= 0) {
