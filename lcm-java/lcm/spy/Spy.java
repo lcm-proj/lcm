@@ -207,7 +207,7 @@ public class Spy
             cd.viewerFrame = new JFrame(cd.name);
 
             cd.viewer = new ObjectPanel(cd.name);
-            cd.viewer.setObject(cd.last);
+            cd.viewer.setObject(cd.last, cd.last_utime);
 
             //	cd.viewer = new ObjectViewer(cd.name, cd.cls, null);
             cd.viewerFrame.setLayout(new BorderLayout());
@@ -220,7 +220,7 @@ public class Spy
 
             //jdp.add(cd.viewerFrame);
             
-            cd.viewerFrame.setSize(500,400);
+            cd.viewerFrame.setSize(650,400);
             cd.viewerFrame.setVisible(true);
         } else {
             cd.viewerFrame.setVisible(true);
@@ -352,7 +352,7 @@ public class Spy
                 cd.last = o;
 
                 if (cd.viewer != null)
-                    cd.viewer.setObject(o);
+                    cd.viewer.setObject(o, cd.last_utime);
 
             } catch (NullPointerException ex) {
                 cd.nerrors++;
