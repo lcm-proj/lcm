@@ -47,6 +47,8 @@ public class ObjectPanel extends JPanel
     String currentlyHoveringName;
     
     LinkedList<ZoomableChartScrollWheel> charts;
+    
+    
 
     class Section
     {
@@ -106,8 +108,6 @@ public class ObjectPanel extends JPanel
                         currentlyHoveringSection = section;
                         currentlyHoveringName = pair.getKey();
                         
-                        System.out.println(currentlyHoveringName);
-                        
                         if (e.getButton() == MouseEvent.BUTTON1)
                         {
                             displayDetailedChart(data, false);
@@ -124,7 +124,6 @@ public class ObjectPanel extends JPanel
             }
         }
         currentlyHoveringSection = null;
-        System.out.println("null hover");
         return false;
     }
     
@@ -152,7 +151,7 @@ public class ObjectPanel extends JPanel
             // increase number of points cached
             trace.setMaxSize(detailedSparklineChartSize);
             
-            trace.setColor(Color.RED);
+            trace.setColor(newChart.colorList.get(charts.size()));
             newChart.addTrace(trace);
             
             charts.add(newChart);

@@ -25,7 +25,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
     private long lastFocusTime = -1;
     private JFrame frame = null;
     
-    private ArrayList<Color> colorList = new ArrayList<Color>();
+    public ArrayList<Color> colorList = new ArrayList<Color>();
     
     private ArrayList<AAxis> rightYAxis = new ArrayList<AAxis>();
     
@@ -42,10 +42,10 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         colorList.add(Color.RED);
         colorList.add(Color.BLACK);
         colorList.add(Color.BLUE);
-        colorList.add(Color.GREEN);
         colorList.add(Color.ORANGE);
         colorList.add(Color.MAGENTA);
         colorList.add(Color.CYAN);
+        colorList.add(Color.GREEN);
         
     }
     
