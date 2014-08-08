@@ -86,35 +86,45 @@ public class ObjectPanel extends JPanel
     
     public boolean doSparklineInteraction(int x, int y, MouseEvent e)
     {
-        for (Section section : sections)
+        for (int i = sections.size() -1; i > -1; i--)
         {
-            Iterator<Entry<String, SparklineData>> it = section.sparklines.entrySet().iterator();
-            while (it.hasNext())
+            Section section = sections.get(i);
+            
+            if (section.y0 < y && section.y1 > y)
             {
-                Entry<String, SparklineData> pair = it.next();
-                
-                SparklineData data = pair.getValue();
-                if (data.ymin < y && data.ymax > y && section.collapsed == false)
+                // we might be hovering over something in this section
+            
+                Iterator<Entry<String, SparklineData>> it = section.sparklines.entrySet().iterator();
+                while (it.hasNext())
                 {
-                    // the mouse is above this sparkline
-                    currentlyHoveringSection = section;
-                    currentlyHoveringName = pair.getKey();
+                    Entry<String, SparklineData> pair = it.next();
                     
-                    if (e.getButton() == MouseEvent.BUTTON1)
+                    SparklineData data = pair.getValue();
+                    if (data.ymin < y && data.ymax > y && section.collapsed == false)
                     {
-                        displayDetailedChart(data, false);
-                    } else if (e.getButton() == MouseEvent.BUTTON2
-                            || e.getButton() == MouseEvent.BUTTON3)
-                    {
-                        // right click means open a new chart
-                        displayDetailedChart(data, true);
+                        // the mouse is above this sparkline
+                        currentlyHoveringSection = section;
+                        currentlyHoveringName = pair.getKey();
+                        
+                        System.out.println(currentlyHoveringName);
+                        
+                        if (e.getButton() == MouseEvent.BUTTON1)
+                        {
+                            displayDetailedChart(data, false);
+                        } else if (e.getButton() == MouseEvent.BUTTON2
+                                || e.getButton() == MouseEvent.BUTTON3)
+                        {
+                            // right click means open a new chart
+                            displayDetailedChart(data, true);
+                        }
+                        
+                        return true;
                     }
-                    
-                    return true;
                 }
             }
         }
         currentlyHoveringSection = null;
+        System.out.println("null hover");
         return false;
     }
     
@@ -355,7 +365,7 @@ public class ObjectPanel extends JPanel
             boolean isHovering = false;
             Section cs = sections.get(sec);
             if (currentlyHoveringSection != null && cs == currentlyHoveringSection
-                    && currentlyHoveringName == name)
+                    && currentlyHoveringName.equals(name))
             {
                 isHovering = true;
                 g.setColor(Color.RED);
@@ -395,10 +405,6 @@ public class ObjectPanel extends JPanel
                     // first instance of this graph, so create it
                     
                     data = new SparklineData();
-                    data.xmin = x[3];
-                    data.xmax = x[3]+sparklineWidth;
-                    data.ymin = y - textheight;
-                    data.ymax = y;
                     data.name = name;
                     data.isHovering = false;
                     
@@ -422,6 +428,14 @@ public class ObjectPanel extends JPanel
                     chart = data.chart;
                     trace = chart.getTraces().first();
                 }
+                
+                // update the positions every loop in case another section
+                // was collapsed
+                
+                data.xmin = x[3];
+                data.xmax = x[3]+sparklineWidth;
+                data.ymin = y - textheight;
+                data.ymax = y;
                 
                 // add the data to our trace
                 if (updateGraphs)
