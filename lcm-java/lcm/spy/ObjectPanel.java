@@ -14,17 +14,29 @@ import java.util.zip.*;
 
 import java.lang.reflect.*;
 
+import info.monitorenter.gui.chart.Chart2D;
+import info.monitorenter.gui.chart.ITrace2D;
+import info.monitorenter.gui.chart.ITracePoint2D;
+import info.monitorenter.gui.chart.traces.Trace2DLtd;
+
 public class ObjectPanel extends JPanel
 {
     String name;
     Object o;
-    int lastwidth = 400;
+    long utime; // time of this message's arrival
+    int lastwidth = 500;
     int lastheight = 100;
 
     class Section
     {
         int x0, y0, x1, y1; // bounding coordinates for sensitive area
         boolean collapsed;
+        HashMap<String, Chart2D> sparklines;
+        
+        public Section()
+        {
+            sparklines = new HashMap<String, Chart2D>();
+        }
     }
 
     ArrayList<Section> sections = new ArrayList<Section>();
@@ -32,7 +44,8 @@ public class ObjectPanel extends JPanel
     public ObjectPanel(String name)
     {
         this.name = name;
-
+        this.setLayout(null); // oh I hate to do this
+        
         addMouseListener(new MyMouseAdapter());
     }
 
@@ -41,13 +54,14 @@ public class ObjectPanel extends JPanel
         Color indentColors[] = new Color[] {new Color(255,255,255), new Color(230,230,255), new Color(200,200,255)};
         Graphics g;
         FontMetrics fm;
-
+        JPanel panel;
+        
         int indent_level;
         int color_level;
         int y;
         int textheight;
 
-        int x[] = new int[3]; // tab stops
+        int x[] = new int[4]; // tab stops
         int indentpx = 20; // pixels per indent level
 
         int maxwidth;
@@ -168,6 +182,159 @@ public class ObjectPanel extends JPanel
 
             g.setFont(of);
         }
+        
+        public void drawStringsAndGraph(Class cls, String name, Object o, boolean isstatic,
+                int sec)
+        {
+            if (collapse_depth > 0)
+                return;
+
+            if (isstatic)
+            {
+                drawStrings(cls.getName(), name, o.toString(), isstatic);
+                return;
+            }
+            
+            Font of = g.getFont();
+
+            g.drawString(cls.getName(),  x[0] + indent_level*indentpx, y);
+            g.drawString(name,  x[1], y);
+            g.drawString(o.toString(), x[2], y);
+            
+            // draw the graph
+            double value = Double.NaN;
+            
+            if (o instanceof Double)
+                value = (Double) o;
+            else if (o instanceof Float)
+                value = (Float) o;
+            else if (o instanceof Integer)
+                value = (Integer) o;
+            else if (o instanceof Long)
+                value = (Long) o;
+
+            if (!Double.isNaN(value))
+            {
+                // see if we already have a sparkline for this item
+                
+                Section cs = sections.get(sec);
+                
+                Chart2D chart = cs.sparklines.get(name);
+                ITrace2D trace;
+                
+                if (chart == null)
+                {
+                    // first instance of this graph, so create it
+                    
+                    chart = new Chart2D();
+                    cs.sparklines.put(name, chart);
+                    
+                    trace = new Trace2DLtd(name);
+                    
+                    chart.addTrace(trace);
+                    chart.setPaintLabels(false);
+                    chart.setBackground(new Color(230,230,255));
+                    chart.getAxisX().getAxisTitle().setTitle("");
+                    chart.getAxisX().setPaintScale(false);
+                    chart.getAxisY().getAxisTitle().setTitle("");
+                    chart.getAxisY().setPaintScale(false);
+                    chart.setSize(500, 500);
+                    chart.setLocation(x[3], y+200*sec);
+                    
+                    //panel.add(chart);
+                    
+                } else {
+                    trace = chart.getTraces().first();
+                }
+                
+                // add the data to our trace
+                trace.addPoint((double)utime/1000000.0d, value);
+                
+                // draw the graph
+                DrawSparkline(x[3], y, trace);
+
+                
+                
+                
+                //g.drawString(String.valueOf(thisValue), x[3], y);
+            }
+            /*
+            } else {
+                drawStrings(cls.getName(), name, o.toString(), isstatic);
+                return;
+            }
+*/
+            y+= textheight;
+
+            g.setFont(of);
+        }
+        
+        public void DrawSparkline(int x, int y, ITrace2D trace)
+        {
+            if (trace.getSize() < 2)
+            {
+                return;
+            }
+            
+            Graphics2D g2 = (Graphics2D) g;
+            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                    RenderingHints.VALUE_ANTIALIAS_ON);
+            g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
+                    RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            
+            Iterator<ITracePoint2D> iter = trace.iterator();
+            
+            final int height = textheight;
+            double width = 150;
+            
+            width = width * ((double)trace.getSize() / (double) trace.getMaxSize());
+            
+            if (trace.getMaxX() == trace.getMinX())
+            {
+                // no time series, don't draw anything
+                return;
+            }
+                    
+            if (trace.getMaxY() == trace.getMinY())
+            {
+                // divide by zero error coming up!
+                // bail and draw a straight line down the center of the graph
+                
+                g2.drawLine(x, y-(int)((double)height/(double)2), x+(int)width, y-(int)((double)height/(double)2));
+                return;
+            }
+            
+            // decide on the main axis scale
+            double xscale = width / (trace.getMaxX() - trace.getMinX());
+            double yscale = height / (trace.getMaxY() - trace.getMinY());
+            
+            
+            
+            boolean first = true;
+            
+            double lastX = 0, lastY = 0, thisX, thisY;
+            
+            while (iter.hasNext())
+            {
+                ITracePoint2D point = iter.next();
+                
+                if (first) 
+                {
+                    first = false;
+                    lastX = (point.getX() - trace.getMinX()) * xscale + x;
+                    lastY = y - (point.getY() - trace.getMinY()) * yscale;
+                } else {
+                    thisX = (point.getX() - trace.getMinX()) * xscale + x;
+                    thisY = y - (point.getY() - trace.getMinY()) * yscale;
+                    
+                    g2.drawLine((int)lastX, (int)lastY, (int)thisX, (int)thisY);
+                    lastX = thisX;
+                    lastY = thisY;
+                }
+            }
+            
+        }
+        
 
         public void spacer()
         {
@@ -216,9 +383,10 @@ public class ObjectPanel extends JPanel
         }
     }
 
-    public void setObject(Object o)
+    public void setObject(Object o, long utime)
     {
         this.o = o;
+        this.utime = utime;
         repaint();
     }
 
@@ -248,17 +416,19 @@ public class ObjectPanel extends JPanel
 
         PaintState ps = new PaintState();
 
+        ps.panel = this;
         ps.g = g;
         ps.fm = fm;
         ps.textheight = 15;
         ps.y = ps.textheight;
         ps.indent_level=1;
         ps.x[0] = 0;
-        ps.x[1] = Math.min(200, width/3);
-        ps.x[2] = Math.min(ps.x[1]+200, 2*width/3);
+        ps.x[1] = Math.min(200, width/4);
+        ps.x[2] = Math.min(ps.x[1]+200, 2*width/4);
+        ps.x[3] = ps.x[2]+150;
 
         if (o != null)
-            paintRecurse(g, ps, "", o.getClass(), o, false);
+            paintRecurse(g, ps, "", o.getClass(), o, false, -1);
 
         ps.finish();
         if (ps.y != lastheight) {
@@ -268,7 +438,7 @@ public class ObjectPanel extends JPanel
         }
     }
 
-    void paintRecurse(Graphics g, PaintState ps, String name, Class cls, Object o, boolean isstatic)
+    void paintRecurse(Graphics g, PaintState ps, String name, Class cls, Object o, boolean isstatic, int section)
     {
         if (o == null) {
             ps.drawStrings(cls==null ? "(null)" : cls.getName(), name, "(null)", isstatic);
@@ -284,7 +454,8 @@ public class ObjectPanel extends JPanel
         } else if (cls.isPrimitive()) {
 
             // This is our common case...
-            ps.drawStrings(cls.getName(), name, o.toString(), isstatic);
+            ps.drawStringsAndGraph(cls, name, o, isstatic, section);
+            //ps.drawStrings(cls.getName(), name, o.toString(), isstatic);
 
         } else if (o instanceof Enum) {
 
@@ -300,7 +471,7 @@ public class ObjectPanel extends JPanel
             int sec = ps.beginSection(cls.getComponentType()+"[]", name+"["+sz+"]", "");
 
             for (int i = 0; i < sz; i++)
-                paintRecurse(g, ps, name+"["+i+"]", cls.getComponentType(), Array.get(o, i), isstatic);
+                paintRecurse(g, ps, name+"["+i+"]", cls.getComponentType(), Array.get(o, i), isstatic, sec);
 
             ps.endSection(sec);
 
@@ -313,13 +484,20 @@ public class ObjectPanel extends JPanel
             Field fs[] = cls.getFields();
             for (Field f : fs) {
                 try {
-                    paintRecurse(g, ps, f.getName(), f.getType(), f.get(o), isstatic || ((f.getModifiers()&Modifier.STATIC) != 0));
+                    paintRecurse(g, ps, f.getName(), f.getType(), f.get(o), isstatic || ((f.getModifiers()&Modifier.STATIC) != 0), sec);
                 } catch (Exception ex) {
+                    System.out.println(ex.getMessage());
+                    ex.printStackTrace(System.out);                    
                 }
             }
 
             ps.endSection(sec);
         }
+    }
+    
+    public boolean isOptimizedDrawingEnabled()
+    {
+        return false;
     }
 
     class MyMouseAdapter extends MouseAdapter
