@@ -277,6 +277,8 @@ public class ObjectPanel extends JPanel
             }
             
             Graphics2D g2 = (Graphics2D) g;
+            Color oldColor = g2.getColor();
+            
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
@@ -284,6 +286,7 @@ public class ObjectPanel extends JPanel
             
             Iterator<ITracePoint2D> iter = trace.iterator();
             
+            final int circleSize = 3;
             final int height = textheight;
             double width = 150;
             
@@ -299,8 +302,10 @@ public class ObjectPanel extends JPanel
             {
                 // divide by zero error coming up!
                 // bail and draw a straight line down the center of the graph
-                
+                g2.setColor(Color.RED);
                 g2.drawLine(x, y-(int)((double)height/(double)2), x+(int)width, y-(int)((double)height/(double)2));
+                g2.setColor(Color.BLACK);
+                g2.fillOval(x + (int) width - 1, y-(int)((double)height/(double)2) - 1, circleSize, circleSize);
                 return;
             }
             
@@ -308,7 +313,7 @@ public class ObjectPanel extends JPanel
             double xscale = width / (trace.getMaxX() - trace.getMinX());
             double yscale = height / (trace.getMaxY() - trace.getMinY());
             
-            
+            g2.setColor(Color.RED);
             
             boolean first = true;
             
@@ -331,8 +336,16 @@ public class ObjectPanel extends JPanel
                     lastX = thisX;
                     lastY = thisY;
                 }
+                
+                if (!iter.hasNext())
+                {
+                    // this is the last point, bold it
+                    g2.setColor(Color.BLACK);
+                    g2.fillOval((int)lastX - 1, (int)lastY - 1, 3, 3);
+                    g2.setColor(Color.RED);
+                }
             }
-            
+            g2.setColor(oldColor);
         }
         
 
