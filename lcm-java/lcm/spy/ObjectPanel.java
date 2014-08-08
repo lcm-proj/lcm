@@ -30,6 +30,7 @@ public class ObjectPanel extends JPanel
     long utime; // time of this message's arrival
     int lastwidth = 500;
     int lastheight = 100;
+    boolean updateGraphs = false;
     
     final int sparklineWidth = 150;
     Section currentlyHoveringSection;
@@ -68,7 +69,7 @@ public class ObjectPanel extends JPanel
         addMouseMotionListener(new MyMouseMotionListener());
     }
     
-    public void setSparklineHover(int x, int y)
+    public boolean doSparklineInteraction(int x, int y, boolean clicked)
     {
         for (Section section : sections)
         {
@@ -78,16 +79,23 @@ public class ObjectPanel extends JPanel
                 Entry<String, SparklineData> pair = it.next();
                 
                 SparklineData data = pair.getValue();
-                if (data.ymin < y && data.ymax > y)
+                if (data.ymin < y && data.ymax > y && section.collapsed == false)
                 {
                     // the mouse is above this sparkline
                     currentlyHoveringSection = section;
                     currentlyHoveringName = pair.getKey();
-                    return;
+                    
+                    if (clicked)
+                    {
+                        System.out.println(pair.getKey());
+                    }
+                    
+                    return true;
                 }
             }
         }
         currentlyHoveringSection = null;
+        return false;
     }
 
     class PaintState
@@ -301,7 +309,10 @@ public class ObjectPanel extends JPanel
                 }
                 
                 // add the data to our trace
-                trace.addPoint((double)utime/1000000.0d, value);
+                if (updateGraphs)
+                {
+                    trace.addPoint((double)utime/1000000.0d, value);
+                }
                 
                 // draw the graph
                 DrawSparkline(x[3], y, trace, isHovering);
@@ -377,7 +388,7 @@ public class ObjectPanel extends JPanel
             double xscale = (double)width / (double)(numSecondsDisplayed);
             double yscale = height / (trace.getMaxY() - trace.getMinY());
             
-            double earliestTimeDisplayed = (System.nanoTime()/1000 - numSecondsDisplayed * 1000000)/1000000;
+            double earliestTimeDisplayed = ((double)utime/(double)1000000.0 - numSecondsDisplayed);
             
             g2.setColor(lineColor);
             
@@ -461,6 +472,7 @@ public class ObjectPanel extends JPanel
         {
             g.setColor(Color.white);
             g.fillRect(0, y, getWidth(), getHeight());
+            updateGraphs = false;
         }
     }
 
@@ -468,6 +480,7 @@ public class ObjectPanel extends JPanel
     {
         this.o = o;
         this.utime = utime;
+        this.updateGraphs = true;
         repaint();
     }
 
@@ -586,6 +599,11 @@ public class ObjectPanel extends JPanel
         public void mouseClicked(MouseEvent e)
         {
             int x = e.getX(), y = e.getY();
+            
+            if (doSparklineInteraction(x, y, true) == true)
+            {
+                return;
+            }
 
             int bestsection = -1;
 
@@ -613,7 +631,8 @@ public class ObjectPanel extends JPanel
         
         public void mouseMoved(MouseEvent e)
         {
-            setSparklineHover(e.getX(), e.getY());
+            doSparklineInteraction(e.getX(), e.getY(), false);
+            repaint();
         }
     }
 }
