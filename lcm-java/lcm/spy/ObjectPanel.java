@@ -342,6 +342,10 @@ public class ObjectPanel extends JPanel
 
             if (bestsection >= 0)
                 sections.get(bestsection).collapsed ^= true;
+            
+            // call repaint here so the UI will update immediately instead of
+            // waiting for the next piece of data
+            repaint();
         }
     }
 }
