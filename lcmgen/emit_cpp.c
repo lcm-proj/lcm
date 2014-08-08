@@ -629,11 +629,11 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
 
         int decode_indent = 1 + depth;
         if(!lcm_is_constant_size_array(lm)) {
-            emit_start(1 + depth, "this->%s", lm->membername);
+            emit(1 + depth, "if(%s%s) {", dim_size_prefix(dim->size), dim->size);
+            emit_start(2 + depth, "this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
             emit_end(".resize(%s%s);", dim_size_prefix(dim->size), dim->size);
-            emit(1 + depth, "if(%s%s) {", dim_size_prefix(dim->size), dim->size);
             decode_indent++;
         }
 
