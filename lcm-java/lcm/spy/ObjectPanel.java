@@ -21,7 +21,12 @@ import lcm.spy.ObjectPanel.SparklineData;
 import info.monitorenter.gui.chart.Chart2D;
 import info.monitorenter.gui.chart.ITrace2D;
 import info.monitorenter.gui.chart.ITracePoint2D;
+import info.monitorenter.gui.chart.ZoomableChart;
+import info.monitorenter.gui.chart.controls.LayoutFactory;
+import info.monitorenter.gui.chart.rangepolicies.RangePolicyMinimumViewport;
 import info.monitorenter.gui.chart.traces.Trace2DLtd;
+import info.monitorenter.gui.chart.views.ChartPanel;
+import info.monitorenter.util.Range;
 
 public class ObjectPanel extends JPanel
 {
@@ -54,7 +59,8 @@ public class ObjectPanel extends JPanel
         int xmin, xmax;
         int ymin, ymax;
         boolean isHovering;
-        Chart2D chart;
+        ZoomableChartScrollWheel chart;
+        String name;
     }
 
     ArrayList<Section> sections = new ArrayList<Section>();
@@ -87,7 +93,7 @@ public class ObjectPanel extends JPanel
                     
                     if (clicked)
                     {
-                        System.out.println(pair.getKey());
+                        displayDetailedChart(data);
                     }
                     
                     return true;
@@ -96,6 +102,17 @@ public class ObjectPanel extends JPanel
         }
         currentlyHoveringSection = null;
         return false;
+    }
+    
+    public void displayDetailedChart(SparklineData data)
+    {
+        JFrame frame = new JFrame(data.name);
+        
+        Container content = frame.getContentPane(); 
+        content.add(data.chart);
+        
+        frame.setSize(600, 500);
+        frame.setVisible(true);
     }
 
     class PaintState
@@ -280,7 +297,7 @@ public class ObjectPanel extends JPanel
                 // see if we already have a sparkline for this item
                 
                 SparklineData data = cs.sparklines.get(name);
-                Chart2D chart;
+                ZoomableChartScrollWheel chart;
                 ITrace2D trace;
                 
                 if (data == null)
@@ -292,14 +309,22 @@ public class ObjectPanel extends JPanel
                     data.xmax = x[3]+sparklineWidth;
                     data.ymin = y - textheight;
                     data.ymax = y;
+                    data.name = name;
                     data.isHovering = false;
                     
-                    chart = new Chart2D();
+                    chart = new ZoomableChartScrollWheel();
+                    chart.getAxisX().setPaintGrid(true);
+                    chart.getAxisY().setPaintGrid(true);
+                    chart.setUseAntialiasing(true);
+                    chart.setGridColor(Color.LIGHT_GRAY);
+                    
                     data.chart = chart;
+                    
                     
                     cs.sparklines.put(name, data);
                     
                     trace = new Trace2DLtd(500, name);
+                    trace.setColor(Color.RED);
                     
                     chart.addTrace(trace);
                     
@@ -344,10 +369,6 @@ public class ObjectPanel extends JPanel
             
             Graphics2D g2 = (Graphics2D) g;
             
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                    RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS,
-                    RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             
             Iterator<ITracePoint2D> iter = trace.iterator();
             
@@ -501,6 +522,11 @@ public class ObjectPanel extends JPanel
 
     public void paint(Graphics g)
     {
+        Graphics2D g2 = (Graphics2D) g;
+        
+        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+        
         int width = getWidth(), height = getHeight();
         g.setColor(Color.white);
         g.fillRect(0, 0, width, height);
