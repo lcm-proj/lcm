@@ -22,9 +22,11 @@ import info.monitorenter.gui.chart.Chart2D;
 import info.monitorenter.gui.chart.ITrace2D;
 import info.monitorenter.gui.chart.ITracePoint2D;
 import info.monitorenter.gui.chart.ZoomableChart;
+import info.monitorenter.gui.chart.axis.AxisLinear;
 import info.monitorenter.gui.chart.controls.LayoutFactory;
 import info.monitorenter.gui.chart.rangepolicies.RangePolicyMinimumViewport;
 import info.monitorenter.gui.chart.traces.Trace2DLtd;
+import info.monitorenter.gui.chart.traces.painters.TracePainterDisc;
 import info.monitorenter.gui.chart.views.ChartPanel;
 import info.monitorenter.util.Range;
 
@@ -33,13 +35,18 @@ public class ObjectPanel extends JPanel
     String name;
     Object o;
     long utime; // time of this message's arrival
+    long startuTime; // time lcm-spy was started
     int lastwidth = 500;
     int lastheight = 100;
+    final int sparklineChartSize = 500;
+    final int detailedSparklineChartSize = 2000;
     boolean updateGraphs = false;
     
     final int sparklineWidth = 150;
     Section currentlyHoveringSection;
     String currentlyHoveringName;
+    
+    LinkedList<ZoomableChartScrollWheel> charts;
 
     class Section
     {
@@ -59,23 +66,25 @@ public class ObjectPanel extends JPanel
         int xmin, xmax;
         int ymin, ymax;
         boolean isHovering;
-        ZoomableChartScrollWheel chart;
+        Chart2D chart;
         String name;
     }
 
     ArrayList<Section> sections = new ArrayList<Section>();
 
-    public ObjectPanel(String name)
+    public ObjectPanel(String name, long startuTime, LinkedList<ZoomableChartScrollWheel> charts)
     {
         this.name = name;
+        this.startuTime = startuTime;
         this.setLayout(null); // oh I hate to do this
+        this.charts = charts;
         
         addMouseListener(new MyMouseAdapter());
         
         addMouseMotionListener(new MyMouseMotionListener());
     }
     
-    public boolean doSparklineInteraction(int x, int y, boolean clicked)
+    public boolean doSparklineInteraction(int x, int y, MouseEvent e)
     {
         for (Section section : sections)
         {
@@ -91,9 +100,14 @@ public class ObjectPanel extends JPanel
                     currentlyHoveringSection = section;
                     currentlyHoveringName = pair.getKey();
                     
-                    if (clicked)
+                    if (e.getButton() == MouseEvent.BUTTON1)
                     {
-                        displayDetailedChart(data);
+                        displayDetailedChart(data, false);
+                    } else if (e.getButton() == MouseEvent.BUTTON2
+                            || e.getButton() == MouseEvent.BUTTON3)
+                    {
+                        // right click means open a new chart
+                        displayDetailedChart(data, true);
                     }
                     
                     return true;
@@ -104,15 +118,91 @@ public class ObjectPanel extends JPanel
         return false;
     }
     
-    public void displayDetailedChart(SparklineData data)
+    public void displayDetailedChart(SparklineData data, boolean openNewChart)
     {
-        JFrame frame = new JFrame(data.name);
+        // check to see if we are already displaying this trace
+        Trace2DLtd trace = (Trace2DLtd) data.chart.getTraces().first();
         
-        Container content = frame.getContentPane(); 
-        content.add(data.chart);
+        for (ZoomableChartScrollWheel chart : charts)
+        {
+            if (chart.getTraces().contains(trace))
+            {
+                chart.toFront();
+                return;
+            }
+        }
         
-        frame.setSize(600, 500);
-        frame.setVisible(true);
+        
+        if (openNewChart || charts.size() < 1)
+        {
+            JFrame frame = new JFrame(data.name);
+            
+            final ZoomableChartScrollWheel newChart = new ZoomableChartScrollWheel();
+            
+            // increase number of points cached
+            trace.setMaxSize(detailedSparklineChartSize);
+            
+            trace.setColor(Color.RED);
+            newChart.addTrace(trace);
+            
+            charts.add(newChart);
+            
+            Container content = frame.getContentPane(); 
+            content.add(newChart);
+            
+            newChart.addFrameFocusTimer(frame);
+            
+            frame.addWindowListener(new WindowAdapter()
+            {
+                public void windowClosing(WindowEvent e)
+                {
+                    for (ITrace2D trace : newChart.getTraces())
+                    {
+                        
+                        ((Trace2DLtd)trace).setMaxSize(sparklineChartSize);
+                    }
+                    charts.remove(newChart);
+                }
+            });
+            
+            frame.setSize(600, 500);
+            frame.setVisible(true);
+        } else
+        {
+            // find the most recently interacted with chart
+            
+            long bestFocusTime = -1;
+            ZoomableChartScrollWheel bestChart = null;
+            
+            for (ZoomableChartScrollWheel chart : charts)
+            {
+                if (chart.getLastFocusTime() > bestFocusTime)
+                {
+                    bestFocusTime = chart.getLastFocusTime();
+                    bestChart = chart;
+                }
+                
+            }
+            
+            if (bestChart != null)
+            {
+               // add this trace to the winning chart
+                
+                if (!bestChart.getTraces().contains(trace))
+                {
+                    // add an axis
+                    AxisLinear axis = new AxisLinear();
+                    bestChart.addAxisYRight(axis);
+                    trace.setMaxSize(detailedSparklineChartSize);
+                    trace.setColor(bestChart.getNextColor());
+                    bestChart.addTrace(trace, bestChart.getAxisX(), axis);
+                    
+                }
+                bestChart.toFront();
+                
+            }
+            
+        }
     }
 
     class PaintState
@@ -297,7 +387,7 @@ public class ObjectPanel extends JPanel
                 // see if we already have a sparkline for this item
                 
                 SparklineData data = cs.sparklines.get(name);
-                ZoomableChartScrollWheel chart;
+                Chart2D chart;
                 ITrace2D trace;
                 
                 if (data == null)
@@ -312,21 +402,21 @@ public class ObjectPanel extends JPanel
                     data.name = name;
                     data.isHovering = false;
                     
-                    chart = new ZoomableChartScrollWheel();
-                    chart.getAxisX().setPaintGrid(true);
-                    chart.getAxisY().setPaintGrid(true);
-                    chart.setUseAntialiasing(true);
-                    chart.setGridColor(Color.LIGHT_GRAY);
+                    chart = new Chart2D();
                     
                     data.chart = chart;
                     
                     
                     cs.sparklines.put(name, data);
                     
-                    trace = new Trace2DLtd(500, name);
-                    trace.setColor(Color.RED);
+                    trace = new Trace2DLtd(sparklineChartSize, name);
                     
                     chart.addTrace(trace);
+                    
+                    // add marker lines to the trace
+                    TracePainterDisc markerPainter = new TracePainterDisc();
+                    markerPainter.setDiscSize(2);
+                    trace.addTracePainter(markerPainter);
                     
                 } else {
                     chart = data.chart;
@@ -500,7 +590,7 @@ public class ObjectPanel extends JPanel
     public void setObject(Object o, long utime)
     {
         this.o = o;
-        this.utime = utime;
+        this.utime = utime - startuTime;
         this.updateGraphs = true;
         repaint();
     }
@@ -626,7 +716,7 @@ public class ObjectPanel extends JPanel
         {
             int x = e.getX(), y = e.getY();
             
-            if (doSparklineInteraction(x, y, true) == true)
+            if (doSparklineInteraction(x, y, e) == true)
             {
                 return;
             }
@@ -657,7 +747,7 @@ public class ObjectPanel extends JPanel
         
         public void mouseMoved(MouseEvent e)
         {
-            doSparklineInteraction(e.getX(), e.getY(), false);
+            doSparklineInteraction(e.getX(), e.getY(), e);
             repaint();
         }
     }
