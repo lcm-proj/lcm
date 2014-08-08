@@ -21,8 +21,8 @@ import lcm.lcm.*;
 public class Spy
 {
     LCM          lcm;
-
     LCMTypeDatabase handlers;
+    long startuTime;
 
     HashMap<String,  ChannelData> channelMap = new HashMap<String, ChannelData>();
     ArrayList<ChannelData>        channelList = new ArrayList<ChannelData>();
@@ -30,6 +30,7 @@ public class Spy
     ChannelTableModel _channelTableModel = new ChannelTableModel();
     TableSorter  channelTableModel = new TableSorter(_channelTableModel);
     JTable channelTable = new JTable(channelTableModel);
+    LinkedList<ZoomableChartScrollWheel> charts = new LinkedList<ZoomableChartScrollWheel>();
 
     ArrayList<SpyPlugin> plugins = new ArrayList<SpyPlugin>();
 
@@ -58,6 +59,8 @@ public class Spy
         // XXX weird bug, if clearButton is added after JScrollPane, we get an error.
         jif.add(clearButton, BorderLayout.SOUTH);
         jif.add(new JScrollPane(channelTable), BorderLayout.CENTER);
+        
+        startuTime = utime_now();
 
         jif.setSize(800,600);
         jif.setVisible(true);
@@ -206,7 +209,7 @@ public class Spy
         if (cd.viewer == null) {
             cd.viewerFrame = new JFrame(cd.name);
 
-            cd.viewer = new ObjectPanel(cd.name);
+            cd.viewer = new ObjectPanel(cd.name, startuTime, charts);
             cd.viewer.setObject(cd.last, cd.last_utime);
 
             //	cd.viewer = new ObjectViewer(cd.name, cd.cls, null);
