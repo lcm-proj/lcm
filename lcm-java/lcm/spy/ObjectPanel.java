@@ -6,13 +6,17 @@ import javax.swing.table.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.Point;
 
 import java.io.*;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.jar.*;
 import java.util.zip.*;
 
 import java.lang.reflect.*;
+
+import lcm.spy.ObjectPanel.SparklineData;
 
 import info.monitorenter.gui.chart.Chart2D;
 import info.monitorenter.gui.chart.ITrace2D;
@@ -26,17 +30,30 @@ public class ObjectPanel extends JPanel
     long utime; // time of this message's arrival
     int lastwidth = 500;
     int lastheight = 100;
+    
+    final int sparklineWidth = 150;
+    Section currentlyHoveringSection;
+    String currentlyHoveringName;
 
     class Section
     {
         int x0, y0, x1, y1; // bounding coordinates for sensitive area
         boolean collapsed;
-        HashMap<String, Chart2D> sparklines;
+        HashMap<String, SparklineData> sparklines;
+        
         
         public Section()
         {
-            sparklines = new HashMap<String, Chart2D>();
+            sparklines = new HashMap<String, SparklineData>();
         }
+    }
+    
+    class SparklineData
+    {
+        int xmin, xmax;
+        int ymin, ymax;
+        boolean isHovering;
+        Chart2D chart;
     }
 
     ArrayList<Section> sections = new ArrayList<Section>();
@@ -47,6 +64,30 @@ public class ObjectPanel extends JPanel
         this.setLayout(null); // oh I hate to do this
         
         addMouseListener(new MyMouseAdapter());
+        
+        addMouseMotionListener(new MyMouseMotionListener());
+    }
+    
+    public void setSparklineHover(int x, int y)
+    {
+        for (Section section : sections)
+        {
+            Iterator<Entry<String, SparklineData>> it = section.sparklines.entrySet().iterator();
+            while (it.hasNext())
+            {
+                Entry<String, SparklineData> pair = it.next();
+                
+                SparklineData data = pair.getValue();
+                if (data.ymin < y && data.ymax > y)
+                {
+                    // the mouse is above this sparkline
+                    currentlyHoveringSection = section;
+                    currentlyHoveringName = pair.getKey();
+                    return;
+                }
+            }
+        }
+        currentlyHoveringSection = null;
     }
 
     class PaintState
@@ -194,12 +235,25 @@ public class ObjectPanel extends JPanel
                 drawStrings(cls.getName(), name, o.toString(), isstatic);
                 return;
             }
+            Color oldColor = g.getColor();
+            
+            boolean isHovering = false;
+            Section cs = sections.get(sec);
+            if (currentlyHoveringSection != null && cs == currentlyHoveringSection
+                    && currentlyHoveringName == name)
+            {
+                isHovering = true;
+                g.setColor(Color.RED);
+            }
+            
             
             Font of = g.getFont();
 
             g.drawString(cls.getName(),  x[0] + indent_level*indentpx, y);
             g.drawString(name,  x[1], y);
             g.drawString(o.toString(), x[2], y);
+            
+            g.setColor(oldColor);
             
             // draw the graph
             double value = Double.NaN;
@@ -217,33 +271,32 @@ public class ObjectPanel extends JPanel
             {
                 // see if we already have a sparkline for this item
                 
-                Section cs = sections.get(sec);
-                
-                Chart2D chart = cs.sparklines.get(name);
+                SparklineData data = cs.sparklines.get(name);
+                Chart2D chart;
                 ITrace2D trace;
                 
-                if (chart == null)
+                if (data == null)
                 {
                     // first instance of this graph, so create it
                     
-                    chart = new Chart2D();
-                    cs.sparklines.put(name, chart);
+                    data = new SparklineData();
+                    data.xmin = x[3];
+                    data.xmax = x[3]+sparklineWidth;
+                    data.ymin = y - textheight;
+                    data.ymax = y;
+                    data.isHovering = false;
                     
-                    trace = new Trace2DLtd(name);
+                    chart = new Chart2D();
+                    data.chart = chart;
+                    
+                    cs.sparklines.put(name, data);
+                    
+                    trace = new Trace2DLtd(500, name);
                     
                     chart.addTrace(trace);
-                    chart.setPaintLabels(false);
-                    chart.setBackground(new Color(230,230,255));
-                    chart.getAxisX().getAxisTitle().setTitle("");
-                    chart.getAxisX().setPaintScale(false);
-                    chart.getAxisY().getAxisTitle().setTitle("");
-                    chart.getAxisY().setPaintScale(false);
-                    chart.setSize(500, 500);
-                    chart.setLocation(x[3], y+200*sec);
-                    
-                    //panel.add(chart);
                     
                 } else {
+                    chart = data.chart;
                     trace = chart.getTraces().first();
                 }
                 
@@ -251,7 +304,7 @@ public class ObjectPanel extends JPanel
                 trace.addPoint((double)utime/1000000.0d, value);
                 
                 // draw the graph
-                DrawSparkline(x[3], y, trace);
+                DrawSparkline(x[3], y, trace, isHovering);
 
                 
                 
@@ -267,17 +320,18 @@ public class ObjectPanel extends JPanel
             y+= textheight;
 
             g.setFont(of);
+            g.setColor(oldColor);
         }
         
-        public void DrawSparkline(int x, int y, ITrace2D trace)
+        public void DrawSparkline(int x, int y, ITrace2D trace, boolean isHovering)
         {
+
             if (trace.getSize() < 2)
             {
                 return;
             }
             
             Graphics2D g2 = (Graphics2D) g;
-            Color oldColor = g2.getColor();
             
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
@@ -288,32 +342,44 @@ public class ObjectPanel extends JPanel
             
             final int circleSize = 3;
             final int height = textheight;
-            double width = 150;
+            double numSecondsDisplayed = 5.0;
+            final double width = sparklineWidth;
             
-            width = width * ((double)trace.getSize() / (double) trace.getMaxSize());
+            //width = width * ((double)trace.getSize() / (double) trace.getMaxSize());
             
             if (trace.getMaxX() == trace.getMinX())
             {
                 // no time series, don't draw anything
                 return;
             }
+            
+            Color pointColor = Color.RED;
+            Color lineColor = Color.BLACK;
+            
+            if (isHovering) {
+                Color temp = pointColor;
+                pointColor = lineColor;
+                lineColor = temp;
+            }
                     
             if (trace.getMaxY() == trace.getMinY())
             {
                 // divide by zero error coming up!
                 // bail and draw a straight line down the center of the graph
-                g2.setColor(Color.RED);
+                g2.setColor(lineColor);
                 g2.drawLine(x, y-(int)((double)height/(double)2), x+(int)width, y-(int)((double)height/(double)2));
-                g2.setColor(Color.BLACK);
+                g2.setColor(pointColor);
                 g2.fillOval(x + (int) width - 1, y-(int)((double)height/(double)2) - 1, circleSize, circleSize);
                 return;
             }
             
             // decide on the main axis scale
-            double xscale = width / (trace.getMaxX() - trace.getMinX());
+            double xscale = (double)width / (double)(numSecondsDisplayed);
             double yscale = height / (trace.getMaxY() - trace.getMinY());
             
-            g2.setColor(Color.RED);
+            double earliestTimeDisplayed = (System.nanoTime()/1000 - numSecondsDisplayed * 1000000)/1000000;
+            
+            g2.setColor(lineColor);
             
             boolean first = true;
             
@@ -326,13 +392,16 @@ public class ObjectPanel extends JPanel
                 if (first) 
                 {
                     first = false;
-                    lastX = (point.getX() - trace.getMinX()) * xscale + x;
+                    lastX = (point.getX() - earliestTimeDisplayed) * xscale + x;
                     lastY = y - (point.getY() - trace.getMinY()) * yscale;
                 } else {
-                    thisX = (point.getX() - trace.getMinX()) * xscale + x;
+                    thisX = (point.getX() - earliestTimeDisplayed) * xscale + x;
                     thisY = y - (point.getY() - trace.getMinY()) * yscale;
                     
-                    g2.drawLine((int)lastX, (int)lastY, (int)thisX, (int)thisY);
+                    if (thisX >= x && lastX >= x)
+                    {
+                        g2.drawLine((int)lastX, (int)lastY, (int)thisX, (int)thisY);
+                    }
                     lastX = thisX;
                     lastY = thisY;
                 }
@@ -340,12 +409,11 @@ public class ObjectPanel extends JPanel
                 if (!iter.hasNext())
                 {
                     // this is the last point, bold it
-                    g2.setColor(Color.BLACK);
+                    g2.setColor(pointColor);
                     g2.fillOval((int)lastX - 1, (int)lastY - 1, 3, 3);
-                    g2.setColor(Color.RED);
+                    g2.setColor(lineColor);
                 }
             }
-            g2.setColor(oldColor);
         }
         
 
@@ -537,6 +605,15 @@ public class ObjectPanel extends JPanel
             // call repaint here so the UI will update immediately instead of
             // waiting for the next piece of data
             repaint();
+        }
+    }
+    
+    class MyMouseMotionListener extends MouseMotionAdapter
+    {
+        
+        public void mouseMoved(MouseEvent e)
+        {
+            setSparklineHover(e.getX(), e.getY());
         }
     }
 }
