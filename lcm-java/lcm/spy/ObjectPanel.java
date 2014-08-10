@@ -110,12 +110,15 @@ public class ObjectPanel extends JPanel
                         
                         if (e.getButton() == MouseEvent.BUTTON1)
                         {
-                            displayDetailedChart(data, false);
-                        } else if (e.getButton() == MouseEvent.BUTTON2
-                                || e.getButton() == MouseEvent.BUTTON3)
+                            displayDetailedChart(data, false, false);
+                        } else if (e.getButton() == MouseEvent.BUTTON2)
                         {
-                            // right click means open a new chart
-                            displayDetailedChart(data, true);
+                            // middle click means open a new chart
+                            displayDetailedChart(data, true, true);
+                        } else if (e.getButton() == MouseEvent.BUTTON3)
+                        {
+                        	// right click means same chart, new axis
+                        	displayDetailedChart(data, false, true);
                         }
                         
                         return true;
@@ -127,7 +130,7 @@ public class ObjectPanel extends JPanel
         return false;
     }
     
-    public void displayDetailedChart(SparklineData data, boolean openNewChart)
+    public void displayDetailedChart(SparklineData data, boolean openNewChart, boolean newAxis)
     {
         // check to see if we are already displaying this trace
         Trace2DLtd trace = (Trace2DLtd) data.chart.getTraces().first();
@@ -199,12 +202,20 @@ public class ObjectPanel extends JPanel
                 
                 if (!bestChart.getTraces().contains(trace))
                 {
-                    // add an axis
-                    AxisLinear axis = new AxisLinear();
-                    bestChart.addAxisYRight(axis);
-                    trace.setMaxSize(detailedSparklineChartSize);
+                	trace.setMaxSize(detailedSparklineChartSize);
                     trace.setColor(chartData.popColor());
-                    bestChart.addTrace(trace, bestChart.getAxisX(), axis);
+                    
+                	if (newAxis)
+                	{
+                		// add an axis
+                        AxisLinear axis = new AxisLinear();
+                        bestChart.addAxisYRight(axis);
+                        bestChart.addTrace(trace, bestChart.getAxisX(), axis);
+                	} else
+                	{
+                		bestChart.addTrace(trace);
+                	}
+                    
                     
                 }
                 bestChart.toFront();
