@@ -18,9 +18,9 @@ public class ChartData {
 		colors.add(Color.RED);
 		colors.add(Color.BLACK);
 		colors.add(Color.BLUE);
-		colors.add(Color.ORANGE);
 		colors.add(Color.MAGENTA);
 		colors.add(Color.CYAN);
+		colors.add(Color.ORANGE);
 		colors.add(Color.GREEN);
 		
 		
