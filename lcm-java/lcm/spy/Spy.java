@@ -30,12 +30,12 @@ public class Spy
     ChannelTableModel _channelTableModel = new ChannelTableModel();
     TableSorter  channelTableModel = new TableSorter(_channelTableModel);
     JTable channelTable = new JTable(channelTableModel);
-    LinkedList<ZoomableChartScrollWheel> charts = new LinkedList<ZoomableChartScrollWheel>();
+    ChartData chartData;
 
     ArrayList<SpyPlugin> plugins = new ArrayList<SpyPlugin>();
 
     JButton clearButton = new JButton("Clear");
-
+    
     public Spy(String lcmurl) throws IOException
     {
         //	sortedChannelTableModel.addMouseListenerToHeaderInTable(channelTable);
@@ -52,7 +52,7 @@ public class Spy
         tcm.getColumn(4).setMaxWidth(100);
         tcm.getColumn(5).setMaxWidth(100);
         tcm.getColumn(6).setMaxWidth(100);
-
+        
         JFrame jif = new JFrame("LCM Spy");
         jif.setLayout(new BorderLayout());
         jif.add(channelTable.getTableHeader(), BorderLayout.PAGE_START);
@@ -60,7 +60,7 @@ public class Spy
         jif.add(clearButton, BorderLayout.SOUTH);
         jif.add(new JScrollPane(channelTable), BorderLayout.CENTER);
         
-        startuTime = utime_now();
+        chartData = new ChartData(utime_now());
 
         jif.setSize(800,600);
         jif.setVisible(true);
@@ -209,7 +209,7 @@ public class Spy
         if (cd.viewer == null) {
             cd.viewerFrame = new JFrame(cd.name);
 
-            cd.viewer = new ObjectPanel(cd.name, startuTime, charts);
+            cd.viewer = new ObjectPanel(cd.name, chartData);
             cd.viewer.setObject(cd.last, cd.last_utime);
 
             //	cd.viewer = new ObjectViewer(cd.name, cd.cls, null);
