@@ -46,7 +46,7 @@ public class ObjectPanel extends JPanel
     Section currentlyHoveringSection;
     String currentlyHoveringName;
     
-    LinkedList<ZoomableChartScrollWheel> charts;
+    ChartData chartData;
     
     
 
@@ -74,12 +74,12 @@ public class ObjectPanel extends JPanel
 
     ArrayList<Section> sections = new ArrayList<Section>();
 
-    public ObjectPanel(String name, long startuTime, LinkedList<ZoomableChartScrollWheel> charts)
+    public ObjectPanel(String name, ChartData chartData)
     {
         this.name = name;
         this.startuTime = startuTime;
         this.setLayout(null); // oh I hate to do this
-        this.charts = charts;
+        this.chartData = chartData;
         
         addMouseListener(new MyMouseAdapter());
         
@@ -132,7 +132,7 @@ public class ObjectPanel extends JPanel
         // check to see if we are already displaying this trace
         Trace2DLtd trace = (Trace2DLtd) data.chart.getTraces().first();
         
-        for (ZoomableChartScrollWheel chart : charts)
+        for (ZoomableChartScrollWheel chart : chartData.getCharts())
         {
             if (chart.getTraces().contains(trace))
             {
@@ -142,7 +142,7 @@ public class ObjectPanel extends JPanel
         }
         
         
-        if (openNewChart || charts.size() < 1)
+        if (openNewChart || chartData.getCharts().size() < 1)
         {
             JFrame frame = new JFrame(data.name);
             
@@ -151,10 +151,10 @@ public class ObjectPanel extends JPanel
             // increase number of points cached
             trace.setMaxSize(detailedSparklineChartSize);
             
-            trace.setColor(newChart.colorList.get(charts.size()));
+            trace.setColor(chartData.popColor());
             newChart.addTrace(trace);
             
-            charts.add(newChart);
+            chartData.getCharts().add(newChart);
             
             Container content = frame.getContentPane(); 
             content.add(newChart);
@@ -170,7 +170,7 @@ public class ObjectPanel extends JPanel
                         
                         ((Trace2DLtd)trace).setMaxSize(sparklineChartSize);
                     }
-                    charts.remove(newChart);
+                    chartData.getCharts().remove(newChart);
                 }
             });
             
@@ -183,7 +183,7 @@ public class ObjectPanel extends JPanel
             long bestFocusTime = -1;
             ZoomableChartScrollWheel bestChart = null;
             
-            for (ZoomableChartScrollWheel chart : charts)
+            for (ZoomableChartScrollWheel chart : chartData.getCharts())
             {
                 if (chart.getLastFocusTime() > bestFocusTime)
                 {
@@ -203,7 +203,7 @@ public class ObjectPanel extends JPanel
                     AxisLinear axis = new AxisLinear();
                     bestChart.addAxisYRight(axis);
                     trace.setMaxSize(detailedSparklineChartSize);
-                    trace.setColor(bestChart.getNextColor());
+                    trace.setColor(chartData.popColor());
                     bestChart.addTrace(trace, bestChart.getAxisX(), axis);
                     
                 }
@@ -603,7 +603,7 @@ public class ObjectPanel extends JPanel
     public void setObject(Object o, long utime)
     {
         this.o = o;
-        this.utime = utime - startuTime;
+        this.utime = utime - chartData.getStartTime();
         this.updateGraphs = true;
         repaint();
     }
