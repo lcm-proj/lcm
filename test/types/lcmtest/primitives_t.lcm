@@ -29,5 +29,5 @@ struct primitives_t
     string   name;
 
     // a single boolean value
-    boolean  enabled;
+    boolean  enabled; //
 }

@@ -1,0 +1,22 @@
+package lcmtest;
+
+/// Contains a number of primitive data types
+struct comments_t
+{
+    // Comments immediately preceding a field are attached to that field.
+    int8_t   field_a;
+
+    // Both single line comments.
+    /* And multi-line
+     * comments.
+     */
+    int16_t field_b;
+
+    // Test empty comments.
+    //
+    int32_t  field_c; //
+    /**/
+    int64_t field_d;
+    /**/
+    //
+}

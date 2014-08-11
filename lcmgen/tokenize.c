@@ -341,16 +341,17 @@ int tokenize_next_internal(tokenize_t *t)
         // Single-line comment
         if (c == '/') {
             t->token_type = LCM_TOK_COMMENT;
+            c = tokenize_next_char(t);
 
             // Strip out leading '/' characters
-            do {
+            while (c == '/') {
                 c = tokenize_next_char(t);
-            } while (c == '/');
+            }
 
             // Strip out leading whitespace.
-            do {
+            while (c != EOF && c == ' ') {
                 c = tokenize_next_char(t);
-            } while (c != EOF && c == ' ');
+            }
 
             pos = 0;
 
