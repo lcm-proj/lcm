@@ -11,6 +11,9 @@ public class ChartData {
 	
 	private int colorNum = 0;
 	
+	public final int sparklineChartSize = 500;
+    public final int detailedSparklineChartSize = 2000;
+	
 	public ChartData(long startuTime)
 	{
 		this.startuTime = startuTime;
@@ -33,8 +36,14 @@ public class ChartData {
 	
 	public Color popColor()
 	{
+		Color thisColor = colors.get(colorNum % colors.size());
 		colorNum ++;
-		return colors.get(colorNum % colors.size());
+		return thisColor;
+	}
+	
+	public void pushColor()
+	{
+	    colorNum --;
 	}
 	
 	public long getStartTime()

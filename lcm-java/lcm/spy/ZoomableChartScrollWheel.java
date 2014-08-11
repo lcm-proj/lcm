@@ -1,6 +1,9 @@
 package lcm.spy;
 
 import java.awt.Color;
+import java.awt.Container;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
@@ -8,10 +11,14 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import info.monitorenter.gui.chart.IAxis;
+import info.monitorenter.gui.chart.ITrace2D;
 import info.monitorenter.gui.chart.ZoomableChart;
 import info.monitorenter.gui.chart.axis.AAxis;
+import info.monitorenter.gui.chart.axis.AxisLinear;
+import info.monitorenter.gui.chart.traces.Trace2DLtd;
 
 import javax.swing.*;
 
@@ -27,8 +34,12 @@ public class ZoomableChartScrollWheel extends ZoomableChart
     
     private ArrayList<AAxis> rightYAxis = new ArrayList<AAxis>();
     
+    private JPopupMenu popup = new JPopupMenu();
     
-    public ZoomableChartScrollWheel()
+    ChartData chartData;
+    
+    
+    public ZoomableChartScrollWheel(ChartData chartData)
     {
         this.addMouseWheelListener(new MyMouseWheelListener(this));
         
@@ -36,7 +47,185 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         this.getAxisY().setPaintGrid(true);
         this.setUseAntialiasing(true);
         this.setGridColor(Color.LIGHT_GRAY);
+        this.getAxisX().getAxisTitle().setTitle("Time (sec)");
+        this.getAxisY().getAxisTitle().setTitle("");
+        this.chartData = chartData;
+    }
+    
+    private boolean maybeShowPopup(MouseEvent e)
+    {
+        if (e.isPopupTrigger())
+        {
+            popup.show(e.getComponent(), e.getX(), e.getY());
+            return true;
+        }
+        return false;
+    }
+    
+
+    /**
+     * Updates the right click menu to allow for moving
+     * traces around.  Should be called right after adding
+     * a new trace.
+     */
+    public void updateRightClickMenu()
+    {
+        // zap the old right click menu
+        popup = new JPopupMenu();
         
+        Iterator<ITrace2D> iter = this.getTraces().iterator();
+        
+        boolean firstFlag = true;
+        
+        while (iter.hasNext())
+        {
+            final ITrace2D trace = iter.next();
+            
+            JMenuItem topItem = new JMenuItem(trace.getName());
+            topItem.setEnabled(false);
+            
+            if (!firstFlag)
+            {
+                popup.addSeparator();
+            }
+            
+            popup.add(topItem);
+            popup.addSeparator();
+            
+            firstFlag = false;
+            
+            
+            boolean rightTraceFlag = false;
+            
+            for (final AAxis axis : rightYAxis)
+            {
+                if (axis.getTraces().contains(trace))
+                {
+                    // this trace is in the extra Y axis area
+                    
+                    JMenuItem newItem = new JMenuItem("    to main axis");
+                    
+                    newItem.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e)
+                        {
+                            ZoomableChartScrollWheel.this.removeAxisYRight(axis);
+                            ZoomableChartScrollWheel.this.removeTrace(trace);
+                            //rightYAxis.remove(axis);
+                            ZoomableChartScrollWheel.this.addTrace(trace);
+                            ZoomableChartScrollWheel.this.updateRightClickMenu();
+                        }
+                    });
+                    
+                    popup.add(newItem);
+                    rightTraceFlag = true;
+                    break;
+                }
+            }
+            
+            if (rightTraceFlag == false)
+            {
+                // this trace is on the normal Y axis
+                JMenuItem newItem = new JMenuItem("    to separate axis");
+                
+                if (this.getAxisY().getTraces().size() < 2)
+                {
+                    newItem.setEnabled(false);
+                }
+                
+                newItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e)
+                    {
+                        AxisLinear newAxis = new AxisLinear();
+                        ZoomableChartScrollWheel.this.removeTrace(trace);
+                        ZoomableChartScrollWheel.this.addAxisYRight(newAxis);
+                        ZoomableChartScrollWheel.this.addTrace(trace,
+                                ZoomableChartScrollWheel.this.getAxisX(), newAxis);
+                        ZoomableChartScrollWheel.this.updateRightClickMenu();
+                    }
+                });
+                
+                popup.add(newItem);
+            }
+            
+            JMenuItem moveWindowItem = new JMenuItem("    move to new window");
+            moveWindowItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e)
+                {
+                    for (AAxis axisL : rightYAxis)
+                    {
+                        if (axisL.getTraces().contains(trace))
+                        {
+                            ZoomableChartScrollWheel.this.removeAxisYRight(axisL);
+                            break;
+                        }
+                    }
+                    
+                    ZoomableChartScrollWheel.this.removeTrace(trace);
+                    ZoomableChartScrollWheel.this.updateRightClickMenu();
+                    
+                    JFrame frame = new JFrame(trace.getName());
+                    
+                    final ZoomableChartScrollWheel newChart = new ZoomableChartScrollWheel(chartData);
+                    
+                    trace.setColor(chartData.popColor());
+                    newChart.addTrace(trace);
+                    newChart.updateRightClickMenu();
+                    
+                    chartData.getCharts().add(newChart);
+                    
+                    Container content = frame.getContentPane(); 
+                    content.add(newChart);
+                    
+                    newChart.addFrameFocusTimer(frame);
+                    
+                    frame.addWindowListener(new WindowAdapter()
+                    {
+                        public void windowClosing(WindowEvent e)
+                        {
+                            for (ITrace2D trace : newChart.getTraces())
+                            {
+                                ((Trace2DLtd)trace).setMaxSize(chartData.sparklineChartSize);
+                            }
+                            chartData.getCharts().remove(newChart);
+                        }
+                    });
+                    
+                    frame.setSize(600, 500);
+                    frame.setVisible(true);
+                    
+                    
+                }
+            });
+            
+            
+            JMenuItem delItem = new JMenuItem("    remove");
+            delItem.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent e)
+                {
+                    for (AAxis axisL : rightYAxis)
+                    {
+                        if (axisL.getTraces().contains(trace))
+                        {
+                            ZoomableChartScrollWheel.this.removeAxisYRight(axisL);
+                            break;
+                        }
+                    }
+                    
+                    ZoomableChartScrollWheel.this.removeTrace(trace);
+                    ZoomableChartScrollWheel.this.updateRightClickMenu();
+                }
+            });
+            
+            if (this.getAxisX().getTraces().size() < 2)
+            {
+                delItem.setEnabled(false);
+                moveWindowItem.setEnabled(false);
+            }
+            
+            popup.add(moveWindowItem);
+            popup.add(delItem);
+            
+        }
     }
     
     public void addAxisYRight(AAxis<?> axisY)
@@ -89,6 +278,11 @@ public class ZoomableChartScrollWheel extends ZoomableChart
     
     public void mousePressed(MouseEvent e)
     {
+        if (maybeShowPopup(e))
+        {
+            return;
+        }
+        
         IAxis xAxis = this.getAxisX();
         IAxis yAxis = this.getAxisY();
         
@@ -123,12 +317,16 @@ public class ZoomableChartScrollWheel extends ZoomableChart
             mouseDownMinY.add(yAxisRight.getMin());
             mouseDownMaxY.add(yAxisRight.getMax());
         }
+        
     }
     
     public void mouseDragged(MouseEvent e)
     {
         // move the view
-        dragChart(e);
+        if ((e.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK) != MouseEvent.BUTTON3_DOWN_MASK)
+        {
+            dragChart(e);
+        }
     }
     
     public void mouseReleased(MouseEvent e)
@@ -137,6 +335,8 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         {
             this.zoomAll();
             e.consume();
+        } else {
+            maybeShowPopup(e);
         }
     }
     
