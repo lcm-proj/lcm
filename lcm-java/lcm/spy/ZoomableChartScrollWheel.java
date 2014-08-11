@@ -52,6 +52,39 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         this.chartData = chartData;
     }
     
+    public static void newChartFrame(final ChartData chartData, final ITrace2D trace)
+    {
+        JFrame frame = new JFrame(trace.getName());
+        
+        final ZoomableChartScrollWheel newChart = new ZoomableChartScrollWheel(chartData);
+        
+        trace.setColor(chartData.popColor());
+        newChart.addTrace(trace);
+        newChart.updateRightClickMenu();
+        
+        chartData.getCharts().add(newChart);
+        
+        Container content = frame.getContentPane(); 
+        content.add(newChart);
+        
+        newChart.addFrameFocusTimer(frame);
+        
+        frame.addWindowListener(new WindowAdapter()
+        {
+            public void windowClosing(WindowEvent e)
+            {
+                for (ITrace2D trace : newChart.getTraces())
+                {
+                    ((Trace2DLtd)trace).setMaxSize(chartData.sparklineChartSize);
+                }
+                chartData.getCharts().remove(newChart);
+            }
+        });
+        
+        frame.setSize(600, 500);
+        frame.setVisible(true);
+    }
+    
     private boolean maybeShowPopup(MouseEvent e)
     {
         if (e.isPopupTrigger())
@@ -77,6 +110,8 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         
         boolean firstFlag = true;
         
+        StringBuilder frameTitle = new StringBuilder();
+        
         while (iter.hasNext())
         {
             final ITrace2D trace = iter.next();
@@ -91,9 +126,6 @@ public class ZoomableChartScrollWheel extends ZoomableChart
             
             popup.add(topItem);
             popup.addSeparator();
-            
-            firstFlag = false;
-            
             
             boolean rightTraceFlag = false;
             
@@ -163,35 +195,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
                     ZoomableChartScrollWheel.this.removeTrace(trace);
                     ZoomableChartScrollWheel.this.updateRightClickMenu();
                     
-                    JFrame frame = new JFrame(trace.getName());
-                    
-                    final ZoomableChartScrollWheel newChart = new ZoomableChartScrollWheel(chartData);
-                    
-                    trace.setColor(chartData.popColor());
-                    newChart.addTrace(trace);
-                    newChart.updateRightClickMenu();
-                    
-                    chartData.getCharts().add(newChart);
-                    
-                    Container content = frame.getContentPane(); 
-                    content.add(newChart);
-                    
-                    newChart.addFrameFocusTimer(frame);
-                    
-                    frame.addWindowListener(new WindowAdapter()
-                    {
-                        public void windowClosing(WindowEvent e)
-                        {
-                            for (ITrace2D trace : newChart.getTraces())
-                            {
-                                ((Trace2DLtd)trace).setMaxSize(chartData.sparklineChartSize);
-                            }
-                            chartData.getCharts().remove(newChart);
-                        }
-                    });
-                    
-                    frame.setSize(600, 500);
-                    frame.setVisible(true);
+                    ZoomableChartScrollWheel.newChartFrame(chartData, trace);
                     
                     
                 }
@@ -225,6 +229,18 @@ public class ZoomableChartScrollWheel extends ZoomableChart
             popup.add(moveWindowItem);
             popup.add(delItem);
             
+            if (!firstFlag)
+            {
+                frameTitle.append(", ");
+            }
+            frameTitle.append(trace.getName());
+            
+            firstFlag = false;
+        }
+        
+        if (this.frame != null)
+        {
+            this.frame.setTitle(frameTitle.toString());
         }
     }
     

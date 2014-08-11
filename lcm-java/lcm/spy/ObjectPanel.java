@@ -145,39 +145,7 @@ public class ObjectPanel extends JPanel
         
         if (openNewChart || chartData.getCharts().size() < 1)
         {
-            JFrame frame = new JFrame(data.name);
-            
-            final ZoomableChartScrollWheel newChart = new ZoomableChartScrollWheel(chartData);
-            
-            // increase number of points cached
-            trace.setMaxSize(chartData.detailedSparklineChartSize);
-            
-            trace.setColor(chartData.popColor());
-            newChart.addTrace(trace);
-            newChart.updateRightClickMenu();
-            
-            chartData.getCharts().add(newChart);
-            
-            Container content = frame.getContentPane(); 
-            content.add(newChart);
-            
-            newChart.addFrameFocusTimer(frame);
-            
-            frame.addWindowListener(new WindowAdapter()
-            {
-                public void windowClosing(WindowEvent e)
-                {
-                    for (ITrace2D trace : newChart.getTraces())
-                    {
-                        ((Trace2DLtd)trace).setMaxSize(chartData.sparklineChartSize);
-                    }
-                    chartData.getCharts().remove(newChart);
-                    
-                }
-            });
-            
-            frame.setSize(600, 500);
-            frame.setVisible(true);
+            ZoomableChartScrollWheel.newChartFrame(chartData, trace);
         } else
         {
             // find the most recently interacted with chart
