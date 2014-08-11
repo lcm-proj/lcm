@@ -38,8 +38,6 @@ public class ObjectPanel extends JPanel
     long startuTime; // time lcm-spy was started
     int lastwidth = 500;
     int lastheight = 100;
-    final int sparklineChartSize = 500;
-    final int detailedSparklineChartSize = 2000;
     boolean updateGraphs = false;
     
     final int sparklineWidth = 150;
@@ -149,13 +147,14 @@ public class ObjectPanel extends JPanel
         {
             JFrame frame = new JFrame(data.name);
             
-            final ZoomableChartScrollWheel newChart = new ZoomableChartScrollWheel();
+            final ZoomableChartScrollWheel newChart = new ZoomableChartScrollWheel(chartData);
             
             // increase number of points cached
-            trace.setMaxSize(detailedSparklineChartSize);
+            trace.setMaxSize(chartData.detailedSparklineChartSize);
             
             trace.setColor(chartData.popColor());
             newChart.addTrace(trace);
+            newChart.updateRightClickMenu();
             
             chartData.getCharts().add(newChart);
             
@@ -170,10 +169,10 @@ public class ObjectPanel extends JPanel
                 {
                     for (ITrace2D trace : newChart.getTraces())
                     {
-                        
-                        ((Trace2DLtd)trace).setMaxSize(sparklineChartSize);
+                        ((Trace2DLtd)trace).setMaxSize(chartData.sparklineChartSize);
                     }
                     chartData.getCharts().remove(newChart);
+                    
                 }
             });
             
@@ -202,7 +201,7 @@ public class ObjectPanel extends JPanel
                 
                 if (!bestChart.getTraces().contains(trace))
                 {
-                	trace.setMaxSize(detailedSparklineChartSize);
+                	trace.setMaxSize(chartData.detailedSparklineChartSize);
                     trace.setColor(chartData.popColor());
                     
                 	if (newAxis)
@@ -218,6 +217,7 @@ public class ObjectPanel extends JPanel
                     
                     
                 }
+                bestChart.updateRightClickMenu();
                 bestChart.toFront();
                 
             }
@@ -425,7 +425,7 @@ public class ObjectPanel extends JPanel
                     
                     cs.sparklines.put(name, data);
                     
-                    trace = new Trace2DLtd(sparklineChartSize, name);
+                    trace = new Trace2DLtd(chartData.sparklineChartSize, name);
                     
                     chart.addTrace(trace);
                     
