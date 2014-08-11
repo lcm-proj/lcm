@@ -475,23 +475,34 @@ public class ObjectPanel extends JPanel
                 pointColor = lineColor;
                 lineColor = temp;
             }
+            
+            double earliestTimeDisplayed = ((double)utime/(double)1000000.0 - numSecondsDisplayed);
+         // decide on the main axis scale
+            double xscale = (double)width / (double)(numSecondsDisplayed);
                     
             if (trace.getMaxY() == trace.getMinY())
             {
                 // divide by zero error coming up!
                 // bail and draw a straight line down the center of the graph
                 g2.setColor(lineColor);
-                g2.drawLine(x, y-(int)((double)height/(double)2), x+(int)width, y-(int)((double)height/(double)2));
+                ITracePoint2D firstPoint = iter.next();
+                
+                int leftLineX = (int)((firstPoint.getX() - earliestTimeDisplayed) * xscale) + x;
+                
+                if (leftLineX < x)
+                {
+                    leftLineX = x;
+                }
+                
+                g2.drawLine(leftLineX, y-(int)((double)height/(double)2), x+(int)width, y-(int)((double)height/(double)2));
                 g2.setColor(pointColor);
                 g2.fillOval(x + (int) width - 1, y-(int)((double)height/(double)2) - 1, circleSize, circleSize);
                 return;
             }
             
-            // decide on the main axis scale
-            double xscale = (double)width / (double)(numSecondsDisplayed);
+            
             double yscale = height / (trace.getMaxY() - trace.getMinY());
             
-            double earliestTimeDisplayed = ((double)utime/(double)1000000.0 - numSecondsDisplayed);
             
             g2.setColor(lineColor);
             
