@@ -25,9 +25,11 @@ dnl ---------------------------------------------------------------------------
 LIBLCM_AGE=3
 LIBLCM_REVISION=1
 LIBLCM_CURRENT=4
+CHART2D=jchart2d-3.2.2.jar
 AC_SUBST(LIBLCM_AGE)
 AC_SUBST(LIBLCM_REVISION)
 AC_SUBST(LIBLCM_CURRENT)
+AC_SUBST(CHART2D)
 LIBLCM_VERSION_INFO=$LIBLCM_CURRENT:$LIBLCM_REVISION:$LIBLCM_AGE
 AC_SUBST(LIBLCM_VERSION_INFO)
 
@@ -80,7 +82,7 @@ AC_ARG_WITH(jardir,
             [jardir="$with_jardir"], [jardir=$datadir/java])
 
 AC_SUBST(jardir)
-INSTALLED_CLASSPATH=\${jardir}/lcm.jar
+INSTALLED_CLASSPATH=\${jardir}/lcm.jar:\${jardir}/${CHART2D}
 AC_SUBST(INSTALLED_CLASSPATH)
 AC_SUBST(java_apiversion)
 
@@ -178,9 +180,9 @@ echo "
 
 Configuration (LCM):
 
-	Source code location:  ${srcdir}
-	Compiler:              ${CC}
-	Java Support:          ${JAVA_STR}
-	Python Support:        ${PYTHON_STR}
-	Lua Support:           ${LUA_STR}
+  Source code location:  ${srcdir}
+  Compiler:              ${CC}
+  Java Support:          ${JAVA_STR}
+  Python Support:        ${PYTHON_STR}
+  Lua Support:           ${LUA_STR}
 "

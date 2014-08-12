@@ -1,7 +1,6 @@
 JAVAROOT = build
 JARFILE = lcm.jar
-CHART2D = jchart2d-3.2.2.jar
-JAVACFLAGS = -source 1.5 -target 1.5 -classpath ${CHART2D}
+JAVACFLAGS = -source 1.5 -target 1.5 -classpath @CHART2D@
 
 
 .PHONY classfiles: classdist_noinst.stamp classnoinst.stamp
