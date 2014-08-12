@@ -145,6 +145,7 @@ public class ObjectPanel extends JPanel
         
         if (openNewChart || chartData.getCharts().size() < 1)
         {
+            trace.setMaxSize(chartData.detailedSparklineChartSize);
             ZoomableChartScrollWheel.newChartFrame(chartData, trace);
         } else
         {

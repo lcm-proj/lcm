@@ -59,6 +59,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         final ZoomableChartScrollWheel newChart = new ZoomableChartScrollWheel(chartData);
         
         trace.setColor(chartData.popColor());
+        
         newChart.addTrace(trace);
         newChart.updateRightClickMenu();
         
