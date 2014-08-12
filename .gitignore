@@ -28,6 +28,8 @@ lcm-java/lcm-java.pc
 lcm-java/lcm-logplayer-gui
 lcm-java/lcm-spy
 lcm-java/lcm.jar
+lcm-java/.classpath
+lcm-java/.project
 
 lcm-logger/Makefile
 lcm-logger/Makefile.in
