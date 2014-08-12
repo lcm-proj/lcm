@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<classpath>
-	<classpathentry kind="src" path=""/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="/home/abarry/programs/lcm-abarry/lcm-java/jchart2d-3.2.2.jar"/>
-	<classpathentry kind="output" path="build"/>
-</classpath>
