@@ -1,6 +1,8 @@
 JAVAROOT = build
 JARFILE = lcm.jar
-JAVACFLAGS = -source 1.5 -target 1.5
+CHART2D = jchart2d-3.2.2.jar
+JAVACFLAGS = -source 1.5 -target 1.5 -classpath ${CHART2D}
+
 
 .PHONY classfiles: classdist_noinst.stamp classnoinst.stamp
 
@@ -8,7 +10,7 @@ $(JARFILE): classfiles
 	rm -f $(JARFILE)
 	$(JAR) cf $(JARFILE) -C $(JAVAROOT) .
 
-jar_DATA = $(JARFILE)
+jar_DATA = $(JARFILE) $(CHART2D)
 
 clean-local:
 	rm -f `find $(JAVAROOT) -name "*.class"`
@@ -24,7 +26,7 @@ lcm-logplayer-gui: Makefile
 
 lcm-spy: Makefile
 	@echo > $@ "#!/bin/sh"
-	@echo >> $@ "exec java -server -Xincgc -Xmx128m -Xms64m -ea -cp ${jardir}/lcm.jar lcm.spy.Spy \$$*"
+	@echo >> $@ "exec java -server -Xincgc -Xmx128m -Xms64m -ea -cp ${jardir}/${CHART2D}:${jardir}/lcm.jar lcm.spy.Spy \$$*"
 	chmod 755 $@
 
 dist_noinst_JAVA = \
@@ -58,6 +60,9 @@ dist_noinst_JAVA = \
     lcm/spy/SpyPlugin.java \
     lcm/spy/LCMTypeDatabase.java \
     lcm/spy/ObjectPanel.java \
+    lcm/spy/ChartData.java \
+    lcm/spy/ChannelData.java \
+    lcm/spy/ZoomableChartScrollWheel.java \
     lcm/spy/ChannelData.java
 
 $(dist_noinst_JAVA): build
