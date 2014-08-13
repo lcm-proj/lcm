@@ -51,15 +51,18 @@ void lcm_eventlog_destroy(lcm_eventlog_t *l)
 
 lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
 {
-    lcm_eventlog_event_t *le = 
+    lcm_eventlog_event_t *le =
         (lcm_eventlog_event_t*) calloc(1, sizeof(lcm_eventlog_event_t));
-    
+
     int32_t magic = 0;
     int r;
 
     do {
         r = fgetc(l->f);
-        if (r < 0) goto eof;
+        if (r < 0) {
+            free(le);
+            return NULL;
+        }
         magic = (magic << 8) | r;
     } while( magic != MAGIC );
 
@@ -67,44 +70,51 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
         0 != fread64(l->f, &le->timestamp) ||
         0 != fread32(l->f, &le->channellen) ||
         0 != fread32(l->f, &le->datalen)) {
+        free(le);
         return NULL;
     }
 
     // Sanity check the channel length and data length
-    if (le->channellen < 0 || le->channellen >= 1000) {
+    if (le->channellen <= 0 || le->channellen >= 1000) {
         fprintf(stderr, "Log event has invalid channel length: %d\n", le->channellen);
+        free(le);
         return NULL;
     }
     if (le->datalen < 0) {
         fprintf(stderr, "Log event has invalid data length: %d\n", le->datalen);
+        free(le);
         return NULL;
     }
 
     le->channel = (char *) calloc(1, le->channellen+1);
-    if (fread(le->channel, 1, le->channellen, l->f) != (size_t) le->channellen)
-        goto eof;
+    if (fread(le->channel, 1, le->channellen, l->f) != (size_t) le->channellen) {
+        free(le->channel);
+        free(le->data);
+        free(le);
+        return NULL;
+    }
 
     le->data = calloc(1, le->datalen+1);
-    if (fread(le->data, 1, le->datalen, l->f) != (size_t) le->datalen)
-        goto eof;
+    if (fread(le->data, 1, le->datalen, l->f) != (size_t) le->datalen) {
+        free(le->channel);
+        free(le->data);
+        free(le);
+        return NULL;
+        }
 
     // Check that there's a valid event or the EOF after this event.
     int32_t next_magic;
     if (0 == fread32(l->f, &next_magic)) {
         if (next_magic != MAGIC) {
             fprintf(stderr, "Invalid header after log data\n");
+            free(le->channel);
+            free(le->data);
+            free(le);
             return NULL;
         }
         fseeko (l->f, -4, SEEK_CUR);
     }
-
     return le;
-
-eof:
-    free(le->channel);
-    free(le->data);
-    free(le);
-    return NULL;
 }
 
 int lcm_eventlog_write_event(lcm_eventlog_t *l, lcm_eventlog_event_t *le)
