@@ -1,48 +1,54 @@
 1.  Reset your working copy to a clean state
-    $ git clean -x -d -f
+  $ git clean -x -d -f
 2.  Update NEWS
 3.  Verify that all manpages are up to date.
 4.  Bump the version number in:
-  a. configure.ac at the line AM_INIT_AUTOMAKE(lcm, x.y.z)
+  a. configure.ac at the line AM_INIT_AUTOMAKE(lcm, X.Y.Z)
   b. lcm-python/setup.py
   c. lcm/lcm.h
 5.  Update the AGE, REVISION, and CURRENT variables.  See configure.ac
-    comments for details.
-6.  autoreconf -i
-7.  ./configure
-8. make
-9. make distcheck
-10. Take the resulting tarball, extract it, build it, install it, make sure
-    the basic executables run.
-11. Build and run all unit tests.  Verify that they all pass.
-    $ cd test
-    $ make clean
-    $ make
-12. Fix any errors that appear in the previous steps, and repeat as necessary.
-13. Commit the changes.
-    $ git commit -a -m "Release X.Y.Z"
-13. Create a tag for version X.Y.Z
-    $ git tag vX.Y.Z
-14. Upload the tarball to the Google Drive folder.
-15. Make sure the outstanding changes are commited to SVN.
-16. Update the web site
+  comments for details.
+6. Build the release tarball
+  $ autoreconf -i
+  $ ./configure
+  $ make
+  $ make distcheck
+7. Take the resulting tarball, extract it, build it, install it, make sure
+  the basic executables run.
+  $ cd lcm-X.Y.Z
+  $ ./configure
+  $ make
+  $ make install
+8. Build and run all unit tests.  Verify that they all pass.
+  $ cd ../test
+  $ make clean
+  $ make
+9. Fix any errors that appear in the previous steps, and repeat as necessary.
+10. Upload the tarball to the Google Drive folder.
+11. Update the web site.
+12. Commit the changes, tag the release, and push to origin.
+  $ git commit -a -m "Release X.Y.Z"
+  $ git tag vX.Y.Z
+  $ git push origin master
 
-17. Build main docs
+13. Build main docs
   $ cd docs
   $ doxygen
-18. Build Python docs
+14. Build Python docs
   $ cd ../lcm-python
   $ epydoc --config epydoc.cfg
-19. Build Java docs
+15. Build Java docs
   $ cd ../lcm-java
   $ ./make-javadocs.sh
-18. Clone the lcm.www repository
+16. Clone the lcm.www repository
   $ cd ../..
   $ git clone https://code.google.com/p/lcm.www
-19. Copy the built docs to the lcm.www repository
-  $ cp -r lcm/docs/html/* lcm.www/lcm
-  $ cp -r lcm/lcm-python/html/* lcm.www/lcm-python
-  $ cp -r lcm/lcm-java/javadocs/* lcm.www/lcm-java
-20. Commit the docs
+  $ cd lcm.www
+17. Copy the built docs to the lcm.www repository
+  $ cp -r ../lcm/docs/html/* lcm
+  $ cp -r ../lcm/lcm-python/html/* lcm-python
+  $ cp -r ../lcm/lcm-java/javadocs/* lcm-java
+18. Commit the docs, tag the release, and push to origin
   $ git commit -a -m "Release X.Y.Z documentation"
   $ git tag vX.Y.Z
+  $ git push origin master
