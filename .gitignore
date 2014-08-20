@@ -17,6 +17,7 @@ config.status
 config.sub
 configure
 depcomp
+docs/html
 examples/Makefile
 examples/Makefile.in
 install-sh

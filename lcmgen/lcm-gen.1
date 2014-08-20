@@ -13,22 +13,28 @@ type definitions, and generates language-specific bindings for marshalling and
 unmarshalling messages of the specified types.
 
 Currently, \fBlcm-gen\fR is capable of generating language bindings for C, C++,
-C#, Python, and Java.
+Java, Python, Lua, and C#.
 
 .SH GENERAL OPTIONS
+.TP
+.B \-h
+Prints some help text and exits.
+.TP
+.B \-t, \-\-tokenize
+Show tokenization.
+.TP
+.B \-d, \-\-debug
+Show parsed files.
 .TP
 .B \-\-lazy
 Generate output file only if .lcm is newer than output file (or if output file
 does not already exist).
 .TP
-.B \-d, \-\-debug
-Show parsed files
+.B \-\-package\-prefix \fIPFX\fR
+Add package name \fIPFX\fR as a prefix to the declared package.
 .TP
-.B \-t, \-\-tokenize
-Show tokenization
-.TP
-.B \-h
-Prints some help text and exits.
+.B \-\-version
+Shows version information and exits.
 
 .SH C OPTIONS
 .TP
@@ -49,43 +55,20 @@ Do not generate _publish and _subscribe functions.  This results in .c and .h
 files that have no linking dependencies and can be used for just marshalling,
 separately from liblcm.  They still #include <lcm/lcm_coretypes.h>, so
 you will need to copy that file to the appropriate include path.
+.TP
+.B \-\-c\-typeinfo
+Generate typeinfo functions for each type (experimental).
 
 .SH C++ OPTIONS
 .TP
 .B \-x, \-\-cpp
 Emit C++ code.
 .TP
-.B \-\-cpp-cpath \fIDIR\fR
-Destination directory for generated .cpp files. (default: current directory)
-.TP
 .B \-\-cpp-hpath \fIDIR\fR
 Destination directory for generated .hpp files. (default: current directory)
 .TP
 .B \-\-cpp-include \fIDIR\fR
 Generated C++ #include lines reference this directory
-
-.SH C#.NET OPTIONS
-.TP
-.B \-\-csharp
-Emit C#.NET code   
-.TP
-.B \-\-csharp-path \fIDIR\fR
-C#.NET destination directory   
-.TP
-.B \-\-csharp-mkdir <true|false>
-Make C#.NET source directories automatically (default: true)
-.TP
-.B \-\-csharp-strip-dirs <true|false>
-Do not generate folders for default and root namespace (default: false)
-.TP
-.B \-\-csharp-decl \fISTR\fR
-String added to class declarations (default: " : LCM.LCM.LCMEncodable")
-.TP
-.B \-\-csharp-root-nsp \fINSP\fR
-Root C#.NET namespace (wrapper) added before LCM package (default: "")
-.TP
-.B \-\-csharp-default-nsp \fINSP\fR
-Default C#.NET namespace if LCM type has no package (default: LCMTypes)
 
 .SH JAVA OPTIONS
 .TP
@@ -113,6 +96,37 @@ Emit Python code.
 .B \-\-ppath \fIDIR\fR
 Destination base directory for generated Python files. (default: current
 directory)
+
+.SH LUA OPTIONS
+.TP
+.B \-l, \-\-lua
+Emit Lua code.
+.TP
+.B \-\-lpath \fIDIR\fR
+Lua destination directory.
+
+.SH C#.NET OPTIONS
+.TP
+.B \-\-csharp
+Emit C#.NET code
+.TP
+.B \-\-csharp-path \fIDIR\fR
+C#.NET destination directory
+.TP
+.B \-\-csharp-mkdir <true|false>
+Make C#.NET source directories automatically (default: true)
+.TP
+.B \-\-csharp-strip-dirs <true|false>
+Do not generate folders for default and root namespace (default: false)
+.TP
+.B \-\-csharp-decl \fISTR\fR
+String added to class declarations (default: " : LCM.LCM.LCMEncodable")
+.TP
+.B \-\-csharp-root-nsp \fINSP\fR
+Root C#.NET namespace (wrapper) added before LCM package (default: "")
+.TP
+.B \-\-csharp-default-nsp \fINSP\fR
+Default C#.NET namespace if LCM type has no package (default: LCMTypes)
 
 .SH COPYRIGHT
 
