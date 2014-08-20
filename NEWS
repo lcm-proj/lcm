@@ -1,3 +1,23 @@
+Aug 19, 2014
+============
+
+ Release 1.1.2
+
+ This is a bugfix and maintenance release.
+
+ C / C++:
+ - memset struct msghdr to 0 before calling recvmsg (fixes issue #90).
+ - fix eventlog memory leak when errors occur.
+
+ lcm-gen:
+ - Apply patch from bibocc to fix lcm-gen regression (fixes issue #92).
+ - fix emit-cpp for the case where it needs to includ both <vector> and
+   <string>.
+ - Resize vector in decode after checking whether the size > 0.
+ - fix tokenizer regression in parsing empty comment blocks (fixes issue #93).
+ - Add --version flag.
+ - Update manpage.
+
 Jul 29, 2014
 ============
 

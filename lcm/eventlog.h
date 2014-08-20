@@ -21,7 +21,9 @@ extern "C" {
  * @ingroup LcmC
  * @brief Read and write %LCM log files
  *
- * <tt> #include <lcm/lcm.h> </tt>
+ * @code
+ * #include <lcm/lcm.h>
+ * @endcode
  *
  * Linking: <tt> `pkg-config --libs lcm` </tt>
  *

@@ -1,34 +1,48 @@
-1.  Update NEWS
-2.  Bump the version number in:
-  a. configure.in at the line AM_INIT_AUTOMAKE(lcm, x.y.z)
+1.  Reset your working copy to a clean state
+    $ git clean -x -d -f
+2.  Update NEWS
+3.  Verify that all manpages are up to date.
+4.  Bump the version number in:
+  a. configure.ac at the line AM_INIT_AUTOMAKE(lcm, x.y.z)
   b. lcm-python/setup.py
   c. lcm/lcm.h
-3.  Update the AGE, REVISION, and CURRENT variables.  See configure.in
-      comments for details.
-4.  After committing, check out a clean copy of the repository:
-      svn co https://lcm.googlecode.com/svn/trunk lcm-rel
-5.  autoreconf -i
-6.  ./configure
-7. make
-8. make distcheck
-9. Fix any errors that appear in step 10, and repeat as necessary.
+5.  Update the AGE, REVISION, and CURRENT variables.  See configure.ac
+    comments for details.
+6.  autoreconf -i
+7.  ./configure
+8. make
+9. make distcheck
 10. Take the resulting tarball, extract it, build it, install it, make sure
     the basic executables run.
-11. Upload the tarball to the Google Drive folder.
-12. Make sure the outstanding changes are commited to SVN.
-13. Update the web site
+11. Build and run all unit tests.  Verify that they all pass.
+    $ cd test
+    $ make clean
+    $ make
+12. Fix any errors that appear in the previous steps, and repeat as necessary.
+13. Commit the changes.
+    $ git commit -a -m "Release X.Y.Z"
+13. Create a tag for version X.Y.Z
+    $ git tag vX.Y.Z
+14. Upload the tarball to the Google Drive folder.
+15. Make sure the outstanding changes are commited to SVN.
+16. Update the web site
 
-14. Build main docs
+17. Build main docs
   $ cd docs
   $ doxygen
-  $ copy built docs to www/reference/lcm in the Google Code SVN dir.
-15. Update any mime types if necessary:
-      find . -name "*.html" -exec svn propset svn:mime-type text/html {} \;
-      find . -name "*.css" -exec svn propset svn:mime-type text/css {} \;
-      find . -name "*.js" -exec svn propset svn:mime-type text/javascript {} \;
-      find . -name "*.png" -exec svn propset svn:mime-type image/png {} \;
-16. Build Python docs
-  $ cd lcm-python
+18. Build Python docs
+  $ cd ../lcm-python
   $ epydoc --config epydoc.cfg
-  $ copy built docs to www/reference/lcm-python in the Google Code SVN dir.
-17. Commit the docs
+19. Build Java docs
+  $ cd ../lcm-java
+  $ ./make-javadocs.sh
+18. Clone the lcm.www repository
+  $ cd ../..
+  $ git clone https://code.google.com/p/lcm.www
+19. Copy the built docs to the lcm.www repository
+  $ cp -r lcm/docs/html/* lcm.www/lcm
+  $ cp -r lcm/lcm-python/html/* lcm.www/lcm-python
+  $ cp -r lcm/lcm-java/javadocs/* lcm.www/lcm-java
+20. Commit the docs
+  $ git commit -a -m "Release X.Y.Z documentation"
+  $ git tag vX.Y.Z
