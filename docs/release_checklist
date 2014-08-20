@@ -30,6 +30,7 @@
   $ git commit -a -m "Release X.Y.Z"
   $ git tag vX.Y.Z
   $ git push origin master
+  $ git push origin vX.Y.Z
 
 13. Build main docs
   $ cd docs
@@ -48,7 +49,8 @@
   $ cp -r ../lcm/docs/html/* lcm
   $ cp -r ../lcm/lcm-python/html/* lcm-python
   $ cp -r ../lcm/lcm-java/javadocs/* lcm-java
-18. Commit the docs, tag the release, and push to origin
-  $ git commit -a -m "Release X.Y.Z documentation"
+18. Commit the changes, tag the release, and push to origin
+  $ git commit -a -m "Release X.Y.Z"
   $ git tag vX.Y.Z
   $ git push origin master
+  $ git push origin vX.Y.Z
