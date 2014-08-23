@@ -26,10 +26,11 @@ public class TCPService
 
         long inittime = System.currentTimeMillis();
         long starttime = System.currentTimeMillis();
-        while (true) {
+        while (!Thread.interrupted()) {
             try {
                 Thread.sleep(1000);
             } catch (InterruptedException ex) {
+                break;
             }
             long endtime = System.currentTimeMillis();
             double dt = (endtime - starttime) / 1000.0;
@@ -37,7 +38,20 @@ public class TCPService
             System.out.printf("%10.3f : %10.1f kB/s, %d clients\n",(endtime - inittime)/1000.0, bytesCount/1024.0/dt, clients.size());
             bytesCount = 0;
         }
+        // interrupt signal received
+        closeResources();
     }
+
+    private void closeResources() throws IOException {
+        acceptThread.interrupt();
+        serverSocket.close();
+        synchronized(clients) {
+            for (ClientThread clientThread : clients) {
+                clientThread.closeResources();
+            }
+        }
+    }
+
 
     public void relay(byte channel[], byte data[])
     {
@@ -54,7 +68,7 @@ public class TCPService
     {
         public void run()
         {
-            while (true) {
+            while (!Thread.interrupted()) {
                 try {
                     Socket clientSock = serverSocket.accept();
 
@@ -146,13 +160,17 @@ public class TCPService
             ///////////////////////
             // Something bad happened, close this connection.
             try {
-                sock.close();
+                closeResources();
             } catch (IOException ex) {
             }
 
             synchronized(clients) {
                 clients.remove(this);
             }
+        }
+
+        public void closeResources() throws IOException {
+            sock.close();
         }
 
         public void send(String chanstr, byte channel[], byte data[])
