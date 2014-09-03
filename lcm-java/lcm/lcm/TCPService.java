@@ -3,6 +3,7 @@ package lcm.lcm;
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import java.util.concurrent.locks.*;
 import java.util.regex.*;
 import java.nio.*;
 
@@ -12,6 +13,7 @@ public class TCPService
 
     AcceptThread acceptThread;
     ArrayList<ClientThread> clients = new ArrayList<ClientThread>();
+    ReadWriteLock clients_lock = new ReentrantReadWriteLock();
 
     int bytesCount = 0;
 
@@ -57,10 +59,13 @@ public class TCPService
     {
         // synchronously send to all clients.
         String chanstr = new String(channel);
-        synchronized(clients) {
+        try {
+            clients_lock.readLock().lock();
             for (ClientThread client : clients) {
                 client.send(chanstr, channel, data);
             }
+        } finally {
+            clients_lock.readLock().unlock();
         }
     }
 
@@ -75,8 +80,11 @@ public class TCPService
                     ClientThread client = new ClientThread(clientSock);
                     client.start();
 
-                    synchronized(clients) {
+                    try {
+                        clients_lock.writeLock().lock();
                         clients.add(client);
+                    } finally {
+                        clients_lock.writeLock().unlock();
                     }
                 } catch (IOException ex) {
                 }
@@ -101,6 +109,7 @@ public class TCPService
         }
 
         ArrayList<SubscriptionRecord> subscriptions = new ArrayList<SubscriptionRecord>();
+        ReadWriteLock subscriptions_lock = new ReentrantReadWriteLock();
 
         public ClientThread(Socket sock) throws IOException
         {
@@ -136,21 +145,27 @@ public class TCPService
                         int channellen = ins.readInt();
                         byte channel[] = new byte[channellen];
                         ins.readFully(channel);
-                        synchronized(subscriptions) {
+                        try {
+                            subscriptions_lock.writeLock().lock();
                             subscriptions.add(new SubscriptionRecord(new String(channel)));
+                        } finally {
+                            subscriptions_lock.writeLock().unlock();
                         }
                     } else if(type == TCPProvider.MESSAGE_TYPE_UNSUBSCRIBE) {
                         int channellen = ins.readInt();
                         byte channel[] = new byte[channellen];
                         ins.readFully(channel);
                         String re = new String(channel);
-                        synchronized(subscriptions) {
+                        try {
+                            subscriptions_lock.writeLock().lock();
                             for(int i=0, n=subscriptions.size(); i<n; i++) {
                                 if(subscriptions.get(i).regex.equals(re)) {
                                     subscriptions.remove(i);
                                     break;
                                 }
                             }
+                        } finally {
+                            subscriptions_lock.writeLock().unlock();
                         }
                     }
                 }
@@ -164,8 +179,11 @@ public class TCPService
             } catch (IOException ex) {
             }
 
-            synchronized(clients) {
+            try {
+                clients_lock.writeLock().lock();
                 clients.remove(this);
+            } finally {
+                clients_lock.writeLock().unlock();
             }
         }
 
@@ -176,9 +194,10 @@ public class TCPService
         public void send(String chanstr, byte channel[], byte data[])
         {
             try {
-                synchronized(subscriptions) {
-                    for(SubscriptionRecord sr : subscriptions) {
-                        if(sr.pat.matcher(chanstr).matches()) {
+                subscriptions_lock.readLock().lock();
+                for(SubscriptionRecord sr : subscriptions) {
+                    if(sr.pat.matcher(chanstr).matches()) {
+                        synchronized(outs) {
                             outs.writeInt(TCPProvider.MESSAGE_TYPE_PUBLISH);
                             outs.writeInt(channel.length);
                             outs.write(channel);
@@ -190,6 +209,8 @@ public class TCPService
                     }
                 }
             } catch (IOException ex) {
+            } finally {
+                subscriptions_lock.readLock().unlock();
             }
         }
     }
