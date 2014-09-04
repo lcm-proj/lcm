@@ -22,7 +22,7 @@ public class Spy
 {
     LCM          lcm;
     LCMTypeDatabase handlers;
-    long startuTime;
+    long startuTime; // time that lcm-spy started
 
     HashMap<String,  ChannelData> channelMap = new HashMap<String, ChannelData>();
     ArrayList<ChannelData>        channelList = new ArrayList<ChannelData>();

@@ -30,6 +30,11 @@ import info.monitorenter.gui.chart.traces.painters.TracePainterDisc;
 import info.monitorenter.gui.chart.views.ChartPanel;
 import info.monitorenter.util.Range;
 
+/**
+ * Panel that displays general data for lcm types.  Viewed by double-clicking
+ * or right-clicking and selecting Structure Viewer on the channel list.
+ *
+ */
 public class ObjectPanel extends JPanel
 {
     String name;
@@ -40,11 +45,12 @@ public class ObjectPanel extends JPanel
     int lastheight = 100;
     boolean updateGraphs = false;
     
-    final int sparklineWidth = 150;
-    Section currentlyHoveringSection;
-    String currentlyHoveringName;
+    final int sparklineWidth = 150; // width in pixels of all sparklines
     
-    ChartData chartData;
+    Section currentlyHoveringSection; // section the mouse is hovering over
+    String currentlyHoveringName; // name of the section the mouse is hovering over
+    
+    ChartData chartData; // global data about all charts being displayed by lcm-spy
     
     
 
@@ -61,22 +67,38 @@ public class ObjectPanel extends JPanel
         }
     }
     
+    /**
+     * Data about an individual sparkline.
+     *
+     */
     class SparklineData
     {
         int xmin, xmax;
         int ymin, ymax;
         boolean isHovering;
+        
+        // all sparklines have a chart associated with them, even though
+        // we do not use it for display. This allows us to use the data-collection
+        // and management features
         Chart2D chart;
+        
         String name;
     }
 
     ArrayList<Section> sections = new ArrayList<Section>();
 
+    /**
+     * Constructor for an object panel, call when the user clicks to see more
+     * data about a message.
+     * 
+     * @param name name of the channel
+     * @param chartData global data about all charts displayed by lcm-spy
+     */
     public ObjectPanel(String name, ChartData chartData)
     {
         this.name = name;
         this.startuTime = startuTime;
-        this.setLayout(null); // oh I hate to do this
+        this.setLayout(null); // not using a layout manager, drawing everything ourselves
         this.chartData = chartData;
         
         addMouseListener(new MyMouseAdapter());
@@ -84,8 +106,17 @@ public class ObjectPanel extends JPanel
         addMouseMotionListener(new MyMouseMotionListener());
     }
     
-    public boolean doSparklineInteraction(int x, int y, MouseEvent e)
+    /**
+     * Called on mouse movement to determine if we need to
+     * highlight a line or open a chart.
+     * 
+     * @param e MouseEvent to process
+     * 
+     * @return returns true if a mouse click was consumed
+     */
+    public boolean doSparklineInteraction(MouseEvent e)
     {
+        int y = e.getY();
         for (int i = sections.size() -1; i > -1; i--)
         {
             Section section = sections.get(i);
@@ -128,6 +159,16 @@ public class ObjectPanel extends JPanel
         return false;
     }
     
+    /**
+     * Opens a detailed, interactive chart for a data stream.  If the data is already
+     * displayed in a chart, brings that chart to the front instead.
+     * 
+     * 
+     * @param data data channel to display
+     * @param openNewChart set to true to force opening of a new chart window, false to add
+     *      to an already-open chart (if one exists) 
+     * @param newAxis true if we should add a new Y-axis to display this data
+     */
     public void displayDetailedChart(SparklineData data, boolean openNewChart, boolean newAxis)
     {
         // check to see if we are already displaying this trace
@@ -328,6 +369,17 @@ public class ObjectPanel extends JPanel
             g.setFont(of);
         }
         
+        /**
+         * Draws a row for a piece of data in the message and also a sparkline
+         * for that data.
+         * 
+         * @param cls type of the data
+         * @param name name of the entry in the message
+         * @param o the data itself
+         * @param isstatic true if the data is static
+         * @param sec index of section this row is in, used to determine if this
+         *      row should be highlighted because it is under the mouse cursor.
+         */
         public void drawStringsAndGraph(Class cls, String name, Object o, boolean isstatic,
                 int sec)
         {
@@ -442,6 +494,14 @@ public class ObjectPanel extends JPanel
             g.setColor(oldColor);
         }
         
+        /**
+         * Draws a sparkline.
+         * 
+         * @param x x-coordinate of the left side of the line 
+         * @param y y-coordinate of the top of the line
+         * @param trace data for the sparkline
+         * @param isHovering true if the mouse cursor is hovering over this row
+         */
         public void DrawSparkline(int x, int y, ITrace2D trace, boolean isHovering)
         {
 
@@ -720,7 +780,9 @@ public class ObjectPanel extends JPanel
         {
             int x = e.getX(), y = e.getY();
             
-            if (doSparklineInteraction(x, y, e) == true)
+            // check to see if we have clicked on a row in the inspector
+            // and should open a graph of the data
+            if (doSparklineInteraction(e) == true)
             {
                 return;
             }
@@ -751,7 +813,10 @@ public class ObjectPanel extends JPanel
         
         public void mouseMoved(MouseEvent e)
         {
-            doSparklineInteraction(e.getX(), e.getY(), e);
+            // check to see if we are hovering over any rows of data
+            doSparklineInteraction(e);
+            
+            // repaint in case the hovering changed
             repaint();
         }
     }

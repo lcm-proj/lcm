@@ -22,6 +22,10 @@ import info.monitorenter.gui.chart.traces.Trace2DLtd;
 
 import javax.swing.*;
 
+/**
+ * Chart that supports panning and zooming in the Google-maps style.
+ *
+ */
 public class ZoomableChartScrollWheel extends ZoomableChart
 {
     private double mouseDownStartX, mouseDownStartY, mouseDownValPerPxX, mouseDownMinX, mouseDownMaxX;
@@ -32,13 +36,18 @@ public class ZoomableChartScrollWheel extends ZoomableChart
     private long lastFocusTime = -1;
     private JFrame frame = null;
     
+    // we need a list of the axes on the right, which we update ourselves
     private ArrayList<AAxis> rightYAxis = new ArrayList<AAxis>();
     
     private JPopupMenu popup = new JPopupMenu();
     
     ChartData chartData;
     
-    
+    /**
+     * Constructor, taking in a chartData so that we can set up the chart 
+     * 
+     * @param chartData global data about all charts dispalyed in lcm-spy
+     */
     public ZoomableChartScrollWheel(ChartData chartData)
     {
         this.addMouseWheelListener(new MyMouseWheelListener(this));
@@ -52,6 +61,13 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         this.chartData = chartData;
     }
     
+    /**
+     * Creates a new frame for this trace.  Called either by ObjectPanel to create
+     * a new graph or from the right-click menu to move a trace to a new graph.
+     * 
+     * @param chartData global chart data for all of lcm-spy
+     * @param trace data that this chart should display
+     */
     public static void newChartFrame(final ChartData chartData, final ITrace2D trace)
     {
         JFrame frame = new JFrame(trace.getName());
@@ -86,6 +102,12 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         frame.setVisible(true);
     }
     
+    /**
+     * Shows the right-click menu if appropriate.
+     * 
+     * @param e MouseEvent to process
+     * @return true if the right-click menu was shown
+     */
     private boolean maybeShowPopup(MouseEvent e)
     {
         if (e.isPopupTrigger())
@@ -99,7 +121,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
 
     /**
      * Updates the right click menu to allow for moving
-     * traces around.  Should be called right after adding
+     * traces around.  Should be called immediately after adding
      * a new trace.
      */
     public void updateRightClickMenu()
@@ -245,6 +267,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         }
     }
     
+
     public void addAxisYRight(AAxis<?> axisY)
     {
         super.addAxisYRight(axisY);
@@ -473,5 +496,3 @@ public class ZoomableChartScrollWheel extends ZoomableChart
     }
     
 }
-
-
