@@ -72,14 +72,14 @@ TEST(LCM_C, EventLogWriteRead) {
         lcm_eventlog_free_event(revent);
     }
 
-    lcm_eventlog_destroy(wlog);
+    lcm_eventlog_destroy(rlog);
 }
 
 TEST(LCM_C, EventLogCorrupt) {
     // Tests detection of corrupt data.
     char* fname = tmpnam(NULL);
     lcm_eventlog_t* wlog = lcm_eventlog_create(fname, "w");
-    EXPECT_NE((void*)NULL, wlog);
+    ASSERT_NE((void*)NULL, wlog);
 
     // Write two valid events, then garbage, then another valid event.
     const char* channel = "CHANNEL_TEST";
@@ -89,15 +89,20 @@ TEST(LCM_C, EventLogCorrupt) {
     memset(data, 127, datalen);
 
     lcm_eventlog_event_t event;
+    event.timestamp = 0;
     event.channellen = channellen;
     event.channel = (char*) channel;
     event.datalen = datalen;
     event.data = data;
+
+    // The two valid events
     EXPECT_EQ(0, lcm_eventlog_write_event(wlog, &event));
     EXPECT_EQ(0, lcm_eventlog_write_event(wlog, &event));
 
-    EXPECT_EQ(1, fwrite(data, datalen, 1, wlog->f));
+    // Garbage
+    EXPECT_EQ(datalen, fwrite(data, 1, datalen, wlog->f));
 
+    // A valid event
     EXPECT_EQ(0, lcm_eventlog_write_event(wlog, &event));
 
     lcm_eventlog_destroy(wlog);
@@ -106,7 +111,7 @@ TEST(LCM_C, EventLogCorrupt) {
     lcm_eventlog_t* rlog = lcm_eventlog_create(fname, "r");
     // First event should be valid.
     lcm_eventlog_event_t* revent = lcm_eventlog_read_next_event(rlog);
-    EXPECT_NE((void*)NULL, revent);
+    ASSERT_NE((void*)NULL, revent);
     lcm_eventlog_free_event(revent);
 
     // Second event is not because it's not followed by EOF or an event header.

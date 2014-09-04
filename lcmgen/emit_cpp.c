@@ -202,7 +202,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     fprintf(f, "#define __%s_hpp__\n", tn_);
     fprintf(f, "\n");
 
-    // do wew need to #include <vector> or <string>?
+    // do we need to #include <vector> and/or <string>?
     int emit_include_vector = 0;
     int emit_include_string = 0;
     for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
@@ -211,7 +211,8 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
             !lcm_is_constant_size_array(lm) && !emit_include_vector) {
             emit(0, "#include <vector>");
             emit_include_vector = 1;
-        } else if(!emit_include_string &&
+        }
+        if(!emit_include_string &&
             !strcmp(lm->type->lctypename, "string")) {
             emit(0, "#include <string>");
             emit_include_string = 1;
@@ -628,11 +629,11 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
 
         int decode_indent = 1 + depth;
         if(!lcm_is_constant_size_array(lm)) {
-            emit_start(1 + depth, "this->%s", lm->membername);
+            emit(1 + depth, "if(%s%s) {", dim_size_prefix(dim->size), dim->size);
+            emit_start(2 + depth, "this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
             emit_end(".resize(%s%s);", dim_size_prefix(dim->size), dim->size);
-            emit(1 + depth, "if(%s%s) {", dim_size_prefix(dim->size), dim->size);
             decode_indent++;
         }
 
