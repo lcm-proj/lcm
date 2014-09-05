@@ -282,6 +282,9 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         return super.removeAxisYRight(axisY);
     }
     
+    /**
+     * Move this frame to the front to get the user's attention
+     */
     public void toFront()
     {
         if (frame != null)
@@ -296,6 +299,12 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         }
     }
     
+    /**
+     * Saves the time this window was last in focus.  Allows us to put new traces
+     * on the last chart that was in focus
+     * 
+     * @param frame frame to add the focus timer to
+     */
     public void addFrameFocusTimer(JFrame frame)
     {
         this.frame = frame;
@@ -314,8 +323,17 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         });
     }
     
+    /**
+     * Returns the last time this frame was focused.
+     * 
+     * @return the last time the frame was focused
+     */
     public long getLastFocusTime() { return lastFocusTime; }
     
+    /**
+     * Handle mouse press events
+     * 
+     */
     public void mousePressed(MouseEvent e)
     {
         if (maybeShowPopup(e))
@@ -360,6 +378,9 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         
     }
     
+    /**
+     * Pan the chart when the mouse is dragged.
+     */
     public void mouseDragged(MouseEvent e)
     {
         // move the view
@@ -369,6 +390,9 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         }
     }
     
+    /**
+     * Handle mouse release events, including double-click and right click.
+     */
     public void mouseReleased(MouseEvent e)
     {
         if (e.getClickCount() == 2)
@@ -380,6 +404,11 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         }
     }
     
+    /**
+     * Implements panning the chart on mouse drag.
+     * 
+     * @param e MouseEvent to process
+     */
     private void dragChart(MouseEvent e)
     {
         
