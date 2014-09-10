@@ -154,7 +154,7 @@ struct lcmgen
     GPtrArray *structs; // lcm_struct_t
     GPtrArray *enums;   // lcm_enum_t (declared at top level)
 
-    gchar* last_comment;
+    gchar* comment_doc;
 };
 
 /////////////////////////////////////////////////
