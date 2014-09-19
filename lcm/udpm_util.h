@@ -36,8 +36,13 @@ typedef int SOCKET;
 #define LCM2_MAGIC_SHORT 0x4c433032   // hex repr of ascii "LC02" 
 #define LCM2_MAGIC_LONG  0x4c433033   // hex repr of ascii "LC03" 
 
+#ifdef __APPLE__
+#define LCM_SHORT_MESSAGE_MAX_SIZE 1435
+#define LCM_FRAGMENT_MAX_PAYLOAD 1423
+#else
 #define LCM_SHORT_MESSAGE_MAX_SIZE 65499
 #define LCM_FRAGMENT_MAX_PAYLOAD 65487
+#endif
 
 #define LCM_RINGBUF_SIZE (200*1024)
 
