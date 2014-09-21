@@ -1,21 +1,24 @@
-LCM API documentation {#mainpage}
+LCM documentation {#mainpage}
 ====
 
-# Tutorials {#main_tutorials}
+# Tutorials and Instructions {#main_tutorials}
 
-\li \ref tutorial_general
+ - \ref build_instructions
+ - \ref tutorial_general
 
 # API Reference {#main_api_ref}
 
-\li \ref LcmC
-\li \ref LcmCpp
+ - \ref LcmC
+ - \ref LcmCpp
+ - \ref lua_api
 
-# Other APIs {#other_api_ref}
+# Specifications
 
-\li \ref lua_api
+ - \ref type_specification
+ - \ref udp_multicast_protocol
+ - \ref log_file_format
 
 # Other {#main_other}
 
-\li \ref type_specification
-\li \ref multicast
-\li \ref java_notes
+ - \ref multicast_setup
+ - \ref java_notes
