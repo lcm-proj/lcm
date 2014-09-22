@@ -1,0 +1,3 @@
+[submodule "lcm-java/jchart2d-code"]
+	path = lcm-java/jchart2d-code
+	url = git://git.code.sf.net/p/jchart2d/code
