@@ -8,12 +8,18 @@ sources = [ \
     "pyeventlog.c",
     "pylcm.c",
     "pylcm_subscription.c",
+    os.path.join("..", "lcm", "eventlog.c"),
     os.path.join("..", "lcm", "lcm.c"),
-    os.path.join("..", "lcm", "lcm_udp.c"),
     os.path.join("..", "lcm", "lcm_file.c"),
+    os.path.join("..", "lcm", "lcm_memq.c"),
+    os.path.join("..", "lcm", "lcm_mpudpm.c"),
     os.path.join("..", "lcm", "lcm_tcpq.c"),
+    os.path.join("..", "lcm", "lcmtypes", "channel_port_map_update_t.c"),
+    os.path.join("..", "lcm", "lcmtypes", "channel_to_port_t.c") ]
+    os.path.join("..", "lcm", "lcm_udpm.c"),
     os.path.join("..", "lcm", "ringbuffer.c"),
-    os.path.join("..", "lcm", "eventlog.c") ]
+    os.path.join("..", "lcm", "udpm_util.c"),
+
 
 include_dirs = []
 define_macros = []
@@ -51,7 +57,7 @@ if os.name == 'nt':
     msvccompiler.MSVCCompiler._c_extensions = []
     msvccompiler.MSVCCompiler._cpp_extensions.append('.c')
 
-    sources.append(os.path.join("..", "WinSpecific", "WinPorting.cpp"))
+    sources.append(os.path.join("..", "lcm", "windows", "WinPorting.cpp"))
 
 else:
     pkg_deps = "glib-2.0 gthread-2.0"

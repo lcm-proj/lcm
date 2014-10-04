@@ -5,7 +5,13 @@
 [ -d html ] || mkdir html
 
 # Python
-epydoc --config epydoc.cfg
+# Build python modules locally so that Epydoc does not need to rely on a
+# system-installed version of LCM
+cd ../lcm-python
+python setup.py install --prefix build
+cd ../docs
+pyver=$(python -c "import platform; print platform.python_version()[:3]")
+PYTHONPATH=../lcm-python/build/python${pyver}/site-packages/:$PYTHONPATH epydoc --config epydoc.cfg
 
 # Java
 cd ../lcm-java
