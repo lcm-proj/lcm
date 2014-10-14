@@ -212,7 +212,7 @@ public class ObjectPanel extends JPanel
                 if (!bestChart.getTraces().contains(trace))
                 {
                 	trace.setMaxSize(chartData.detailedSparklineChartSize);
-                    trace.setColor(chartData.popColor());
+                    trace.setColor(bestChart.popColor());
                     
                 	if (newAxis)
                 	{

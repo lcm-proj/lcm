@@ -36,6 +36,12 @@ public class ZoomableChartScrollWheel extends ZoomableChart
     private long lastFocusTime = -1;
     private JFrame frame = null;
     
+ // internal color list
+    private ArrayList<Color> colors = new ArrayList<Color>();
+
+    // color index
+    private int colorNum = 0;
+    
     // we need a list of the axes on the right, which we update ourselves
     private ArrayList<AAxis> rightYAxis = new ArrayList<AAxis>();
     
@@ -46,7 +52,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
     /**
      * Constructor, taking in a chartData so that we can set up the chart 
      * 
-     * @param chartData global data about all charts dispalyed in lcm-spy
+     * @param chartData global data about all charts displayed in lcm-spy
      */
     public ZoomableChartScrollWheel(ChartData chartData)
     {
@@ -59,6 +65,14 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         this.getAxisX().getAxisTitle().setTitle("Time (sec)");
         this.getAxisY().getAxisTitle().setTitle("");
         this.chartData = chartData;
+        
+        colors.add(Color.RED);
+        colors.add(Color.BLACK);
+        colors.add(Color.BLUE);
+        colors.add(Color.MAGENTA);
+        colors.add(Color.CYAN);
+        colors.add(Color.ORANGE);
+        colors.add(Color.GREEN);
     }
     
     /**
@@ -74,7 +88,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         
         final ZoomableChartScrollWheel newChart = new ZoomableChartScrollWheel(chartData);
         
-        trace.setColor(chartData.popColor());
+        trace.setColor(newChart.popColor());
         
         newChart.addTrace(trace);
         newChart.updateRightClickMenu();
@@ -116,6 +130,27 @@ public class ZoomableChartScrollWheel extends ZoomableChart
             return true;
         }
         return false;
+    }
+    
+    /**
+     * Gets the next color for a new trace.  Use this to keep colors as different
+     * as possible.  Increments the color counter.
+     * 
+     * @return next color to use for a trace
+     */
+    public Color popColor()
+    {
+        Color thisColor = colors.get(colorNum % colors.size());
+        colorNum++;
+        return thisColor;
+    }
+    
+    /**
+     * Adds the newest trace color back onto the stack.
+     */
+    public void pushColor()
+    {
+        colorNum--;
     }
     
 
