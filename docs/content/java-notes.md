@@ -1,5 +1,12 @@
-Notes for Java developers {#java_notes}
+Java application notes {#java_notes}
 ====
+
+# API docs
+
+Java API documentation is maintained with Javadoc.  To build the documentation,
+[build LCM](\ref build_instructions) and then run the script:
+
+    $ lcm-java/make-javadocs.sh
 
 # Finding lcm.jar {#java_lcm_jar}
 

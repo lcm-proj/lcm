@@ -17,6 +17,7 @@ config.status
 config.sub
 configure
 depcomp
+docs/html
 examples/Makefile
 examples/Makefile.in
 install-sh
@@ -24,6 +25,7 @@ lcm-java/Makefile
 lcm-java/Makefile.in
 lcm-java/build/
 lcm-java/classnoinst.stamp
+lcm-java/javadocs
 lcm-java/lcm-java.pc
 lcm-java/lcm-logplayer-gui
 lcm-java/lcm-spy
@@ -39,6 +41,7 @@ lcm-logger/lcm-logplayer
 lcm-lua/Makefile
 lcm-lua/Makefile.in
 
+lcm-python/html
 lcm-python/Makefile
 lcm-python/Makefile.in
 

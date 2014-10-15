@@ -21,10 +21,10 @@ client.o: client.cpp $(types_src)
 	$(CC) $(CFLAGS) $(LDFLAGS) -c $<
 
 client: client.o common.o $(types_src)
-	$(CC) -o $@ $^ $(CFLAGS) $(LDFLAGS)
+	$(CXX) -o $@ client.o common.o $(LDFLAGS)
 
 memq_test: memq_test.o
-	$(CXX) -o $@ $^ $(LDFLAGS) $(GTEST_LIBS)
+	$(CXX) -o $@ memq_test.o $(LDFLAGS) $(GTEST_LIBS)
 
 memq_test.o: memq_test.cpp $(types_src)
 	$(CXX) `pkg-config --cflags lcm` -g -I../gtest/include -c $<

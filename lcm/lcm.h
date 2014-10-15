@@ -34,7 +34,9 @@ extern "C" {
  *
  * All %LCM functions are internally synchronized and thread-safe.
  *
- * <tt> #include <lcm/lcm.h> </tt>
+ * @code
+ * #include <lcm/lcm.h>
+ * @endcode
  *
  * Linking: <tt> `pkg-config --libs lcm` </tt>
  * @{
@@ -319,7 +321,7 @@ int lcm_handle (lcm_t *lcm);
  * an error occured.
  */
 LCM_API_FUNCTION
-int lcm_handle_timeout (lcm_t *lcm, int timeout_milis);
+int lcm_handle_timeout (lcm_t *lcm, int timeout_millis);
 
 /**
  * @brief Adjusts the maximum number of received messages that can be queued up
@@ -342,9 +344,14 @@ int lcm_handle_timeout (lcm_t *lcm, int timeout_milis);
 LCM_API_FUNCTION
 int lcm_subscription_set_queue_capacity(lcm_subscription_t* handler, int num_messages);
 
+/// LCM release major version - the X in version X.Y.Z
 #define LCM_MAJOR_VERSION 1
+
+/// LCM release minor version - the Y in version X.Y.Z
 #define LCM_MINOR_VERSION 1
-#define LCM_MICRO_VERSION 1
+
+/// LCM release micro version - the Z in version X.Y.Z
+#define LCM_MICRO_VERSION 2
 
 /**
  * @}

@@ -138,7 +138,7 @@ lcmgen_t *lcmgen_create()
     lcmgen->structs = g_ptr_array_new();
     lcmgen->enums = g_ptr_array_new();
     lcmgen->package = strdup("");
-    lcmgen->last_comment = NULL;
+    lcmgen->comment_doc = NULL;
 
     return lcmgen;
 }
@@ -351,29 +351,35 @@ void parse_error(tokenize_t *t, const char *fmt, ...)
     _exit(1);
 }
 
-// Consume any available comments and store them in lcmgen->last_comment
-void parse_try_consume_comment(lcmgen_t* lcmgen, tokenize_t* t)
+// Consume any available comments and store them in lcmgen->comment_doc
+void parse_try_consume_comment(lcmgen_t* lcmgen, tokenize_t* t,
+    int store_comment_doc)
 {
-    g_free(lcmgen->last_comment);
-    lcmgen->last_comment = NULL;
+    if (store_comment_doc) {
+        g_free(lcmgen->comment_doc);
+        lcmgen->comment_doc = NULL;
+    }
 
     while (tokenize_peek(t) != EOF && t->token_type == LCM_TOK_COMMENT) {
         tokenize_next(t);
 
-        if (!lcmgen->last_comment) {
-            lcmgen->last_comment = g_strdup(t->token);
-        } else {
-            gchar* orig = lcmgen->last_comment;
-            lcmgen->last_comment = g_strdup_printf("%s\n%s", orig, t->token);
-            g_free(orig);
+        if (store_comment_doc) {
+            if (!lcmgen->comment_doc) {
+                lcmgen->comment_doc = g_strdup(t->token);
+            } else {
+                gchar* orig = lcmgen->comment_doc;
+                lcmgen->comment_doc = g_strdup_printf("%s\n%s", orig, t->token);
+                g_free(orig);
+            }
         }
     }
 }
 
-// If the next token is "tok" and not a comment, consume it and return 1. Else,
+// If the next non-comment token is "tok", consume it and return 1. Else,
 // return 0
 int parse_try_consume(tokenize_t *t, const char *tok)
 {
+    parse_try_consume_comment(NULL, t, 0);
     int res = tokenize_peek(t);
     if (res == EOF)
         parse_error(t, "End of file while looking for %s.", tok);
@@ -391,6 +397,7 @@ int parse_try_consume(tokenize_t *t, const char *tok)
 // the program exits.
 void parse_require(tokenize_t *t, char *tok)
 {
+    parse_try_consume_comment(NULL, t, 0);
     int res;
     do {
         res = tokenize_next(t);
@@ -412,6 +419,7 @@ void tokenize_next_or_fail(tokenize_t *t, const char *description)
 
 int parse_const(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
 {
+    parse_try_consume_comment(lcmgen, t, 0);
     tokenize_next_or_fail(t, "type identifier");
 
     // get the constant type
@@ -421,6 +429,7 @@ int parse_const(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
 
 another_constant:
     // get the member name
+    parse_try_consume_comment(lcmgen, t, 0);
     tokenize_next_or_fail(t, "name identifier");
     if (!lcm_is_legal_member_name(t->token))
         parse_error(t, "Invalid member name: must start with [a-zA-Z_].");
@@ -434,15 +443,16 @@ another_constant:
 
     // get the value
     parse_require(t, "=");
+    parse_try_consume_comment(lcmgen, t, 0);
     tokenize_next_or_fail(t, "constant value");
 
     // create a new const member
     lcm_constant_t *lc = lcm_constant_create(lctypename, membername, t->token);
 
     // Attach the last comment if one was defined.
-    if (lcmgen->last_comment) {
-      lc->comment = lcmgen->last_comment;
-      lcmgen->last_comment = NULL;
+    if (lcmgen->comment_doc) {
+      lc->comment = lcmgen->comment_doc;
+      lcmgen->comment_doc = NULL;
     }
 
     char *endptr = NULL;
@@ -493,8 +503,9 @@ another_constant:
 
     free(membername);
 
-    if (parse_try_consume(t, ","))
+    if (parse_try_consume(t, ",")) {
         goto another_constant;
+    }
 
     free(lctypename);
 
@@ -522,6 +533,7 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
     }
 
     // standard declaration
+    parse_try_consume_comment(lcmgen, t, 0);
     tokenize_next_or_fail(t, "type identifier");
 
     if (!isalpha(t->token[0]) && t->token[0]!='_')
@@ -536,6 +548,7 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
     while (1) {
 
         // get the lcm type name
+        parse_try_consume_comment(lcmgen, t, 0);
         tokenize_next_or_fail(t, "name identifier");
 
         if (!lcm_is_legal_member_name(t->token))
@@ -551,9 +564,9 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
         lcm_member_t *lm = lcm_member_create();
         lm->type = lt;
         lm->membername = strdup(t->token);
-        if (lcmgen->last_comment) {
-            lm->comment = lcmgen->last_comment;
-            lcmgen->last_comment = NULL;
+        if (lcmgen->comment_doc) {
+            lm->comment = lcmgen->comment_doc;
+            lcmgen->comment_doc = NULL;
         }
         g_ptr_array_add(lr->members, lm);
 
@@ -561,6 +574,7 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
         while (parse_try_consume(t, "[")) {
 
             // pull out the size of the dimension, either a number or a variable name.
+            parse_try_consume_comment(lcmgen, t, 0);
             tokenize_next_or_fail(t, "array size");
 
             lcm_dimension_t *dim = (lcm_dimension_t*) calloc(1, sizeof(lcm_dimension_t));
@@ -659,21 +673,22 @@ lcm_struct_t *parse_struct(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
 {
     char     *name;
 
+    parse_try_consume_comment(lcmgen, t, 0);
     tokenize_next_or_fail(t, "struct name");
     name = strdup(t->token);
 
     lcm_struct_t *lr = lcm_struct_create(lcmgen, lcmfile, name);
 
-    if (lcmgen->last_comment) {
-        lr->comment = lcmgen->last_comment;
-        lcmgen->last_comment = NULL;
+    if (lcmgen->comment_doc) {
+        lr->comment = lcmgen->comment_doc;
+        lcmgen->comment_doc = NULL;
     }
 
     parse_require(t, "{");
 
     while (!parse_try_consume(t, "}")) {
         // Check for leading comments that will be used to document the member.
-        parse_try_consume_comment(lcmgen, t);
+        parse_try_consume_comment(lcmgen, t, 1);
 
         if (parse_try_consume(t, "}")) {
             break;
@@ -727,13 +742,14 @@ int parse_entity(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
 {
     int res;
 
-    parse_try_consume_comment(lcmgen, t);
+    parse_try_consume_comment(lcmgen, t, 1);
 
     res = tokenize_next(t);
     if (res==EOF)
         return EOF;
 
     if (!strcmp(t->token, "package")) {
+        parse_try_consume_comment(lcmgen, t, 0);
         tokenize_next_or_fail(t, "package name");
         lcmgen->package = strdup(t->token);
         parse_require(t, ";");

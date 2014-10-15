@@ -1,4 +1,4 @@
-UDP Multicast Setup {#multicast}
+UDP Multicast Setup {#multicast_setup}
 ====
 \brief Getting maximum performance on your LAN or local host
 

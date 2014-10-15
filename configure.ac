@@ -1,5 +1,5 @@
 AC_PREREQ(2.50)
-AC_INIT([lcm], 1.1.1)
+AC_INIT([lcm], 1.1.2)
 AC_CONFIG_SRCDIR([lcm/lcm.h])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([foreign])
@@ -23,7 +23,7 @@ dnl  3. If the interface changes consist solely of additions, increment AGE.
 dnl  4. If the interface has removed or changed elements, set AGE to 0.
 dnl ---------------------------------------------------------------------------
 LIBLCM_AGE=3
-LIBLCM_REVISION=1
+LIBLCM_REVISION=2
 LIBLCM_CURRENT=4
 CHART2D_VERSION=3.2.2
 AC_SUBST(LIBLCM_AGE)
@@ -178,7 +178,7 @@ fi
 
 echo "
 
-Configuration (LCM):
+Configuration (LCM v${PACKAGE_VERSION}):
 
   Source code location:  ${srcdir}
   Compiler:              ${CC}

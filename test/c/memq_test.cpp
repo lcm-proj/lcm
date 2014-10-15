@@ -110,4 +110,6 @@ TEST(LCM_C, MemqTimeout) {
   EXPECT_LT(0, lcm_handle_timeout(lcm, 10000));
 
   EXPECT_EQ(1, msg_handled);
+
+  lcm_destroy(lcm);
 }
