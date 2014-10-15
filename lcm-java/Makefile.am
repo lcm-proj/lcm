@@ -3,7 +3,7 @@ JARFILE = lcm.jar
 JAVACFLAGS = -source 1.5 -target 1.5 -classpath jchart2d-code/jchart2d-$(CHART2D_VERSION).jar
 
 
-.PHONY classfiles: jchart2d classdist_noinst.stamp classnoinst.stamp
+.PHONY classfiles: classdist_noinst.stamp classnoinst.stamp
 
 $(JARFILE): classfiles
 	rm -f $(JARFILE)
@@ -29,7 +29,7 @@ lcm-spy: Makefile
 	@echo >> $@ "exec java -server -Xincgc -Xmx128m -Xms64m -ea -cp ${jardir}/jchart2d-${CHART2D_VERSION}.jar:${jardir}/lcm.jar lcm.spy.Spy \$$*"
 	chmod 755 $@
 
-jchart2d:
+jchart2d-code/jchart2d-$(CHART2D_VERSION).jar:
 	@echo "--------------------------------"
 	@echo "       Building jchart2d  "
 	@echo "--------------------------------"
@@ -75,7 +75,7 @@ dist_noinst_JAVA = \
     lcm/spy/ZoomableChartScrollWheel.java \
     lcm/spy/ChannelData.java
 
-$(dist_noinst_JAVA): jchart2d build
+$(dist_noinst_JAVA): jchart2d-code/jchart2d-$(CHART2D_VERSION).jar build
 
 build:
 	mkdir build
