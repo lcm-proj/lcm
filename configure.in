@@ -25,11 +25,11 @@ dnl ---------------------------------------------------------------------------
 LIBLCM_AGE=3
 LIBLCM_REVISION=1
 LIBLCM_CURRENT=4
-CHART2D=jchart2d-3.2.2.jar
+CHART2D_VERSION=3.2.2
 AC_SUBST(LIBLCM_AGE)
 AC_SUBST(LIBLCM_REVISION)
 AC_SUBST(LIBLCM_CURRENT)
-AC_SUBST(CHART2D)
+AC_SUBST(CHART2D_VERSION)
 LIBLCM_VERSION_INFO=$LIBLCM_CURRENT:$LIBLCM_REVISION:$LIBLCM_AGE
 AC_SUBST(LIBLCM_VERSION_INFO)
 
@@ -82,7 +82,7 @@ AC_ARG_WITH(jardir,
             [jardir="$with_jardir"], [jardir=$datadir/java])
 
 AC_SUBST(jardir)
-INSTALLED_CLASSPATH=\${jardir}/lcm.jar:\${jardir}/${CHART2D}
+INSTALLED_CLASSPATH=\${jardir}/lcm.jar:\${jardir}/jchart2d-${CHART2D_VERSION}.jar
 AC_SUBST(INSTALLED_CLASSPATH)
 AC_SUBST(java_apiversion)
 
@@ -96,7 +96,7 @@ AC_ARG_WITH(lua,
 
 AS_IF([test "x$with_lua" != 'xno'],
   [ AX_PROG_LUA([5.1], [], [lua_interp='yes'], [lua_interp='no'])
-    
+
     AS_IF([test "x$lua_interp" = 'xyes'],
       [ AX_LUA_HEADERS([lua_headers='yes'], [lua_headers='no'])
         AX_LUA_LIBS([lua_libs='yes'], [lua_libs='no'])
