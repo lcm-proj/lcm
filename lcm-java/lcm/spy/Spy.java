@@ -35,10 +35,10 @@ public class Spy
     ArrayList<SpyPlugin> plugins = new ArrayList<SpyPlugin>();
 
     JButton clearButton = new JButton("Clear");
-    
+
     public Spy(String lcmurl) throws IOException
     {
-        //	sortedChannelTableModel.addMouseListenerToHeaderInTable(channelTable);
+        //    sortedChannelTableModel.addMouseListenerToHeaderInTable(channelTable);
         channelTableModel.setTableHeader(channelTable.getTableHeader());
         channelTableModel.setSortingStatus(0, TableSorter.ASCENDING);
 
@@ -52,14 +52,14 @@ public class Spy
         tcm.getColumn(4).setMaxWidth(100);
         tcm.getColumn(5).setMaxWidth(100);
         tcm.getColumn(6).setMaxWidth(100);
-        
+
         JFrame jif = new JFrame("LCM Spy");
         jif.setLayout(new BorderLayout());
         jif.add(channelTable.getTableHeader(), BorderLayout.PAGE_START);
         // XXX weird bug, if clearButton is added after JScrollPane, we get an error.
         jif.add(clearButton, BorderLayout.SOUTH);
         jif.add(new JScrollPane(channelTable), BorderLayout.CENTER);
-        
+
         chartData = new ChartData(utime_now());
 
         jif.setSize(800,600);
@@ -74,17 +74,17 @@ public class Spy
         new HzThread().start();
 
         clearButton.addActionListener(new ActionListener()
-	    {
+        {
             public void actionPerformed(ActionEvent e)
             {
                 channelMap.clear();
                 channelList.clear();
                 channelTableModel.fireTableDataChanged();
             }
-	    });
+        });
 
         channelTable.addMouseListener(new MouseAdapter()
-	    {
+        {
             public void mouseClicked(MouseEvent e)
             {
                 int mods=e.getModifiersEx();
@@ -103,10 +103,10 @@ public class Spy
                     for (SpyPlugin plugin : plugins)
                     {
                         if (!got_one && plugin.canHandle(cd.fingerprint)) {
-                            
+
                             // start the plugin
                             (new PluginStarter(plugin, cd)).getAction().actionPerformed(null);
-                            
+
                             got_one = true;
                         }
                     }
@@ -115,33 +115,33 @@ public class Spy
                         createViewer(channelList.get(row));
                 }
             }
-	    });
+        });
 
         jif.addWindowListener(new WindowAdapter()
-	    {
+        {
             public void windowClosing(WindowEvent e)
             {
                 System.out.println("Spy quitting");
                 System.exit(0);
             }
-	    });
+        });
 
         ClassDiscoverer.findClasses(new PluginClassVisitor());
         System.out.println("Found "+plugins.size()+" plugins");
         for (SpyPlugin plugin : plugins) {
             System.out.println(" "+plugin);
         }
-        
+
     }
-    
+
     class PluginStarter
     {
-        
+
         private SpyPlugin plugin;
         private ChannelData cd;
         private String name;
-        
-        
+
+
         public PluginStarter(SpyPlugin pluginIn, ChannelData cdIn)
         {
             plugin = pluginIn;
@@ -149,9 +149,9 @@ public class Spy
             Action thisAction = plugin.getAction(null, null);
             name = (String) thisAction.getValue("Name");
         }
-        
+
         public Action getAction() { return new PluginStarterAction(); }
-        
+
         class PluginStarterAction extends AbstractAction
         {
             public PluginStarterAction() {
@@ -160,24 +160,24 @@ public class Spy
 
             @Override
             public void actionPerformed(ActionEvent e) {
-                
+
                 // for historical reasons, plugins expect a JDesktopPane
                 // here we create a JFrame, add a JDesktopPane, and start the
                 // plugin by calling its actionPerformed method
-                
+
                 JFrame pluginFrame = new JFrame(cd.name);
                 pluginFrame.setLayout(new BorderLayout());
                 JDesktopPane pluginJdp = new JDesktopPane();
                 pluginFrame.add(pluginJdp);
                 pluginFrame.setSize(500, 400);
                 pluginFrame.setVisible(true);
-                
+
                 plugin.getAction(pluginJdp, cd).actionPerformed(null);
-                
+
             }
         }
     }
-    
+
     class PluginClassVisitor implements ClassDiscoverer.ClassVisitor
     {
         public void classFound(String jar, Class cls)
@@ -199,12 +199,12 @@ public class Spy
 
     void createViewer(ChannelData cd)
     {
-        
+
         if (cd.viewerFrame != null && !cd.viewerFrame.isVisible())
-	    {
+        {
             cd.viewerFrame.dispose();
             cd.viewer = null;
-	    }
+        }
 
         if (cd.viewer == null) {
             cd.viewerFrame = new JFrame(cd.name);
@@ -212,17 +212,17 @@ public class Spy
             cd.viewer = new ObjectPanel(cd.name, chartData);
             cd.viewer.setObject(cd.last, cd.last_utime);
 
-            //	cd.viewer = new ObjectViewer(cd.name, cd.cls, null);
+            //    cd.viewer = new ObjectViewer(cd.name, cd.cls, null);
             cd.viewerFrame.setLayout(new BorderLayout());
 
             // default scroll speed is too slow, so increase it
             JScrollPane viewerScrollPane = new JScrollPane(cd.viewer);
             viewerScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-            
+
             cd.viewerFrame.add(viewerScrollPane, BorderLayout.CENTER);
 
             //jdp.add(cd.viewerFrame);
-            
+
             cd.viewerFrame.setSize(650,400);
             cd.viewerFrame.setVisible(true);
         } else {
@@ -460,21 +460,21 @@ public class Spy
         channelTable.setRowSelectionInterval(prow, prow);
 
         jm.add(new DefaultViewer(cd));
-        
-        
+
+
 
         if (cd.cls != null)
-	    {
+        {
             for (SpyPlugin plugin : plugins)
-		    {
+            {
                 if (plugin.canHandle(cd.fingerprint))
                 {
                     jm.add(new PluginStarter(plugin, cd).getAction());
-                    
+
                     //jm.add(plugin.getAction(this_desktop_pane, cd));
                 }
-		    }
-	    }
+            }
+        }
 
         jm.show(channelTable, e.getX(), e.getY());
     }

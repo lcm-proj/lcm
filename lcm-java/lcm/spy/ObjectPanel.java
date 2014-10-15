@@ -44,29 +44,29 @@ public class ObjectPanel extends JPanel
     int lastwidth = 500;
     int lastheight = 100;
     boolean updateGraphs = false;
-    
+
     final int sparklineWidth = 150; // width in pixels of all sparklines
-    
+
     Section currentlyHoveringSection; // section the mouse is hovering over
     String currentlyHoveringName; // name of the section the mouse is hovering over
-    
+
     ChartData chartData; // global data about all charts being displayed by lcm-spy
-    
-    
+
+
 
     class Section
     {
         int x0, y0, x1, y1; // bounding coordinates for sensitive area
         boolean collapsed;
         HashMap<String, SparklineData> sparklines;
-        
-        
+
+
         public Section()
         {
             sparklines = new HashMap<String, SparklineData>();
         }
     }
-    
+
     /**
      * Data about an individual sparkline.
      *
@@ -76,12 +76,12 @@ public class ObjectPanel extends JPanel
         int xmin, xmax;
         int ymin, ymax;
         boolean isHovering;
-        
+
         // all sparklines have a chart associated with them, even though
         // we do not use it for display. This allows us to use the data-collection
         // and management features
         Chart2D chart;
-        
+
         String name;
     }
 
@@ -90,7 +90,7 @@ public class ObjectPanel extends JPanel
     /**
      * Constructor for an object panel, call when the user clicks to see more
      * data about a message.
-     * 
+     *
      * @param name name of the channel
      * @param chartData global data about all charts displayed by lcm-spy
      */
@@ -100,18 +100,18 @@ public class ObjectPanel extends JPanel
         this.startuTime = startuTime;
         this.setLayout(null); // not using a layout manager, drawing everything ourselves
         this.chartData = chartData;
-        
+
         addMouseListener(new MyMouseAdapter());
-        
+
         addMouseMotionListener(new MyMouseMotionListener());
     }
-    
+
     /**
      * Called on mouse movement to determine if we need to
      * highlight a line or open a chart.
-     * 
+     *
      * @param e MouseEvent to process
-     * 
+     *
      * @return returns true if a mouse click was consumed
      */
     public boolean doSparklineInteraction(MouseEvent e)
@@ -120,23 +120,23 @@ public class ObjectPanel extends JPanel
         for (int i = sections.size() -1; i > -1; i--)
         {
             Section section = sections.get(i);
-            
+
             if (section.y0 < y && section.y1 > y)
             {
                 // we might be hovering over something in this section
-            
+
                 Iterator<Entry<String, SparklineData>> it = section.sparklines.entrySet().iterator();
                 while (it.hasNext())
                 {
                     Entry<String, SparklineData> pair = it.next();
-                    
+
                     SparklineData data = pair.getValue();
                     if (data.ymin < y && data.ymax > y && section.collapsed == false)
                     {
                         // the mouse is above this sparkline
                         currentlyHoveringSection = section;
                         currentlyHoveringName = pair.getKey();
-                        
+
                         if (e.getButton() == MouseEvent.BUTTON1)
                         {
                             displayDetailedChart(data, false, false);
@@ -146,10 +146,10 @@ public class ObjectPanel extends JPanel
                             displayDetailedChart(data, true, true);
                         } else if (e.getButton() == MouseEvent.BUTTON3)
                         {
-                        	// right click means same chart, new axis
-                        	displayDetailedChart(data, false, true);
+                            // right click means same chart, new axis
+                            displayDetailedChart(data, false, true);
                         }
-                        
+
                         return true;
                     }
                 }
@@ -158,22 +158,22 @@ public class ObjectPanel extends JPanel
         currentlyHoveringSection = null;
         return false;
     }
-    
+
     /**
      * Opens a detailed, interactive chart for a data stream.  If the data is already
      * displayed in a chart, brings that chart to the front instead.
-     * 
-     * 
+     *
+     *
      * @param data data channel to display
      * @param openNewChart set to true to force opening of a new chart window, false to add
-     *      to an already-open chart (if one exists) 
+     *      to an already-open chart (if one exists)
      * @param newAxis true if we should add a new Y-axis to display this data
      */
     public void displayDetailedChart(SparklineData data, boolean openNewChart, boolean newAxis)
     {
         // check to see if we are already displaying this trace
         Trace2DLtd trace = (Trace2DLtd) data.chart.getTraces().first();
-        
+
         for (ZoomableChartScrollWheel chart : chartData.getCharts())
         {
             if (chart.getTraces().contains(trace))
@@ -182,8 +182,8 @@ public class ObjectPanel extends JPanel
                 return;
             }
         }
-        
-        
+
+
         if (openNewChart || chartData.getCharts().size() < 1)
         {
             trace.setMaxSize(chartData.detailedSparklineChartSize);
@@ -191,10 +191,10 @@ public class ObjectPanel extends JPanel
         } else
         {
             // find the most recently interacted with chart
-            
+
             long bestFocusTime = -1;
             ZoomableChartScrollWheel bestChart = null;
-            
+
             for (ZoomableChartScrollWheel chart : chartData.getCharts())
             {
                 if (chart.getLastFocusTime() > bestFocusTime)
@@ -202,36 +202,36 @@ public class ObjectPanel extends JPanel
                     bestFocusTime = chart.getLastFocusTime();
                     bestChart = chart;
                 }
-                
+
             }
-            
+
             if (bestChart != null)
             {
                // add this trace to the winning chart
-                
+
                 if (!bestChart.getTraces().contains(trace))
                 {
-                	trace.setMaxSize(chartData.detailedSparklineChartSize);
+                    trace.setMaxSize(chartData.detailedSparklineChartSize);
                     trace.setColor(bestChart.popColor());
-                    
-                	if (newAxis)
-                	{
-                		// add an axis
+
+                    if (newAxis)
+                    {
+                        // add an axis
                         AxisLinear axis = new AxisLinear();
                         bestChart.addAxisYRight(axis);
                         bestChart.addTrace(trace, bestChart.getAxisX(), axis);
-                	} else
-                	{
-                		bestChart.addTrace(trace);
-                	}
-                    
-                    
+                    } else
+                    {
+                        bestChart.addTrace(trace);
+                    }
+
+
                 }
                 bestChart.updateRightClickMenu();
                 bestChart.toFront();
-                
+
             }
-            
+
         }
     }
 
@@ -241,7 +241,7 @@ public class ObjectPanel extends JPanel
         Graphics g;
         FontMetrics fm;
         JPanel panel;
-        
+
         int indent_level;
         int color_level;
         int y;
@@ -368,11 +368,11 @@ public class ObjectPanel extends JPanel
 
             g.setFont(of);
         }
-        
+
         /**
          * Draws a row for a piece of data in the message and also a sparkline
          * for that data.
-         * 
+         *
          * @param cls type of the data
          * @param name name of the entry in the message
          * @param o the data itself
@@ -392,7 +392,7 @@ public class ObjectPanel extends JPanel
                 return;
             }
             Color oldColor = g.getColor();
-            
+
             boolean isHovering = false;
             Section cs = sections.get(sec);
             if (currentlyHoveringSection != null && cs == currentlyHoveringSection
@@ -401,19 +401,19 @@ public class ObjectPanel extends JPanel
                 isHovering = true;
                 g.setColor(Color.RED);
             }
-            
-            
+
+
             Font of = g.getFont();
 
             g.drawString(cls.getName(),  x[0] + indent_level*indentpx, y);
             g.drawString(name,  x[1], y);
             g.drawString(o.toString(), x[2], y);
-            
+
             g.setColor(oldColor);
-            
+
             // draw the graph
             double value = Double.NaN;
-            
+
             if (o instanceof Double)
                 value = (Double) o;
             else if (o instanceof Float)
@@ -426,60 +426,60 @@ public class ObjectPanel extends JPanel
             if (!Double.isNaN(value))
             {
                 // see if we already have a sparkline for this item
-                
+
                 SparklineData data = cs.sparklines.get(name);
                 Chart2D chart;
                 ITrace2D trace;
-                
+
                 if (data == null)
                 {
                     // first instance of this graph, so create it
-                    
+
                     data = new SparklineData();
                     data.name = name;
                     data.isHovering = false;
-                    
+
                     chart = new Chart2D();
-                    
+
                     data.chart = chart;
-                    
-                    
+
+
                     cs.sparklines.put(name, data);
-                    
+
                     trace = new Trace2DLtd(chartData.sparklineChartSize, name);
-                    
+
                     chart.addTrace(trace);
-                    
+
                     // add marker lines to the trace
                     TracePainterDisc markerPainter = new TracePainterDisc();
                     markerPainter.setDiscSize(2);
                     trace.addTracePainter(markerPainter);
-                    
+
                 } else {
                     chart = data.chart;
                     trace = chart.getTraces().first();
                 }
-                
+
                 // update the positions every loop in case another section
                 // was collapsed
-                
+
                 data.xmin = x[3];
                 data.xmax = x[3]+sparklineWidth;
                 data.ymin = y - textheight;
                 data.ymax = y;
-                
+
                 // add the data to our trace
                 if (updateGraphs)
                 {
                     trace.addPoint((double)utime/1000000.0d, value);
                 }
-                
+
                 // draw the graph
                 DrawSparkline(x[3], y, trace, isHovering);
 
-                
-                
-                
+
+
+
                 //g.drawString(String.valueOf(thisValue), x[3], y);
             }
             /*
@@ -493,11 +493,11 @@ public class ObjectPanel extends JPanel
             g.setFont(of);
             g.setColor(oldColor);
         }
-        
+
         /**
          * Draws a sparkline.
-         * 
-         * @param x x-coordinate of the left side of the line 
+         *
+         * @param x x-coordinate of the left side of the line
          * @param y y-coordinate of the top of the line
          * @param trace data for the sparkline
          * @param isHovering true if the mouse cursor is hovering over this row
@@ -509,73 +509,73 @@ public class ObjectPanel extends JPanel
             {
                 return;
             }
-            
+
             Graphics2D g2 = (Graphics2D) g;
-            
-            
+
+
             Iterator<ITracePoint2D> iter = trace.iterator();
-            
+
             final int circleSize = 3;
             final int height = textheight;
             double numSecondsDisplayed = 5.0;
             final double width = sparklineWidth;
-            
+
             //width = width * ((double)trace.getSize() / (double) trace.getMaxSize());
-            
+
             if (trace.getMaxX() == trace.getMinX())
             {
                 // no time series, don't draw anything
                 return;
             }
-            
+
             Color pointColor = Color.RED;
             Color lineColor = Color.BLACK;
-            
+
             if (isHovering) {
                 Color temp = pointColor;
                 pointColor = lineColor;
                 lineColor = temp;
             }
-            
+
             double earliestTimeDisplayed = ((double)utime/(double)1000000.0 - numSecondsDisplayed);
          // decide on the main axis scale
             double xscale = (double)width / (double)(numSecondsDisplayed);
-                    
+
             if (trace.getMaxY() == trace.getMinY())
             {
                 // divide by zero error coming up!
                 // bail and draw a straight line down the center of the graph
                 g2.setColor(lineColor);
                 ITracePoint2D firstPoint = iter.next();
-                
+
                 int leftLineX = (int)((firstPoint.getX() - earliestTimeDisplayed) * xscale) + x;
-                
+
                 if (leftLineX < x)
                 {
                     leftLineX = x;
                 }
-                
+
                 g2.drawLine(leftLineX, y-(int)((double)height/(double)2), x+(int)width, y-(int)((double)height/(double)2));
                 g2.setColor(pointColor);
                 g2.fillOval(x + (int) width - 1, y-(int)((double)height/(double)2) - 1, circleSize, circleSize);
                 return;
             }
-            
-            
+
+
             double yscale = height / (trace.getMaxY() - trace.getMinY());
-            
-            
+
+
             g2.setColor(lineColor);
-            
+
             boolean first = true;
-            
+
             double lastX = 0, lastY = 0, thisX, thisY;
-            
+
             while (iter.hasNext())
             {
                 ITracePoint2D point = iter.next();
-                
-                if (first) 
+
+                if (first)
                 {
                     first = false;
                     lastX = (point.getX() - earliestTimeDisplayed) * xscale + x;
@@ -583,7 +583,7 @@ public class ObjectPanel extends JPanel
                 } else {
                     thisX = (point.getX() - earliestTimeDisplayed) * xscale + x;
                     thisY = y - (point.getY() - trace.getMinY()) * yscale;
-                    
+
                     if (thisX >= x && lastX >= x)
                     {
                         g2.drawLine((int)lastX, (int)lastY, (int)thisX, (int)thisY);
@@ -591,7 +591,7 @@ public class ObjectPanel extends JPanel
                     lastX = thisX;
                     lastY = thisY;
                 }
-                
+
                 if (!iter.hasNext())
                 {
                     // this is the last point, bold it
@@ -601,7 +601,7 @@ public class ObjectPanel extends JPanel
                 }
             }
         }
-        
+
 
         public void spacer()
         {
@@ -677,10 +677,10 @@ public class ObjectPanel extends JPanel
     public void paint(Graphics g)
     {
         Graphics2D g2 = (Graphics2D) g;
-        
+
         g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                 RenderingHints.VALUE_ANTIALIAS_ON);
-        
+
         int width = getWidth(), height = getHeight();
         g.setColor(Color.white);
         g.fillRect(0, 0, width, height);
@@ -761,14 +761,14 @@ public class ObjectPanel extends JPanel
                     paintRecurse(g, ps, f.getName(), f.getType(), f.get(o), isstatic || ((f.getModifiers()&Modifier.STATIC) != 0), sec);
                 } catch (Exception ex) {
                     System.out.println(ex.getMessage());
-                    ex.printStackTrace(System.out);                    
+                    ex.printStackTrace(System.out);
                 }
             }
 
             ps.endSection(sec);
         }
     }
-    
+
     public boolean isOptimizedDrawingEnabled()
     {
         return false;
@@ -779,7 +779,7 @@ public class ObjectPanel extends JPanel
         public void mouseClicked(MouseEvent e)
         {
             int x = e.getX(), y = e.getY();
-            
+
             // check to see if we have clicked on a row in the inspector
             // and should open a graph of the data
             if (doSparklineInteraction(e) == true)
@@ -801,21 +801,21 @@ public class ObjectPanel extends JPanel
 
             if (bestsection >= 0)
                 sections.get(bestsection).collapsed ^= true;
-            
+
             // call repaint here so the UI will update immediately instead of
             // waiting for the next piece of data
             repaint();
         }
     }
-    
+
     class MyMouseMotionListener extends MouseMotionAdapter
     {
-        
+
         public void mouseMoved(MouseEvent e)
         {
             // check to see if we are hovering over any rows of data
             doSparklineInteraction(e);
-            
+
             // repaint in case the hovering changed
             repaint();
         }
