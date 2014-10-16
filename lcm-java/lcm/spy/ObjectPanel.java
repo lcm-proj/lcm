@@ -407,7 +407,14 @@ public class ObjectPanel extends JPanel
 
             g.drawString(cls.getName(),  x[0] + indent_level*indentpx, y);
             g.drawString(name,  x[1], y);
-            g.drawString(o.toString(), x[2], y);
+            
+            
+            if (cls.equals(Byte.TYPE)) {
+                g.drawString(String.format("0x%02X   %03d   %+04d   %c",
+                        ((Byte)o),((Byte)o).intValue()&0x00FF,((Byte)o), ((Byte)o)&0xff), x[2], y);
+            } else {
+                g.drawString(o.toString(), x[2], y);
+            }
 
             g.setColor(oldColor);
 
@@ -422,6 +429,8 @@ public class ObjectPanel extends JPanel
                 value = (Integer) o;
             else if (o instanceof Long)
                 value = (Long) o;
+            else if (o instanceof Byte)
+                value = (Byte) o;
 
             if (!Double.isNaN(value))
             {
@@ -720,10 +729,12 @@ public class ObjectPanel extends JPanel
         }
 
         if (cls.equals(Byte.TYPE)) {
-            ps.drawStrings(cls.getName(), name,
-                           String.format("0x%02X   %03d   %+04d   %c",
-                                         ((Byte)o),((Byte)o).intValue()&0x00FF,((Byte)o), ((Byte)o)&0xff),
-                           isstatic);
+            //ps.drawStrings(cls.getName(), name,
+            //               String.format("0x%02X   %03d   %+04d   %c",
+            //                             ((Byte)o),((Byte)o).intValue()&0x00FF,((Byte)o), ((Byte)o)&0xff),
+            //               isstatic);
+            
+            ps.drawStringsAndGraph(cls, name, o, isstatic, section);
 
         } else if (cls.isPrimitive()) {
 

@@ -33,7 +33,7 @@ jchart2d-code/jchart2d-$(CHART2D_VERSION).jar:
 	@echo "--------------------------------"
 	@echo "       Building jchart2d  "
 	@echo "--------------------------------"
-	cd jchart2d-code && ant makejarFat
+	cd jchart2d-code && mkdir -p bin && ant makejarFat
 	@echo "--------------------------------"
 	@echo "     Done building jchart2d"
 	@echo "--------------------------------"
