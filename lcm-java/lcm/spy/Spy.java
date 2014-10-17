@@ -218,6 +218,11 @@ public class Spy
             // default scroll speed is too slow, so increase it
             JScrollPane viewerScrollPane = new JScrollPane(cd.viewer);
             viewerScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+            
+            // we need to tell the viewer what its viewport is so that it can
+            // make smart decisions about which elements are in view of the user
+            // so it can avoid drawing items outside the view
+            cd.viewer.setViewport(viewerScrollPane.getViewport());
 
             cd.viewerFrame.add(viewerScrollPane, BorderLayout.CENTER);
 

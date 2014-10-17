@@ -40,19 +40,25 @@ public class ObjectPanel extends JPanel
     String name;
     Object o;
     long utime; // time of this message's arrival
-    long startuTime; // time lcm-spy was started
     int lastwidth = 500;
     int lastheight = 100;
     boolean updateGraphs = false;
+    JViewport scrollViewport;
 
     final int sparklineWidth = 150; // width in pixels of all sparklines
+    
+    // margin around the viewport area in which we will draw graphs
+    // (in pixels)
+    final int sparklineDrawMargin = 500;
 
     Section currentlyHoveringSection; // section the mouse is hovering over
     String currentlyHoveringName; // name of the section the mouse is hovering over
 
     ChartData chartData; // global data about all charts being displayed by lcm-spy
 
-
+    // array of all sparklines that are visible 
+    // or near visible to the user right now
+    ArrayList<SparklineData> visibleSparklines = new ArrayList<SparklineData>();
 
     class Section
     {
@@ -97,13 +103,25 @@ public class ObjectPanel extends JPanel
     public ObjectPanel(String name, ChartData chartData)
     {
         this.name = name;
-        this.startuTime = startuTime;
         this.setLayout(null); // not using a layout manager, drawing everything ourselves
         this.chartData = chartData;
 
         addMouseListener(new MyMouseAdapter());
 
         addMouseMotionListener(new MyMouseMotionListener());
+        
+    }
+    
+    /**
+     * If given a viewport, the object panel can make smart decisions to
+     * not draw graphs that are currently outside of the user's view
+     * 
+     * @param viewport viewport from the JScrollPane that contains this ObjectPanel.
+     */
+    public void setViewport(JViewport viewport) {
+        scrollViewport = viewport;
+        
+        scrollViewport.addChangeListener(new MyViewportChangeListener());
     }
 
     /**
@@ -234,7 +252,7 @@ public class ObjectPanel extends JPanel
 
         }
     }
-
+    
     class PaintState
     {
         Color indentColors[] = new Color[] {new Color(255,255,255), new Color(230,230,255), new Color(200,200,255)};
@@ -728,20 +746,20 @@ public class ObjectPanel extends JPanel
             return;
         }
 
-        if (cls.equals(Byte.TYPE)) {
-            //ps.drawStrings(cls.getName(), name,
-            //               String.format("0x%02X   %03d   %+04d   %c",
-            //                             ((Byte)o),((Byte)o).intValue()&0x00FF,((Byte)o), ((Byte)o)&0xff),
-            //               isstatic);
-            
-            ps.drawStringsAndGraph(cls, name, o, isstatic, section);
-
-        } else if (cls.isPrimitive()) {
+        if (cls.isPrimitive() || cls.equals(Byte.TYPE)) {
 
             // This is our common case...
-            ps.drawStringsAndGraph(cls, name, o, isstatic, section);
-            //ps.drawStrings(cls.getName(), name, o.toString(), isstatic);
+            Section cs = sections.get(section);
+            SparklineData data = cs.sparklines.get(name); // if data == null, this graph doesn't exist yet
 
+            if (data == null || visibleSparklines.contains(data))
+            {
+                ps.drawStringsAndGraph(cls, name, o, isstatic, section);
+            } else {
+                // this graph exists, but it is far away from the user's view
+                // to save CPU power, we don't draw it
+                ps.drawStrings(cls.getName(), name, o.toString(), isstatic);
+            }
         } else if (o instanceof Enum) {
 
             ps.drawStrings(cls.getName(), name, ((Enum) o).name(), isstatic);
@@ -829,6 +847,48 @@ public class ObjectPanel extends JPanel
 
             // repaint in case the hovering changed
             repaint();
+        }
+    }
+    
+    class MyViewportChangeListener implements ChangeListener
+    {
+        public void stateChanged(ChangeEvent e)
+        {
+            // here we build a list of the items that are visible
+            // or are close to visible to the user.  That way, we can
+            // only update sparkline charts that are close to what the
+            // user is looking at, reducing CPU load with huge messages
+            
+            JViewport viewport = (JViewport) e.getSource();
+            
+            Rectangle view_rect = viewport.getViewRect();
+            
+            visibleSparklines.clear();
+            
+            for (int i = sections.size() -1; i > -1; i--)
+            {
+                Section section = sections.get(i);
+
+                //if (section.y0 < y && section.y1 > y)
+                {
+                    // we might be hovering over something in this section
+
+                    Iterator<Entry<String, SparklineData>> it = section.sparklines.entrySet().iterator();
+                    while (it.hasNext())
+                    {
+                        Entry<String, SparklineData> pair = it.next();
+
+                        SparklineData data = pair.getValue();
+                        
+                        if (data.ymin > view_rect.y - sparklineDrawMargin && data.ymax < view_rect.y + view_rect.height + sparklineDrawMargin)
+                        {
+                            visibleSparklines.add(data);
+                            System.out.print(".");
+                        }
+                        
+                    }
+                }
+            }
         }
     }
 }

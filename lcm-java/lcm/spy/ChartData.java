@@ -23,7 +23,7 @@ public class ChartData
     
     // constants for setting how much data we keep for each type of graph
     public final int sparklineChartSize = 500;
-    public final int detailedSparklineChartSize = 2000;
+    public final int detailedSparklineChartSize = 1500;
 
     /**
      * Constructor for ChartData.  Initializes color list and sets the start time of lcm-spy
