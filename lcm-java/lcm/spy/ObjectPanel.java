@@ -89,6 +89,7 @@ public class ObjectPanel extends JPanel
         Chart2D chart;
 
         String name;
+        Section section;
     }
 
     ArrayList<Section> sections = new ArrayList<Section>();
@@ -135,45 +136,32 @@ public class ObjectPanel extends JPanel
     public boolean doSparklineInteraction(MouseEvent e)
     {
         int y = e.getY();
-        for (int i = sections.size() -1; i > -1; i--)
+        
+        for (SparklineData data : visibleSparklines)
         {
-            Section section = sections.get(i);
-
-            if (section.y0 < y && section.y1 > y)
+            if (data.ymin < y && data.ymax > y)
             {
-                // we might be hovering over something in this section
+                // the mouse is above this sparkline
+                currentlyHoveringName = data.name;
+                currentlyHoveringSection = data.section;
 
-                Iterator<Entry<String, SparklineData>> it = section.sparklines.entrySet().iterator();
-                while (it.hasNext())
+                if (e.getButton() == MouseEvent.BUTTON1)
                 {
-                    Entry<String, SparklineData> pair = it.next();
-
-                    SparklineData data = pair.getValue();
-                    if (data.ymin < y && data.ymax > y && section.collapsed == false)
-                    {
-                        // the mouse is above this sparkline
-                        currentlyHoveringSection = section;
-                        currentlyHoveringName = pair.getKey();
-
-                        if (e.getButton() == MouseEvent.BUTTON1)
-                        {
-                            displayDetailedChart(data, false, false);
-                        } else if (e.getButton() == MouseEvent.BUTTON2)
-                        {
-                            // middle click means open a new chart
-                            displayDetailedChart(data, true, true);
-                        } else if (e.getButton() == MouseEvent.BUTTON3)
-                        {
-                            // right click means same chart, new axis
-                            displayDetailedChart(data, false, true);
-                        }
-
-                        return true;
-                    }
+                    displayDetailedChart(data, false, false);
+                } else if (e.getButton() == MouseEvent.BUTTON2)
+                {
+                    // middle click means open a new chart
+                    displayDetailedChart(data, true, true);
+                } else if (e.getButton() == MouseEvent.BUTTON3)
+                {
+                    // right click means same chart, new axis
+                    displayDetailedChart(data, false, true);
                 }
+
+                return true;
             }
         }
-        currentlyHoveringSection = null;
+        
         return false;
     }
 
@@ -464,6 +452,7 @@ public class ObjectPanel extends JPanel
 
                     data = new SparklineData();
                     data.name = name;
+                    data.section = cs;
                     data.isHovering = false;
 
                     chart = new Chart2D();
@@ -883,7 +872,6 @@ public class ObjectPanel extends JPanel
                         if (data.ymin > view_rect.y - sparklineDrawMargin && data.ymax < view_rect.y + view_rect.height + sparklineDrawMargin)
                         {
                             visibleSparklines.add(data);
-                            System.out.print(".");
                         }
                         
                     }
