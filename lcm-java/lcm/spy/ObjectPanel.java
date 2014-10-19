@@ -2,33 +2,18 @@ package lcm.spy;
 
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.table.*;
-import javax.swing.tree.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.Point;
-
-import java.io.*;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.jar.*;
-import java.util.zip.*;
-
 import java.lang.reflect.*;
-
-import lcm.spy.ObjectPanel.SparklineData;
 
 import info.monitorenter.gui.chart.Chart2D;
 import info.monitorenter.gui.chart.ITrace2D;
 import info.monitorenter.gui.chart.ITracePoint2D;
-import info.monitorenter.gui.chart.ZoomableChart;
 import info.monitorenter.gui.chart.axis.AxisLinear;
-import info.monitorenter.gui.chart.controls.LayoutFactory;
-import info.monitorenter.gui.chart.rangepolicies.RangePolicyMinimumViewport;
 import info.monitorenter.gui.chart.traces.Trace2DLtd;
 import info.monitorenter.gui.chart.traces.painters.TracePainterDisc;
-import info.monitorenter.gui.chart.views.ChartPanel;
-import info.monitorenter.util.Range;
 
 /**
  * Panel that displays general data for lcm types.  Viewed by double-clicking
@@ -185,6 +170,15 @@ public class ObjectPanel extends JPanel
      */
     public void displayDetailedChart(SparklineData data, boolean openNewChart, boolean newAxis)
     {
+    	// ensure that a Chart2D object exists (if might not if the user had a log playing,
+    	// stopped the log, then scrolled to a new location, and then clicked on the entry
+    	// which would never have triggered a redraw 
+    	
+    	if (data.chart == null)
+    	{
+    		data.chart = InitChart(data.name);
+    	}
+    	
         // check to see if we are already displaying this trace
         Trace2DLtd trace = (Trace2DLtd) data.chart.getTraces().first();
 
@@ -376,7 +370,7 @@ public class ObjectPanel extends JPanel
                 g.setFont(of.deriveFont(Font.ITALIC));
 
             g.drawString(type,  x[0] + indent_level*indentpx, y);
-            g.drawString(name,  x[1], y);
+            g.drawString(name,  x[1], y); 
             g.drawString(value, x[2], y);
             
             y+= textheight;
@@ -449,9 +443,14 @@ public class ObjectPanel extends JPanel
 
             if (!Double.isNaN(value))
             {
-                // see if we already have a sparkline for this item
-
                 SparklineData data = cs.sparklines.get(name);
+                
+                if (data.chart == null)
+                {
+                	data.chart = InitChart(name);
+                    
+                }
+                
                 Chart2D chart = data.chart;
                 ITrace2D trace = chart.getTraces().first();
 
@@ -720,22 +719,10 @@ public class ObjectPanel extends JPanel
                 data.name = name;
                 data.section = cs;
                 data.isHovering = false;
-
-                Chart2D chart = new Chart2D();
-
-                data.chart = chart;
-
+                data.chart = null;
+                
                 cs.sparklines.put(name, data);
-
-                ITrace2D trace = new Trace2DLtd(chartData.sparklineChartSize, name);
-
-                chart.addTrace(trace);
-
-                // add marker lines to the trace
-                TracePainterDisc markerPainter = new TracePainterDisc();
-                markerPainter.setDiscSize(2);
-                trace.addTracePainter(markerPainter);
-            	
+                
             }
             
             data.ymin = ps.y - ps.textheight;
@@ -799,6 +786,22 @@ public class ObjectPanel extends JPanel
     public boolean isOptimizedDrawingEnabled()
     {
         return false;
+    }
+    
+    public Chart2D InitChart(String name)
+    {
+    	Chart2D chart = new Chart2D();
+
+        ITrace2D trace = new Trace2DLtd(chartData.sparklineChartSize, name);
+
+        chart.addTrace(trace);
+
+        // add marker lines to the trace
+        TracePainterDisc markerPainter = new TracePainterDisc();
+        markerPainter.setDiscSize(2);
+        trace.addTracePainter(markerPainter);
+        
+        return chart;
     }
 
     class MyMouseAdapter extends MouseAdapter

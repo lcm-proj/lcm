@@ -36,7 +36,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
     private long lastFocusTime = -1;
     private JFrame frame = null;
     
- // internal color list
+    // internal color list
     private ArrayList<Color> colors = new ArrayList<Color>();
 
     // color index
@@ -455,7 +455,13 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         double deltaX = deltaPxX * mouseDownValPerPxX;
         double deltaY = deltaPxY * mouseDownValPerPxY.get(0);
         
-        
+        if (Double.isNaN(mouseDownMinX) || Double.isNaN(mouseDownMaxX) || Double.isNaN(mouseDownMinY.get(0))
+        		|| Double.isNaN(mouseDownMaxY.get(0)) ||Double.isNaN(deltaX) || Double.isNaN(deltaY)
+        		|| Double.isInfinite(mouseDownMinX) || Double.isInfinite(mouseDownMaxX) || Double.isInfinite(mouseDownMinY.get(0))
+        		|| Double.isInfinite(mouseDownMaxY.get(0)) ||Double.isInfinite(deltaX) || Double.isInfinite(deltaY))
+        {
+        	return;
+        }
         
         zoom(mouseDownMinX - deltaX, mouseDownMaxX - deltaX,        
                 mouseDownMinY.get(0) + deltaY, mouseDownMaxY.get(0) + deltaY);
@@ -489,8 +495,9 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         }
 
         @Override
-        public void mouseWheelMoved(MouseWheelEvent e) {
-            
+        public void mouseWheelMoved(MouseWheelEvent e)
+        {
+        	
             int notches = e.getWheelRotation();
          
             IAxis xAxis = chart.getAxisX();
@@ -530,6 +537,11 @@ public class ZoomableChartScrollWheel extends ZoomableChart
             
             double yMin = yValueUnderCursor - ySqSize * (1 - yPercent);
             double yMax = yValueUnderCursor + ySqSize * yPercent;
+            
+            if (Double.isNaN(xMin) || Double.isNaN(xMax) || Double.isNaN(yMin) || Double.isNaN(yMax))
+            {
+            	return;
+            }
             
             chart.zoom(xMin, xMax, yMin, yMax);
             
