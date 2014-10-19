@@ -71,8 +71,16 @@ AC_ARG_WITH(java,
 if test "x$with_java" = xno -o "x$JAR" = x -o "x$JAVAC" = x; then
     AC_MSG_WARN([Java support disabled])
 else
+  AC_CHECK_PROG(HAVE_ANT, ant, true, false)
+  AM_CONDITIONAL(HAVE_ANT,$HAVE_ANT)
+  if test $HAVE_ANT = "false"; then
+    AC_MSG_WARN([*** ant not found, java will not be built])
+  else
     JAVA_FOUND="yes"
+  fi
 fi
+
+
 
 AM_CONDITIONAL(HAVE_JAVA, test "x$JAVA_FOUND" = "xyes")
 java_apiversion="1.0"
@@ -177,8 +185,14 @@ else
 fi
 
 echo "
+"
 
-Configuration (LCM v${PACKAGE_VERSION}):
+if test $HAVE_ANT = "false"; then
+    AC_MSG_WARN([*** ant not found, java will not be built
+])
+fi
+
+echo "Configuration (LCM v${PACKAGE_VERSION}):
 
   Source code location:  ${srcdir}
   Compiler:              ${CC}
