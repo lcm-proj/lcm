@@ -59,6 +59,9 @@ public class ObjectPanel extends JPanel
     // array of all sparklines that are visible 
     // or near visible to the user right now
     ArrayList<SparklineData> visibleSparklines = new ArrayList<SparklineData>();
+    
+    // array of all sparklines being graphed
+    ArrayList<SparklineData> graphingSparklines = new ArrayList<SparklineData>();
 
     class Section
     {
@@ -148,14 +151,19 @@ public class ObjectPanel extends JPanel
                 if (e.getButton() == MouseEvent.BUTTON1)
                 {
                     displayDetailedChart(data, false, false);
+                    graphingSparklines.add(data);
+                    
                 } else if (e.getButton() == MouseEvent.BUTTON2)
                 {
                     // middle click means open a new chart
                     displayDetailedChart(data, true, true);
+                    graphingSparklines.add(data);
+                    
                 } else if (e.getButton() == MouseEvent.BUTTON3)
                 {
                     // right click means same chart, new axis
                     displayDetailedChart(data, false, true);
+                    graphingSparklines.add(data);
                 }
 
                 return true;
@@ -369,7 +377,7 @@ public class ObjectPanel extends JPanel
             g.drawString(type,  x[0] + indent_level*indentpx, y);
             g.drawString(name,  x[1], y);
             g.drawString(value, x[2], y);
-
+            
             y+= textheight;
 
             g.setFont(of);
@@ -443,46 +451,14 @@ public class ObjectPanel extends JPanel
                 // see if we already have a sparkline for this item
 
                 SparklineData data = cs.sparklines.get(name);
-                Chart2D chart;
-                ITrace2D trace;
-
-                if (data == null)
-                {
-                    // first instance of this graph, so create it
-
-                    data = new SparklineData();
-                    data.name = name;
-                    data.section = cs;
-                    data.isHovering = false;
-
-                    chart = new Chart2D();
-
-                    data.chart = chart;
-
-
-                    cs.sparklines.put(name, data);
-
-                    trace = new Trace2DLtd(chartData.sparklineChartSize, name);
-
-                    chart.addTrace(trace);
-
-                    // add marker lines to the trace
-                    TracePainterDisc markerPainter = new TracePainterDisc();
-                    markerPainter.setDiscSize(2);
-                    trace.addTracePainter(markerPainter);
-
-                } else {
-                    chart = data.chart;
-                    trace = chart.getTraces().first();
-                }
+                Chart2D chart = data.chart;
+                ITrace2D trace = chart.getTraces().first();
 
                 // update the positions every loop in case another section
                 // was collapsed
 
                 data.xmin = x[3];
                 data.xmax = x[3]+sparklineWidth;
-                data.ymin = y - textheight;
-                data.ymax = y;
 
                 // add the data to our trace
                 if (updateGraphs)
@@ -494,16 +470,8 @@ public class ObjectPanel extends JPanel
                 DrawSparkline(x[3], y, trace, isHovering);
 
 
-
-
-                //g.drawString(String.valueOf(thisValue), x[3], y);
             }
-            /*
-            } else {
-                drawStrings(cls.getName(), name, o.toString(), isstatic);
-                return;
-            }
-*/
+            
             y+= textheight;
 
             g.setFont(of);
@@ -554,7 +522,8 @@ public class ObjectPanel extends JPanel
             }
 
             double earliestTimeDisplayed = ((double)utime/(double)1000000.0 - numSecondsDisplayed);
-         // decide on the main axis scale
+            
+            // decide on the main axis scale
             double xscale = (double)width / (double)(numSecondsDisplayed);
 
             if (trace.getMaxY() == trace.getMinY())
@@ -741,9 +710,41 @@ public class ObjectPanel extends JPanel
             Section cs = sections.get(section);
             SparklineData data = cs.sparklines.get(name); // if data == null, this graph doesn't exist yet
 
-            if (data == null || visibleSparklines.contains(data))
+            if (data == null)
+            {
+            	// we may or may not draw this depending on if it is near the view but we need to keep track of it
+            	// so the user can click on it
+
+                data = new SparklineData();
+                data.name = name;
+                data.section = cs;
+                data.isHovering = false;
+
+                Chart2D chart = new Chart2D();
+
+                data.chart = chart;
+
+                cs.sparklines.put(name, data);
+
+                ITrace2D trace = new Trace2DLtd(chartData.sparklineChartSize, name);
+
+                chart.addTrace(trace);
+
+                // add marker lines to the trace
+                TracePainterDisc markerPainter = new TracePainterDisc();
+                markerPainter.setDiscSize(2);
+                trace.addTracePainter(markerPainter);
+            	
+            }
+            
+            data.ymin = ps.y - ps.textheight;
+            data.ymax = ps.y;
+            
+            
+            if (visibleSparklines.contains(data) || graphingSparklines.contains(data))
             {
                 ps.drawStringsAndGraph(cls, name, o, isstatic, section);
+                
             } else {
                 // this graph exists, but it is far away from the user's view
                 // to save CPU power, we don't draw it
@@ -858,16 +859,15 @@ public class ObjectPanel extends JPanel
             {
                 Section section = sections.get(i);
 
-                //if (section.y0 < y && section.y1 > y)
+                if (section.collapsed == false)
                 {
-                    // we might be hovering over something in this section
-
                     Iterator<Entry<String, SparklineData>> it = section.sparklines.entrySet().iterator();
                     while (it.hasNext())
                     {
                         Entry<String, SparklineData> pair = it.next();
 
                         SparklineData data = pair.getValue();
+                        
                         
                         if (data.ymin > view_rect.y - sparklineDrawMargin && data.ymax < view_rect.y + view_rect.height + sparklineDrawMargin)
                         {
