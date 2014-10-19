@@ -113,6 +113,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         });
         
         frame.setSize(600, 500);
+        frame.setLocationByPlatform(true);
         frame.setVisible(true);
     }
     

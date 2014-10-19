@@ -63,6 +63,7 @@ public class Spy
         chartData = new ChartData(utime_now());
 
         jif.setSize(800,600);
+        jif.setLocationByPlatform(true);
         jif.setVisible(true);
 
         if(null == lcmurl)
@@ -170,6 +171,7 @@ public class Spy
                 JDesktopPane pluginJdp = new JDesktopPane();
                 pluginFrame.add(pluginJdp);
                 pluginFrame.setSize(500, 400);
+                pluginFrame.setLocationByPlatform(true);
                 pluginFrame.setVisible(true);
 
                 plugin.getAction(pluginJdp, cd).actionPerformed(null);
@@ -229,6 +231,7 @@ public class Spy
             //jdp.add(cd.viewerFrame);
 
             cd.viewerFrame.setSize(650,400);
+            cd.viewerFrame.setLocationByPlatform(true);
             cd.viewerFrame.setVisible(true);
         } else {
             cd.viewerFrame.setVisible(true);
