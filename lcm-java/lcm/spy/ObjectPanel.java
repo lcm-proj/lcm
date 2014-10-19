@@ -370,6 +370,7 @@ public class ObjectPanel extends JPanel
             if (collapse_depth > 0)
                 return;
 
+            
             Font of = g.getFont();
             if (isstatic)
                 g.setFont(of.deriveFont(Font.ITALIC));
@@ -746,10 +747,17 @@ public class ObjectPanel extends JPanel
                 ps.drawStringsAndGraph(cls, name, o, isstatic, section);
                 
             } else {
-                // this graph exists, but it is far away from the user's view
-                // to save CPU power, we don't draw it
-                ps.drawStrings(cls.getName(), name, o.toString(), isstatic);
+            	// don't bother drawing the strings or graph for it.
+            	// just update the text height to pretend we drew it
+            	// (on huge messages, this is a large CPU savings)
+            	
+            	if (ps.collapse_depth > 0)
+                    return;
+                
+                ps.y+= ps.textheight;
+            	
             }
+            
         } else if (o instanceof Enum) {
 
             ps.drawStrings(cls.getName(), name, ((Enum) o).name(), isstatic);
