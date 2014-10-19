@@ -170,15 +170,15 @@ public class ObjectPanel extends JPanel
      */
     public void displayDetailedChart(SparklineData data, boolean openNewChart, boolean newAxis)
     {
-    	// ensure that a Chart2D object exists (if might not if the user had a log playing,
-    	// stopped the log, then scrolled to a new location, and then clicked on the entry
-    	// which would never have triggered a redraw 
-    	
-    	if (data.chart == null)
-    	{
-    		data.chart = InitChart(data.name);
-    	}
-    	
+        // ensure that a Chart2D object exists (if might not if the user had a log playing,
+        // stopped the log, then scrolled to a new location, and then clicked on the entry
+        // which would never have triggered a redraw 
+        
+        if (data.chart == null)
+        {
+            data.chart = InitChart(data.name);
+        }
+        
         // check to see if we are already displaying this trace
         Trace2DLtd trace = (Trace2DLtd) data.chart.getTraces().first();
 
@@ -447,7 +447,7 @@ public class ObjectPanel extends JPanel
                 
                 if (data.chart == null)
                 {
-                	data.chart = InitChart(name);
+                    data.chart = InitChart(name);
                     
                 }
                 
@@ -712,8 +712,8 @@ public class ObjectPanel extends JPanel
 
             if (data == null)
             {
-            	// we may or may not draw this depending on if it is near the view but we need to keep track of it
-            	// so the user can click on it
+                // we may or may not draw this depending on if it is near the view but we need to keep track of it
+                // so the user can click on it
 
                 data = new SparklineData();
                 data.name = name;
@@ -734,15 +734,15 @@ public class ObjectPanel extends JPanel
                 ps.drawStringsAndGraph(cls, name, o, isstatic, section);
                 
             } else {
-            	// don't bother drawing the strings or graph for it.
-            	// just update the text height to pretend we drew it
-            	// (on huge messages, this is a large CPU savings)
-            	
-            	if (ps.collapse_depth > 0)
+                // don't bother drawing the strings or graph for it.
+                // just update the text height to pretend we drew it
+                // (on huge messages, this is a large CPU savings)
+                
+                if (ps.collapse_depth > 0)
                     return;
                 
                 ps.y+= ps.textheight;
-            	
+                
             }
             
         } else if (o instanceof Enum) {
@@ -788,9 +788,18 @@ public class ObjectPanel extends JPanel
         return false;
     }
     
+    /**
+     * Initialize a chart.  This should happen before you want to use
+     * the chart, either for storing data or displaying data.  It's best
+     * to delay the inits until you need them, because making a lot of charts
+     * seems to slow down chart interactions.
+     * 
+     * @param name Name of the trace you want to init
+     * @return the created chart object
+     */
     public Chart2D InitChart(String name)
     {
-    	Chart2D chart = new Chart2D();
+        Chart2D chart = new Chart2D();
 
         ITrace2D trace = new Trace2DLtd(chartData.sparklineChartSize, name);
 
@@ -806,6 +815,12 @@ public class ObjectPanel extends JPanel
 
     class MyMouseAdapter extends MouseAdapter
     {
+        /**
+         * Handle mouse clicks.  Either opens graphs if the user
+         * clicked on a row or toggles sections.
+         * 
+         * @param e MouseEvent that fired this click
+         */
         public void mouseClicked(MouseEvent e)
         {
             int x = e.getX(), y = e.getY();
@@ -841,6 +856,12 @@ public class ObjectPanel extends JPanel
     class MyMouseMotionListener extends MouseMotionAdapter
     {
 
+        /**
+         * Check to see if we need to update the hightlight
+         * on a row.
+         * 
+         * @param e MouseEvent from the mouse move
+         */
         public void mouseMoved(MouseEvent e)
         {
             // check to see if we are hovering over any rows of data
@@ -853,12 +874,17 @@ public class ObjectPanel extends JPanel
     
     class MyViewportChangeListener implements ChangeListener
     {
+        /**
+         * Here we build a list of the items that are visible
+         * or are close to visible to the user.  That way, we can
+         * only update sparkline charts that are close to what the
+         * user is looking at, reducing CPU load with huge messages
+         * 
+         * @param e change event that fired this update
+         */
         public void stateChanged(ChangeEvent e)
         {
-            // here we build a list of the items that are visible
-            // or are close to visible to the user.  That way, we can
-            // only update sparkline charts that are close to what the
-            // user is looking at, reducing CPU load with huge messages
+            // 
             
             JViewport viewport = (JViewport) e.getSource();
             

@@ -457,11 +457,11 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         double deltaY = deltaPxY * mouseDownValPerPxY.get(0);
         
         if (Double.isNaN(mouseDownMinX) || Double.isNaN(mouseDownMaxX) || Double.isNaN(mouseDownMinY.get(0))
-        		|| Double.isNaN(mouseDownMaxY.get(0)) ||Double.isNaN(deltaX) || Double.isNaN(deltaY)
-        		|| Double.isInfinite(mouseDownMinX) || Double.isInfinite(mouseDownMaxX) || Double.isInfinite(mouseDownMinY.get(0))
-        		|| Double.isInfinite(mouseDownMaxY.get(0)) ||Double.isInfinite(deltaX) || Double.isInfinite(deltaY))
+                || Double.isNaN(mouseDownMaxY.get(0)) ||Double.isNaN(deltaX) || Double.isNaN(deltaY)
+                || Double.isInfinite(mouseDownMinX) || Double.isInfinite(mouseDownMaxX) || Double.isInfinite(mouseDownMinY.get(0))
+                || Double.isInfinite(mouseDownMaxY.get(0)) ||Double.isInfinite(deltaX) || Double.isInfinite(deltaY))
         {
-        	return;
+            return;
         }
         
         zoom(mouseDownMinX - deltaX, mouseDownMaxX - deltaX,        
@@ -498,7 +498,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         @Override
         public void mouseWheelMoved(MouseWheelEvent e)
         {
-        	
+            
             int notches = e.getWheelRotation();
          
             IAxis xAxis = chart.getAxisX();
@@ -541,7 +541,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
             
             if (Double.isNaN(xMin) || Double.isNaN(xMax) || Double.isNaN(yMin) || Double.isNaN(yMax))
             {
-            	return;
+                return;
             }
             
             chart.zoom(xMin, xMax, yMin, yMax);
