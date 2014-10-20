@@ -1,0 +1,86 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ <!--#include virtual="./head.shtml" -->
+ <script language="javascript">
+  var update="07/09/2011";
+ </script>
+ <body id="bug">
+  <div id="wrapper">
+   <div id="main">
+    <!-- Header -->
+    <!--#include virtual="./header.shtml" -->
+
+    
+    <!--#include virtual="./navigation.shtml" -->
+    <!-- Navigation -->
+    <div id="content">
+     <h2>Find help</h2>
+      <p>
+      Feel free to post your help requests here: <a href="https://sourceforge.net/projects/jchart2d/forums/forum/166411" target="_blank">https://sourceforge.net/projects/jchart2d/forums/forum/166411</a>.
+      <br/>
+      Please do not write emails to me personally. This wish ist not because I don't want to provide help. I just want to share knowledge and allow other users 
+      also to provide help. 
+      </p>
+     <h2>Submit a bug</h2>
+      <p>
+       JChart2D was not tested with all operating systems, different virtual 
+       machine implementations and API use-cases. Even if I think that it runs quite stable, 
+       you may discover a bug. <br>
+       If you do so, report it! Almost every new shipment of JChart2D and other projects 
+       by me were triggered by bug reports. 
+       Most often within a day or a delay to the next weekend. I made less than 10 shipments 
+       for three projects.  
+     </p>
+      <p>
+       Please improve JChart2D by posting your detailed bug report here:<br>
+       <a href="http://sourceforge.net/tracker/?group_id=50440&atid=459734" target="_blank">
+       Submit a bug</a>.
+      </p>
+      <p>
+       Please include every information required [e.g. you code] to reproduce the bug.
+      </p>
+     <h2>Why should I?</h2>
+     <h3>The license</h3>
+      <blockquote>
+       "...if you incorporate code or algorithms from open source places, even 
+        inadvertantly, you are going to infect the intellectual property rights 
+        of what you are creating with the original code itself, depending on the 
+        license terms."
+      </blockquote>
+      
+      <p>
+       I found this statement in a newsgroup. 
+        The 
+       <a target="_blank" href="http://www.opensource.org/licenses/lgpl-2.1.php">LGPL</a> 
+       indeed imposes restrictions if you modify the source of this library (that modified library 
+       then has to be free and under LGPL). But why would someone do that? To fix a bug or add 
+       a feature. If the library itself is only used by an application the LGPL does not affect 
+       the license of the application (java is linked dynamically). To stay on the safe side 
+       you should prefer reporting bugs instead of fixing them. Or even better: fix the bug, 
+       report it and send the changes to the author. 
+      </p>
+      <h3>My interpretation</h3>
+      <p>
+       I don't want to be responsible for infecting someone's work with an "open source virus". 
+       I don't want people to think of open source as a virus. I don't care if you do not follow 
+       the LGPL. Users have to negotiate this with their conscience. 
+      </p>
+      <h3>Privacy</h3>
+      <p>
+       Users that report a bug or request a feature will remain anonymous to the public unless 
+       they declare upon a potential request that they agree to let their name be 
+       shown on some testimonial page in future. In ref-logs I've seen  
+       visits from major companies that returned several times to this page 
+       and stayed longer than 2 minutes. Don't be afraid, your contribution will be handled with 
+       discretion. 
+      </p>
+     
+    </div>
+    <!-- End of contents div -->
+    <!-- The counter -->
+    <!--#include virtual="./footer.shtml" -->
+   </div>
+   <!-- End of main div -->
+  </div>	
+  <!-- End of wrapper div -->
+ </body>
+</html>

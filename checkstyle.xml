@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE module PUBLIC "-//Puppy Crawl//DTD Check Configuration 1.3//EN" "http://www.puppycrawl.com/dtds/configuration_1_3.dtd">
+<!--
+	This configuration file was written by the eclipse-cs plugin configuration editor
+-->
+<!--
+    Checkstyle-Configuration: cs-jchart2d
+    Description: 
+Softer:
+- No force to define numeric literals in constants. 
+- Allow catch blocks without statements.
+- Maximum line length of 120.
+- Allow redundant modifier public in interfaces: It is no mistake to put an emphasis on sth. that is implicitly set (default) in special cases (here: interface scope).
+- Allow throws declaration of unchecked Exceptions. Some higher level layer could decide to be able to deal with those exceptions.
+- Allow code in non final non private methods to enable higher flexibility. Method contract may be broken by subclasses but higher flexibility is possible.
+- Allow protected members for fast access (allows to avoid invokevirtuals in subtype for access).
+- Allow inline conditional a = (condition) ? b:c,
+Harder: 
+- Requires this for member access. 
+
+-->
+<module name="Checker">
+  <property name="severity" value="warning"/>
+  <module name="TreeWalker">
+    <property name="severity" value="ignore"/>
+    <module name="JavadocMethod">
+      <property name="severity" value="warning"/>
+      <property name="allowMissingParamTags" value="true"/>
+      <property name="allowMissingThrowsTags" value="true"/>
+      <property name="allowMissingReturnTag" value="true"/>
+    </module>
+    <module name="JavadocType">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="JavadocVariable">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="JavadocStyle">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="ConstantName">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="LocalFinalVariableName">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="LocalVariableName">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="MethodName">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="PackageName">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="ParameterName">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="StaticVariableName">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="TypeName">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="AvoidStarImport">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="IllegalImport">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="RedundantImport">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="UnusedImports">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="MethodLength">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="EmptyForIteratorPad">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="MethodParamPad">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="NoWhitespaceAfter">
+      <property name="severity" value="warning"/>
+      <property name="tokens" value="LNOT,DOT,BNOT,DEC,UNARY_MINUS,UNARY_PLUS,INC,ARRAY_INIT"/>
+    </module>
+    <module name="NoWhitespaceBefore">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="OperatorWrap">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="ParenPad">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="TypecastParenPad">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="TabCharacter">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="WhitespaceAfter">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="WhitespaceAround">
+      <property name="severity" value="warning"/>
+      <property name="tokens" value="COLON,NOT_EQUAL,QUESTION,DIV,DIV_ASSIGN,BXOR,BXOR_ASSIGN,MINUS,LCURLY,RCURLY,STAR,STAR_ASSIGN,TYPE_EXTENSION_AND,BAND,LAND,BAND_ASSIGN,MOD,MOD_ASSIGN,PLUS,PLUS_ASSIGN,LT,SL,SL_ASSIGN,LE,ASSIGN,MINUS_ASSIGN,EQUAL,GT,GE,SR,SR_ASSIGN,BSR,BSR_ASSIGN,BOR,BOR_ASSIGN,LOR,LITERAL_ASSERT,LITERAL_ASSERT,LITERAL_CATCH,LITERAL_DO,LITERAL_ELSE,LITERAL_FINALLY,LITERAL_FOR,LITERAL_IF,LITERAL_RETURN,SLIST,LITERAL_SYNCHRONIZED,LITERAL_TRY,LITERAL_WHILE"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Allow Generic Types without spacingb"/>
+    </module>
+    <module name="ModifierOrder">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="AvoidNestedBlocks">
+      <property name="severity" value="warning"/>
+      <property name="allowInSwitchCase" value="true"/>
+    </module>
+    <module name="EmptyBlock">
+      <property name="severity" value="warning"/>
+      <property name="option" value="text"/>
+    </module>
+    <module name="LeftCurly">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="NeedBraces">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="RightCurly">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="DoubleCheckedLocking">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="EmptyStatement">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="EqualsHashCode">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="HiddenField">
+      <property name="severity" value="error"/>
+    </module>
+    <module name="IllegalInstantiation">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="InnerAssignment">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="MissingSwitchDefault">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="SimplifyBooleanExpression">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="SimplifyBooleanReturn">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="FinalClass">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="HideUtilityClassConstructor">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="InterfaceIsType">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="VisibilityModifier">
+      <property name="severity" value="warning"/>
+      <property name="protectedAllowed" value="true"/>
+    </module>
+    <module name="ArrayTypeStyle">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="FinalParameters">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="UpperEll">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="LineLength">
+      <property name="severity" value="warning"/>
+      <property name="max" value="160"/>
+    </module>
+    <module name="RequireThis">
+      <property name="severity" value="warning"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Enforce this for internal member access to avoid ambiguity with arguments."/>
+    </module>
+    <module name="SuperFinalize">
+      <property name="severity" value="warning"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Check super finalize for correct finalization in inheritance tree."/>
+    </module>
+    <module name="MemberName">
+      <property name="severity" value="warning"/>
+      <property name="format" value="^m_[a-z][a-zA-Z0-9]*$"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="all members start with &quot;m_&quot; and continue with at least one lowercase letter."/>
+    </module>
+    <module name="TrailingComment">
+      <property name="severity" value="warning"/>
+    </module>
+    <module name="AbstractClassName">
+      <property name="severity" value="warning"/>
+      <property name="format" value="^A.*$|^.*Factory$"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="All abstract classes start with prefix 'A'."/>
+    </module>
+    <module name="MissingCtor">
+      <property name="severity" value="warning"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Enforce constructor chaining."/>
+    </module>
+    <module name="ModifiedControlVariable">
+      <property name="severity" value="warning"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Don't modify control variables in loops inside of it. "/>
+    </module>
+    <module name="MultipleVariableDeclarations">
+      <property name="severity" value="warning"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Single variable declaration."/>
+    </module>
+    <module name="SuperClone">
+      <property name="severity" value="warning"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="super clone."/>
+    </module>
+    <module name="DefaultComesLast">
+      <property name="severity" value="warning"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Force default to be last in switch."/>
+    </module>
+    <module name="ParameterNumber">
+      <property name="severity" value="warning"/>
+      <property name="max" value="11"/>
+      <property name="tokens" value="CTOR_DEF,METHOD_DEF"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Allows 10 parameters just for the case that we have to overload these uncool methods (e.g. in the java sdk API)"/>
+    </module>
+    <module name="ReturnCount">
+      <property name="severity" value="warning"/>
+      <property name="max" value="1"/>
+      <metadata name="com.atlassw.tools.eclipse.checkstyle.comment" value="Only one point of return per method allowed."/>
+    </module>
+    <module name="PackageHtml">
+      <property name="severity" value="warning"/>
+    </module>
+  </module>
+  <module name="FileLength">
+    <property name="severity" value="ignore"/>
+    <property name="max" value="3000"/>
+  </module>
+  <module name="Translation"/>
+  <module name="NewlineAtEndOfFile">
+    <property name="lineSeparator" value="lf"/>
+  </module>
+</module>

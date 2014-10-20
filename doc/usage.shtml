@@ -1,0 +1,429 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ <!--#include virtual="./head.shtml" -->
+ <script language="javascript">
+  var update="16/04/2011";
+ </script>
+ <body id="usage">
+  <div id="wrapper">
+   <div id="main">
+    <!-- Header -->
+    <!--#include virtual="./header.shtml" -->
+
+    
+    <!--#include virtual="./navigation.shtml" -->
+    <!-- Navigation --> 
+    <div id="content">
+     <h2>Usage</h2>
+     <p>
+      This page provides a quick howto for JChart2D. 
+      Additional information may be found at the 
+      <a href="docs.shtml">documentation</a> page.
+     </p>
+     
+     <h3>Demo</h3>
+     <p>
+      Before you start you might want to take a look at JChart2D's realtime performance. 
+      This may be done on the <a href="./applet.shtml">applet</a> page or by downloading the 
+      binary jar file, let's say <em>jchart2d-3.2.1.jar</em>
+      <ol>
+       <li>
+       Download the file to a directory &lt;dir&gt;. 
+       <li>
+       Open a command window. For windows you may <em>start -> execute -> type "cmd"</em> 
+       or <em>start -> execute -> type "command"</em>. Linux users will know. 
+       <li>
+       Ensure, you have a java runtime environment installed. On your command window 
+       type <em>"java"</em>. If unsuccessful you should download and install the Java Runtime Environment 
+       from <a target="_blank" href="https://cds.sun.com/is-bin/INTERSHOP.enfinity/WFS/CDS-CDS_Developer-Site/en_US/-/USD/ViewProductDetail-Start?ProductRef=jre-6u24-oth-JPR@CDS-CDS_Developer">https://cds.sun.com/is-bin/INTERSHOP.enfinity/WFS/CDS-CDS_Developer-Site/en_US/-/USD/ViewProductDetail-Start?ProductRef=jre-6u24-oth-JPR@CDS-CDS_Developer</a>. 
+       If you don't want to start developing in Java, the <em>JRE</em> link on that page is sufficient. 
+       After this procedure reopen the command window and type <em>"java"</em> again. It should 
+       work. If not set the bin subdirectory of the JRE installations 
+       to the PATH environment variable (for linux via the 
+       export command, for windows under <em>start -> settings -> system -> advanced</em>). If 
+       the PATH variable had to be set under windows you have to reopen it again before testing 
+       whether the <em>"java"</em> command works. 
+      </ol>
+     </p>
+     <p>
+      Now go to &lt;dir&gt; via the "cd" command and type. 
+      <blockquote>
+       java -jar jchart2d-3.2.1.jar 
+      </blockquote>
+      The showcase example chart starts. 
+     </p>
+     <p>
+      The Showcase application allows to interact with the data collection (start/stop) and 
+      to save the Chart2D's graphics to an image file in a format that is supported by your 
+      Java Runtime Environment. 
+      The sourcecode may be viewed from cvs  
+      <a target="_blank" href="http://jchart2d.cvs.sourceforge.net/jchart2d/jchart2d/src/info/monitorenter/gui/chart/demos/Showcase.java?view=markup">here</a>.
+     </p>
+     <p>
+      Another example with multithreaded traces may be viewed by typing: 
+      <blockquote>
+       java -cp jchart2d-3.2.1.jar info.monitorenter.gui.chart.demos.MultiTracing
+      </blockquote>
+      You may resize the window and see how the scaling takes advantage of more space. 
+      The command looks different to the first. This is because the first command tells 
+      java to look into the jar file for a file <em>META-INF/manifest.mf</em> in which 
+      the name of the entry point (main class) is written. The 2<sup>nd</sup> command 
+      tells plain-forward which class to start. 
+     </p>
+     <p>
+     If you want to use all features of JChart2D enabled (e.g. eps export) you have to include all libraries (*.jar files) from the 
+     binary distribution zip file in the class path of the java process. <br/>
+     For Windows type:  
+     <blockquote>
+       java -cp jchart2d-3.2.1.jar;xmlgraphics-commons-1.3.1.jar;jide-oss-2.9.7.jar info.monitorenter.gui.chart.demos.MultiTracing
+     </blockquote> 
+     For Linux type: 
+     <blockquote>
+       java -cp jchart2d-3.2.1.jar:jxmlgraphics-commons-1.3.1.jar:jide-oss-2.9.7.jar info.monitorenter.gui.chart.demos.MultiTracing
+     </blockquote> 
+     </p>
+     
+     <h3>Design</h3>
+     <p>
+      The framework is quite small, simple but clever. The 
+      <a href="./docs/javadoc/index.html" target="blank">javavdoc documentation</a> 
+      may look overwhelming at first sight, but the things that have to 
+      be touched at startup are few. 
+     </p>
+     <p>
+      Before describing the framework itself, an abstract introduction to 
+      the concept shall be given. 
+      Within JChart2D a chart is an instance that renders traces. It may render 
+      only one trace or more. Traces consist of points or tuples, that are 
+      nothing more than two doubles x,y that represent a location in a two 
+      dimensional coordinate system. The chart ensures, that every point of 
+      every trace it owns is displayed. It does this by finding the minimum maximum 
+      bounds of both dimensions x and y and scales every point into it's 
+      display size. <br>
+      A trace itself may only be contained in one chart [caused by synchronization requirements]. 
+      It has it's own color, name and 
+      policy of ordering the points that are added to it.  
+      It even has a trace painter that allows different graphical representation 
+      of the data points. By default a trace painter that interconnects the 
+      data points with lines is used but dots, circles and filled polygon 
+      is currently supported. <br>
+      The interaction needed for rendering is a chain: The application code that 
+      uses the API just adds a point to a trace. The trace then notifies it's chart 
+      that it has changed. The chart then keeps this change in mind and will rescale and 
+      repaint in the next painting cycle. Nothing more has to be done at runtime by the user code 
+      than simply adding points to traces.   
+      </p>
+      <p>
+      The following diagram is simplified and 
+      only displays the methods, that have to be invoked to set up a chart. 
+     </p>
+     <p>
+      <table border="0">
+       <tr> 
+        <td>
+         <img src="./img/architecture.png">
+        </td>
+        <td>
+         <p>
+          <h4>Chart2D</h4>
+          The most important component is the Chart2D class. It is a JComponent [not shown] 
+          and therefore may be used within swing applications as any other component. You can 
+          add it to the component hierarchy of your user interface implementation. 
+          It does nothing more than render the data of it's contained ITrace2D implementations. 
+          Towards the ITrace2D implementations it plays the role of an "event receiver". It's 
+          interface ITrace2DListener is used by the ITrace2D implementations to notify the 
+          chart about changed points. <br>
+          
+          More information is given in the 
+          <a href="http://jchart2d.sourceforge.net/docs/javadoc/info/monitorenter/gui/chart/Chart2D.html" target="_blank">description of the class</a>. 
+         </p>
+         <p>
+          <h4>ITrace2D</h4>
+          These are collections of Point2D instances. They are instantiated and added to 
+          a Chart2D instance. Then new Point2D instances may be added. The ITrace2D implementation 
+          will notify the Chart2D instance about changes. 
+          You can define it's label, it's unit, color... . Some methods of the interface are 
+          services for the Chart2D, which uses them for rendering and calculations. There are 
+          several different implementations. For the right choice read 
+          <a href="#TraceChoice">"Choosing the right trace"</a>. 
+          <br>
+          
+          More information is given in the 
+          <a href="http://jchart2d.sourceforge.net/docs/javadoc/info/monitorenter/gui/chart/ITrace2D.html" target="_blank">description of the class</a>.  
+	 </p>
+	 
+	 <p>
+	  <h4>TracePoint2D</h4>
+	  A simple data type that contains the two double values that define a location in a two dimensional 
+	  coordinate system. Instances are created by the application code, that uses the JChart2D API. 
+	  The Chart2D uses two package friendly members to cache values scaled between 0.0 and 1.0. It is possible to 
+	  alter the values inside [setLocation(double,double)] which will notify the corresponding ITrace 
+	  implementation [if the TracePoint2D has been added to an ITrace already] and the Chart2D will be informed 
+	  too in order to repaint. 
+	 </p>
+	</td>
+       </tr>
+      </table>
+     </p>
+     
+     <h3>Minimal Code</h3>
+     <p>
+      For playing around with the demo code provided I recommend to use an IDE like 
+      <a href="http://eclipse.org" target="_blank">eclipse</a>. Download the binary distribution 
+      in form of a jar file here: 
+      <a href="http://prdownloads.sourceforge.net/jchart2d/jchart2d-3.2.1.jar?download" target="_blank">jchart2d-3.2.1.jar</a>. 
+      Put this jar file into the classpath of your IDE. Under eclipse this is done by copying 
+      the file in your eclipse workspace/&lt;projectname&gt; directory and then choosing: 
+      <PRE>
+       Project -> properties -> Java Build Path -> Add Jar
+      </PRE>
+      <br>
+     </p>
+     <h4>Static example</h4>
+     <p>
+      The follwing code shows the minimal effort to set up a static Chart2D and let 
+      it be displayed. The values will not be changed at runtime. 
+     </p>
+     
+     <p>
+      <pre class="code">
+package info.monitorenter.gui.chart.demos;
+
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.util.Random;
+import javax.swing.JFrame;
+import info.monitorenter.gui.chart.Chart2D;
+import info.monitorenter.gui.chart.ITrace2D;
+import info.monitorenter.gui.chart.traces.Trace2DSimple;
+ 
+public class MinimalStaticChart {
+
+  private MinimalStaticChart() {
+    super();
+  }
+  
+  public static void main(String[]args){
+<span class="comment">    // Create a chart: </span> 
+    Chart2D chart = new Chart2D();
+<span class="comment">    // Create an ITrace: </span>
+    ITrace2D trace = new Trace2DSimple(); 
+<span class="comment">    // Add the trace to the chart. This has to be done before adding points (deadlock prevention): </span>
+    chart.addTrace(trace);    
+<span class="comment">    // Add all points, as it is static: </span>
+    Random random = new Random();
+    for(int i=100;i>=0;i--){
+      trace.addPoint(i,random.nextDouble()*10.0+i);
+    }
+<span class="comment">    // Make it visible:
+    // Create a frame.</span>
+    JFrame frame = new JFrame("MinimalStaticChart");
+<span class="comment">    // add the chart to the frame: </span>
+    frame.getContentPane().add(chart);
+    frame.setSize(400,300);
+<span class="comment">    // Enable the termination button [cross on the upper right edge]: </span>
+    frame.addWindowListener(
+        new WindowAdapter(){
+          public void windowClosing(WindowEvent e){
+              System.exit(0);
+          }
+        }
+      );
+    frame.setVisible(true);
+  }
+}
+       
+      </pre> 
+     </p>
+     <p>
+      This example does not look very amazing. You could additionally set the color of the 
+      trace, background color of the Chart2D, set a label to the trace,... See the Javadoc documentation 
+      for things one could do. 
+      <br>
+      Please don't copy & paste this example as is if you are planning to integrate the 
+      chart in a complex user interface. For those tasks one way could be to configure 
+      the chart within the UI top-level class. But this wouldn't be clean. I suggest to add 
+      a method "setChart(Char2D)" to your UI top-level class, configure the chart with 
+      traces and other things outside and then add it to your UI. 
+     </p>
+     
+     <h4>Dynamic example</h4> 
+     <p>
+      This example is more advanced and shows the strong side of JChart2D. 
+      A chart is created that will receive new points at runtime and update 
+      itself. Note, that for traces that continuously receive new values a 
+      limited amount of points has to be chosen: The Trace2DLtd implementation 
+      is based on a ringbuffer and guarantees, that no java.lang.OutOfMemoryError 
+      will happen. Also it is helpful for performance: The more points have to be rendered, 
+      the more calculations have to be done. The example uses a basic helper for 
+      Threads that add data: The AbstractDataCollector class and a dummy implementation. 
+      For your work you should write a subclass of that class too and implement it's 
+      method: <code>public abstract TracePoint2D collectData()</code>. 
+     </p>
+     <p>
+      <pre class="code">
+package info.monitorenter.gui.chart.demos;
+
+import info.monitorenter.gui.chart.Chart2D;
+import info.monitorenter.gui.chart.ITrace2D;
+import info.monitorenter.gui.chart.io.ADataCollector;
+import info.monitorenter.gui.chart.io.RandomDataCollectorOffset;
+import info.monitorenter.gui.chart.traces.Trace2DLtd;
+
+import java.awt.Color;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+
+import javax.swing.JFrame;
+
+public class MinimalDynamicChart {
+  private MinimalDynamicChart() {
+    super();
+  }
+  
+  public static void main(String[]args){
+<span class="comment">    // Create a chart: </span> 
+    Chart2D chart = new Chart2D();
+<span class="comment">    // Create an ITrace: 
+    // Note that dynamic charts need limited amount of values!!! </span>
+    ITrace2D trace = new Trace2DLtd(200); 
+    trace.setColor(Color.RED);
+ 
+<span class="comment">    // Add the trace to the chart. This has to be done before adding points (deadlock prevention): </span>
+    chart.addTrace(trace);
+    
+<span class="comment">    // Make it visible:
+    // Create a frame. </span>
+    JFrame frame = new JFrame("MinimalDynamicChart");
+<span class="comment">    // add the chart to the frame: </span>
+    frame.getContentPane().add(chart);
+    frame.setSize(400,300);
+<span class="comment">    // Enable the termination button [cross on the upper right edge]: </span>
+    frame.addWindowListener(
+        new WindowAdapter(){
+          public void windowClosing(WindowEvent e){
+              System.exit(0);
+          }
+        }
+      );
+    frame.setVisible(true); 
+<span class="comment">    // Every 50 milliseconds a new value is collected. </span>
+   ADataCollector collector = new RandomDataCollectorOffset(trace, 100);
+<span class="comment">    // Start an internal Thread that adds the values: </span>
+    collector.start();
+  }
+}
+
+      </pre>
+     </p>
+     
+     <h3><a name="TraceChoice">Choosing the right trace</a></h3>
+     <p>
+      There are several implementations of the interface which differ in the policy of ordering 
+      or accepting the points. The proper one has to be chosen according to the 
+      characteristics of data and the process of adding it. 
+   
+      <table>
+       <tr>
+        <th class="block">Type</th> 
+        <th class="block">Acceptance</th>
+        <th class="block">Ordering</th> 
+        <th class="block">Note</th>
+       </tr>
+      
+       <tr>
+        <td class="block">
+         <a href="http://jchart2d.sourceforge.net/docs/javadoc/info/monitorenter/gui/chart/traces/Trace2DSimple.html" target="_blank">Trace2DSimple</a>
+        </td>
+        <td class="block">
+         Accepts every new point.
+        </td>
+        <td class="block">
+         As added.
+        </td>
+        <td class="block">
+         Not intended for continuous add operations: Memory will be exceeded.
+        </td>
+       </tr>
+       
+       <tr>
+        <td class="block">
+         <a href="http://jchart2d.sourceforge.net/docs/javadoc/info/monitorenter/gui/chart/traces/Trace2DLtd.html" target="_blank">Trace2DLtd</a>
+        </td>
+        <td class="block">
+         Accepts every new point, but oldest one is dropped, if internal 
+         maximum amount is exceeded. 
+        </td>
+        <td class="block">
+         As added.
+        </td>
+        <td class="block">
+         Based on a fast ringbuffer. 
+        </td>
+       </tr>
+     
+       <tr>
+        <td class="block">
+         <a href="http://jchart2d.sourceforge.net/docs/javadoc/info/monitorenter/gui/chart/traces/Trace2DBijective.html" target="_blank">Trace2DBijective</a>
+        </td>
+        <td class="block">
+         Accepts every new point, but potentially contained points with the 
+         same x value are removed.
+        </td>
+        <td class="block">
+         As added.
+        </td>
+        <td class="block">
+         Based on a LinkedList.
+        </td>
+       </tr>
+       
+       <tr>
+        <td class="block">
+         <a href="http://jchart2d.sourceforge.net/docs/javadoc/info/monitorenter/gui/chart/traces/Trace2DLtdReplacing.html" target="_blank">Trace2DLtdReplacing</a>
+        </td>
+        <td class="block">
+         Accepts the data of every new point. Potentially contained points with the 
+         same x value get updated with the y value.
+        </td>
+        <td class="block">
+         Points with unique x values are ordered as added. 
+         Points with x values already contained replace the old point 
+         at it's position.
+        </td>
+        <td class="block">
+         Based on a ringbuffer (subclass of Trace2DLtd), worst case for 
+         addPoint of O(n), where n is the amount of points in the trace. 
+         This happens often, when no x values recur.
+        </td>
+       </tr>
+
+       <tr>
+        <td class="block">
+         <a href="http://jchart2d.sourceforge.net/docs/javadoc/info/monitorenter/gui/chart/traces/Trace2DSorted.html" target="_blank">Trace2DSorted</a>
+        </td>
+        <td class="block">
+         Accepts the data of every new point. Potentially contained points with the 
+         same x value get updated with the y value.
+        </td>
+        <td class="block">
+         Ordered by ascending x values.
+        </td>
+        <td class="block">
+         No same x value will occur. Removal policy for recurring x values as 
+         Trace2DLtdReplacing. Based on a TreeSet. 
+        </td>
+       </tr>
+      </table>          
+     </p>
+          
+  
+    </div>
+    <!-- End of contents div -->
+    <!-- The counter -->
+    <!--#include virtual="./footer.shtml" -->
+   </div>
+   <!-- End of main div -->
+  </div>	
+  <!-- End of wrapper div -->
+ </body>
+</html>

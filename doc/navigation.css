@@ -1,0 +1,125 @@
+
+body#home #nav li#homenav a,
+body#usage #nav li#usagenav a,
+body#screenshot #nav li#screenshotnav a,
+body#applet #nav li#appletnav a,
+body#download #nav li#downloadnav a,
+body#feature #nav li#featurenav a, 
+body#bug #nav li#bugnav a,
+body#donation #nav li#donationnav a,
+body#mailing #nav li#mailingnav a,
+body#credit #nav li#creditnav a,
+body#docs #nav li#docsnav a,
+body#user #nav li#usernav a,
+body#link #nav li#linknav a{
+   color: #336699;
+   background-color: #fff;
+   border-bottom : none;
+   height: 18px; 
+
+
+}
+
+body#home #nav li#homenav a:hover,
+body#usage #nav li#usagenav a:hover,
+body#screenshot #nav li#screenshotnav a,
+body#applet #nav li#appletnav a,
+body#download #nav li#downloadnav a:hover,
+body#feature #nav li#featurenav a:hover, 
+body#bug #nav li#bugnav a:hover,
+body#donation #nav li#donationnav a:hover,
+body#mailing #nav li#mailingnav a:hover,
+body#docs #nav li#docsnav a:hover,
+body#user #nav li#usernav a:hover,
+body#link #nav li#linknav a:hover{
+   color: #000;
+   background-color: #fff;
+   border-bottom : none;
+   height: 18px;
+ 
+}
+
+#nav {
+   margin: 0;
+   height: 26px;
+   margin-top: 0px;
+   margin-left: 0px;
+   margin-right: 0px;
+   padding: 0 1px 0 0;
+   color: #666;
+   background-color: #f3f3f3;
+   font: bold 11px/14px Verdana, sans-serif;
+   border-top: 1px solid #ccc;
+   border-right: none;
+   border-bottom: 1px solid #ccc;
+}
+
+#nav li, #nav ul,
+#nav2 li,
+#nav2 ul {
+   margin: 0;
+   padding: 0;
+   display: inline;
+   list-style-type: none;
+}
+
+#nav a, #nav a:visited { /*
+   a:link breaks in older versions of Opera */
+   float: left;
+   margin: 0;
+   padding: 4px 10px;
+   color: #666;
+   background-color: #f3f3f3;
+   border-right: 1px solid #ccc;
+   height:18px;
+
+}
+
+#nav li a:hover,
+#nav2 li a:hover {
+   color: #000;
+   background-color: #fff;
+   text-decoration: none; /* 
+   putting the text-decoration rule in '#nav a' breaks in Opera 6 */
+}
+
+#nav #next {
+   float: right; /* 
+   using absolute positioning instead of float does not work in Opera 6 */
+   border-left: 1px solid #ccc;
+   border-right: none;
+}
+
+/* ------------------------------------------------- */
+
+#nav2 {
+   height: 22px;
+   margin: 0;
+   padding: 0;
+   color: #666;
+   background-color: #f3f3f3;
+   font: bold 11px/14px Verdana, sans-serif;
+   border-top: 1px solid #ccc;
+}
+
+#nav2 a,
+#nav2 a:visited { /*
+   a:link breaks in older versions of Opera */
+   float: left;
+   margin: 0;
+   padding: 4px 0;
+   width: 99px;
+   color: #666;
+   background-color: #f3f3f3;
+   text-align: center;
+}
+
+#nav2 li a:hover span { 
+   color: #ff0000;
+   background-color: transparent;
+}
+
+#nav2 #next {
+   border-left: 1px solid #ccc;
+   border-right: none;
+}

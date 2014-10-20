@@ -1,0 +1,441 @@
+/* dionidium.com: design 02
+   live on June 12, 2003
+   permalink: http://127.0.0.1
+   Larry Burkett */
+@import url("./navigation.css");
+
+html, body {
+   margin: 20px 0;
+   color: #000;
+   background-color: #fff;
+   font: 11px/17px Verdana, sans-serif;
+   border: none;
+}
+
+html>body{ background:none; }
+
+#main   {
+   position: relative;
+   margin: 0;
+   padding: 0 0 0 0;
+   color: #000;
+   background-color: #fcfaed;
+   border: 1px solid #ccc;
+}
+
+#main   {
+   position: relative;
+   margin: 0;
+   padding: 0 0 0 0;
+   color: #000;
+   background-color: #fcfaed;
+   border: 1px solid #ccc;
+}
+
+#box{
+   margin: 0;
+   padding: 1px 4px;
+   background-color: #fcfaed;
+   font-color: #ccc;
+   font-weight: bold;
+   border: 1px solid #ccc;   
+   vertical-align: middle;
+   text-align:center;
+   height: 60px;
+   width: 140px;
+   overflow: hidden; 
+}
+
+:link { 
+   color: #336699;
+   background-color: transparent;
+   text-decoration: none;
+   font-weight: bold; 
+}
+
+:visited { 
+   color: #336699;
+   background-color: transparent; 
+   text-decoration: none;
+   font-weight: bold; 
+}
+
+:link:hover, :visited:hover { 
+   color: #6FA3C1;
+   background-color: transparent;
+   text-decoration: underline; 
+}
+
+:link:active, :visited:active { 
+   color: #FF0000;
+   background-color: transparent; 
+   text-decoration: none;
+   font-weight: bold; 
+}
+
+h1 {
+   position: relative;
+   margin: 0;
+   padding: 0;
+   height: 95px;
+   font: bold 14px/20px Verdana, sans-serif;
+   color: #000;
+   background-color: #e0f0fd;
+   overflow: hidden;
+   border-right: 0px solid #ccc;
+}
+
+h2 {
+   margin: 0 0 3px 0;
+   padding: 0;
+   color: #000;
+   background-color: transparent;
+   font: bold 12px/18px Verdana, sans-serif;
+}
+
+h2 .midpost { margin-top: 20px; }
+
+h3 {
+   margin: 0 0 8px 0;
+   padding: 0;
+   color: #666;
+   background-color: transparent;
+   font: bold 11px/17px Verdana, sans-serif;
+}
+
+img {
+  border: none;
+}
+
+td {
+   font: normal 11px/17px Verdana, sans-serif;
+   padding: 1px 4px;
+   vertical-align: top;
+   text-align: left;
+}
+
+td.block{
+   border: 1px solid #ccc;
+}
+
+th {
+   font: bold 11px/17px Verdana, sans-serif;
+   padding: 1px 4px;
+   vertical-align: top;
+   text-align: left; 
+}
+
+th.block{
+   border: 1px solid #ccc;
+}
+
+p, #about li {
+   display: block;
+   margin: 0;
+   padding: 0 0 8px 0;
+   text-decoration: none;
+}
+
+pre {
+   display: block;
+   margin: 0 0 8px 0;
+   padding: 0;
+   color: #000;
+   background-color: #fafafa;
+   border-top: 1px solid #ccc; 
+   border-bottom: 1px solid #ccc;
+}
+
+pre.code {
+   display: block;
+   margin: 0;
+   padding: 0 10px 10px 10px;
+}
+
+span.comment {
+   color: #336699;
+}
+   
+ins {
+   text-decoration: none;
+}
+
+hr { 
+   margin: 0 0 8px 0;
+   text-align: left;
+   width: 200px;
+    }
+ 
+blockquote {
+   margin: 0 8px 8px 8px;
+   padding: 0;
+   color: #000;
+   background-color: #fafafa;
+   overflow: hidden;
+   border-top: 1px solid #ccc; 
+   border-bottom: 1px solid #ccc;
+}
+
+blockquote p {
+   margin: 0;
+   padding: 8px 15px;
+}
+
+ul {
+   margin: 0 0 8px 15px;
+   padding: 0;
+   list-style-type: none;
+}
+
+ul #normal {
+   list-style-type: circle;
+} 
+
+ol {
+   margin-top: 0;
+   margin-bottom: 8px;
+   padding-top: 0;
+   list-style-type: decimal;
+}
+
+dl {
+   margin-top: 0;
+   margin-bottom: 8px;
+   padding-top: 0;
+}
+
+ol li { 
+   margin: 0;
+   padding: 0 0 8px 0;
+   list-style-type: decimal; 
+}
+
+ul li {
+   margin: 0;
+   padding: 0;
+}
+
+cite {
+   font-style: normal;
+}
+
+abbr, acronym { border:none; }
+abbr[title], acronym[title] {
+   border-bottom: 1px dotted black;
+   cursor: help;
+ }
+
+.post {
+   margin: 0;
+   padding: 20px;
+   color: #000;
+   background-color: transparent;
+   border-bottom: 1px solid #ccc;
+}
+
+#wrapper {
+   position: relative;
+   margin: 0 20px 20px 20px;
+   padding: 10px;
+   color: #000;
+   background-color: #eee;
+   border: 1px solid #ccc;
+}
+
+/*
+Cannot reuse #wrapper, as I refuse to 
+give two html elements the same id.
+Copy of wrapper:
+*/
+.wrapper {
+   position: relative;
+   margin: 0 20px 20px 20px;
+   padding: 10px;
+   color: #000;
+   background-color: #eee;
+   border: 1px solid #ccc;
+}
+
+#content {
+   margin: 0px 40px 10px 40px;
+   padding: 10px;
+   color: #000;
+   background-color: #fff;
+   overflow: hidden;
+   border-left: 1px solid #ccc;
+   border-right: 1px solid #ccc;
+   border-bottom: 1px solid #ccc;
+}
+
+#footer {
+   margin: 0 0 0 200px;
+   padding: 10px 20px;
+   color: #000;
+   background-color: #fff;
+   border-left: 1px solid #ccc;
+   border-right: 1px solid #ccc;
+}
+
+#who {
+   margin: 0;
+   padding: 20px 0 12px 0;
+   color: #000;
+   background-color: #eef5fd;
+   border-top: 1px solid #ccc;
+   border-bottom: 1px solid #ccc;
+}
+
+#menu #who h2 {
+   margin: 0;
+   padding: 0 20px 2px 20px;
+}
+
+.ahem { 
+   position: absolute;
+   left: -1000px;
+   width: 990px;
+   font-size:1px; line-height:1;
+}
+
+/* ------------------------------------------------- 
+
+Thank you, thank you, thank you to The Owen Hack.  Older versions 
+of Opera (6.0 and before), IE 6,  and most other browsers disagree by one 
+pixel on how to display the menu div.  This design is made possible 
+by The Owen Hack found at http://www.albin.net/CSS/OwenHack.html */
+
+#menu {
+   position: absolute;
+   /* Positioning rules for IE 6/Win. */
+   top: 120px;
+   left: 0;
+   width: 200px;
+   color: #000;
+   background-color: #fcfaed;
+}
+
+/* Positioning rules for versions of Opera 6.0 and older. */
+html>body #menu {
+   top: 120px;
+   left: 1px;
+}
+
+/* Positioning rules for Opera 7 and Gecko browsers. */
+head:first-child+body #menu {
+   top: 120px;
+   left: 0;
+} 
+
+/* ------------------------------------------------- */
+
+#menu #notes {
+   margin: 20px;
+   padding: 0;
+   list-style-type: none;
+}
+#menu #notes li {
+   margin: 0;
+   padding: 7px 0;
+}
+
+#menu h2 {
+   margin: 0;
+   padding: 20px 20px 2px 20px;
+}
+
+#menu p {
+   margin: 0;
+   padding: 0 20px 8px 20px;
+}
+
+.blogroll {
+   margin: 0 20px 22px 20px;
+   padding: 0;
+   font: 10px/15px Verdana, sans-serif;
+}
+
+.blogroll dt {
+   margin: 0;
+   padding: 0;
+}
+
+.blogroll dd {
+   margin: 0 0 5px 0;
+   padding: 0;
+}
+
+/* ------------------------------------------------- */
+
+#colophon #content h2, #colophon #content h3 {
+   padding: 0 0 5px 0;
+}
+
+#colophon #content h3 {
+   font: bold 11px/12px Verdana, sans-serif;
+}
+
+#colophon ol {
+   margin: 0 0 0 20px;
+   padding: 0;
+}
+
+#contents {
+   margin: 5px 0 10px 18px;
+   padding: 0;
+}
+
+#contents li {
+   list-style-type: disc;
+}
+
+/* ------------------------------------------------- */
+
+form {
+   margin: 0;
+   padding: 20px;
+   color: #000;
+   background-color: #fafafa;
+   border-bottom: 1px solid #ccc;
+   text-align: left;
+}
+
+textarea {
+   width: 400px; 
+}	   
+
+fieldset {
+   margin: 0;
+   border-width : 0;
+   border-style : solid;
+}
+
+label {
+   display: block;
+   margin: 0;
+   padding: 3px 1px;
+   color: #000;
+   background-color: transparent;
+   font-size: 11px;
+   font-weight: bold;
+   border: 0; 
+   cursor: pointer;
+}
+
+.accesskey { text-decoration: underline }
+
+/* ------------------- 2004-08-12 ------------------------- */
+
+ul.related {
+   margin: 0;
+   padding: 0;
+}
+
+.related li {
+   margin: 0;
+   padding: 0 0 3px 0;
+}
+
+h2.related {
+   margin: 10px 0 2px 0;
+   padding: 0;
+}

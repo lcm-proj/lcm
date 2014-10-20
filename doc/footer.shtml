@@ -1,0 +1,29 @@
+<!-- The same left and right margin as content! -->
+<div style="margin:8px 40px 8px 40px;height:30px;">
+ <table style="width:100%;font-size:8pt;">
+  <tr style="height:30px;">
+   <td style="text-align:left;width:70%;">
+    Last updated on <script language="javascript">document.write(update);</script> by <a href="mailto:Achim.Westermann@gmx.de">Achim Westermann</a>
+   </td>
+   <td style="text-align:right;width:15%">
+    <!-- Start of StatCounter Code -->
+    <script type="text/javascript" language="javascript">
+     var sc_project=480663;
+     var sc_partition=3; 
+    </script>
+    hits:
+    <!-- just to put the image right. -->
+    <span style="vertical-align:sub;"> 
+     <script type="text/javascript" language="javascript" src="http://www.statcounter.com/counter/counter.js"></script><noscript><a href="http://www.statcounter.com/" target="_blank"><img  src="http://c2.statcounter.com/counter.php?sc_project=480663&amp;amp;java=0" alt="counter" border="0"></a> </noscript>
+    </span>
+    <!-- End of StatCounter Code -->    
+   </td>
+   <td style="text-align:right;width:15%">
+     <a href="http://www.ohloh.net/accounts/523"><img width="80" height="15" src="http://www.ohloh.net/images/icons/ohloh_profile.png" border="0"/></a>
+   </td>
+   <td style="text-align:right;width:15%">
+     <SCRIPT type='text/javascript' language='JavaScript' src='http://www.ohloh.net/projects/1022/badge_js'></SCRIPT>
+   </td>
+  </tr>
+ </table>
+</div>
