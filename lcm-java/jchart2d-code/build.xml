@@ -1,0 +1,366 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="jchart2d" default="makejarBinary">
+	<description>
+  A swing-widget for precise visualisation of charts.
+ </description>
+
+	<!-- General Properties -->
+
+	<property name="project.name" value="jchart2d" />
+	<property name="project.version" value="3.2.2" />
+	<property name="libdir" value="${basedir}/ext" />
+	<property name="outjar" value="${basedir}/${project.name}-${project.version}.jar" />
+	<property name="distfolder" value="${basedir}/${project.name}-${project.version}/" />
+	<property name="distfile" value="${basedir}/${project.name}-${project.version}.zip" />
+	<property name="builddir" value="${basedir}/bin" />
+	<property name="sourcedir" value="${basedir}/src" />
+	<property name="sourcedir.test" value="${basedir}/test" />
+
+	<!-- Taskdefs -->
+	<!--
+       Shrinking for the Applet jar...
+       The resource is a properties file within the proguard.jar
+       and informs about the task implementation.
+  -->
+	<taskdef resource="proguard/ant/task.properties" classpath="${libdir}/build/proguard-4.5.1.jar" />
+
+	<!-- General paths & filesets. -->
+
+	<path description="Classpath of project" id="classpath">
+		<pathelement path="${builddir}" />
+		<fileset refid="allJars" />
+	</path>
+
+
+	<fileset description="Source files of project" dir="${sourcedir}" id="sourcefiles">
+		<include name="**/*.java" />
+	</fileset>
+
+	<fileset description="Compiled classfiles of project" dir="${builddir}" id="classfiles">
+		<include name="**/*.class" />
+	</fileset>
+
+	<!--
+    These files will be shipped in the jchart2d package
+    by extracting them to the project's basedir, before the
+    whole project is packed into a jar.
+    See the rule integrateJars
+    -->
+	<fileset dir="${libdir}" id="externalJars" description="3rd party library jar files that will be shipped with the distribution.">
+		<include name="*.jar" />
+	</fileset>
+	<!-- Emit fileset to property -->
+	<property name="externalJars" refid="externalJars" />
+
+	<fileset dir="${basedir}" id="licenses" description="License files of JChart2d and it's 3rd party jar files.">
+		<include name="lgpl.txt" />
+		<include name="LICENSE-apache-xmlgraphics-commons" />
+		<include name="NOTICE-apache-xmlgraphics-commons" />
+		<include name="LICENSE-infovis.txt" />
+		<include name="3rdpartylicenses.txt" />
+	</fileset>
+
+	<!--
+    All jars that have to be on the classpath for compilation.
+    -->
+	<fileset dir="${libdir}" id="allJars" description="External library jar files that will be shipped with this *.jar distribution.">
+		<include name="**/*.jar" />
+	</fileset>
+	<!-- compile the java sources -->
+
+	<target name="init">
+		<tstamp />
+		<mkdir dir="${builddir}" />
+		<mkdir dir="${libdir}" />
+		<mkdir dir="${sourcedir}" />
+	</target>
+
+	<target name="build" depends="init">
+		<exec executable="java">
+			<arg value="-version" />
+		</exec>
+		<javac srcdir="${sourcedir}" fork="false" debug="true" source="1.5" target="1.5" destdir="${builddir}" includeantruntime="false">
+			<classpath refid="classpath" />
+		</javac>
+	</target>
+
+	<target name="build.test" depends="build">
+		<javac srcdir="${sourcedir.test}" fork="true" debug="true" source="1.5" verbose="true" target="1.5" destdir="${builddir}" includeantruntime="false">
+			<classpath refid="classpath" />
+		</javac>
+		<!-- copy the test resources -->
+		<copy todir="${builddir}">
+			<fileset dir="${sourcedir.test}">
+				<include name="**/*.properties" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="makejarFat" depends="delete.classfiles,build">
+		<jar destfile="${project.name}-${project.version}.jar" basedir="${builddir}" update="false" manifest="manifest.mf">
+			<include name="**/*.class" />
+		</jar>
+		<!-- rebuild test classes as eclipse would show errors afterwards. -->
+		<antcall target="build.test">
+		</antcall>
+	</target>
+
+	<target name="dist" depends="makejarBinary,makejarApplet,makezipEclipseProject,zip.javadoc">
+		<description>Creates a zip file containing the core jar file and all 3rd party libraries.</description>
+		<delete dir="${distfolder}">
+		</delete>
+		<mkdir dir="${distfolder}" />
+		<property name="externalJars" refid="externalJars" />
+		<echo message="files to add = ${externalJars}" />
+		<copy todir="${distfolder}" verbose="yes" failonerror="true">
+			<!--<file file="$"/> -->
+			<fileset refid="externalJars" />
+			<fileset refid="licenses" />
+		</copy>
+		<move todir="${distfolder}" file="${outjar}">
+		</move>
+
+		<delete file="${distfile}">
+		</delete>
+		<zip destfile="${distfile}">
+			<fileset dir="${distfolder}">
+			</fileset>
+		</zip>
+		<delete dir="${distfolder}"/>
+	</target>
+
+	<target name="makejarBinary" depends="makejarFat">
+		<!-- 
+          Shrink the jar file as external jars (e.g. infovis for range chooser panel) 
+          contain many unused classes. 
+          Ignorewarnings is on as external jar infovis depends on further jars.
+          Tun this off is more jars have deps that may not be ignored.
+         -->
+		<proguard obfuscate="false" shrink="true" overloadaggressively="false" warn="true" verbose="true" ignorewarnings="true" printmapping="true" allowaccessmodification="false" optimize="false">
+			<libraryjar>
+				<pathelement path="${java.home}/lib/rt.jar" />
+				<fileset dir="${libdir}">
+					<include name="*.jar" />
+				</fileset>
+			</libraryjar>
+			<!--
+               caution: The name attribut value has to be the same expression
+                       as the  destfile of the makejar- target [depend].
+             -->
+			<injar name="${outjar}" />
+			<outjar name="${basedir}/${project.name}-${project.version}-shrinked.jar" />
+			<!-- Filter -->
+			<!-- keep all interfaces -->
+			<keep name="*" type="interface" />
+			<!-- keep all demos -->
+
+			<keep access="public" name="info.monitorenter.gui.chart.demos.*">
+				<method access="public static" name="main" />
+				<constructor />
+			</keep>
+			<keep access="public" name="info.monitorenter.gui.chart.*">
+				<method access="public" name="*" />
+				<constructor />
+			</keep>
+			<!-- keep all error bar stuff -->
+			<keep access="public" name="info.monitorenter.gui.chart.errorbars.**">
+				<constructor />
+			</keep>
+			<!-- keep all label formatters -->
+			<keep access="public" name="info.monitorenter.gui.chart.labelformatters.**">
+			</keep>
+			<!-- keep all axis title painters -->
+			<keep access="public" name="info.monitorenter.gui.chart.axistitlepainters.**">
+			</keep>
+			<!-- keep all axis tick painters -->
+			<keep access="public" name="info.monitorenter.gui.chart.axistickpainters.**">
+			</keep>
+			<!-- keep all point painters -->
+			<keep access="public" name="info.monitorenter.gui.chart.pointpainters.**">
+			</keep>
+			<!-- keep all range policies -->
+			<keep access="public" name="info.monitorenter.gui.chart.rangepolicies.**">
+			</keep>
+			<!-- keep all constructors for traces -->
+			<keep name="info.monitorenter.gui.chart.traces.*">
+				<constructor />
+			</keep>
+			<!-- keep all computing traces -->
+			<keep access="public" name="info.monitorenter.gui.chart.traces.computing.*">
+			</keep>
+			<!-- keep all trace painters -->
+			<keep access="public" name="info.monitorenter.gui.chart.traces.painters.*">
+			</keep>
+			<!-- keep all IAxis implementations -->
+			<keep name="info.monitorenter.gui.chart.axis.*">
+			</keep>
+			<!-- keep all utility classes -->
+			<keep name="info.monitorenter.util.*">
+			</keep>
+			<keep name="info.monitorenter.gui.util.*">
+			</keep>
+			<!-- keep all getters, setters and constants of classes that are preserved -->
+			<keepclassmembers>
+				<method name="get*" />
+				<method name="set*" />
+				<method name="is*" />
+				<field access="public static final" />
+			</keepclassmembers>
+			<!-- Since version 4.0 of proguard Exceptions have to be kept -->
+			<keepattribute />
+			<!--          
+             <keepattribute name="Exceptions" />
+             <keepattribute name="Deprecated" />
+             <keepattribute name="Sourcefile" />
+             <keepattribute name="LocalVariableTable" />
+             <keepattribute name="LocalVariableTypeTable" />
+             <keepattribute name="InnerClasses" />
+             -->
+		</proguard>
+		<!-- Delete big jar and rename shrinked to that name. -->
+		<delete file="${outjar}" />
+		<move tofile="${outjar}" file="${basedir}/${project.name}-${project.version}-shrinked.jar" />
+	</target>
+
+	<target name="makejarApplet" depends="makejarFat">
+		<description>
+     Create a jar file that is shrinked by proguard for
+     faster download. Only the codepath for the applet
+     init will be kept.
+    </description>
+
+		<proguard obfuscate="false" shrink="true" overloadaggressively="false" warn="true" verbose="true" ignorewarnings="true" printmapping="true" allowaccessmodification="false" optimize="false">
+			<libraryjar name="${java.home}/lib/rt.jar" />
+			<!--
+             caution: The name attribut value has to be the same expression
+             as the  destfile of the makejar- target [depend].
+            -->
+			<injar name="${outjar}" />
+			<outjar name="${basedir}/${project.name}-applet.jar" />
+			<!-- Filter -->
+			<keep access="public" name="info.monitorenter.gui.chart.demos.Showcase">
+				<method access="public" name="init" />
+			</keep>
+			<!-- keep all error bar stuff -->
+			<keep access="public" name="info.monitorenter.gui.chart.errorbars.**" allowoptimization="false">
+				<constructor />
+				<method access="public" name="**" />
+			</keep>
+		</proguard>
+	    <!--
+		<genkey alias="jchart2.sourceforge.net" storepass="password" keystore="${basedir}/.keystore" >
+		  <dname>
+		    <param name="CN" value="Achim Westermann"/>
+		    <param name="OU" value="JChart2D"/>
+		    <param name="O"  value="monitorenter.info"/>
+		    <param name="C"  value="DE"/>
+		  </dname>
+			
+		</genkey>
+		-->
+		<!-- Not working on my box for now -->
+		<signjar jar="${basedir}/${project.name}-applet.jar" alias="jchart2.sourceforge.net" keystore="${basedir}/.keystore" verbose="true" storepass="password" keypass="tracerunner" />
+	</target>
+
+	<!-- Dependency only for ensuring validity -->
+	<target name="makezipEclipseProject" depends="build">
+		<property name="sourcezip" value="${project.name}-eclipse-project-${project.version}.zip"/>
+	    <delete file="${basedir}/${sourcezip}"/>
+		<zip destfile="${sourcezip}" basedir="${basedir}/.." update="false">
+			<include name="${project.name}/src/**/*.java" />
+			<include name="${project.name}/test/**/*.java" />
+			<include name="${project.name}/ext/**/*.jar" />
+			<include name="${project.name}/.classpath" />
+			<include name="${project.name}/.project" />
+			<include name="${project.name}/build.xml" />
+			<include name="${project.name}/manifest.mf" />
+			<include name="${project.name}/checkstyle.xml" />
+			<include name="${project.name}/formatting.xml" />
+			<include name="${project.name}/history.txt" />
+			<include name="${project.name}/doc/docs/javadoc/jchart2d.css" />
+			<!-- Works when  defaultexcludes="no" is set -->
+			<include name="${project.name}/.cvsignore" />
+			<!-- The eclipse builders -->
+			<include name="${project.name}/.externalToolBuilders/**/*" />
+			<fileset refid="licenses">
+			</fileset>
+		</zip>
+	</target>
+
+	<target name="javadoc" depends="delete.doc">
+		<delete dir="${basedir}/doc/docs/javadoc"/>
+		<mkdir dir="${basedir}/doc/docs/javadoc" />
+		<javadoc destdir="${basedir}/doc/docs/javadoc" access="protected" use="false" notree="false" nonavbar="false" noindex="false" splitindex="true" Author="true" version="true" nodeprecatedlist="false" nodeprecated="false" doctitle="JChart2D API documentation, Version ${project.version}" windowtitle="JChart2D API documentation, Version ${project.version}" Verbose="true" stylesheetfile="${basedir}/doc/docs/javadoc/jchart2d.css" charset="UTF-8" docencoding="UTF-8">
+			<classpath refid="classpath" />
+			<bottom>
+				<![CDATA[<i>Copyright &#169; 2001 - 2010 <a href="http://www.opensource.org/licenses/lgpl-license.php" target="_blank">LGPL</a>, All Rights Footloose.</i>]]></bottom>
+		<fileset refid="sourcefiles" />
+		<link offline="false" href="http://java.sun.com/j2se/1.5.0/docs/api/" packagelistLoc="${java.home}/docs/api/" />
+		<link offline="false" href="http://logging.apache.org/log4j/1.2/apidocs/" packagelistLoc="http://logging.apache.org/log4j/1.2/apidocs/package-list" />
+	</javadoc>
+</target>
+
+<target name="zip.javadoc" depends="javadoc">
+	<description>
+        Zip the javadoc API documentation to a zip named after the property project.name.
+      </description>
+	<zip basedir="${basedir}/doc/docs/javadoc/" destfile="${basedir}/${project.name}-doc-${project.version}.zip" includes="**/*.html,**/*.css,package-list" />
+</target>
+
+<!-- remove all resources in builddir and the current jar file-->
+<target name="delete.classfiles">
+	<delete verbose="true" failonerror="true">
+		<fileset dir="${builddir}" />
+		<file file="${outjar}" />
+	</delete>
+</target>
+
+
+<target name="delete.doc">
+	<description>Delete the generated documentation.</description>
+	<delete includeEmptyDirs="true" verbose="true">
+		<fileset dir="${basedir}">
+			<include name="doc/docs/javadoc/**/*" />
+			<!-- Also delete the zip file with the doc! -->
+			<include name="${project.name}doc.zip" />
+			<exclude name="doc/docs/javadoc/jchart2d.css" />
+		</fileset>
+	</delete>
+</target>
+
+<target name="delete.local" depends="delete.classfiles,delete.doc">
+	<description>
+      Delete only the local generated files. This target is intended to
+      be used before the project is checked in into the cmvc.
+     </description>
+</target>
+
+<!--
+     Hard rebuild: scrubbing all classfiles and the generated *.java files of antlr before
+     invoking compilation.
+    -->
+<target name="rebuild" depends="delete.classfiles,build" />
+
+<target name="profile.runningchart">
+	<description>
+    	Runs info.monitorenter.gui.chart.demos.RunningChart with 
+    	the JIP (java interactive profiler). Change project to java 1.5 
+        as it requires the new -javaagent: argument. 
+    </description>
+	<!-- 
+    <exec dir="${basedir}"
+            executable="java"
+            os="Windows 2000"
+            output="profiler-output.txt">
+          <arg line="-version" />
+      </exec>
+-->
+	<exec dir="${basedir}" executable="java" os="Windows 2000" output="profiler-output.txt">
+		<arg line="-javaagent:${basedir}/ext/build/profile.jar -Xmx100M -Dprofile.properties=${basedir}/ext/build/profiler.properties -classpath ${basedir}/bin/;${basedir}/ext/build/junit.jar info.monitorenter.gui.chart.demos.RunningChart" />
+	</exec>
+	<exec dir="${basedir}" executable="java" os="Windows 2000">
+		<arg line="-classpath ${basedir}/ext/build/jipViewer.jar com.tivo.jipviewer.JipViewer profiler.xml" />
+	</exec>
+</target>
+
+</project>

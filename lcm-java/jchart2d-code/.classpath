@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="lib" path="ext/build/jipViewer.jar"/>
+	<classpathentry kind="lib" path="ext/build/profile.jar"/>
+	<classpathentry kind="lib" path="ext/build/junit-4.8.1.jar" sourcepath="/home/achim/.m2/repository/junit/junit/4.8.1/junit-4.8.1-sources.jar"/>
+	<classpathentry kind="lib" path="ext/xmlgraphics-commons-1.3.1.jar"/>
+	<classpathentry kind="lib" path="ext/build/proguard-4.5.1.jar"/>
+	<classpathentry kind="lib" path="ext/jide-oss-2.9.7.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
