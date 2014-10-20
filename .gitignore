@@ -32,6 +32,7 @@ lcm-java/lcm-spy
 lcm-java/lcm.jar
 lcm-java/.classpath
 lcm-java/.project
+lcm-java/jchart2d-code/jchart2d-3.2.2.jar
 
 lcm-logger/Makefile
 lcm-logger/Makefile.in
