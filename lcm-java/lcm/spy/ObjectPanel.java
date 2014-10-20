@@ -392,8 +392,35 @@ public class ObjectPanel extends JPanel
         public void drawStringsAndGraph(Class cls, String name, Object o, boolean isstatic,
                 int sec)
         {
+            
+            Section cs = sections.get(sec);
+            
+            double value = Double.NaN;
+
+            if (o instanceof Double)
+                value = (Double) o;
+            else if (o instanceof Float)
+                value = (Float) o;
+            else if (o instanceof Integer)
+                value = (Integer) o;
+            else if (o instanceof Long)
+                value = (Long) o;
+            else if (o instanceof Byte)
+                value = (Byte) o;
+            
             if (collapse_depth > 0)
+            {
+                // even if we are collapsed, we need to update the data in
+                // graphs being displayed
+                SparklineData data = cs.sparklines.get(name);
+                
+                if (data.chart != null && updateGraphs)
+                {
+                    ITrace2D trace = data.chart.getTraces().first();
+                    trace.addPoint((double)utime/1000000.0d, value);
+                }
                 return;
+            }
 
             if (isstatic)
             {
@@ -403,7 +430,7 @@ public class ObjectPanel extends JPanel
             Color oldColor = g.getColor();
 
             boolean isHovering = false;
-            Section cs = sections.get(sec);
+            
             if (currentlyHoveringSection != null && cs == currentlyHoveringSection
                     && currentlyHoveringName.equals(name))
             {
@@ -428,18 +455,6 @@ public class ObjectPanel extends JPanel
             g.setColor(oldColor);
 
             // draw the graph
-            double value = Double.NaN;
-
-            if (o instanceof Double)
-                value = (Double) o;
-            else if (o instanceof Float)
-                value = (Float) o;
-            else if (o instanceof Integer)
-                value = (Integer) o;
-            else if (o instanceof Long)
-                value = (Long) o;
-            else if (o instanceof Byte)
-                value = (Byte) o;
 
             if (!Double.isNaN(value))
             {
