@@ -1,0 +1,45 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ <!--#include virtual="./head.shtml" -->
+ <!--
+  Some trick: setting the date here allows to include it (client - side) 
+  by the generic footer via a "document.write(update);" - script.
+ -->
+ <script language="javascript">
+  var update="16/04/2011";
+ </script>
+ <body id="docs">
+  <div id="wrapper">
+   <div id="main">
+    <!-- Header -->
+    <!--#include virtual="./header.shtml" -->
+
+    
+    <!--#include virtual="./navigation.shtml" -->
+    <!-- Navigation -->
+    <div id="content">
+     
+      <h2>Documentation</h2>
+     
+      <h3>Java API documentation</h3>
+      <p>
+       JChart2D's API is documented quite well. It provides 
+       helpful information for java developers. Look especially at  
+       the documentation for class info.monitorenter.gui.chart.Chart2D and the interfaces. <br>  
+       It is available 
+       for online-browsing and in form of a zip file (hosted at 
+       the sourceforge project page).
+       <br/>
+       <a href="/docs/javadoc/index.html" target="blank">Browse javadoc of version 3</a>
+       <br/>
+       <a href="http://prdownloads.sourceforge.net/jchart2d/jchart2d-doc-3.2.1.zip?download" target="_blank">Download javadoc of version 3.2.1</a> (.zip format)
+      </p>
+     </div>     
+    <!-- End of contents div -->
+    <!-- The counter -->
+    <!--#include virtual="./footer.shtml" -->
+   </div>
+   <!-- End of main div -->
+  </div>	
+  <!-- End of wrapper div -->
+ </body>
+</html>

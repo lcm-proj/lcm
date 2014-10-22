@@ -18,7 +18,7 @@ public class ChannelData
     public long        max_interval;
     public double      bandwidth;     // bytes per second
 
-    public JInternalFrame viewerFrame;
+    public JFrame      viewerFrame;
     public ObjectPanel viewer;
 
     // below: used by HzThread

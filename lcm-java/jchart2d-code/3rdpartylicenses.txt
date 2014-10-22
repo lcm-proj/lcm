@@ -1,0 +1,28 @@
+NOTICE 
+
+This product optionally includes parts of software developed under other licenses and by other organizations and people.
+If you have any questions regarding access to the third party source code or binaries, please contact achimwestermann@users.sourceforge.net.
+
+=================================================================================================================================
+Apache License
+Version 2.0, January 2004
+http://www.apache.org/licenses/
+
+---------------------------------------------------------------------------------------------------------------------------------
+Apache XML Graphics Commons is an optional library that will allow you to print charts to encapsulated postscript files (eps) 
+if the corresponding jar file (object code) is included in the java class path. 
+The source code may be downloaded at http://xmlgraphics.apache.org/commons/download.html
+
+The license file of it is in this distribution: LICENSE-apache-xmlgraphics-commons 
+The NOTICE file is in this distribution: NOTICE-apache-apache-xmlgraphics-commons
+
+=================================================================================================================================
+GNU GENERAL PUBLIC LICENSE
+http://www.gnu.org/licenses/gpl.html
+(with classpath exception:http://www.gnu.org/software/classpath/license.html) 
+ 
+---------------------------------------------------------------------------------------------------------------------------------
+Jide common layer (http://www.jidesoft.com/products/oss.htm) is an optional library that adds a range slider for axes to 
+jchart2d if the corrosponding jar file (object code) is included in the java class path. The source may be downloaded at 
+https://jide-oss.dev.java.net/servlets/ProjectDocumentList 
+  

@@ -1,0 +1,10 @@
+<!-- For whatever reason, IE6/Win does not correctly render the following h1 if it is the first item in the current block.  This comment corrects the problem. -->
+
+  <h1 title="jchart2d.sourceforge.net">
+   <IMG src="img/jchart2d.gif" border="0" alt="jbuzzer Logo" style="position:relative; left:50px;top:10px;"/>
+   <span style="position:relative;left:340px; top:10px;">
+    <A href="http://sourceforge.net" ><IMG src="http://sourceforge.net/sflogo.php?group_id=112713&amp;type=2" width="125" height="37" border="0" alt="SourceForge.net Logo" title="Sourceforge website."/></A>
+    <a href="http://www.opensource.org/docs/definition.php" target="_blank"> <img src="http://www.opensource.org/trademarks/opensource/web/opensource-75x65.png" border="0" width="75" height="65" title="Open Source Initiative website." style="border: 1px solid #000"></a>
+   </span>
+  </h1>
+  

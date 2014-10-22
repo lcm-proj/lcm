@@ -1,0 +1,162 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ <!--#include virtual="./head.shtml" -->
+ <script language="javascript">
+  var update="02/12/2008";
+ </script>
+ <body id="credit">
+  <div id="wrapper">
+   <div id="main">
+    <!-- Header -->
+    <!--#include virtual="./header.shtml" -->
+    <!--#include virtual="./navigation.shtml" -->
+    <!-- Navigation -->
+    <div id="content">
+     <h2>Credits</h2>
+     <p>
+     <table border="0">
+  
+      <tr>
+       <td >
+        <h3>Page design.</h3>
+       </td>
+       <td>&nbsp;</td>
+      </tr>
+      <tr>
+       <td id="box" style="background-color: #eef5fd;">
+        <a href="http://dionidium.com" target="_blank"><img src="./img/dionidium.gif" width="132" border="0" alt="Dionidium" title="Dionidium"></a>
+       </td>
+       <td>
+        <a href="http://dionidium.com" target="_blank">http://diondium.com</a><br>
+        Psst! The design of this page was heavily inspired by dionidium.com. 
+        One could say, it was copied and modified a little bit. 
+        When it comes to art I just know, what my eyes like and what not. 
+        But I lack the ability to invent nice designs. Big credit. 
+       </td>
+      </tr>
+      
+      <tr><td colspan="2">&nbsp;</td></tr>
+      <tr>
+       <td >
+        <h3>3rd party libraries</h3>
+       </td>
+       <td>&nbsp;</td>
+      </tr>
+      <tr>
+       <td id="box" style="background-color: #eef5fd;">
+        <a href="http://xmlgraphics.apache.org/commons/">Apache XML Graphics Commons</a>
+       </td>
+       <td>
+        <a href="http://xmlgraphics.apache.org/commons/" target="_blank">http://xmlgraphics.apache.org/commons/</a><br/>
+        This is used to create of EPS output. Great library that works on Graphics2D implementation.
+       </td>
+      </tr>
+      
+      <tr><td colspan="2">&nbsp;</td></tr>
+      
+      <tr>
+       <td >
+        <h3>Development, Shipment &amp; Build</h3>
+       </td>
+       <td>&nbsp;</td>
+      </tr>
+
+      <tr>
+       <td id="box">
+         <A href="http://ant.apache.org" ><IMG src="./img/ant_logo_large.gif" width="132" border="0" alt="Apache ANT Logo" title="Apache ANT"/></A>
+       </td>
+       <td>
+        <a href="http://ant.apache.org" target="_blank">http://ant.apache.org</a><br>
+         An extendible and powerful build tool. 
+         <blockquote>
+          "In theory, it is kind of like Make, but without Make's wrinkles.
+         </blockquote>
+         <span style="font-size:x-small;">Citation from: http://ant.apache.org.</span>
+       </td>
+      </tr>
+      
+      <tr>
+       <td id="box">
+         <A href="http://proguard.sourceforge.net">ProGuard</A>
+       </td>
+       <td>
+        An amazing  class file shrinker, optimizer and obfuscator, that is used 
+        to minimize the applet binaries. It works on bytecode, 
+        even processes jar files and supports ANT [automate everything]. And it comes 
+        from Leuven, Belgium of course. I should have studied there. Congratulations Eric.
+       </td>
+      </tr>
+      
+      <tr>
+       <td id="box">
+         <A href="http://www.eclipse.org" ><IMG src="http://www.eclipse.org/images/EclipseBannerPic.jpg" width="132" border="0" alt="Eclipse logo" title="Eclipse"/></A>
+       </td>
+       <td>
+        <a href="http://www.eclipse.org" target="_blank">http://www.eclipse.org</a><br>
+         The free development tool plugin integration platform. Amazing piece of 
+         (frame)work. Erich Gamma was involved. An example that base motives (to black out <em>the</em> sun), 
+         can have a positive side effect (competition on the royalty free market).
+       </td>
+      </tr>     
+      
+      <tr>
+       <td id="box">
+         <A href="http://www.ej-technologies.com/products/jprofiler/overview.html" rel="_blank" ><IMG src="./img/jprofiler-logo.png" width="100" height="26" border="0" alt="JProfiler logo" title="JProfiler"/></A>
+       </td>
+       <td>
+        <a href="http://www.ej-technologies.com/products/jprofiler/overview.html" rel="_blank">http://www.ej-technologies.com/products/jprofiler/overview.html</a><br>
+        ej-technologies sponsored their tool for optimizing the performance 
+        of jchart2d. For the upcoming 2.1.2 release a major bottleneck has 
+        been detected and fixed. 
+       </td>
+      </tr>     
+
+      <tr><td colspan="2">&nbsp;</td></tr>
+      
+      <tr>
+       <td >
+        <h3>Hosting</h3>
+       </td>
+       <td>&nbsp;</td>
+      </tr>
+      <tr>
+       <td id="box">
+         <A href="http://sourceforge.net" ><IMG src="http://sourceforge.net/sflogo.php?group_id=112713&amp;type=1" width="88" height="31" border="0" alt="SourceForge.net Logo" title="Sourceforge website."/></A>
+       </td>
+       <td>
+        <a href="http://sourceforge.net" target="_blank">http://www.sourceforge.net</a><br>
+         Great full-service for open source development. 
+       </td>
+      </tr>
+
+      <tr><td colspan="2">&nbsp;</td></tr>
+      
+      <tr>
+       <td>
+        <h3>Decent hit counter</h3>
+       </td>
+       <td>&nbsp;</td>
+      </tr>
+      <tr>
+       <td id="box">
+         <a href="http://www.statcounter.com/"><img src="http://www.statcounter.com/images/button1.gif" alt="Free Website Statistics" width="88" height="31" border="0"></a>
+       </td>
+       <td>
+        <a href="http://www.statcounter.com" target="_blank">http://www.statcounter.com</a><br>
+        Very nice and decent service indeed. 
+       </td>
+      </tr>
+
+      <tr><td colspan="2">&nbsp;</td></tr>
+     </table>
+     </p>
+     
+    </div>
+    <!-- End of contents div -->
+    <!-- The counter -->
+    <!--#include virtual="./footer.shtml" -->
+   </div>
+   <!-- End of main div -->
+  </div>	
+  <!-- End of wrapper div -->
+ </body>
+</html>

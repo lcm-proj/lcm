@@ -25,9 +25,11 @@ dnl ---------------------------------------------------------------------------
 LIBLCM_AGE=3
 LIBLCM_REVISION=2
 LIBLCM_CURRENT=4
+CHART2D_VERSION=3.2.2
 AC_SUBST(LIBLCM_AGE)
 AC_SUBST(LIBLCM_REVISION)
 AC_SUBST(LIBLCM_CURRENT)
+AC_SUBST(CHART2D_VERSION)
 LIBLCM_VERSION_INFO=$LIBLCM_CURRENT:$LIBLCM_REVISION:$LIBLCM_AGE
 AC_SUBST(LIBLCM_VERSION_INFO)
 
@@ -69,8 +71,16 @@ AC_ARG_WITH(java,
 if test "x$with_java" = xno -o "x$JAR" = x -o "x$JAVAC" = x; then
     AC_MSG_WARN([Java support disabled])
 else
+  AC_CHECK_PROG(HAVE_ANT, ant, true, false)
+  AM_CONDITIONAL(HAVE_ANT,$HAVE_ANT)
+  if test $HAVE_ANT = "false"; then
+    AC_MSG_WARN([*** ant not found, java will not be built])
+  else
     JAVA_FOUND="yes"
+  fi
 fi
+
+
 
 AM_CONDITIONAL(HAVE_JAVA, test "x$JAVA_FOUND" = "xyes")
 java_apiversion="1.0"
@@ -80,7 +90,7 @@ AC_ARG_WITH(jardir,
             [jardir="$with_jardir"], [jardir=$datadir/java])
 
 AC_SUBST(jardir)
-INSTALLED_CLASSPATH=\${jardir}/lcm.jar
+INSTALLED_CLASSPATH=\${jardir}/lcm.jar:\${jardir}/jchart2d-${CHART2D_VERSION}.jar
 AC_SUBST(INSTALLED_CLASSPATH)
 AC_SUBST(java_apiversion)
 
@@ -94,7 +104,7 @@ AC_ARG_WITH(lua,
 
 AS_IF([test "x$with_lua" != 'xno'],
   [ AX_PROG_LUA([5.1], [], [lua_interp='yes'], [lua_interp='no'])
-    
+
     AS_IF([test "x$lua_interp" = 'xyes'],
       [ AX_LUA_HEADERS([lua_headers='yes'], [lua_headers='no'])
         AX_LUA_LIBS([lua_libs='yes'], [lua_libs='no'])
@@ -175,12 +185,18 @@ else
 fi
 
 echo "
+"
 
-Configuration (LCM v${PACKAGE_VERSION}):
+if test $HAVE_ANT = "false"; then
+    AC_MSG_WARN([*** ant not found, java will not be built
+])
+fi
 
-	Source code location:  ${srcdir}
-	Compiler:              ${CC}
-	Java Support:          ${JAVA_STR}
-	Python Support:        ${PYTHON_STR}
-	Lua Support:           ${LUA_STR}
+echo "Configuration (LCM v${PACKAGE_VERSION}):
+
+  Source code location:  ${srcdir}
+  Compiler:              ${CC}
+  Java Support:          ${JAVA_STR}
+  Python Support:        ${PYTHON_STR}
+  Lua Support:           ${LUA_STR}
 "
