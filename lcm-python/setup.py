@@ -15,10 +15,11 @@ sources = [ \
     os.path.join("..", "lcm", "lcm_mpudpm.c"),
     os.path.join("..", "lcm", "lcm_tcpq.c"),
     os.path.join("..", "lcm", "lcmtypes", "channel_port_map_update_t.c"),
-    os.path.join("..", "lcm", "lcmtypes", "channel_to_port_t.c") ]
+    os.path.join("..", "lcm", "lcmtypes", "channel_to_port_t.c"),
     os.path.join("..", "lcm", "lcm_udpm.c"),
     os.path.join("..", "lcm", "ringbuffer.c"),
-    os.path.join("..", "lcm", "udpm_util.c"),
+    os.path.join("..", "lcm", "udpm_util.c")
+    ]
 
 
 include_dirs = []
