@@ -1,6 +1,15 @@
-Edwin Olson <eolson@alum.mit.edu>
-David Moore <dcm@acm.org>
-Albert Huang <ashuang@alum.mit.edu>
+# Original authors
 
-C++ Visual Studio port by Randy Sybel
-C# / .NET port by Jan Hrbáček
+* Edwin Olson
+* David Moore
+* Albert Huang
+
+# Additional contributions by
+
+* Abe Bachrach
+* Andy Barry
+* Thomas Derensis
+* Jan Hrbáček
+* Tim Perkins
+* Randy Sybel
+* Matt Walter

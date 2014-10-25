@@ -2,6 +2,8 @@
 
 [ -d html ] && rm -rf html
 
+[ -d lcm-dotnet ] & rm -rf lcm-dotnet
+
 [ -d html ] || mkdir html
 
 # Python
@@ -22,3 +24,9 @@ javadoc -d ../docs/html/javadocs -link http://java.sun.com/j2se/1.5.0/docs/api $
 # Doxygen
 cd ../docs
 doxygen
+
+# .NET
+cd ../lcm-dotnet
+doxygen
+mv lcm-dotnet/html ../docs/html/lcm-dotnet
+rmdir lcm-dotnet

@@ -42,7 +42,7 @@ import lcm
 lc = lcm.LCM()
 \endcode
 
-The primary communications functionality is contained in the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-python/lcm.LCM-class.html">lcm.LCM</a> class.
+The primary communications functionality is contained in the [lcm.LCM](python/lcm.LCM-class.html) class.
 The constructor initializes communications resources, and has a single optional
 argument.
 If no argument is given, as above, then the LCM instance is initialized to
@@ -104,7 +104,7 @@ For the most part, this example should be pretty straightforward.  The
 application creates a message, fills in the message data fields, then
 initializes LCM and publishes the message.
 
-The call to <a href="http://lcm.googlecode.com/svn/www/reference/lcm-python/lcm.LCM-class.html#publish">lcm.publish()</a> serializes the data into a byte stream and
+The call to [lcm.publish()](python/lcm.LCM-class.html#publish) serializes the data into a byte stream and
 transmits the packet to any interested receivers.  The string
 <tt>"EXAMPLE"</tt> is the <em>channel</em> name, which is a string
 transmitted with each packet that identifies the contents to receivers.
@@ -155,13 +155,11 @@ The full example is available in runnable form as
 <tt>examples/python/listener.py</tt> in the LCM source distribution.
 
 After initializing the LCM object, the application subscribes to a channel by
-passing a callback function to the <a
-href="http://lcm.googlecode.com/svn/www/reference/lcm-python/lcm.LCM-class.html#subscribe">lcm.subscribe</a>
+passing a callback function to the [lcm.subscribe](python/lcm.LCM-class.html#subscribe)
 method.  
 
 The example application then repeatedly calls 
-<a
-href="http://lcm.googlecode.com/svn/www/reference/lcm-python/lcm.LCM-class.html#handle">lcm.handle</a>,
+[lcm.handle](python/lcm.LCM-class.html#handle),
 which simply waits for a message of interest to arrive and then invokes the
 appropriate callback functions.
 Callbacks are invoked one at a time, so there is no need for thread
@@ -169,8 +167,7 @@ synchronization.
 
 If your application has other work to do while waiting for messages (e.g.,
 print out a message every few seconds or check for input somewhere else), you
-can use the <a
-href="http://lcm.googlecode.com/svn/www/reference/lcm-python/lcm.LCM-class.html#handle">lcm.fileno</a>
+can use the [lcm.fileno](python/lcm.LCM-class.html#handle)
 method to obtain a file descriptor.  This file descriptor can then be used in
 conjunction with the Python select module or some other event loop to check
 when LCM messages have arrived.  See

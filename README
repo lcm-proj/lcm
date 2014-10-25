@@ -1,8 +1,0 @@
-Lightweight Communications and Marshalling (LCM)
-
-LCM is a set of libraries and tools for interprocess communication.  It
-emphasizes simplicity in usage, exhibits high performance under heavy load, and 
-runs on a variety of programming languages and operating systems.
-
-Documentation can be found in the docs/ directory, or online at
-http://lcm.googlecode.com

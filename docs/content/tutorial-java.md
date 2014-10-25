@@ -7,7 +7,7 @@ Java Tutorial {#tut_java}
 
 This tutorial will show you how to use all of the core functionality of LCM,
 and is intended for those who have a working knowledge of Java. For detailed
-information about LCM, please see the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/index.html">Java API reference</a>.
+information about LCM, please see the [Java API reference](javadocs/index.html).
 
 The topics covered in this tutorial are:
 
@@ -55,7 +55,7 @@ The default options are suitable for communicating with other LCM applications
 on the local computer.
 For communication across computers, or other usages such as reading data from
 an LCM logfile (e.g., to post-process or analyze previously collected data),
-see the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/index.html">Java API reference</a>.
+see the [Java API reference](javadocs/index.html).
 
 # Publishing a message {#tut_java_publish}
   
@@ -104,10 +104,9 @@ uninteresting data to be discarded quickly and efficiently.
  
 # Subscribing to messages {#tut_java_subscribe}
   
-In order to receive messages, you must implement an <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/LCMSubscriber.html">LCMSubscriber</a> and pass it
-to <a
-href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/LCM.html#subscribe(java.lang.String,
-lcm.lcm.LCMSubscriber)">LCM.subscribe()</a>. The subscriber will be provided
+In order to receive messages, you must implement an [LCMSubscriber](javadocs/lcm/lcm/LCMSubscriber.html) and pass it
+to
+[LCM.subscribe()](javadocs/lcm/lcm/LCM.html#subscribe%28java.lang.String, lcm.lcm.LCMSubscriber%29). The subscriber will be provided
 with a LCMDataInputStream that can be read for the message contents. All LCM
 data types include a constructor that takes a DataInput (including instances
 of LCMDataInputStream) as an argument. First, let's look at the
@@ -141,7 +140,7 @@ lcm.subscriber("EXAMPLE", new MySubscriber());
 
 The LCM instance has a background thread that constantly listens for messages.
 When a message on channel <tt>"EXAMPLE"</tt> arrives, the LCM thread will
-invoke the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/LCMSubscriber.html#messageReceived(lcm.lcm.LCM, java.lang.String, lcm.lcm.LCMDataInputStream)">messageReceived()</a> method.  
+invoke the [messageReceived()](javadocs/lcm/lcm/LCMSubscriber.html#messageReceived%28lcm.lcm.LCM, java.lang.String, lcm.lcm.LCMDataInputStream%29) method.  
 
 ## Putting it all together {#tut_java_together}
 

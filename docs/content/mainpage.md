@@ -10,6 +10,7 @@ LCM documentation {#mainpage}
 
  - [C](\ref LcmC)
  - [C++](\ref LcmCpp)
+ - [C# / .NET](lcm-dotnet/index.html)
  - [Java](javadocs/index.html)
  - [Lua](\ref lua_api)
  - [Python](python/index.html)

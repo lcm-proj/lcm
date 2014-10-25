@@ -114,8 +114,7 @@ the constructor can accept variable number of parameters specifying individual
 connection strings.
 
 For detailed information on the LCM .NET API please see the
-<a href="http://lcm.googlecode.com/svn/www/reference/lcm-dotnet/index.html">.NET
-API reference</a>.
+[.NET API reference](lcm-dotnet/index.html).
 
 # Publishing a message {#tut_dotnet_publish}
   

@@ -65,8 +65,7 @@ lc = lcm.lcm.LCM.getSingleton();
 \endcode
 
 The \c lc object now contains the communications context and interface for LCM.
-Since we're simply calling into the Java API here, see the <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/index.html">Java API
-documentation</a> for other ways on setting up LCM.
+Since we're simply calling into the Java API here, see the [Java API documentation](javadocs/index.html) for other ways on setting up LCM.
 
 # Publishing a message {#tut_matlab_publishing}
 
@@ -146,14 +145,14 @@ disp([ 'name:        ' m.name) ])
 disp([ 'enabled:     ' sprintf('%d ', m.enabled) ])
 \endcode
 
-After initializing the LCM object, the application creates a <a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/MessageAggregator.html">MessageAggregator</a> and subscribes it to the <tt>'EXAMPLE'</tt> channel.
+After initializing the LCM object, the application creates a [MessageAggregator](javadocs/lcm/lcm/MessageAggregator.html) and subscribes it to the <tt>'EXAMPLE'</tt> channel.
 The sole purpose of the message aggregator is to receive messages
 on that channel and queue them up for later handling.  This is different from
 how messages would normally be handled in Java, as MATLAB is not well suited to
 callback functions or multiple threads.
 
 The example application then repeatedly calls 
-<a href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/MessageAggregator.html#getNextMessage(long)">MessageAggregator.getNextMessage()</a>
+[MessageAggregator.getNextMessage()](javadocs/lcm/lcm/MessageAggregator.html#getNextMessage%28%29)
 which simply waits for a message of interest to arrive and then returns the raw
 data.
 
@@ -161,8 +160,8 @@ Once a message has arrived, the application decodes it by passing \c msg.data
 to the constructor for the example message type, and displays some message
 fields.
 
-For more information on how to use the <a
-href="http://lcm.googlecode.com/svn/www/reference/lcm-java/lcm/lcm/MessageAggregator.html">MessageAggregator</a>,
+For more information on how to use the
+[MessageAggregator](javadocs/lcm/lcm/MessageAggregator.html),
 see the API documentation.  This includes configuring messsaging limits such as
 a maximum number of messages to queue up to avoid falling behind real-time.
 

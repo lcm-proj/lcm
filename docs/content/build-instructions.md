@@ -8,8 +8,12 @@ released version or from source control.
 
 # Building a released version {#build_released}
 
-These instructions assume you've already downloaded a released of
-LCM.  Replace X.Y.Z below with the specific version number you're building.
+These instructions assume you've already downloaded a released version of LCM,
+available at:
+
+[https://github.com/lcm-proj/lcm/releases](https://github.com/lcm-proj/lcm/releases)
+
+Replace X.Y.Z below with the specific version number you're building.
 
 ## Ubuntu / Debian {#build_ubuntu_debian}
 
@@ -24,16 +28,16 @@ Strongly recommended packages:
 
 From a terminal, run the following commands.
 
-    $ tar xzf lcm-X.Y.Z.tar.gz
+    $ unzip lcm-X.Y.Z.zip
     $ cd lcm-X.Y.Z
     $ ./configure
     $ make
     $ sudo make install
     $ sudo ldconfig
 
-## OS/X {#build_osx}
+## OS X {#build_osx}
 
-There are several ways to build LCM on OS/X, none of which are necessarily better than the others.
+There are several ways to build LCM on OS X, none of which are necessarily better than the others.
 
 ### MacPorts {#build_osx_macports}
 
@@ -42,12 +46,12 @@ Required packages:
 
 Strongly recommended packages:
   - openjdk6
+  - ant
   - python26 or python27
 
 From a terminal, run the following commands.  Replace X.Y.Z with the latest version of LCM.
 
-    $ wget http://lcm.googlecode.com/files/lcm-X.Y.Z.tar.gz
-    $ tar xzf lcm-X.Y.Z.tar.gz
+    $ unzip lcm-X.Y.Z.zip
     $ cd lcm-X.Y.Z
     $ ./configure
     $ make
@@ -86,6 +90,7 @@ Required packages:
 
 Strongly recommended packages:
  - openjdk-6-jdk
+ - ant
  - python-dev
 
 From a terminal, run the following commands.
@@ -95,8 +100,9 @@ From a terminal, run the following commands.
     $ ./bootstrap.sh
     $ ./configure
     $ make
+    $ sudo make install
 
-## OS/X {#build_git_osx}
+## OS X {#build_git_osx}
 
 *TODO*
 
