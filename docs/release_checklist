@@ -61,7 +61,7 @@
   $ git clone https://github.com/lcm-proj/lcm-proj.github.io
   $ cd lcm-proj.github.io
 3. Copy the built docs to the lcm.www repository
-  $ cp -r ../lcm/docs/html/* lcm
+  $ cp -r ../lcm/docs/html/* .
 4. Commit the changes, tag the release, and push to origin
   $ git commit -a -m "Release X.Y.Z"
   $ git tag vX.Y.Z
