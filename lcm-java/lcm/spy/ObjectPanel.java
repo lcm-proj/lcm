@@ -171,13 +171,12 @@ public class ObjectPanel extends JPanel
      */
     public void displayDetailedChart(SparklineData data, boolean openNewChart, boolean newAxis)
     {
-        // ensure that a Chart2D object exists (if might not if the user had a log playing,
-        // stopped the log, then scrolled to a new location, and then clicked on the entry
-        // which would never have triggered a redraw 
         
         if (data.chart == null)
         {
-            data.chart = InitChart(data.name);
+            // this should not happen, but catch it if it does because we can at least safely ignore it
+            System.out.println("Warning: detailed chart display requested on uninitialized chart " + data.name);
+            return;
         }
         
         // check to see if we are already displaying this trace
