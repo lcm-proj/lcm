@@ -27,10 +27,11 @@
  <copy file="lcm.jar" todir="." />
 </target>
 
-<target name="build-java">
+<target name="build-java" depends="build-jchart2d">
  <!-- This compiles all the java -->
  <javac
   srcdir="lcm"
+  classpath="jchart2d-code/jchart2d-3.2.2.jar"
   includes="**/*.java"
   debug="on"
   optimize="off"
@@ -39,7 +40,15 @@
 </javac>
 </target>
 
-<target name="clean-java" >
+<target name="build-jchart2d">
+  <ant dir="jchart2d-code" target="makejarFat"/>
+</target>
+
+<target name="clean-jchart2d">
+  <ant dir="jchart2d-code" target="delete.local"/>
+</target>
+
+<target name="clean-java" depends="clean-jchart2d">
  <delete>
   <fileset dir="build" includes="**/*.class"/>
   <fileset dir="." includes="**/*~" defaultexcludes="no"/>
