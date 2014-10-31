@@ -27,7 +27,6 @@ public class ObjectPanel extends JPanel
     long utime; // time of this message's arrival
     int lastwidth = 500;
     int lastheight = 100;
-    boolean updateGraphs = false;
     JViewport scrollViewport;
 
     final int sparklineWidth = 150; // width in pixels of all sparklines
@@ -98,6 +97,8 @@ public class ObjectPanel extends JPanel
         addMouseListener(new MyMouseAdapter());
 
         addMouseMotionListener(new MyMouseMotionListener());
+        
+        repaint();
         
     }
     
@@ -170,13 +171,12 @@ public class ObjectPanel extends JPanel
      */
     public void displayDetailedChart(SparklineData data, boolean openNewChart, boolean newAxis)
     {
-        // ensure that a Chart2D object exists (if might not if the user had a log playing,
-        // stopped the log, then scrolled to a new location, and then clicked on the entry
-        // which would never have triggered a redraw 
         
         if (data.chart == null)
         {
-            data.chart = InitChart(data.name);
+            // this should not happen, but catch it if it does because we can at least safely ignore it
+            System.out.println("Warning: detailed chart display requested on uninitialized chart " + data.name);
+            return;
         }
         
         // check to see if we are already displaying this trace
@@ -364,7 +364,6 @@ public class ObjectPanel extends JPanel
             if (collapse_depth > 0)
                 return;
 
-            
             Font of = g.getFont();
             if (isstatic)
                 g.setFont(of.deriveFont(Font.ITALIC));
@@ -392,7 +391,6 @@ public class ObjectPanel extends JPanel
         public void drawStringsAndGraph(Class cls, String name, Object o, boolean isstatic,
                 int sec)
         {
-            
             Section cs = sections.get(sec);
             
             double value = Double.NaN;
@@ -414,7 +412,7 @@ public class ObjectPanel extends JPanel
                 // graphs being displayed
                 SparklineData data = cs.sparklines.get(name);
                 
-                if (data.chart != null && updateGraphs)
+                if (data.chart != null)
                 {
                     ITrace2D trace = data.chart.getTraces().first();
                     trace.addPoint((double)utime/1000000.0d, value);
@@ -476,10 +474,7 @@ public class ObjectPanel extends JPanel
                 data.xmax = x[3]+sparklineWidth;
 
                 // add the data to our trace
-                if (updateGraphs)
-                {
-                    trace.addPoint((double)utime/1000000.0d, value);
-                }
+                trace.addPoint((double)utime/1000000.0d, value);
 
                 // draw the graph
                 DrawSparkline(x[3], y, trace, isHovering);
@@ -647,7 +642,6 @@ public class ObjectPanel extends JPanel
         {
             g.setColor(Color.white);
             g.fillRect(0, y, getWidth(), getHeight());
-            updateGraphs = false;
         }
     }
 
@@ -655,7 +649,6 @@ public class ObjectPanel extends JPanel
     {
         this.o = o;
         this.utime = utime - chartData.getStartTime();
-        this.updateGraphs = true;
         repaint();
     }
 
@@ -700,6 +693,8 @@ public class ObjectPanel extends JPanel
         ps.x[1] = Math.min(200, width/4);
         ps.x[2] = Math.min(ps.x[1]+200, 2*width/4);
         ps.x[3] = ps.x[2]+150;
+        
+        int previousNumSections = sections.size();
 
         if (o != null)
             paintRecurse(g, ps, "", o.getClass(), o, false, -1);
@@ -709,6 +704,12 @@ public class ObjectPanel extends JPanel
             lastheight = ps.y;
             invalidate();
             getParent().validate();
+        }
+        
+        if (previousNumSections != sections.size()) {
+            // if the number of sections has changed, the system that figures out
+            // what to draw based on user view needs to rerun to update
+            repaint();
         }
     }
 
@@ -742,7 +743,6 @@ public class ObjectPanel extends JPanel
             
             data.ymin = ps.y - ps.textheight;
             data.ymax = ps.y;
-            
             
             if (visibleSparklines.contains(data) || graphingSparklines.contains(data))
             {
@@ -872,7 +872,7 @@ public class ObjectPanel extends JPanel
     {
 
         /**
-         * Check to see if we need to update the hightlight
+         * Check to see if we need to update the highlight
          * on a row.
          * 
          * @param e MouseEvent from the mouse move
@@ -899,14 +899,13 @@ public class ObjectPanel extends JPanel
          */
         public void stateChanged(ChangeEvent e)
         {
-            // 
             
             JViewport viewport = (JViewport) e.getSource();
             
             Rectangle view_rect = viewport.getViewRect();
             
             visibleSparklines.clear();
-            
+
             for (int i = sections.size() -1; i > -1; i--)
             {
                 Section section = sections.get(i);

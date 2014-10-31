@@ -380,8 +380,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         IAxis xAxis = this.getAxisX();
         IAxis yAxis = this.getAxisY();
         
-        double xAxisRange = xAxis.getMax() - xAxis.getMin();
-        
+        double xAxisRange = xAxis.getRange().getExtent();
         
         mouseDownValPerPxY.clear();
         mouseDownMinY.clear();
@@ -395,11 +394,11 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         
         mouseDownValPerPxX = xAxisRange / xAxisWidth;
         
-        
         mouseDownMinX = xAxis.getMin();
         mouseDownMaxX = xAxis.getMax();
         
-        double yAxisRange = yAxis.getMax() - yAxis.getMin();
+        double yAxisRange = yAxis.getRange().getExtent();
+        
         mouseDownValPerPxY.add(yAxisRange / yAxisHeight);
         mouseDownMinY.add(yAxis.getMin());
         mouseDownMaxY.add(yAxis.getMax());
@@ -503,8 +502,8 @@ public class ZoomableChartScrollWheel extends ZoomableChart
          
             IAxis xAxis = chart.getAxisX();
             IAxis yAxis = chart.getAxisY();
-            double xAxisRange = xAxis.getMax() - xAxis.getMin();
-            double yAxisRange = yAxis.getMax() - yAxis.getMin();
+            double xAxisRange = xAxis.getRange().getExtent();
+            double yAxisRange = yAxis.getRange().getExtent();
             
             double zoomFactor;
             
