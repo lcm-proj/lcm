@@ -403,6 +403,8 @@ public class ObjectPanel extends JPanel
                 value = (Integer) o;
             else if (o instanceof Long)
                 value = (Long) o;
+            else if (o instanceof Short)
+                value = (Short) o;
             else if (o instanceof Byte)
                 value = (Byte) o;
             
