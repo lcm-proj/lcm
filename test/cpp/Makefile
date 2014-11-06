@@ -37,5 +37,6 @@ lcmtest2/%.hpp: ../types/lcmtest2/%.lcm
 
 clean:
 	rm -f client
+	rm -f memq_test
 	rm -rf lcmtest lcmtest2
 	rm -f *.o

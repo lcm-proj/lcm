@@ -56,5 +56,6 @@ lcmtest2_%.c lcmtest2_%.h: ../types/lcmtest2/%.lcm
 
 clean:
 	rm -f client server
+	rm -f memq_test eventlog_test
 	rm -f $(types_src)
 	rm -f *.o
