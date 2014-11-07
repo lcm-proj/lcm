@@ -29,12 +29,105 @@
 #include "lcmtypes/channel_port_map_update_t.h"
 
 #ifdef WIN32
-// Windows provides Poll, but calls it WSAPoll
 typedef int nfds_t;
+#if _WIN32_WINNT >= 0x0600
+// starting with Vista, Windows provides Poll, but calls it WSAPoll
 static inline int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
 	return WSAPoll(fds, nfds, timeout);
 }
-#endif
+#else
+// otherwise we emulate poll() using select()
+
+// defines and struct pollfd from WinSock2.h
+#define POLLRDNORM  0x0100
+#define POLLRDBAND  0x0200
+#define POLLIN      (POLLRDNORM | POLLRDBAND)
+#define POLLPRI     0x0400
+
+#define POLLWRNORM  0x0010
+#define POLLOUT     (POLLWRNORM)
+#define POLLWRBAND  0x0020
+
+#define POLLERR     0x0001
+#define POLLHUP     0x0002
+#define POLLNVAL    0x0004
+
+typedef struct pollfd {
+
+    SOCKET  fd;
+    SHORT   events;
+    SHORT   revents;
+
+} WSAPOLLFD, *PWSAPOLLFD, FAR *LPWSAPOLLFD;
+
+static int
+poll(struct pollfd fds[], nfds_t nfds, int timeout) {
+    // 0) do we even have something to do?
+    if (nfds <= 0) return -1;
+
+    // 1) convert fds to what select() needs
+    fd_set readfds, writefds, exceptfds;
+    // initialize
+    FD_ZERO(&readfds);
+    FD_ZERO(&writefds);
+    FD_ZERO(&exceptfds);
+    int i;
+	int fdmax = -1;
+    for (i = 0; i < nfds; ++i) {
+        // skip invalid fds
+        if (fds[i].fd < 0)
+            continue;
+        if (fds[i].events & POLLIN )
+            FD_SET(fds[i].fd, &readfds);
+        if (fds[i].events & POLLOUT)
+            FD_SET(fds[i].fd, &writefds);
+        if (fds[i].events & POLLPRI)
+            FD_SET(fds[i].fd, &exceptfds);
+		if (fds[i].fd > fdmax)
+            fdmax = fds[i].fd;
+    }
+
+    // 2) convert timeout to select() format
+    struct timeval tv;
+    struct timeval *pTv = &tv;
+    switch (timeout) {
+    case -1: // wait indefinitely
+        pTv = NULL;
+        break;
+    case 0: // don't wait at all
+        pTv->tv_sec  = 0;
+        pTv->tv_usec = 0;
+        break;
+    default: // wait the specified time
+        pTv->tv_sec  = (timeout / 1000);
+        pTv->tv_usec = (timeout % 1000) * 1000;
+        break;
+    }
+
+    // 3) finally call select()
+    int ret;
+    ret = select(fdmax+1, &readfds, &writefds, &exceptfds, pTv);
+
+    // 4) convert the select() results back
+    if (ret >= 0) {
+        for (i = 0; i < nfds; ++i) {
+            // skip invalid fds
+            if (fds[i].fd < 0)
+                continue;
+
+            if (FD_ISSET(fds[i].fd, &exceptfds))
+                fds[i].revents |= POLLPRI;
+            if (FD_ISSET(fds[i].fd, &readfds))
+                fds[i].revents |= POLLIN;
+            if (FD_ISSET(fds[i].fd, &writefds))
+                fds[i].revents |= POLLOUT;
+        }
+    }
+
+    return ret;
+}
+#endif // _WIN32_WINNT >= 0x0600
+#endif // WIN32
 
 // Lets reserve channels starting with #! for internal use
 #define RESERVED_CHANNEL_PREFIX "#!"
