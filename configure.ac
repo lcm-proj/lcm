@@ -70,19 +70,17 @@ AC_ARG_WITH(java,
             [], [with_java=yes])
 if test "x$with_java" = xno -o "x$JAR" = x -o "x$JAVAC" = x; then
     AC_MSG_WARN([Java support disabled])
+    with_java="no"
 else
-  AC_CHECK_PROG(HAVE_ANT, ant, true, false)
-  AM_CONDITIONAL(HAVE_ANT,$HAVE_ANT)
-  if test $HAVE_ANT = "false"; then
-    AC_MSG_WARN([*** ant not found, java will not be built])
-  else
-    JAVA_FOUND="yes"
-  fi
+    AC_CHECK_PROG(HAVE_ANT, ant, true, false)
+    ANT_STR=""
+    if test $HAVE_ANT = "false"; then
+        with_java="no"
+        ANT_STR="(ant not found)"
+    fi
 fi
 
-
-
-AM_CONDITIONAL(HAVE_JAVA, test "x$JAVA_FOUND" = "xyes")
+AM_CONDITIONAL(HAVE_JAVA, test "x$with_java" = "xyes")
 java_apiversion="1.0"
 AC_ARG_WITH(jardir,
             [AS_HELP_STRING([--with-jardir=DIR],
@@ -166,7 +164,7 @@ AC_OUTPUT([
   m4macros/Makefile
 ])
 
-if test "x$JAVA_FOUND" = "xyes"; then
+if test "x$with_java" = "xyes"; then
     JAVA_STR="Enabled"
 else
     JAVA_STR="Disabled"
@@ -187,16 +185,11 @@ fi
 echo "
 "
 
-if test $HAVE_ANT = "false"; then
-    AC_MSG_WARN([*** ant not found, java will not be built
-])
-fi
-
 echo "Configuration (LCM v${PACKAGE_VERSION}):
 
   Source code location:  ${srcdir}
   Compiler:              ${CC}
-  Java Support:          ${JAVA_STR}
+  Java Support:          ${JAVA_STR} ${ANT_STR}
   Python Support:        ${PYTHON_STR}
   Lua Support:           ${LUA_STR}
 "
