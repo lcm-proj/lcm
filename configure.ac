@@ -117,14 +117,6 @@ AS_IF([test "x$with_lua" != 'xno'],
 
 AM_CONDITIONAL(HAVE_LUA, test "x$with_lua" = "xyes")
 
-dnl -------------------------------------------------
-dnl Maybe the user doesn't want to build the examples
-dnl -------------------------------------------------
-AC_ARG_WITH(examples,
-            [AS_HELP_STRING([--without-examples], [Do not compile examples])],
-            [], [with_examples=yes])
-AM_CONDITIONAL(WITH_EXAMPLES,[test "x$with_examples" = xyes])
-
 dnl ---------------------------------------------------------------------------
 dnl Warnings
 dnl ---------------------------------------------------------------------------
