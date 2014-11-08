@@ -126,20 +126,6 @@ AC_ARG_WITH(examples,
 AM_CONDITIONAL(WITH_EXAMPLES,[test "x$with_examples" = xyes])
 
 dnl ---------------------------------------------------------------------------
-dnl i18n support
-dnl ---------------------------------------------------------------------------
-ALL_LINGUAS=""
-
-dnl The gettext domain of the library
-GETTEXT_PACKAGE=${PACKAGE}
-AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE,"$GETTEXT_PACKAGE",[The gettext domain for the library])
-AC_SUBST(GETTEXT_PACKAGE)
-AM_GNU_GETTEXT([external])
-AM_GNU_GETTEXT_VERSION(0.14.3)
-
-AM_ICONV()
-
-dnl ---------------------------------------------------------------------------
 dnl Warnings
 dnl ---------------------------------------------------------------------------
 if test "x$GCC" = "xyes"; then
@@ -160,7 +146,6 @@ AC_OUTPUT([
   lcm-lua/Makefile
   examples/Makefile
   m4/Makefile
-  po/Makefile.in
   m4macros/Makefile
 ])
 

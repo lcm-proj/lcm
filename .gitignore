@@ -49,6 +49,7 @@ lcm-python/Makefile.in
 lcm/Makefile
 lcm/Makefile.in
 lcm/lcm.pc
+lcm/lcmtypes/.dirstamp
 
 lcmgen/Makefile
 lcmgen/Makefile.in
@@ -68,7 +69,6 @@ ltmain.sh
 m4/Makefile
 m4/Makefile.in
 m4/codeset.m4
-m4/gettext.m4
 m4/glibc2.m4
 m4/glibc21.m4
 m4/iconv.m4
@@ -105,19 +105,6 @@ m4macros/Makefile
 m4macros/Makefile.in
 missing
 mkinstalldirs
-po/Makefile
-po/Makefile.in
-po/Makefile.in.in
-po/Makevars.template
-po/POTFILES
-po/Rules-quot
-po/boldquot.sed
-po/en@boldquot.header
-po/en@quot.header
-po/insert-header.sin
-po/quot.sed
-po/remove-potcdate.sed
-po/remove-potcdate.sin
 py-compile
 test/.buildstamp
 test/c/client

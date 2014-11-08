@@ -1,4 +1,4 @@
-SUBDIRS = m4 lcm liblcm-test lcmgen lcm-logger po m4macros
+SUBDIRS = m4 lcm liblcm-test lcmgen lcm-logger m4macros
 
 if HAVE_JAVA
 SUBDIRS += lcm-java

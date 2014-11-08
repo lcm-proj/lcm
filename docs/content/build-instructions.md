@@ -85,7 +85,6 @@ Required packages:
  - automake
  - autopoint
  - libglib2.0-dev
- - gettext
  - libtool
 
 Strongly recommended packages:
