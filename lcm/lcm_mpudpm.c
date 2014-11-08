@@ -14,7 +14,6 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <sys/time.h>
-#include <sys/poll.h>
 #include <sys/select.h>
 #endif
 
@@ -27,14 +26,6 @@
 #include "udpm_util.h"
 
 #include "lcmtypes/channel_port_map_update_t.h"
-
-#ifdef WIN32
-// Windows provides Poll, but calls it WSAPoll
-typedef int nfds_t;
-static inline int poll(struct pollfd fds[], nfds_t nfds, int timeout) {
-	return WSAPoll(fds, nfds, timeout);
-}
-#endif
 
 // Lets reserve channels starting with #! for internal use
 #define RESERVED_CHANNEL_PREFIX "#!"
@@ -127,10 +118,6 @@ struct _lcm_provider_t {
      * accessed. must be protected by the receive_lock.*/
     int8_t recv_sockets_changed;
 
-    /* datastructure used for calls to poll()*/
-    int num_recv_socket_pollers;
-    struct pollfd * recv_socket_pollers;
-
     /* list of mpudpm_subscriber_t structs */
     GSList* subscribers;
 
@@ -215,8 +202,6 @@ static void channel_port_mapping_update_handler(lcm_mpudpm_t *lcm,
 static void update_subscription_ports(lcm_mpudpm_t* lcm);
 static void add_channel_to_subscriber(lcm_mpudpm_t* lcm,
         mpudpm_subscriber_t * sub, const char * channel, uint16_t port);
-static void cleanup_pollers(lcm_mpudpm_t * lcm);
-
 
 
 static GStaticPrivate CREATE_READ_THREAD_PKEY = G_STATIC_PRIVATE_INIT;
@@ -274,8 +259,6 @@ destroy_recv_parts (lcm_mpudpm_t *lcm)
         }
         g_slist_free(lcm->subscribers);
     }
-
-    cleanup_pollers(lcm);
 
     if (lcm->frag_bufs) {
         lcm_frag_buf_store_destroy(lcm->frag_bufs);
@@ -582,30 +565,6 @@ recv_short_message (lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, int sz)
     return 1;
 }
 
-static void cleanup_pollers(lcm_mpudpm_t * lcm) {
-    if (lcm->recv_socket_pollers != NULL ) {
-        free(lcm->recv_socket_pollers);
-    }
-}
-
-// this function assums that the caller is holding the receive_lock
-static void setup_pollers(lcm_mpudpm_t * lcm) {
-    //+1 for thread_msg_pipe
-    lcm->num_recv_socket_pollers = g_slist_length(lcm->recv_sockets) + 1;
-    lcm->recv_socket_pollers = (struct pollfd *) calloc(
-            lcm->num_recv_socket_pollers, sizeof(struct pollfd));
-    lcm->recv_socket_pollers[0].fd = lcm->thread_msg_pipe[0];
-    lcm->recv_socket_pollers[0].events = POLLIN;
-
-    int poll_i = 1;
-    for (GSList* it = lcm->recv_sockets; it != NULL ; it = it->next, ++poll_i) {
-        mpudpm_socket_t * sub_socket = (mpudpm_socket_t *) it->data;
-        lcm->recv_socket_pollers[poll_i].fd = sub_socket->fd;
-        lcm->recv_socket_pollers[poll_i].events = POLLIN;
-    }
-    lcm->recv_sockets_changed = 0; // mark things as clean
-}
-
 // this function will aquire locks if needed
 static void dispatch_complete_message(lcm_mpudpm_t * lcm, lcm_buf_t * lcmb,
         int actual_size) {
@@ -684,20 +643,34 @@ recv_thread(void * user) {
 
         // lock subscription lists so things don't change on us
         g_static_mutex_lock(&lcm->receive_lock);
-        if (lcm->recv_sockets_changed || lcm->recv_socket_pollers == NULL ) {
-            cleanup_pollers(lcm);
-            setup_pollers(lcm);
-        }
-        // unlock receive_lock while we wait for a message
-        g_static_mutex_unlock(&lcm->receive_lock);
-        if (poll(lcm->recv_socket_pollers, lcm->num_recv_socket_pollers, -1)
-                <= 0) {
-            perror("udp_read_packet -- poll() failed:");
-            continue;
+
+        // setup file descriptors for select
+        fd_set fds;
+        FD_ZERO(&fds);
+
+        // thread_msg_pipe fd
+        FD_SET(lcm->thread_msg_pipe[0], &fds);
+        SOCKET maxfd = lcm->thread_msg_pipe[0];
+
+        for (GSList* it = lcm->recv_sockets; it != NULL ; it = it->next) {
+          mpudpm_socket_t * sub_socket = (mpudpm_socket_t *) it->data;
+          FD_SET(sub_socket->fd, &fds);
+          if (sub_socket->fd > maxfd) {
+            maxfd = sub_socket->fd;
+          }
         }
 
+        if (select(maxfd + 1, &fds, NULL, NULL, NULL) < 0) {
+            perror("udp_read_packet -- select() failed:");
+            continue;
+        }
+        lcm->recv_sockets_changed = 0;
+
+        // unlock receive_lock while we wait for a message
+        g_static_mutex_unlock(&lcm->receive_lock);
+
         // check for a signaling message
-        if (lcm->recv_socket_pollers[0].revents) {
+        if (FD_ISSET(lcm->thread_msg_pipe[0], &fds)) {
             char ch;
             int status = lcm_internal_pipe_read(lcm->thread_msg_pipe[0], &ch,
                     1);
@@ -742,10 +715,9 @@ recv_thread(void * user) {
                 it = it->next, ++poll_i) {
             // We should be holding receive_lock at the start of this loop
             mpudpm_socket_t * sub_socket = (mpudpm_socket_t *) it->data;
-            if (!lcm->recv_socket_pollers[poll_i].revents) {
+            if (!FD_ISSET(sub_socket->fd, &fds)) {
                 continue;
             } else {
-                assert(sub_socket->fd == lcm->recv_socket_pollers[poll_i].fd);
                 recv_fd = sub_socket->fd;
                 recv_port = sub_socket->port;
             }
