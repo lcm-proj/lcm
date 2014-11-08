@@ -1,4 +1,6 @@
-INCLUDES = $(GLIB_CFLAGS)
+AUTOMAKE_OPTIONS=subdir-objects
+
+AM_CPPFLAGS = $(GLIB_CFLAGS)
 
 lib_LTLIBRARIES = liblcm.la
 

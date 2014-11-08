@@ -1,4 +1,4 @@
-INCLUDES = $(PYTHON_INCLUDES)
+AM_CPPFLAGS = $(PYTHON_INCLUDES)
 pylcmexec_PYTHON = \
     lcm/__init__.py
 

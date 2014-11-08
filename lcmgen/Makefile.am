@@ -1,4 +1,4 @@
-INCLUDES = $(GLIB_CFLAGS)
+AM_CPPFLAGS = $(GLIB_CFLAGS)
 
 bin_PROGRAMS = lcm-gen
 

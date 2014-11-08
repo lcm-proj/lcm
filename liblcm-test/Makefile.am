@@ -1,4 +1,4 @@
-INCLUDES = -I$(top_srcdir) $(GLIB_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir) $(GLIB_CFLAGS)
 
 noinst_PROGRAMS = lcm-sink \
 				  lcm-source \
