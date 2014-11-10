@@ -11,13 +11,14 @@ typedef int SOCKET;
 
 #include "common.h"
 
+#define info(...) do { fprintf(stderr, "c_server: "); \
+  fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); } while(0)
+
 static lcm_t* g_lcm = NULL;
 
-// overall test status
+// Overall test status
 static int g_test_complete = 0;
 static int g_test_passed = 0;
-
-#define info(...) do { fprintf(stderr, "c_server: "); fprintf(stderr, __VA_ARGS__); } while(0)
 
 static void
 all_tests_passed(void)
@@ -26,7 +27,7 @@ all_tests_passed(void)
     g_test_complete = 1;
 }
 
-// ========================== Generic macro for declaring a test
+// Generic macro for declaring a test
 #define MAKE_TEST(type, num_iters, success_func) \
 \
 static int g_##type##_count = 0; \
@@ -48,7 +49,6 @@ type##_handler(const lcm_recv_buf_t* rbuf, const char* channel, \
     g_##type##_count++; \
     if(g_##type##_count == num_iters) { \
         type##_unsubscribe(g_lcm, g_##type##_subscription); \
-        info("%-32s : PASSED\n", #type); \
         success_func(); \
     } \
 } \
@@ -73,7 +73,6 @@ static lcm_subscription_t* g_echo_subscription = NULL;
 static void
 end_echo_test()
 {
-    info("%-32s : PASSED\n", "echo test");
     lcm_unsubscribe(g_lcm, g_echo_subscription);
     begin_lcmtest_primitives_t_test();
 }
@@ -93,7 +92,8 @@ echo_handler(const lcm_recv_buf_t *rbuf, const char* channel, void* user)
 static void
 begin_echo_test()
 {
-    g_echo_subscription = lcm_subscribe(g_lcm, "TEST_ECHO", &echo_handler, NULL);
+    g_echo_subscription = lcm_subscribe(g_lcm, "TEST_ECHO",
+        &echo_handler, NULL);
 }
 
 // ============================
@@ -106,23 +106,11 @@ int main(int argc, char** argv)
 
     begin_echo_test();
 
-    if(_lcm_handle_timeout(g_lcm, 10000)) {
-        while(!g_test_complete)
-        {
-            if(!_lcm_handle_timeout(g_lcm, 500)) {
-                info("Timed out waiting for client message\n");
-                g_test_complete = 1;
-                break;
-            }
-        }
-    } else {
-        info("Timed out waiting for first client message\n");
+    while (!g_test_complete && (lcm_handle(g_lcm) == 0)) {
     }
 
     lcm_destroy(g_lcm);
-    if(g_test_passed)
-        info("All tests passed.\n");
-    else
-        info("Test failed.\n");
+    if(!g_test_passed)
+        info("Test failed.");
     return !g_test_passed;
 }

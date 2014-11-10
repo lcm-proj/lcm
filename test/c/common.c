@@ -18,30 +18,6 @@ typedef int SOCKET;
         return 0; \
     }
 
-int
-_lcm_handle_timeout(lcm_t* lcm, int ms)
-{
-    // setup the LCM file descriptor for waiting.
-    SOCKET lcm_fd = lcm_get_fileno(lcm);
-    fd_set fds;
-    FD_ZERO(&fds);
-    FD_SET(lcm_fd, &fds);
-
-    // wait a limited amount of time for an incoming message
-    struct timeval timeout = {
-        ms / 1000,           // seconds
-        (ms % 1000) * 1000   // microseconds
-    };
-    int status = select(lcm_fd + 1, &fds, 0, 0, &timeout);
-    if(status > 0 && FD_ISSET(lcm_fd, &fds)) {
-        lcm_handle(lcm);
-        return 1;
-    }
-
-    // no messages
-    return 0;
-}
-
 char*
 _strdup(const char* src)
 {

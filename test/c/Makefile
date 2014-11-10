@@ -3,7 +3,8 @@ CC=gcc
 LCM_GEN=../../lcmgen/lcm-gen
 
 # Use pkg-config to lookup the proper compiler and linker flags for LCM
-CFLAGS=`pkg-config --cflags lcm` -std=c99 -g
+CFLAGS=`pkg-config --cflags lcm` -I../gtest/include -std=c99 -g
+CXXFLAGS=`pkg-config --cflags lcm` -I../gtest/include -g
 LDFLAGS=`pkg-config --libs lcm`
 GTEST_LIBS=../gtest/libgtest.a ../gtest/libgtest_main.a
 
@@ -22,13 +23,13 @@ server: server.o common.o $(types_obj)
 	$(CC) -o $@ $^ $(LDFLAGS)
 
 client: client.o common.o $(types_obj)
-	$(CC) -o $@ $^ $(LDFLAGS)
+	$(CXX) -o $@ $^ $(LDFLAGS) $(GTEST_LIBS)
 
 common.o: common.c $(types_src)
 	$(CC) $(CFLAGS) -c $<
 
-client.o: client.c $(types_src)
-	$(CC) $(CFLAGS) -c $<
+client.o: client.cpp $(types_src)
+	$(CXX) $(CXXFLAGS) -c $<
 
 server.o: server.c $(types_src)
 	$(CC) $(CFLAGS) -c $<
@@ -37,13 +38,13 @@ eventlog_test: eventlog_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(GTEST_LIBS)
 
 eventlog_test.o: eventlog_test.cpp
-	$(CXX) `pkg-config --cflags lcm` -g -I../gtest/include -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 memq_test: memq_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(GTEST_LIBS)
 
 memq_test.o: memq_test.cpp $(types_src)
-	$(CXX) `pkg-config --cflags lcm` -g -I../gtest/include -c $<
+	$(CXX) $(CXXFLAGS) -c $<
 
 lcmtest_%.o: lcmtest_%.c lcmtest_%.h
 	$(CC) $(CFLAGS) -c $<

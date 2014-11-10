@@ -8,8 +8,6 @@
 #include "lcmtest/multidim_array_t.hpp"
 #include "lcmtest2/cross_package_t.hpp"
 
-int LcmHandleTimeout(lcm::LCM* lcm, int ms);
-
 int CheckLcmType(const lcmtest::multidim_array_t* msg, int expected);
 void FillLcmType(int num_children, lcmtest::multidim_array_t* result);
 void ClearLcmType(lcmtest::multidim_array_t* msg);

@@ -3,7 +3,7 @@ CC=g++
 LCM_GEN=../../lcmgen/lcm-gen
 
 # Use pkg-config to lookup the proper compiler and linker flags for LCM
-CFLAGS=`pkg-config --cflags lcm`  -g -I .
+CFLAGS=`pkg-config --cflags lcm`  -g -I . -I../gtest/include
 LDFLAGS=`pkg-config --libs lcm`
 GTEST_LIBS=../gtest/libgtest.a ../gtest/libgtest_main.a
 
@@ -15,19 +15,19 @@ all: client \
 	memq_test
 
 common.o: common.cpp $(types_src)
-	$(CC) $(CFLAGS) $(LDFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 
 client.o: client.cpp $(types_src)
-	$(CC) $(CFLAGS) $(LDFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 
 client: client.o common.o $(types_src)
-	$(CXX) -o $@ client.o common.o $(LDFLAGS)
+	$(CXX) -o $@ client.o common.o $(LDFLAGS) $(GTEST_LIBS)
 
 memq_test: memq_test.o
 	$(CXX) -o $@ memq_test.o $(LDFLAGS) $(GTEST_LIBS)
 
 memq_test.o: memq_test.cpp $(types_src)
-	$(CXX) `pkg-config --cflags lcm` -g -I../gtest/include -c $<
+	$(CXX) $(CFLAGS) -c $<
 
 lcmtest/%.hpp: ../types/lcmtest/%.lcm
 	$(LCM_GEN) --cpp $<

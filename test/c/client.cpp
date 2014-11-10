@@ -2,12 +2,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
+#include <gtest/gtest.h>
 
 #include <lcm/lcm.h>
 
 #include "common.h"
 
-#define info(...) do { printf("c_client: "); printf(__VA_ARGS__); } while(0)
+#define info(...) do { printf("c_client: "); printf(__VA_ARGS__); printf("\n"); } while(0)
 
 static lcm_t* g_lcm = NULL;
 
@@ -38,21 +39,16 @@ do_##type##_test(void) \
     for(iter=0; iter<num_iters && result; iter++) { \
         fill_##type(iter, &msg); \
         type##_publish(g_lcm, "test_" #type, &msg); \
-        if(!_lcm_handle_timeout(g_lcm, 500)) { \
-            info(#type " test: Timeout waiting for reply\n"); \
+        if(!lcm_handle_timeout(g_lcm, 500)) { \
+            info(#type " test: Timeout waiting for reply"); \
             result = 0; \
         } else if(g_##type##_response_count != iter+1) { \
-            info(#type " test: failed on iteration %d\n", iter); \
+            info(#type " test: failed on iteration %d", iter); \
             result = 0; \
         } \
         clear_##type(&msg); \
     } \
     type##_unsubscribe(g_lcm, subs); \
-    if(result) { \
-        info("%-32s : PASSED\n", #type); \
-    } else { \
-        info("%-32s : FAILED\n", #type); \
-    } \
     return result; \
 }
 
@@ -77,12 +73,15 @@ echo_handler(const lcm_recv_buf_t *rbuf, const char * channel, void * user)
     g_echo_response_count++;
 }
 
-static int
-do_echo_test(void)
+TEST(LCM_C, EchoTest)
 {
+    srand(time(NULL));
+    g_lcm = lcm_create(NULL);
+    ASSERT_TRUE(g_lcm != NULL);
+
     int maxlen = 10000;
     int minlen = 10;
-    g_echo_data = malloc(maxlen);
+    g_echo_data = (uint8_t*) malloc(maxlen);
     lcm_subscription_t* subs = lcm_subscribe(g_lcm, "TEST_ECHO_REPLY", echo_handler, NULL);
     g_echo_response_count = 0;
 
@@ -96,56 +95,49 @@ do_echo_test(void)
 
         lcm_publish(g_lcm, "TEST_ECHO", g_echo_data, g_echo_msg_len);
 
-        if(!_lcm_handle_timeout(g_lcm, 500) || (g_echo_response_count != iter+1))
-        {
-            info("echo test failed to receive response on iteration %d\n", iter);
+        ASSERT_GT(lcm_handle_timeout(g_lcm, 500), 0);
+        ASSERT_EQ(g_echo_response_count, iter+1);
+
+        if(g_echo_response_count != iter+1) {
+            info("echo test failed to receive response on iteration %d", iter);
+            lcm_unsubscribe(g_lcm, subs);
             free(g_echo_data);
-            return 0;
+            return;
         }
     }
 
-    info("%-32s : PASSED\n", "echo test");
     lcm_unsubscribe(g_lcm, subs);
     free(g_echo_data);
-    return 1;
 }
 
-// ========================== main
-int
-main(int argc, char ** argv)
+// Typed tests
+TEST(LCM_C, primitives_t)
 {
-    srand(time(NULL));
+    ASSERT_TRUE(g_lcm != NULL);
+    EXPECT_EQ(1, do_lcmtest_primitives_t_test());
+}
 
-    g_lcm = lcm_create(NULL);
-    if(!g_lcm)
-    {
-        info("Unable to initialize LCM\n");
-        return 1;
-    }
+TEST(LCM_C, primitives_list_t)
+{
+    ASSERT_TRUE(g_lcm != NULL);
+    EXPECT_EQ(1, do_lcmtest_primitives_list_t_test());
+}
 
-    if(!do_echo_test())
-        goto failed;
+TEST(LCM_C, node_t)
+{
+    ASSERT_TRUE(g_lcm != NULL);
+    EXPECT_EQ(1, do_lcmtest_node_t_test());
+}
 
-    if(!do_lcmtest_primitives_t_test())
-        goto failed;
+TEST(LCM_C, multidim_array_t)
+{
+    ASSERT_TRUE(g_lcm != NULL);
+    EXPECT_EQ(1, do_lcmtest_multidim_array_t_test());
+}
 
-    if(!do_lcmtest_primitives_list_t_test())
-        goto failed;
-
-    if(!do_lcmtest_node_t_test())
-        goto failed;
-
-    if(!do_lcmtest_multidim_array_t_test())
-        goto failed;
-
-    if(!do_lcmtest2_cross_package_t_test())
-        goto failed;
-
-    info("All tests passed.\n");
+TEST(LCM_C, cross_package)
+{
+    ASSERT_TRUE(g_lcm != NULL);
+    EXPECT_EQ(1, do_lcmtest2_cross_package_t_test());
     lcm_destroy(g_lcm);
-    return 0;
-failed:
-    info("failed\n");
-    lcm_destroy(g_lcm);
-    return 1;
 }

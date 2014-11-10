@@ -3,6 +3,7 @@ import time
 import array
 import random
 import select
+import unittest
 
 import lcm
 
@@ -276,7 +277,7 @@ class StandardTester(object):
                 return False
 
         self.lc.unsubscribe(subs)
-        info("%-31s : PASSED" % (pkg_name + "_" + self.msg_name))
+#        info("%-31s : PASSED" % (pkg_name + "_" + self.msg_name))
         return True
 
 
@@ -303,22 +304,31 @@ class EchoTester(object):
             if not _lcm_handle_timeout(self.lc, 500) or self.response_count != i + 1:
                 print("echo test failed to receive a response on iteration %d" % i)
                 raise RuntimeError()
-        info("%-31s : PASSED" % "echo test")
+#        info("%-31s : PASSED" % "echo test")
         self.lc.unsubscribe(self.subs)
 
-class Tester(object):
-    def __init__(self):
+class Tester(unittest.TestCase):
+    def setUp(self):
+        random.seed()
         self.lc = lcm.LCM()
 
-    def run(self):
+    def test_1_echo(self):
         EchoTester(self.lc).run()
-        StandardTester(self.lc, PrimitivesTest()).run()
-        StandardTester(self.lc, PrimitivesListTest()).run()
-        StandardTester(self.lc, NodeTest()).run()
-        StandardTester(self.lc, MultidimArrayTest()).run()
-        StandardTester(self.lc, CrossPackageTest()).run()
-        info("All tests passed")
 
-if __name__ == "__main__":
-    random.seed()
-    Tester().run()
+    def test_2_primitives_t(self):
+        StandardTester(self.lc, PrimitivesTest()).run()
+
+    def test_3_primitives_list_t(self):
+        StandardTester(self.lc, PrimitivesListTest()).run()
+
+    def test_4_node_t(self):
+        StandardTester(self.lc, NodeTest()).run()
+
+    def test_5_multidim_array_t(self):
+        StandardTester(self.lc, MultidimArrayTest()).run()
+
+    def test_6_cross_package(self):
+        StandardTester(self.lc, CrossPackageTest()).run()
+
+if __name__ == '__main__':
+    unittest.main()

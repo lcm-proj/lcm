@@ -1,43 +1,16 @@
 #include <stdio.h>
 #include <inttypes.h>
 
-#ifndef WIN32
-#include <sys/select.h>
-typedef int SOCKET;
-#else
-#include <winsock2.h>
-#endif
-
 #include "common.hpp"
 
-#define info(...) do { fprintf(stderr, "cpp_client: "); fprintf(stderr, __VA_ARGS__); } while(0)
+#define info(...) do { fprintf(stderr, "cpp_client: "); \
+  fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); } while(0)
 
 #define CHECK_FIELD(field, expected, fmt) \
     if((field) != (expected)) { \
-        info("Expected " #field " to be: " fmt ", got " fmt " instead\n", (expected), (field)); \
+        info("Expected " #field " to be: " fmt ", got " fmt " instead", (expected), (field)); \
         return 0; \
     }
-
-int LcmHandleTimeout(lcm::LCM* lcm, int ms) {
-  // setup the LCM file descriptor for waiting.
-  SOCKET lcm_fd = lcm->getFileno();
-  fd_set fds;
-  FD_ZERO(&fds);
-  FD_SET(lcm_fd, &fds);
-
-  // wait a limited amount of time for an incoming message
-  struct timeval timeout = { ms / 1000,           // seconds
-  (ms % 1000) * 1000   // microseconds
-  };
-  int status = select(lcm_fd + 1, &fds, 0, 0, &timeout);
-  if (status > 0 && FD_ISSET(lcm_fd, &fds)) {
-    lcm->handle();
-    return 1;
-  }
-
-  // no messages
-  return 0;
-}
 
 int CheckLcmType(const lcmtest::multidim_array_t* msg, int expected) {
   CHECK_FIELD(msg->size_a, expected, "%d");
@@ -63,7 +36,7 @@ int CheckLcmType(const lcmtest::multidim_array_t* msg, int expected) {
     for (k = 0; k < msg->size_c; k++) {
       snprintf(expected_buf, 79, "%d", n);
       if (strcmp(expected_buf, msg->strarray[i][k].c_str())) {
-        info("Expected msg->strarray[%d][%d] to be %s, got %s instead\n", i, k,
+        info("Expected msg->strarray[%d][%d] to be %s, got %s instead", i, k,
              expected_buf, msg->strarray[i][k].c_str());
         return 0;
       }
@@ -184,7 +157,7 @@ int CheckLcmType(const lcmtest::primitives_list_t* msg, int expected)
         char expected_name[100];
         sprintf(expected_name, "%d", -n);
         if(strcmp(expected_name, ex->name.c_str())) {
-            info("Expected msg->items[%d].name to be %s, got %s instead\n", n, expected_name, ex->name.c_str());
+            info("Expected msg->items[%d].name to be %s, got %s instead", n, expected_name, ex->name.c_str());
             return 0;
         }
         CHECK_FIELD(ex->enabled, (int)((n+1)%2), "%d");
@@ -246,7 +219,7 @@ int CheckLcmType(const lcmtest::primitives_t* msg, int expected) {
   char expected_name[100];
   sprintf(expected_name, "%d", n);
   if (strcmp(expected_name, msg->name.c_str())) {
-    info("Expected msg->expected_name to be %s, got %s instead\n",
+    info("Expected msg->expected_name to be %s, got %s instead",
          expected_name, msg->name.c_str());
     return 0;
   }
