@@ -659,15 +659,15 @@ recv_thread(void * user) {
             maxfd = sub_socket->fd;
           }
         }
+        lcm->recv_sockets_changed = 0;
+
+        // unlock receive_lock while we wait for a message
+        g_static_mutex_unlock(&lcm->receive_lock);
 
         if (select(maxfd + 1, &fds, NULL, NULL, NULL) < 0) {
             perror("udp_read_packet -- select() failed:");
             continue;
         }
-        lcm->recv_sockets_changed = 0;
-
-        // unlock receive_lock while we wait for a message
-        g_static_mutex_unlock(&lcm->receive_lock);
 
         // check for a signaling message
         if (FD_ISSET(lcm->thread_msg_pipe[0], &fds)) {
