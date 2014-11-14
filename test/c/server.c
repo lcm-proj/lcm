@@ -2,98 +2,108 @@
 #include <stdlib.h>
 #include <lcm/lcm.h>
 
-#ifndef WIN32
-#include <sys/select.h>
-typedef int SOCKET;
-#else
-#include <winsock2.h>
-#endif
-
 #include "common.h"
 
-#define info(...) do { fprintf(stderr, "c_server: "); \
-  fprintf(stderr, __VA_ARGS__); fprintf(stderr, "\n"); } while(0)
-
 static lcm_t* g_lcm = NULL;
-
-// Overall test status
-static int g_test_complete = 0;
-static int g_test_passed = 0;
-
-static void
-all_tests_passed(void)
-{
-    g_test_passed = 1;
-    g_test_complete = 1;
-}
-
-// Generic macro for declaring a test
-#define MAKE_TEST(type, num_iters, success_func) \
-\
-static int g_##type##_count = 0; \
-static type##_subscription_t* g_##type##_subscription = NULL; \
-\
-static void \
-type##_handler(const lcm_recv_buf_t* rbuf, const char* channel, \
-    const type* msg, void* user) \
-{ \
-    if(!check_##type(msg, g_##type##_count)) { \
-        g_test_passed = 0; \
-        g_test_complete = 1; \
-        return; \
-    } \
-    type reply; \
-    fill_##type(g_##type##_count + 1, &reply); \
-    type##_publish(g_lcm, "test_" #type "_reply", &reply); \
-    clear_##type(&reply); \
-    g_##type##_count++; \
-    if(g_##type##_count == num_iters) { \
-        type##_unsubscribe(g_lcm, g_##type##_subscription); \
-        success_func(); \
-    } \
-} \
-\
-static void \
-begin_##type##_test() \
-{ \
-    g_##type##_subscription = type##_subscribe(g_lcm, "test_" #type, & type##_handler, NULL); \
-}
-
-MAKE_TEST(lcmtest2_cross_package_t, 100, all_tests_passed);
-MAKE_TEST(lcmtest_multidim_array_t, 5, begin_lcmtest2_cross_package_t_test);
-MAKE_TEST(lcmtest_node_t, 7, begin_lcmtest_multidim_array_t_test);
-MAKE_TEST(lcmtest_primitives_list_t, 100, begin_lcmtest_node_t_test);
-MAKE_TEST(lcmtest_primitives_t, 1000, begin_lcmtest_primitives_list_t_test);
-
-// ========================== echo test
-static int g_echo_count = 0;
-static lcm_subscription_t* g_echo_subscription = NULL;
-
+static int g_quit = 0;
+static int g_lcmtest_primitives_t_count = 0;
+static int g_lcmtest_primitives_list_t_count = 0;
+static int g_lcmtest_node_t_count = 0;
+static int g_lcmtest_multidim_array_t_count = 0;
+static int g_lcmtest2_cross_package_t_count = 0;
 
 static void
-end_echo_test()
+reset_counts() {
+    g_lcmtest_primitives_t_count = 0;
+    g_lcmtest_primitives_list_t_count = 0;
+    g_lcmtest_node_t_count = 0;
+    g_lcmtest_multidim_array_t_count = 0;
+    g_lcmtest2_cross_package_t_count = 0;
+}
+
+static void
+lcmtest_primitives_t_handler(const lcm_recv_buf_t* rbuf,
+    const char* channel,
+    const lcmtest_primitives_t* msg, void* user)
 {
-    lcm_unsubscribe(g_lcm, g_echo_subscription);
-    begin_lcmtest_primitives_t_test();
+    // Reset all counts (maybe)
+    if (msg->i64 == 0) {
+        reset_counts();
+    }
+
+    lcmtest_primitives_t reply;
+    fill_lcmtest_primitives_t(g_lcmtest_primitives_t_count + 1,
+        &reply);
+    lcmtest_primitives_t_publish(g_lcm,
+        "test_lcmtest_primitives_t_reply", &reply);
+    clear_lcmtest_primitives_t(&reply);
+    g_lcmtest_primitives_t_count++;
+}
+
+static void
+lcmtest_primitives_list_t_handler(const lcm_recv_buf_t* rbuf,
+    const char* channel,
+    const lcmtest_primitives_list_t* msg, void* user)
+{
+    lcmtest_primitives_list_t reply;
+    fill_lcmtest_primitives_list_t(g_lcmtest_primitives_list_t_count + 1,
+        &reply);
+    lcmtest_primitives_list_t_publish(g_lcm,
+        "test_lcmtest_primitives_list_t_reply", &reply);
+    clear_lcmtest_primitives_list_t(&reply);
+    g_lcmtest_primitives_list_t_count++;
+}
+
+static void
+lcmtest_node_t_handler(const lcm_recv_buf_t* rbuf,
+    const char* channel,
+    const lcmtest_node_t* msg, void* user)
+{
+    lcmtest_node_t reply;
+    fill_lcmtest_node_t(g_lcmtest_node_t_count + 1,
+        &reply);
+    lcmtest_node_t_publish(g_lcm, "test_lcmtest_node_t_reply",
+        &reply);
+    clear_lcmtest_node_t(&reply);
+    g_lcmtest_node_t_count++;
+}
+
+static void
+lcmtest_multidim_array_t_handler(const lcm_recv_buf_t* rbuf,
+    const char* channel,
+    const lcmtest_multidim_array_t* msg, void* user)
+{
+    lcmtest_multidim_array_t reply;
+    fill_lcmtest_multidim_array_t(g_lcmtest_multidim_array_t_count + 1,
+        &reply);
+    lcmtest_multidim_array_t_publish(g_lcm,
+        "test_lcmtest_multidim_array_t_reply", &reply);
+    clear_lcmtest_multidim_array_t(&reply);
+    g_lcmtest_multidim_array_t_count++;
+}
+
+static void
+lcmtest2_cross_package_t_handler(const lcm_recv_buf_t* rbuf,
+    const char* channel, const lcmtest2_cross_package_t* msg, void* user)
+{
+    lcmtest2_cross_package_t reply;
+    fill_lcmtest2_cross_package_t(g_lcmtest2_cross_package_t_count + 1,
+        &reply);
+    lcmtest2_cross_package_t_publish(g_lcm,
+        "test_lcmtest2_cross_package_t_reply", &reply);
+    clear_lcmtest2_cross_package_t(&reply);
+    g_lcmtest2_cross_package_t_count++;
 }
 
 static void
 echo_handler(const lcm_recv_buf_t *rbuf, const char* channel, void* user)
 {
     lcm_publish(g_lcm, "TEST_ECHO_REPLY", rbuf->data, rbuf->data_size);
-    g_echo_count++;
-
-    if(g_echo_count >= 100)
-    {
-        end_echo_test();
-    }
 }
 
 static void
-begin_echo_test()
-{
-    g_echo_subscription = lcm_subscribe(g_lcm, "TEST_ECHO",
-        &echo_handler, NULL);
+quit_handler() {
+    g_quit = 1;
 }
 
 // ============================
@@ -104,13 +114,27 @@ int main(int argc, char** argv)
     if(!g_lcm)
         return 1;
 
-    begin_echo_test();
+    lcm_subscribe(g_lcm, "TEST_QUIT", &quit_handler, NULL);
 
-    while (!g_test_complete && (lcm_handle(g_lcm) == 0)) {
-    }
+    lcm_subscribe(g_lcm, "TEST_ECHO", &echo_handler, NULL);
+
+    lcmtest_primitives_t_subscribe(g_lcm, "test_lcmtest_primitives_t",
+          &lcmtest_primitives_t_handler, NULL);
+
+    lcmtest_primitives_list_t_subscribe(g_lcm, "test_lcmtest_primitives_list_t",
+          &lcmtest_primitives_list_t_handler, NULL);
+
+    lcmtest_node_t_subscribe(g_lcm, "test_lcmtest_node_t",
+          &lcmtest_node_t_handler, NULL);
+
+    lcmtest_multidim_array_t_subscribe(g_lcm, "test_lcmtest_multidim_array_t",
+          &lcmtest_multidim_array_t_handler, NULL);
+
+    lcmtest2_cross_package_t_subscribe(g_lcm, "test_lcmtest2_cross_package_t",
+          &lcmtest2_cross_package_t_handler, NULL);
+
+    while (lcm_handle(g_lcm) == 0 && !g_quit) {}
 
     lcm_destroy(g_lcm);
-    if(!g_test_passed)
-        info("Test failed.");
-    return !g_test_passed;
+    return 0;
 }

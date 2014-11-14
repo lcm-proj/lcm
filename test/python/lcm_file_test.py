@@ -34,7 +34,7 @@ class TestLcmFile(unittest.TestCase):
             msg = self.tester.make_message(iteration)
             lcm_obj.publish(self.test_channel, msg.encode())
 
-        print("opening read mode")
+#        print("opening read mode")
         lcm_obj = lcm.LCM("file://%s?mode=r" % self.log_filename)
         subs = lcm_obj.subscribe(self.test_channel, handler)
         for iteration in range(self.num_iterations):

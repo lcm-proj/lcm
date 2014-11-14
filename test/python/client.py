@@ -307,7 +307,7 @@ class EchoTester(object):
 #        info("%-31s : PASSED" % "echo test")
         self.lc.unsubscribe(self.subs)
 
-class Tester(unittest.TestCase):
+class ClientTest(unittest.TestCase):
     def setUp(self):
         random.seed()
         self.lc = lcm.LCM()

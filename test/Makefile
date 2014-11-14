@@ -1,15 +1,13 @@
-all: test
-
-.buildstamp:
+all:
 	$(MAKE) -C gtest
 	$(MAKE) -C c
 	$(MAKE) -C python
 	$(MAKE) -C cpp
 	$(MAKE) -C java
-	touch .buildstamp
 
-test: .buildstamp
-	./run_tests.py
+test: all
+	./run_client_server_tests.py
+	./run_unit_tests.py
 
 clean:
 	$(MAKE) -C gtest clean
@@ -17,4 +15,3 @@ clean:
 	$(MAKE) -C python clean
 	$(MAKE) -C cpp clean
 	$(MAKE) -C java clean
-	rm -f .buildstamp
