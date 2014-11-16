@@ -15,7 +15,8 @@ def main():
         "C" : "c/client",
         "Python" : "python python/client.py",
         "C++" : "cpp/client",
-        "Lua" : "cd lua; lua client.lua"
+        "Lua" : "cd lua; lua client.lua",
+        "Java" : "cd java; java -cp lcmtest.jar LcmTestClient"
     }
 
     test_passed = {}

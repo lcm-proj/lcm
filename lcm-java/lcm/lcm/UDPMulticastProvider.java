@@ -213,7 +213,7 @@ public class UDPMulticastProvider implements Provider
         {
             DatagramPacket packet = new DatagramPacket(new byte[65536], 65536);
 
-            while (true) {
+            while (!isInterrupted()) {
                 try {
                     sock.receive(packet);
                     handlePacket(packet);
@@ -222,6 +222,12 @@ public class UDPMulticastProvider implements Provider
                     continue;
                 }
             }
+        }
+
+        @Override
+        public void interrupt() {
+            super.interrupt();
+            sock.close();
         }
 
         void handleShortMessage(DatagramPacket packet, LCMDataInputStream ins) throws IOException

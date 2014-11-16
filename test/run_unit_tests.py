@@ -66,7 +66,7 @@ def summarize_results():
         print("Not all tests passed")
         return 1
     else:
-        print("All tests passed")
+        print("All unit tests passed")
         return 0
 
 def main():

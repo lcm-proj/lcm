@@ -121,8 +121,11 @@ test/gtest/libgtest.a
 test/gtest/libgtest_main.a
 test/java/lcmtest/lcmtest
 test/java/lcmtest/lcmtest2
-test/java/lcmtests.jar
+test/java/lcmtest.jar
 test/java/build
-test/python/client.pyc
+test/lua/lcmtest
+test/lcm_unittest
+test/xmlrunner.pyc
+test/python/*.pyc
 test/python/lcmtest/
 test/python/lcmtest2/

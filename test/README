@@ -1,18 +1,12 @@
-This directory contains unit tests.
+This directory contains unit tests and client/server tests.
 
+Unit tests are language-specific.
 
-Each language can have two test programs, client and server.  A test
-consists of running the client and the server at the same time.  The server
-should generally be started before the client.  If both client and server exit
-successfully, then the test succeeds.
+This file describes the client/server tests.
 
-The client test program for any language should be compatible with the server
-test program for any other language.
-
-Every language can be tested using the run-tests.py python script:
-
-    make  # builds each language's LCM type bindings and client/server
-    python run-tests.py
+The server is implemented in C/server.c.  It runs continuously while the client
+tests for each language are run one at a time.  Each client test issues a set
+of requests to the server, and checks the replies it receives.
 
 
 1. Echo test

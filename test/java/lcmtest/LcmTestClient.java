@@ -14,6 +14,7 @@ import lcmtest.primitives_list_t;
 import lcmtest.node_t;
 import lcmtest.multidim_array_t;
 import lcmtest2.cross_package_t;
+import lcmtest2.another_type_t;
 
 public class LcmTestClient implements LCMSubscriber {
     private boolean test_success_ = false;
@@ -300,6 +301,120 @@ public class LcmTestClient implements LCMSubscriber {
         }
     }
 
+    private class NodeMakerChecker implements MessageMakerChecker<node_t> {
+        public node_t makeMessage(int iteration) {
+            node_t msg = new node_t();
+            msg.num_children = iteration;
+            if (msg.num_children == 0) {
+                return msg;
+            }
+            msg.children = new node_t[msg.num_children];
+            for (int i = 0; i < msg.num_children; i++) {
+                msg.children[i] = makeMessage(iteration - 1);
+            }
+            return msg;
+        }
+
+        public boolean checkReply(node_t reply, int iteration) {
+            try {
+                checkField(reply.num_children, iteration, "num_children");
+                for (int i = 0; i < reply.num_children; i++) {
+                    if (!checkReply(reply.children[i], iteration -1)) {
+                        return false;
+                    }
+                }
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace(System.err);
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private class MultidimArrayMakerChecker implements MessageMakerChecker<multidim_array_t> {
+        public multidim_array_t makeMessage(int iteration) {
+            multidim_array_t msg = new multidim_array_t();
+            msg.size_a = iteration;
+            msg.size_b = iteration;
+            msg.size_c = iteration;
+            msg.data = new int[msg.size_a][msg.size_b][msg.size_c];
+            int n = 0;
+            for (int a_iter = 0; a_iter < msg.size_a; a_iter++) {
+                for (int b_iter = 0; b_iter < msg.size_b; b_iter++) {
+                    for (int c_iter = 0; c_iter < msg.size_c; c_iter++) {
+                        msg.data[a_iter][b_iter][c_iter] = n++;
+                    }
+                }
+            }
+            n = 0;
+            msg.strarray = new String[2][msg.size_c];
+            for (int i = 0; i < 2; i++) {
+                for (int c_iter = 0; c_iter < msg.size_c; c_iter++) {
+                    msg.strarray[i][c_iter] = String.valueOf(n);
+                    n++;
+                }
+            }
+            return msg;
+        }
+
+        public boolean checkReply(multidim_array_t reply, int iteration) {
+            try {
+                checkField(reply.size_a, iteration, "size_a");
+                checkField(reply.size_b, iteration, "size_b");
+                checkField(reply.size_c, iteration, "size_c");
+                int n = 0;
+                for (int a_iter = 0; a_iter < reply.size_a; a_iter++) {
+                    for (int b_iter = 0; b_iter < reply.size_b; b_iter++) {
+                        for (int c_iter = 0; c_iter < reply.size_c; c_iter++) {
+                            checkField(reply.data[a_iter][b_iter][c_iter], n,
+                                    String.format("data[%d][%d][%d]", a_iter, b_iter, c_iter));
+                            n++;
+                        }
+                    }
+                }
+                n = 0;
+                for (int i = 0; i < 2; i++) {
+                    for (int c_iter = 0; c_iter < reply.size_c; c_iter++) {
+                        checkField(reply.strarray[i][c_iter],
+                                String.valueOf(n),
+                                String.format("strarray[%d][%d]", i, c_iter));
+                        n++;
+                    }
+                }
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace(System.err);
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private class CrossPackageMakerChecker implements MessageMakerChecker<cross_package_t> {
+        private PrimitivesMakerChecker primitivesMakerChecker_ =
+            new PrimitivesMakerChecker();
+
+        public cross_package_t makeMessage(int iteration) {
+            cross_package_t msg = new cross_package_t();
+            msg.primitives = primitivesMakerChecker_.makeMessage(iteration);
+            msg.another = new another_type_t();
+            msg.another.val = iteration;
+            return msg;
+        }
+
+        public boolean checkReply(cross_package_t reply, int iteration) {
+            try {
+                if (!primitivesMakerChecker_.checkReply(reply.primitives, iteration)) {
+                    return false;
+                }
+                checkField(reply.another.val, iteration, "another.val");
+            } catch (IllegalArgumentException ex) {
+                ex.printStackTrace(System.err);
+                return false;
+            }
+            return true;
+        }
+    }
+
     public int runTests() {
         try {
             setupSubscribers();
@@ -321,6 +436,24 @@ public class LcmTestClient implements LCMSubscriber {
             MessageTester<primitives_list_t> primitives_list_tester = new MessageTester<primitives_list_t>(
                     lcm_, "lcmtest_primitives_list_t", new PrimitivesListMakerChecker(), 100);
             if (!primitives_list_tester.run()) {
+                return 1;
+            }
+
+            MessageTester<node_t> node_tester = new MessageTester<node_t>(
+                    lcm_, "lcmtest_node_t", new NodeMakerChecker(), 7);
+            if (!node_tester.run()) {
+                return 1;
+            }
+
+            MessageTester<multidim_array_t> multidim_array_tester = new MessageTester<multidim_array_t>(
+                    lcm_, "lcmtest_multidim_array_t", new MultidimArrayMakerChecker(), 5);
+            if (!multidim_array_tester.run()) {
+                return 1;
+            }
+
+            MessageTester<cross_package_t> cross_package_tester = new MessageTester<cross_package_t>(
+                    lcm_, "lcmtest2_cross_package_t", new CrossPackageMakerChecker(), 100);
+            if (!cross_package_tester.run()) {
                 return 1;
             }
         } catch(IOException ex) {
