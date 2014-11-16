@@ -119,9 +119,10 @@ test/cpp/lcmtest2/
 test/cpp/memq_test
 test/gtest/libgtest.a
 test/gtest/libgtest_main.a
-test/java/lcmtest/
-test/java/lcmtest2/
+test/java/lcmtest/lcmtest
+test/java/lcmtest/lcmtest2
 test/java/lcmtests.jar
+test/java/build
 test/python/client.pyc
 test/python/lcmtest/
 test/python/lcmtest2/

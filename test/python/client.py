@@ -237,7 +237,7 @@ class PrimitivesTest(object):
         check_field(reply.orientation[1], float(n), "orientation[1]");
         check_field(reply.orientation[2], float(n), "orientation[2]");
         check_field(reply.orientation[3], float(n), "orientation[3]");
-        check_field(reply.num_ranges, n, "%d");
+        check_field(reply.num_ranges, n, "num_ranges");
         for i in range(n):
             check_field(reply.ranges[i], i, "ranges[%d]" % i)
         check_field(reply.name, "%d" % n, "name")
