@@ -39,9 +39,6 @@ lcm-logger/Makefile.in
 lcm-logger/lcm-logger
 lcm-logger/lcm-logplayer
 
-lcm-lua/Makefile
-lcm-lua/Makefile.in
-
 lcm-python/html
 lcm-python/Makefile
 lcm-python/Makefile.in
