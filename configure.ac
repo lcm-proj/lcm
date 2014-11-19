@@ -2,7 +2,7 @@ AC_PREREQ(2.50)
 AC_INIT([lcm], 1.1.2)
 AC_CONFIG_SRCDIR([lcm/lcm.h])
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE([foreign])
+AM_INIT_AUTOMAKE([foreign tar-ustar])
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CC
@@ -71,13 +71,6 @@ AC_ARG_WITH(java,
 if test "x$with_java" = xno -o "x$JAR" = x -o "x$JAVAC" = x; then
     AC_MSG_WARN([Java support disabled])
     with_java="no"
-else
-    AC_CHECK_PROG(HAVE_ANT, ant, true, false)
-    ANT_STR=""
-    if test $HAVE_ANT = "false"; then
-        with_java="no"
-        ANT_STR="(ant not found)"
-    fi
 fi
 
 AM_CONDITIONAL(HAVE_JAVA, test "x$with_java" = "xyes")
@@ -166,7 +159,7 @@ echo "Configuration (LCM v${PACKAGE_VERSION}):
 
   Source code location:  ${srcdir}
   Compiler:              ${CC}
-  Java Support:          ${JAVA_STR} ${ANT_STR}
+  Java Support:          ${JAVA_STR}
   Python Support:        ${PYTHON_STR}
   Lua Support:           ${LUA_STR}
 "
