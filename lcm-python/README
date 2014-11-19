@@ -3,7 +3,7 @@ Python-LCM
   Python extension module allowing access to the Lightweight Communications and
   Marshaller (LCM) library from Python.
   
-  http://lcm.googlecode.com
+  https://github.com/lcm-proj/lcm
 
 BUILD REQUIREMENTS:
 

@@ -322,7 +322,7 @@ show_route_cmds:
 "   sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev lo\n"
 "\n"
 "For more information, visit:\n"
-"   http://lcm.googlecode.com/svn/www/reference/lcm/multicast.html\n\n",
+"   http://lcm-proj.github.io/multicast_setup.html\n\n",
 inet_ntoa(lcm_mcaddr));
 }
 #endif

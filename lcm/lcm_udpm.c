@@ -309,7 +309,7 @@ _recv_message_fragment (lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
 "insufficient buffer space is very high.\n"
 "\n"
 "For more information, visit:\n"
-"   http://lcm.googlecode.com/svn/www/reference/lcm/multicast.html\n\n");
+"   http://lcm-proj.github.io/multicast_setup.html\n\n");
         lcm->warned_about_small_kernel_buf = 1;
     }
 #endif
@@ -997,7 +997,7 @@ _setup_recv_parts (lcm_udpm_t *lcm)
             g_warning ("LCM UDP receive buffer size (%d) \n"
                     "       is smaller than reqested (%d). "
                     "For more info:\n"
-                    "       http://lcm.googlecode.com/svn/www/reference/lcm/multicast.html\n", 
+                    "       http://lcm-proj.github.io/multicast_setup.html\n", 
                     lcm->kernel_rbuf_sz, lcm->params.recv_buf_size);
         }
     }
