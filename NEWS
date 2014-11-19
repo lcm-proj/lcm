@@ -1,3 +1,33 @@
+Nov 18, 2014
+============
+
+Release 1.2.0
+
+This release adds charting to lcm-spy (Andy Barry) and updates the lcm-spy GUI.
+This release also marks the official migration of LCM to GitHub.  The new site
+is https://github.com/lcm-proj/lcm
+
+- C / C++
+    - Use select() instead of poll() in lcm_mpudpm.c
+- lcm-spy
+    - Add sparklines and charting (Andy Barry), via JChart2d
+- Python
+    - Fix setup.py
+- Java
+    - TCPService convert mutex to read/write lock.  Reduces deadlock when
+      send/receive buffers are full.
+    - Make TCPService interruptible (closes googlecode issue #94)
+- lcm-gen
+    - Fix regression for comments appearing in various places in a type
+      definition file (closes googlecode issue #97)
+- misc
+    - Build system cleanups
+    - Add more unit tests, cleanup existing tests.
+    - Documentation fixes.
+- OS/X
+    - reduce max packet sizes (closes googlecode issue #99)
+    - fix test/cpp/Makefile
+
 Aug 19, 2014
 ============
 

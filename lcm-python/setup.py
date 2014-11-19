@@ -91,6 +91,6 @@ pylcm_extension = Extension("lcm._lcm",
         libraries=libraries,
         extra_compile_args=extra_compile_args)
 
-setup(name="lcm", version="1.1.2",
+setup(name="lcm", version="1.2.0",
       ext_modules=[pylcm_extension],
       packages=["lcm"])
