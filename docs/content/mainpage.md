@@ -1,10 +1,43 @@
-LCM documentation {#mainpage}
+Lightweight Communications and Marshalling (LCM) {#mainpage}
 ====
 
-# Tutorials and Instructions {#main_tutorials}
+LCM is a set of libraries and tools for message passing and data marshalling,
+targeted at real-time systems where high-bandwidth and low latency are
+critical. It provides a publish/subscribe message passing model and automatic
+marshalling/unmarshalling code generation with bindings for applications in a
+variety of programming languages.
 
+# Quick links {#main_quick_links}
+
+ - [Downloads](https://github.com/lcm-proj/lcm/releases)
  - \ref build_instructions
  - \ref tutorial_general
+
+# Features
+
+* Low-latency inter-process communication
+* Efficient broadcast mechanism using UDP Multicast
+* Type-safe message marshalling
+* User-friendly logging and playback
+* No centralized "database" or "hub" -- peers communicate directly
+* No daemons
+* Few dependencies
+
+# Supported platforms / languages
+
+* Platforms:
+  * GNU/Linux
+  * OS X
+  * Windows
+  * Any POSIX-1.2001 system (e.g., Cygwin, Solaris, BSD, etc.)
+* Languages
+  * C
+  * C++
+  * C#
+  * Java
+  * Lua
+  * MATLAB
+  * Python
 
 # API Reference {#main_api_ref}
 
@@ -20,18 +53,6 @@ LCM documentation {#mainpage}
  - \ref type_specification
  - \ref udp_multicast_protocol
  - \ref log_file_format
-
-# Publications
-
- - [LCM Overview](http://people.csail.mit.edu/albert/pubs/2010-huang-olson-moore-lcm-iros.pdf) - Describes the design principles of LCM, the best place to start for a quick understanding of LCM.  6 pages.
-   - _IROS, Taipei, Taiwan, Oct 2010._
- - [Technical Report](http://dspace.mit.edu/bitstream/handle/1721.1/46708/MIT-CSAIL-TR-2009-041.pdf) - An expanded version of the overview, provides a more comprehensive description.  17 pages.
-    - _Technical Report MIT-CSAIL-TR-2009-041, Massachusetts Institute of Technology, 2009_
-
-# Application notes {#main_other}
-
- - \ref multicast_setup
- - \ref java_notes
 
 # Examples
 
@@ -53,3 +74,35 @@ Java     | [MySubscriber.java](https://github.com/lcm-proj/lcm/blob/master/examp
 Lua      | [listener.lua](https://github.com/lcm-proj/lcm/blob/master/examples/lua/listener.lua) | [send-message.lua](https://github.com/lcm-proj/lcm/blob/master/examples/lua/send-message.lua)
 MATLAB   | [listener.m](https://github.com/lcm-proj/lcm/blob/master/examples/matlab/listener.m) | [sendmessage.m](https://github.com/lcm-proj/lcm/blob/master/examples/matlab/sendmessage.m)
 Python   | [listener.py](https://github.com/lcm-proj/lcm/blob/master/examples/python/listener.py) | [send-message.py](https://github.com/lcm-proj/lcm/blob/master/examples/python/send-message.py)
+# Publications
+
+ - [LCM Overview](http://people.csail.mit.edu/albert/pubs/2010-huang-olson-moore-lcm-iros.pdf) - Describes the design principles of LCM, the best place to start for a quick understanding of LCM.  6 pages.
+   - _IROS, Taipei, Taiwan, Oct 2010._
+ - [Technical Report](http://dspace.mit.edu/bitstream/handle/1721.1/46708/MIT-CSAIL-TR-2009-041.pdf) - An expanded version of the overview, provides a more comprehensive description.  17 pages.
+    - _Technical Report MIT-CSAIL-TR-2009-041, Massachusetts Institute of Technology, 2009_
+
+# Application notes {#main_other}
+
+ - \ref multicast_setup
+ - \ref java_notes
+
+# Who uses LCM?
+
+LCM was originally developed for the MIT DARPA Urban Challenge team, and has
+since been used in many robotic and autonomous systems. Its users have
+included:
+
+* BAE Systems
+* Bender Robotics
+* Carnegie Mellon University
+* ETH Zurich
+* Ford Motor Company
+* Georgia Tech
+* Google
+* MIT
+* Soar Technology
+* University of Michigan
+* Woods Hole Oceanographic Institute
+
+If you're using LCM for development or production, we'd love to hear about it.
+Send an e-mail to lcm-dev@googlegroups.com to let us know.

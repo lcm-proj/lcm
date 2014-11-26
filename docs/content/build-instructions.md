@@ -23,7 +23,6 @@ Required packages:
 
 Strongly recommended packages:
   - openjdk-6-jdk
-  - ant
   - python-dev
 
 From a terminal, run the following commands.
@@ -46,7 +45,6 @@ Required packages:
 
 Strongly recommended packages:
   - openjdk6
-  - ant
   - python26 or python27
 
 From a terminal, run the following commands.  Replace X.Y.Z with the latest version of LCM.
@@ -89,7 +87,6 @@ Required packages:
 
 Strongly recommended packages:
  - openjdk-6-jdk
- - ant
  - python-dev
 
 From a terminal, run the following commands.
