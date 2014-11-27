@@ -1,6 +1,5 @@
-Tutorial {#tutorial_general}
+Tutorial and examples {#tutorial_general}
 ====
-\brief An example use case from start to finish.
 
 # Introduction {#tutorial_general_intro}
 
@@ -49,3 +48,24 @@ languages, consult the following sections for language-specific tutorials.
 Note that C and C++ are considered to be separate programming languages.  It is
 possible to use the C bindings from C++, but there are also LCM bindings
 specific to C++.
+
+# Additional examples
+
+Additional examples are provided with the source distribution of LCM.
+
+For each language, at least two examples are provided. One listens for a
+message, the other transmits a message. The LCM type used is defined in
+[example_t.lcm](https://github.com/lcm-proj/lcm/blob/master/examples/types/example_t.lcm)  (`examples/types/example_t.lcm` in the source distribution).
+
+Additional examples are distributed with the LCM source in the `examples/`
+directory.
+
+Language | Listener | Transmitter
+-------- | -------- | -----------
+C        | [listener.c](https://github.com/lcm-proj/lcm/blob/master/examples/c/listener.c) <br>[listener-async.c](https://github.com/lcm-proj/lcm/blob/master/examples/c/listener-async.c) | [send_message.c](https://github.com/lcm-proj/lcm/blob/master/examples/c/send_message.c)
+C++      | [listener.cpp](https://github.com/lcm-proj/lcm/blob/master/examples/cpp/listener.cpp) | [send_message.cpp](https://github.com/lcm-proj/lcm/blob/master/examples/cpp/send_message.cpp)
+C#       | [example_t_display.cs](https://github.com/lcm-proj/lcm/blob/master/examples/csharp/example_t_demo/example_t_display.cs) | [example_t_transmit.cs](https://github.com/lcm-proj/lcm/blob/master/examples/csharp/example_t_demo/example_t_transmit.cs)
+Java     | [MySubscriber.java](https://github.com/lcm-proj/lcm/blob/master/examples/java/example_t_demo/MySubscriber.java) | [SendMessage.java](https://github.com/lcm-proj/lcm/blob/master/examples/java/example_t_demo/SendMessage.java)
+Lua      | [listener.lua](https://github.com/lcm-proj/lcm/blob/master/examples/lua/listener.lua) | [send-message.lua](https://github.com/lcm-proj/lcm/blob/master/examples/lua/send-message.lua)
+MATLAB   | [listener.m](https://github.com/lcm-proj/lcm/blob/master/examples/matlab/listener.m) | [sendmessage.m](https://github.com/lcm-proj/lcm/blob/master/examples/matlab/sendmessage.m)
+Python   | [listener.py](https://github.com/lcm-proj/lcm/blob/master/examples/python/listener.py) | [send-message.py](https://github.com/lcm-proj/lcm/blob/master/examples/python/send-message.py)

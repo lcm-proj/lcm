@@ -12,6 +12,7 @@ variety of programming languages.
  - [Downloads](https://github.com/lcm-proj/lcm/releases)
  - \ref build_instructions
  - \ref tutorial_general
+ - [GitHub site](https://github.com/lcm-proj/lcm)
 
 # Features
 
@@ -23,7 +24,7 @@ variety of programming languages.
 * No daemons
 * Few dependencies
 
-# Supported platforms / languages
+## Supported platforms / languages
 
 * Platforms:
   * GNU/Linux
@@ -48,49 +49,28 @@ variety of programming languages.
  - [Lua](\ref lua_api)
  - [Python](python/index.html)
 
-# Specifications
+# Additional resources
 
  - \ref type_specification
  - \ref udp_multicast_protocol
  - \ref log_file_format
+ - [User mailing list](http://groups.google.com/group/lcm-users)
+ - [Developer mailing list](http://groups.google.com/group/lcm-dev)
 
-# Examples
+## Publications and application notes
 
-Simple examples are provided with the source distribution of LCM.
-
-For each language, at least two examples are provided. One listens for a
-message, the other transmits a message. The LCM type used is defined in
-[example_t.lcm](https://github.com/lcm-proj/lcm/blob/master/examples/types/example_t.lcm)  (`examples/types/example_t.lcm` in the source distribution).
-
-Additional examples are distributed with the LCM source in the `examples/`
-directory.
-
-Language | Listener | Transmitter
--------- | -------- | -----------
-C        | [listener.c](https://github.com/lcm-proj/lcm/blob/master/examples/c/listener.c) <br>[listener-async.c](https://github.com/lcm-proj/lcm/blob/master/examples/c/listener-async.c) | [send_message.c](https://github.com/lcm-proj/lcm/blob/master/examples/c/send_message.c)
-C++      | [listener.cpp](https://github.com/lcm-proj/lcm/blob/master/examples/cpp/listener.cpp) | [send_message.cpp](https://github.com/lcm-proj/lcm/blob/master/examples/cpp/send_message.cpp)
-C#       | [example_t_display.cs](https://github.com/lcm-proj/lcm/blob/master/examples/csharp/example_t_demo/example_t_display.cs) | [example_t_transmit.cs](https://github.com/lcm-proj/lcm/blob/master/examples/csharp/example_t_demo/example_t_transmit.cs)
-Java     | [MySubscriber.java](https://github.com/lcm-proj/lcm/blob/master/examples/java/example_t_demo/MySubscriber.java) | [SendMessage.java](https://github.com/lcm-proj/lcm/blob/master/examples/java/example_t_demo/SendMessage.java)
-Lua      | [listener.lua](https://github.com/lcm-proj/lcm/blob/master/examples/lua/listener.lua) | [send-message.lua](https://github.com/lcm-proj/lcm/blob/master/examples/lua/send-message.lua)
-MATLAB   | [listener.m](https://github.com/lcm-proj/lcm/blob/master/examples/matlab/listener.m) | [sendmessage.m](https://github.com/lcm-proj/lcm/blob/master/examples/matlab/sendmessage.m)
-Python   | [listener.py](https://github.com/lcm-proj/lcm/blob/master/examples/python/listener.py) | [send-message.py](https://github.com/lcm-proj/lcm/blob/master/examples/python/send-message.py)
-# Publications
-
- - [LCM Overview](http://people.csail.mit.edu/albert/pubs/2010-huang-olson-moore-lcm-iros.pdf) - Describes the design principles of LCM, the best place to start for a quick understanding of LCM.  6 pages.
+ - [LCM Overview](http://people.csail.mit.edu/albert/pubs/2010-huang-olson-moore-lcm-iros.pdf) - Describes the design principles of LCM, the best place to start for a quick understanding of LCM.  6 pages (PDF).
    - _IROS, Taipei, Taiwan, Oct 2010._
- - [Technical Report](http://dspace.mit.edu/bitstream/handle/1721.1/46708/MIT-CSAIL-TR-2009-041.pdf) - An expanded version of the overview, provides a more comprehensive description.  17 pages.
+ - [Technical Report](http://dspace.mit.edu/bitstream/handle/1721.1/46708/MIT-CSAIL-TR-2009-041.pdf) - An expanded version of the overview, provides a more comprehensive description.  17 pages (PDF).
     - _Technical Report MIT-CSAIL-TR-2009-041, Massachusetts Institute of Technology, 2009_
-
-# Application notes {#main_other}
-
  - \ref multicast_setup
  - \ref java_notes
 
 # Who uses LCM?
 
-LCM was originally developed for the MIT DARPA Urban Challenge team, and has
-since been used in many robotic and autonomous systems. Its users have
-included:
+LCM was originally developed in 2006 for the MIT DARPA Urban Challenge team,
+and has since been used in many robotic and autonomous systems, in both
+research and production environments. Its users have included:
 
 * BAE Systems
 * Bender Robotics
