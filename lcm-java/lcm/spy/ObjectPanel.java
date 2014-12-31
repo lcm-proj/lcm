@@ -43,6 +43,7 @@ public class ObjectPanel extends JPanel
     // array of all sparklines that are visible 
     // or near visible to the user right now
     ArrayList<SparklineData> visibleSparklines = new ArrayList<SparklineData>();
+    boolean visibleSparklinesUpdated = false;
     
     // array of all sparklines being graphed
     ArrayList<SparklineData> graphingSparklines = new ArrayList<SparklineData>();
@@ -669,6 +670,35 @@ public class ObjectPanel extends JPanel
         return getPreferredSize();
     }
 
+    void updateVisibleSparklines(JViewport viewport)
+    {
+        Rectangle view_rect = viewport.getViewRect();
+        
+        visibleSparklines.clear();
+
+        for (int i = sections.size() -1; i > -1; i--)
+        {
+            Section section = sections.get(i);
+
+            if (section.collapsed == false)
+            {
+                Iterator<Entry<String, SparklineData>> it = section.sparklines.entrySet().iterator();
+                while (it.hasNext())
+                {
+                    Entry<String, SparklineData> pair = it.next();
+
+                    SparklineData data = pair.getValue();                    
+                    
+                    if (data.ymin > view_rect.y - sparklineDrawMargin
+			&& data.ymax < view_rect.y + view_rect.height + sparklineDrawMargin)
+                    {
+                        visibleSparklines.add(data);
+                    }
+                }
+            }
+        }
+    }
+
     public void paint(Graphics g)
     {
         Graphics2D g2 = (Graphics2D) g;
@@ -697,6 +727,14 @@ public class ObjectPanel extends JPanel
         ps.x[3] = ps.x[2]+150;
         
         int previousNumSections = sections.size();
+
+	if ( ! visibleSparklinesUpdated
+	     && visibleSparklines.isEmpty()
+	     && (previousNumSections > 0)
+	     && (scrollViewport != null)) {
+	    visibleSparklinesUpdated = true;
+            updateVisibleSparklines(scrollViewport);
+	}
 
         if (o != null)
             paintRecurse(g, ps, "", o.getClass(), o, false, -1);
@@ -904,32 +942,7 @@ public class ObjectPanel extends JPanel
             
             JViewport viewport = (JViewport) e.getSource();
             
-            Rectangle view_rect = viewport.getViewRect();
-            
-            visibleSparklines.clear();
-
-            for (int i = sections.size() -1; i > -1; i--)
-            {
-                Section section = sections.get(i);
-
-                if (section.collapsed == false)
-                {
-                    Iterator<Entry<String, SparklineData>> it = section.sparklines.entrySet().iterator();
-                    while (it.hasNext())
-                    {
-                        Entry<String, SparklineData> pair = it.next();
-
-                        SparklineData data = pair.getValue();
-                        
-                        
-                        if (data.ymin > view_rect.y - sparklineDrawMargin && data.ymax < view_rect.y + view_rect.height + sparklineDrawMargin)
-                        {
-                            visibleSparklines.add(data);
-                        }
-                        
-                    }
-                }
-            }
+            updateVisibleSparklines(viewport);
         }
     }
 }
