@@ -43,6 +43,8 @@ public class ObjectPanel extends JPanel
     // array of all sparklines that are visible 
     // or near visible to the user right now
     ArrayList<SparklineData> visibleSparklines = new ArrayList<SparklineData>();
+    
+    // boolean denoting if visibleSparklines has been initialized
     boolean visibleSparklinesUpdated = false;
     
     // array of all sparklines being graphed
@@ -670,6 +672,12 @@ public class ObjectPanel extends JPanel
         return getPreferredSize();
     }
 
+    /**
+     * Updates visibleSparklines to reflect the data that is near the user's view
+     * at the current time.
+     * 
+     * @param viewport viewport the user is looking at.  Usually from an event: e.getSource()
+     */
     void updateVisibleSparklines(JViewport viewport)
     {
         Rectangle view_rect = viewport.getViewRect();
@@ -690,7 +698,7 @@ public class ObjectPanel extends JPanel
                     SparklineData data = pair.getValue();                    
                     
                     if (data.ymin > view_rect.y - sparklineDrawMargin
-			&& data.ymax < view_rect.y + view_rect.height + sparklineDrawMargin)
+                            && data.ymax < view_rect.y + view_rect.height + sparklineDrawMargin)
                     {
                         visibleSparklines.add(data);
                     }
