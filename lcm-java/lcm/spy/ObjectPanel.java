@@ -43,11 +43,16 @@ public class ObjectPanel extends JPanel
     // array of all sparklines that are visible 
     // or near visible to the user right now
     ArrayList<SparklineData> visibleSparklines = new ArrayList<SparklineData>();
-    boolean visibleSparklinesUpdated = false;
+    
+    boolean visibleSparklinesInitialized = false;
     
     // array of all sparklines being graphed
     ArrayList<SparklineData> graphingSparklines = new ArrayList<SparklineData>();
 
+    // we keep track of each drawing iteration to know if the row we clicked
+    // on was displayed.  See SparklineData.lastDrawNumber.
+    int currentDrawNumber = 0;
+    
     class Section
     {
         int x0, y0, x1, y1; // bounding coordinates for sensitive area
@@ -78,6 +83,13 @@ public class ObjectPanel extends JPanel
 
         String name;
         Section section;
+        
+        // we keep track of the drawing iteration number for each line
+        // to let us figure out if the line is currently being drawn
+        // when the user clicks it.  This is needed to fix a bug where the
+        // user clicks in a place a line used to be, but is no longer
+        //there since the array it was in got shorter.
+        int lastDrawNumber = 0;
     }
 
     ArrayList<Section> sections = new ArrayList<Section>();
@@ -127,9 +139,12 @@ public class ObjectPanel extends JPanel
     {
         int y = e.getY();
         
+        currentlyHoveringName = "";
+        currentlyHoveringSection = null;
+        
         for (SparklineData data : visibleSparklines)
         {
-            if (data.ymin < y && data.ymax > y)
+            if (data.ymin < y && data.ymax > y && data.lastDrawNumber == currentDrawNumber)
             {
                 // the mouse is above this sparkline
                 currentlyHoveringName = data.name;
@@ -478,6 +493,8 @@ public class ObjectPanel extends JPanel
 
                 // add the data to our trace
                 trace.addPoint((double)utime/1000000.0d, value);
+                
+                data.lastDrawNumber = currentDrawNumber;
 
                 // draw the graph
                 DrawSparkline(x[3], y, trace, isHovering);
@@ -670,6 +687,12 @@ public class ObjectPanel extends JPanel
         return getPreferredSize();
     }
 
+    /**
+     * Updates visibleSparklines to reflect the data that is near the user's view
+     * at the current time.
+     * 
+     * @param viewport viewport the user is looking at.  Usually from an event: e.getSource()
+     */
     void updateVisibleSparklines(JViewport viewport)
     {
         Rectangle view_rect = viewport.getViewRect();
@@ -690,7 +713,7 @@ public class ObjectPanel extends JPanel
                     SparklineData data = pair.getValue();                    
                     
                     if (data.ymin > view_rect.y - sparklineDrawMargin
-			&& data.ymax < view_rect.y + view_rect.height + sparklineDrawMargin)
+                            && data.ymax < view_rect.y + view_rect.height + sparklineDrawMargin)
                     {
                         visibleSparklines.add(data);
                     }
@@ -726,15 +749,21 @@ public class ObjectPanel extends JPanel
         ps.x[2] = Math.min(ps.x[1]+200, 2*width/4);
         ps.x[3] = ps.x[2]+150;
         
+        currentDrawNumber ++;
+        
         int previousNumSections = sections.size();
 
-	if ( ! visibleSparklinesUpdated
-	     && visibleSparklines.isEmpty()
-	     && (previousNumSections > 0)
-	     && (scrollViewport != null)) {
-	    visibleSparklinesUpdated = true;
+        // check to make sure that visibleSparklines has been
+        // initialized otherwise we can end up not displaying
+        // items if the viewport is never changed
+        if (!visibleSparklinesInitialized
+                && visibleSparklines.isEmpty()
+                && (previousNumSections > 0)
+                && (scrollViewport != null)) {
+            
+            visibleSparklinesInitialized = true;
             updateVisibleSparklines(scrollViewport);
-	}
+        }
 
         if (o != null)
             paintRecurse(g, ps, "", o.getClass(), o, false, -1);
