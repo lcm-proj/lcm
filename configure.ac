@@ -81,7 +81,7 @@ AC_ARG_WITH(jardir,
             [jardir="$with_jardir"], [jardir=$datadir/java])
 
 AC_SUBST(jardir)
-INSTALLED_CLASSPATH=\${jardir}/lcm.jar:\${jardir}/jchart2d-${CHART2D_VERSION}.jar
+INSTALLED_CLASSPATH=\${jardir}/lcm.jar
 AC_SUBST(INSTALLED_CLASSPATH)
 AC_SUBST(java_apiversion)
 
