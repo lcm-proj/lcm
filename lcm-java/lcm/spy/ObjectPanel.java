@@ -433,7 +433,11 @@ public class ObjectPanel extends JPanel
                 if (data.chart != null)
                 {
                     ITrace2D trace = data.chart.getTraces().first();
-                    trace.addPoint((double)utime/1000000.0d, value);
+                    
+                    if (trace.getMaxX() < (double)utime/1000000.0d) {
+                        // this is a new point, add it
+                        trace.addPoint((double)utime/1000000.0d, value);
+                    }
                 }
                 return;
             }
@@ -492,7 +496,10 @@ public class ObjectPanel extends JPanel
                 data.xmax = x[3]+sparklineWidth;
 
                 // add the data to our trace
-                trace.addPoint((double)utime/1000000.0d, value);
+                if (trace.getMaxX() < (double)utime/1000000.0d) {
+                    // this is a new point, add it
+                    trace.addPoint((double)utime/1000000.0d, value);
+                }
                 
                 data.lastDrawNumber = currentDrawNumber;
 
