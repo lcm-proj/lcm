@@ -10,16 +10,16 @@ import java.awt.event.MouseWheelListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowFocusListener;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import info.monitorenter.gui.chart.IAxis;
 import info.monitorenter.gui.chart.ITrace2D;
 import info.monitorenter.gui.chart.ZoomableChart;
 import info.monitorenter.gui.chart.axis.AAxis;
 import info.monitorenter.gui.chart.axis.AxisLinear;
+import info.monitorenter.gui.chart.labelformatters.LabelFormatterNumber;
 import info.monitorenter.gui.chart.traces.Trace2DLtd;
-
 import javax.swing.*;
 
 /**
@@ -73,6 +73,11 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         colors.add(Color.CYAN);
         colors.add(Color.ORANGE);
         colors.add(Color.GREEN);
+        
+        this.setFixedWidthXAxisFormat();
+        
+        
+        this.setMinPaintLatency(16); // cap the frame-rate at 60fps
     }
     
     /**
@@ -154,7 +159,6 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         colorNum--;
     }
     
-
     /**
      * Updates the right click menu to allow for moving
      * traces around.  Should be called immediately after adding
@@ -433,6 +437,8 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         if (e.getClickCount() == 2)
         {
             this.zoomAll();
+            setFixedWidthXAxisFormat();
+            
             e.consume();
         } else {
             maybeShowPopup(e);
@@ -463,8 +469,10 @@ public class ZoomableChartScrollWheel extends ZoomableChart
             return;
         }
         
-        zoom(mouseDownMinX - deltaX, mouseDownMaxX - deltaX,        
+        zoom(mouseDownMinX - deltaX, mouseDownMaxX - deltaX,
                 mouseDownMinY.get(0) + deltaY, mouseDownMaxY.get(0) + deltaY);
+        
+        setVariableWidthXAxisFormat();
         
         // do moving for right Y axes
         for (int i = 0; i < rightYAxis.size(); i++)
@@ -481,7 +489,29 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         
     }
     
+    /**
+     * Variable-width x-axis formatting causes jumps when data is "rolling in"
+     * because the labels change width, which causes the X-axis to change width
+     * which causes visual disruption.  When using zoomAll, change to a fixed
+     * width format on the x-axis.
+     */
+    private void setFixedWidthXAxisFormat()
+    {
+        DecimalFormat fixedWidthFormat = new DecimalFormat("#");
+        LabelFormatterNumber fixedWidthFormatter = new LabelFormatterNumber(fixedWidthFormat);
+        this.getAxisX().setFormatter(fixedWidthFormatter);
+    }
     
+    /**
+     * When data is not "rolling in" use a varible format for
+     * maximum flexibility in display.
+     */
+    private void setVariableWidthXAxisFormat()
+    {
+        DecimalFormat variableWidthFormat = new DecimalFormat();
+        LabelFormatterNumber variableWidthFormatter = new LabelFormatterNumber(variableWidthFormat);
+        this.getAxisX().setFormatter(variableWidthFormatter);
+    }
     
     
     
@@ -564,7 +594,7 @@ public class ZoomableChartScrollWheel extends ZoomableChart
                 
             }
             
-            
+            setVariableWidthXAxisFormat();
             
             
             
