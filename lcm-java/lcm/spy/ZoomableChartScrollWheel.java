@@ -42,8 +42,6 @@ public class ZoomableChartScrollWheel extends ZoomableChart
     // color index
     private int colorNum = 0;
     
-    private double last_paint = -1;
-    
     // we need a list of the axes on the right, which we update ourselves
     private ArrayList<AAxis> rightYAxis = new ArrayList<AAxis>();
     
