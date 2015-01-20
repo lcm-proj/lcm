@@ -2,6 +2,7 @@ package lcm.spy;
 
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -41,6 +42,8 @@ public class ZoomableChartScrollWheel extends ZoomableChart
 
     // color index
     private int colorNum = 0;
+    
+    private double last_paint = -1;
     
     // we need a list of the axes on the right, which we update ourselves
     private ArrayList<AAxis> rightYAxis = new ArrayList<AAxis>();
@@ -144,6 +147,13 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         Color thisColor = colors.get(colorNum % colors.size());
         colorNum++;
         return thisColor;
+    }
+    
+    public void paintComponent(Graphics g) {
+        //super.paintComponent(g);
+        
+        System.out.println("FPS: " + 1/(System.nanoTime()*0.000000001d - last_paint));
+        last_paint = System.nanoTime()*0.000000001d;
     }
     
     /**
