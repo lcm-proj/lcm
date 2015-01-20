@@ -899,7 +899,7 @@ public class ObjectPanel extends JPanel
         // add marker lines to the trace
         TracePainterDisc markerPainter = new TracePainterDisc();
         markerPainter.setDiscSize(2);
-        trace.addTracePainter(markerPainter);
+        //trace.addTracePainter(markerPainter);
         
         return chart;
     }

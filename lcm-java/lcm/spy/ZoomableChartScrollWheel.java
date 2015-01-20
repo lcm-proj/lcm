@@ -149,13 +149,6 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         return thisColor;
     }
     
-    public void paintComponent(Graphics g) {
-        //super.paintComponent(g);
-        
-        System.out.println("FPS: " + 1/(System.nanoTime()*0.000000001d - last_paint));
-        last_paint = System.nanoTime()*0.000000001d;
-    }
-    
     /**
      * Adds the newest trace color back onto the stack.
      */
@@ -164,6 +157,12 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         colorNum--;
     }
     
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        
+        System.out.println("FPS: " + 1/(System.nanoTime()*0.000000001d - last_paint));
+        last_paint = System.nanoTime()*0.000000001d;
+    }
 
     /**
      * Updates the right click menu to allow for moving
