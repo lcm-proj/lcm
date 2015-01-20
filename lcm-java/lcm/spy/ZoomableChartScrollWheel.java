@@ -159,7 +159,6 @@ public class ZoomableChartScrollWheel extends ZoomableChart
         colorNum--;
     }
     
-    
     /**
      * Updates the right click menu to allow for moving
      * traces around.  Should be called immediately after adding
