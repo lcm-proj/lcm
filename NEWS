@@ -1,3 +1,17 @@
+Jan 21, 2015
+============
+
+Release 1.2.1
+
+This is a bugfix and maintenance release.
+
+- Documentation updates
+- lcm-spy
+   - Misc bugfixes
+   - Fix bug where lcm-spy did not display content of some messages (Johan
+     Widen)
+- Remove jchart2d jar file from INSTALLED_CLASSPATH variable
+
 Nov 18, 2014
 ============
 

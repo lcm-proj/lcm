@@ -1,5 +1,5 @@
 AC_PREREQ(2.50)
-AC_INIT([lcm], 1.2.0)
+AC_INIT([lcm], 1.2.1)
 AC_CONFIG_SRCDIR([lcm/lcm.h])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE([foreign tar-ustar])

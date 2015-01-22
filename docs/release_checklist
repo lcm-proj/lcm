@@ -17,6 +17,7 @@
   $ make distcheck
 7. Take the resulting tarball, extract it, build it, install it, make sure
   the basic executables run.
+  $ tar xzvf lcm-X.Y.Z.tar.gz
   $ cd lcm-X.Y.Z
   $ ./configure
   $ make
@@ -28,6 +29,8 @@
   $ cd ../test
   $ make clean
   $ make
+  $ ./run_unit_tests.py
+  $ ./run_client_server_tests.py
 2. Repeat unit tests on:
   * GNU/Linux
   * OS X
