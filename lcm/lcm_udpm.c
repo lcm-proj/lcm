@@ -192,9 +192,8 @@ parse_mc_addr_and_port (const char *str, udpm_params_t * params)
     }
 
     char **words = g_strsplit (str, ":", 2);
-    if (inet_aton (words[0], (struct in_addr*) &params->mc_addr) < 0) {
+    if (inet_aton (words[0], (struct in_addr*) &params->mc_addr) == 0) {
         fprintf (stderr, "Error: Bad multicast IP address \"%s\"\n", words[0]);
-        perror ("inet_aton");
         goto fail;
     }
     if (words[1]) {

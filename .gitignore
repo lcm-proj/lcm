@@ -110,6 +110,7 @@ test/c/lcmtest*.c
 test/c/lcmtest*.h
 test/c/memq_test
 test/c/server
+test/c/udpm_test
 test/cpp/client
 test/cpp/lcmtest/
 test/cpp/lcmtest2/

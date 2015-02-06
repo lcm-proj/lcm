@@ -16,7 +16,8 @@ types_src:=$(types1:%=lcmtest_%.c) $(types1:%=lcmtest_%.h) $(types2:%=lcmtest2_%
 all: server \
 	client \
 	memq_test \
-	eventlog_test
+	eventlog_test \
+	udpm_test
 
 server: server.o common.o $(types_obj)
 	echo $(types_obj)
@@ -44,6 +45,12 @@ memq_test: memq_test.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(GTEST_LIBS)
 
 memq_test.o: memq_test.cpp $(types_src)
+	$(CXX) $(CXXFLAGS) -c $<
+
+udpm_test: udpm_test.o
+	$(CXX) -o $@ $^ $(LDFLAGS) $(GTEST_LIBS)
+
+udpm_test.o: udpm_test.cpp $(types_src)
 	$(CXX) $(CXXFLAGS) -c $<
 
 lcmtest_%.o: lcmtest_%.c lcmtest_%.h
