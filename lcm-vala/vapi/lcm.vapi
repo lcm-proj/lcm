@@ -1,15 +1,15 @@
-/* Lightweight Communications and Marshalling libarary VALA bindings
- * @author Vladimir Ermakov <vooon341@gmai.com>
+/**
+ * Lightweight Communications and Marshalling library.
  */
 
 [CCode (cheader_filename = "lcm/lcm.h")]
-namespace lcm {
+namespace Lcm {
 	/**
 	 * Core communication class.
 	 */
 	[CCode (cname = "lcm_t", free_function = "lcm_destroy", cprefix = "lcm_")]
 	[Compact]
-	public class LCM {
+	public class Lcm {
 		/**
 		 * Core communication class constructor.
 		 *
@@ -19,7 +19,7 @@ namespace lcm {
 		 *                 If this is null and the environment variable is not defined, then default settings are used.
 		 */
 		[CCode (cname = "lcm_create")]
-		public LCM(string? provider = null);
+		public Lcm(string? provider = null);
 
 		/**
 		 * Returns a file descriptor or socket that can be used with
@@ -33,7 +33,7 @@ namespace lcm {
 		/**
 		 * Subscribe a callback function to a channel.
 		 *
-		 * The callback function will be invoked during calls to LCM.handle() any time
+		 * The callback function will be invoked during calls to Lcm.handle() any time
 		 * a message on the specified channel is received.  Multiple callbacks can be
 		 * subscribed for the same channel.
 		 *
@@ -45,7 +45,7 @@ namespace lcm {
 		 * @param user_data this will be passed to the callback function
 		 *
 		 * @return a Subscription to identify the new subscription,
-		 *         which can be passed to LCM.unsubscribe().
+		 *         which can be passed to Lcm.unsubscribe().
 		 *         The LCM instance owns the subscription object.
 		 */
 		public unowned Subscription subscribe(string channel, Subscription.Handler handler, void *user_data = null);
@@ -80,12 +80,12 @@ namespace lcm {
 		 * function, and in the order that they were subscribed.
 		 *
 		 * This function waits indefinitely.  If you want timeout behavior, (e.g., wait
-		 * 100ms for a message) then consider using LCM.get_fileno() together with
+		 * 100ms for a message) then consider using Lcm.get_fileno() together with
 		 * select() or poll()
 		 *
-		 * Recursive calls to LCM.handle() are not allowed -- do not call LCM.handle() from
+		 * Recursive calls to Lcm.handle() are not allowed -- do not call Lcm.handle() from
 		 * within a message handler.  All other functions are okay (e.g., it is okay to
-		 * call LCM.publish() from within a message handler).
+		 * call Lcm.publish() from within a message handler).
 		 *
 		 * @return 0 normally, or -1 when an error has occurred.
 		 */
@@ -94,12 +94,12 @@ namespace lcm {
 		/**
 		 * Wait for and dispatch the next incoming message, up to a time limit.
 		 *
-		 * This function is equivalent to LCM.handle(), but if no messages are received
+		 * This function is equivalent to Lcm.handle(), but if no messages are received
 		 * and handled by the time @p timeout_millis milliseconds elapses, then the
 		 * function returns.
 		 *
 		 * This function largely exists for convenience, and its behavior can be
-		 * replicated by using LCM.get_fileno() and LCM.handle() in conjunction with
+		 * replicated by using Lcm.get_fileno() and Lcm.handle() in conjunction with
 		 * select() or poll().
 		 *
 		 * @param timeout_millis the maximum amount of time to wait for a message, in
@@ -115,7 +115,7 @@ namespace lcm {
 	/**
 	 * An opaque data structure that identifies an LCM subscription
 	 *
-	 * Owned by LCM object.
+	 * Owned by Lcm object.
 	 */
 	[CCode (cname = "lcm_subscription_t", cprefix = "lcm_subscription_")]
 	[Compact]
@@ -136,7 +136,7 @@ namespace lcm {
 		/**
 		 * Callback delegate type.
 		 *
-		 * Pass instances of this to LCM.subscribe()
+		 * Pass instances of this to Lcm.subscribe()
 		 *
 		 * TODO: Find how to adjust rbuf to be const ptr, channel to be const char ptr.
 		 * Now gcc produce warnings.
@@ -161,7 +161,7 @@ namespace lcm {
 		//! timestamp (micrseconds since the epoch) at which the first data bytes of the message were received.
 		int64 recv_utime;
 		//! LCM that owns this buffer
-		unowned LCM lcm;
+		unowned Lcm lcm;
 	}
 
 	/**
@@ -204,5 +204,3 @@ namespace lcm {
 		}
 	}
 }
-
-
