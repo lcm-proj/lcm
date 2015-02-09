@@ -176,6 +176,33 @@ namespace lcm {
 		[CCode (cname = "LCM_MICRO_VERSION")]
 		MICRO
 	}
+
+	/* -*- lcm/eventlog.h -*- */
+
+	/* TODO: test event log and write doc strings */
+
+	[CCode (cname = "lcm_eventlog_t", free_function = "lcm_eventlog_destroy", cprefix = "lcm_eventlog_")]
+	[Compact]
+	public class EventLog {
+		[CCode (cname = "lcm_eventlog_create")]
+		public EventLog(string path, string mode);
+
+		public Event read_next_event();
+
+		public int seek_to_timestamp(int64 ts);
+
+		public int write_event(Event event);
+
+		[CCode (cname = "lcm_eventlog_event_t", destroy_function = "lcm_eventlog_free_event")]
+		public struct Event {
+			int64 eventnum;
+			int64 timestamp;
+			[CCode (array_length_cname = "channellen", array_length_type = "int32_t")]
+			uint8[] channel;
+			[CCode (array_length_cname = "datalen", array_length_type = "int32_t")]
+			void[] data;
+		}
+	}
 }
 
 
