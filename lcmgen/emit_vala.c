@@ -63,6 +63,33 @@ void setup_vala_options(getopt_t *gopt)
     getopt_add_string (gopt, 0, "vala-path",    ".",      "Location for .vala files");
 }
 
+static char *map_type_name (const char* t)
+{
+    if      (!strcmp ("byte", t))    return "int8";
+    else if (!strcmp ("boolean", t)) return "bool";
+    else if (!strcmp ("int8_t", t))  return "int8";
+    else if (!strcmp ("int16_t", t)) return "int16";
+    else if (!strcmp ("int32_t", t)) return "int32";
+    else if (!strcmp ("int64_t", t)) return "int64";
+    else if (!strcmp ("float", t))   return "float";
+    else if (!strcmp ("double", t))  return "double";
+
+    return t;
+}
+
+static char *make_dynarray_type(char *buf, size_t maxlen, char *type, unsigned int ndim)
+{
+    FILE *f = fmemopen(buf, maxlen, "w");
+
+    fprintf(f, "%s[", type);
+    for (unsigned int d = 1; d < ndim; d++)
+        fputc(',', f);
+    fputc(']', f);
+
+    fclose(f);
+    return buf;
+}
+
 static void emit_auto_generated_warning(FILE *f)
 {
     fprintf(f,
@@ -109,6 +136,39 @@ static void emit_class_start(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 static void emit_class_end(FILE *f)
 {
     emit(0, "}");
+}
+
+static void emit_data_members(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    if (g_ptr_array_size(ls->members)) {
+        emit(1, "// data members @{");
+        for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
+
+            emit_comment(f, 1, lm->comment);
+            char* mapped_typename = map_type_name(lm->type->lctypename);
+            int ndim = g_ptr_array_size(lm->dimensions);
+            if (ndim == 0) {
+                emit(1, "public %-10s %s;", mapped_typename, lm->membername);
+            } else {
+                if (lcm_is_constant_size_array(lm)) {
+                    emit_start(1, "public %-10s %s[", mapped_typename, lm->membername);
+                    for (unsigned int d = 0; d < ndim; d++) {
+                        lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
+                        emit_continue("%s%s", (d != 0)? ", " : "", ld->size);
+                    }
+                    emit_end("];");
+                } else {
+                    char buf[256];
+                    emit(1, "public %-10s %s;",
+                            make_dynarray_type(buf, sizeof(buf), mapped_typename, ndim),
+                            lm->membername);
+                }
+            }
+        }
+        emit(1, "// @}");
+        emit(0, "");
+    }
 }
 
 static void emit_hash_param(FILE *f)
@@ -180,6 +240,7 @@ int emit_vala(lcmgen_t *lcmgen)
 
             emit_auto_generated_warning(f);
             emit_class_start(lcmgen, f, lr);
+            emit_data_members(lcmgen, f, lr);
             //emit_encode(lcmgen, f, lr);
             //emit_decode(lcmgen, f, lr);
             //emit_encoded_size(lcmgen, f, lr);
