@@ -212,7 +212,7 @@ static void emit_encode(FILE *f)
     emit(0, "");
 }
 
-static void emit_decode(FILE *f)
+static void emit_decode(FILE *f, lcm_struct_t *ls)
 {
     emit(1, "public void decode(void[] data) throws Lcm.MessageError {");
     emit(2,     "Posix.off_t pos = 0;");
@@ -220,10 +220,30 @@ static void emit_decode(FILE *f)
     emit(0, "");
     emit(2,     "pos += Lcm.CoreTypes.int64_decode_array(data, pos, &hash_, 1);");
     emit(2,     "if (hash_ != this.hash)");
-    emit(3,         "throw new Lcm.MessageError.WRONG_HASH();");
+    emit(3,         "throw new Lcm.MessageError.WRONG_HASH(\"%s\");", ls->structname->lctypename);
     emit(0, "");
-    emit(2,     "this._decode_no_hash(buf, pos);");
+    emit(2,     "this._decode_no_hash(data, pos);");
     emit(1, "}");
+    emit(0, "");
+}
+
+static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
+{
+    // XXX stub
+
+	emit(1, "public ssize_t _encode_no_hash(void[] data, Posix.off_t offset) throws Lcm.MessageError {");
+	emit(2,     "return 0;");
+	emit(1, "}");
+    emit(0, "");
+}
+
+static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
+{
+    // XXX stub
+
+	emit(1, "public ssize_t _decode_no_hash(void[] data, Posix.off_t offset) throws Lcm.MessageError {");
+	emit(2,     "return 0;");
+	emit(1, "}");
     emit(0, "");
 }
 
@@ -366,10 +386,10 @@ int emit_vala(lcmgen_t *lcmgen)
             emit_const_members(lcmgen, f, lr);
 
             emit_encode(f);
-            emit_decode(f);
+            emit_decode(f, lr);
 
-            //emit_encode_nohash(lcmgen, f, lr);
-            //emit_decode_nohash(lcmgen, f, lr);
+            emit_encode_nohash(lcmgen, f, lr);
+            emit_decode_nohash(lcmgen, f, lr);
             emit_encoded_size_nohash(lcmgen, f, lr);
 
             emit_hash_param(f);
