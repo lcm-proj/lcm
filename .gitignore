@@ -3,6 +3,7 @@
 *.o
 *.lo
 *.la
+*.swp
 
 ABOUT-NLS
 Makefile
