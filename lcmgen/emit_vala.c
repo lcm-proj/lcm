@@ -22,6 +22,7 @@
 #define emit_end(...) do { fprintf(f, __VA_ARGS__); fprintf(f, "\n"); } while (0)
 #define emit(n, ...) do { fprintf(f, "%*s", INDENT(n), ""); fprintf(f, __VA_ARGS__); fprintf(f, "\n"); } while (0)
 
+#if 0
 static char *dots_to_slashes(const char *s)
 {
     char *p = strdup(s);
@@ -55,6 +56,7 @@ static void make_dirs_for_file(const char *path)
     }
 #endif
 }
+#endif
 
 void setup_vala_options(getopt_t *gopt)
 {
@@ -95,9 +97,31 @@ static void emit_comment(FILE* f, int indent, const char* comment) {
     g_strfreev(lines);
 }
 
+static void emit_class_start(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char *tn = ls->structname->lctypename;
+
+    emit_comment(f, 0, ls->comment);
+    emit(0, "public class %s : Lcm.IMessage {", tn);
+    emit(1, "// TODO: encode/decode generics");
+}
+
+static void emit_class_end(FILE *f)
+{
+    emit(0, "}");
+}
+
+static void emit_hash_param(FILE *f)
+{
+    emit(1, "private static int64 _hash = _compute_hash(null);");
+	emit(1,	"public int64 hash {");
+	emit(2,     "get { return _hash; }");
+	emit(1,	"}");
+    emit(0, "");
+}
+
 static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    const char *sn  = ls->structname->shortname;
     int last_complex_member = -1;
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
@@ -105,7 +129,7 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             last_complex_member = m;
     }
 
-    emit(1, "int64 _compute_hash(Lcm.CoreTypes.intptr[]? parents) {");
+    emit(1, "public static int64 _compute_hash(Lcm.CoreTypes.intptr[]? parents) {");
     emit(2,     "if (((Lcm.CoreTypes.intptr) _compute_hash) in parents)");
     emit(3,         "return 0;");
     emit(0, "");
@@ -130,10 +154,9 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "");
     emit(2,     "return (hash_ << 1) + ((hash_ >> 63) & 1);");
     emit(1, "}");
-    emit(0, "");
 }
 
-int emit_vala(lcmgen_t *lcm)
+int emit_vala(lcmgen_t *lcmgen)
 {
     // iterate through all defined message types
     for (unsigned int i = 0; i < g_ptr_array_size(lcmgen->structs); i++) {
@@ -156,6 +179,7 @@ int emit_vala(lcmgen_t *lcm)
                 return -1;
 
             emit_auto_generated_warning(f);
+            emit_class_start(lcmgen, f, lr);
             //emit_encode(lcmgen, f, lr);
             //emit_decode(lcmgen, f, lr);
             //emit_encoded_size(lcmgen, f, lr);
@@ -164,7 +188,9 @@ int emit_vala(lcmgen_t *lcm)
             //emit_encode_nohash(lcmgen, f, lr);
             //emit_decode_nohash(lcmgen, f, lr);
             //emit_encoded_size_nohash(lcmgen, f, lr);
+            emit_hash_param(f);
             emit_compute_hash(lcmgen, f, lr);
+            emit_class_end(f);
 
             fclose(f);
         }

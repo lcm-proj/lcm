@@ -29,7 +29,7 @@ namespace Test {
 			}
 		}
 
-		public static int64 _hash = _compute_hash(null);
+		private static int64 _hash = _compute_hash(null);
 		public int64 hash {
 			get { return _hash; }
 		}
