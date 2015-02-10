@@ -63,7 +63,7 @@ void setup_vala_options(getopt_t *gopt)
     getopt_add_string (gopt, 0, "vala-path",    ".",      "Location for .vala files");
 }
 
-static char *map_type_name (const char* t)
+static const char *map_type_name (const char* t)
 {
     if      (!strcmp ("byte", t))    return "int8";
     else if (!strcmp ("boolean", t)) return "bool";
@@ -71,13 +71,14 @@ static char *map_type_name (const char* t)
     else if (!strcmp ("int16_t", t)) return "int16";
     else if (!strcmp ("int32_t", t)) return "int32";
     else if (!strcmp ("int64_t", t)) return "int64";
-    else if (!strcmp ("float", t))   return "float";
-    else if (!strcmp ("double", t))  return "double";
+    //else if (!strcmp ("float", t))   return "float";
+    //else if (!strcmp ("double", t))  return "double";
+    //else if (!strcmp ("string", t))  return "string";
 
     return t;
 }
 
-static char *make_dynarray_type(char *buf, size_t maxlen, char *type, unsigned int ndim)
+static const char *make_dynarray_type(const char *buf, size_t maxlen, char *type, unsigned int ndim)
 {
     FILE *f = fmemopen(buf, maxlen, "w");
 
@@ -130,7 +131,6 @@ static void emit_class_start(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     emit_comment(f, 0, ls->comment);
     emit(0, "public class %s : Lcm.IMessage {", tn);
-    emit(1, "// TODO: encode/decode generics");
 }
 
 static void emit_class_end(FILE *f)
@@ -194,6 +194,21 @@ static void emit_const_members(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 mapped_typename, lc->val_str);
     }
     emit(1, "// @}");
+    emit(0, "");
+}
+
+static void emit_encode(FILE *f)
+{
+    emit(1, "public void[] encode() throws Lcm.MessageError {");
+    emit(2,     "Posix.off_t pos = 0;");
+    emit(2,     "int64 hash_ = this.hash;");
+    emit(2,     "var buf = new void[this._encoded_size_no_hash + 8];");
+    emit(0, "");
+    emit(2,     "pos += Lcm.CoreTypes.int64_encode_array(buf, pos, &hash, 1);");
+    emit(2,     "this._encode_no_hash(buf, pos);");
+    emit(0, "");
+    emit(2,     "return buf;");
+    emit(1, "}");
     emit(0, "");
 }
 
@@ -266,16 +281,17 @@ int emit_vala(lcmgen_t *lcmgen)
 
             emit_auto_generated_warning(f);
             emit_class_start(lcmgen, f, lr);
+
             emit_data_members(lcmgen, f, lr);
             emit_const_members(lcmgen, f, lr);
-            //emit_encode(lcmgen, f, lr);
+
+            emit_encode(f);
             //emit_decode(lcmgen, f, lr);
-            //emit_encoded_size(lcmgen, f, lr);
-            //emit_get_hash(lcmgen, f, lr);
 
             //emit_encode_nohash(lcmgen, f, lr);
             //emit_decode_nohash(lcmgen, f, lr);
             //emit_encoded_size_nohash(lcmgen, f, lr);
+
             emit_hash_param(f);
             emit_compute_hash(lcmgen, f, lr);
             emit_class_end(f);
