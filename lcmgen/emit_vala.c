@@ -227,6 +227,71 @@ static void emit_decode(FILE *f)
     emit(0, "");
 }
 
+static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    emit(1, "public size_t _encoded_size_no_hash {");
+    emit(2,     "get {");
+
+    if (0 == g_ptr_array_size(ls->members)) {
+        emit(3,     "return 0;");
+        emit(2, "}");
+        emit(1,"}");
+        emit(0,"");
+        return;
+    }
+
+    emit(3,     "size_t enc_size = 0;");
+    for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
+        int ndim = g_ptr_array_size(lm->dimensions);
+        int is_string = strcmp(lm->type->lctypename, "string") == 0;
+        char* mapped_typename = map_type_name(lm->type->lctypename);
+
+        if (lcm_is_primitive_type(lm->type->lctypename) && !is_string) {
+            emit_start(3, "enc_size += ");
+            for (int n = 0; n < ndim - 1; n++) {
+                lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, n);
+                emit_continue("%s * ", dim->size);
+            }
+            if (ndim > 0) {
+                lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, ndim - 1);
+                emit_end("sizeof(%s) * %s;",
+                        mapped_typename, dim->size);
+            } else {
+                emit_end("sizeof(%s);", mapped_typename);
+            }
+        } else {
+            for (int n = 0; n < ndim; n++) {
+                lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, n);
+                emit(3 + n, "for (int a%d = 0; a%d < %s; a%d++) {",
+                        n, n, dim->size, n);
+            }
+
+            emit_start(3 + ndim, "enc_size += this.%s", lm->membername);
+            if (ndim > 0) {
+                emit_continue("[");
+                for (int i = 0; i < ndim; i++)
+                    emit_continue("%sa%d", (i > 0)? ", " : "", i);
+                emit_continue("]");
+            }
+
+            if (is_string) {
+                emit_end(".length + sizeof(int32) + 1;");
+            } else {
+                emit_end("._encoded_size_no_hash;");
+            }
+
+            for (int n = ndim - 1; n >= 0; n--)
+                emit(3 + n, "}");
+        }
+    }
+    emit(3,         "return enc_size;");
+    emit(2,     "}");
+    emit(1, "}");
+    emit(0, "");
+}
+
+
 static void emit_hash_param(FILE *f)
 {
     emit(1, "private static int64 _hash = _compute_hash(null);");
@@ -305,7 +370,7 @@ int emit_vala(lcmgen_t *lcmgen)
 
             //emit_encode_nohash(lcmgen, f, lr);
             //emit_decode_nohash(lcmgen, f, lr);
-            //emit_encoded_size_nohash(lcmgen, f, lr);
+            emit_encoded_size_nohash(lcmgen, f, lr);
 
             emit_hash_param(f);
             emit_compute_hash(lcmgen, f, lr);
