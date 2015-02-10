@@ -204,10 +204,25 @@ static void emit_encode(FILE *f)
     emit(2,     "int64 hash_ = this.hash;");
     emit(2,     "var buf = new void[this._encoded_size_no_hash + 8];");
     emit(0, "");
-    emit(2,     "pos += Lcm.CoreTypes.int64_encode_array(buf, pos, &hash, 1);");
+    emit(2,     "pos += Lcm.CoreTypes.int64_encode_array(buf, pos, &hash_, 1);");
     emit(2,     "this._encode_no_hash(buf, pos);");
     emit(0, "");
     emit(2,     "return buf;");
+    emit(1, "}");
+    emit(0, "");
+}
+
+static void emit_decode(FILE *f)
+{
+    emit(1, "public void decode(void[] data) throws Lcm.MessageError {");
+    emit(2,     "Posix.off_t pos = 0;");
+    emit(2,     "int64 hash_ = 0;");
+    emit(0, "");
+    emit(2,     "pos += Lcm.CoreTypes.int64_decode_array(data, pos, &hash_, 1);");
+    emit(2,     "if (hash_ != this.hash)");
+    emit(3,         "throw new Lcm.MessageError.WRONG_HASH();");
+    emit(0, "");
+    emit(2,     "this._decode_no_hash(buf, pos);");
     emit(1, "}");
     emit(0, "");
 }
@@ -286,7 +301,7 @@ int emit_vala(lcmgen_t *lcmgen)
             emit_const_members(lcmgen, f, lr);
 
             emit_encode(f);
-            //emit_decode(lcmgen, f, lr);
+            emit_decode(f);
 
             //emit_encode_nohash(lcmgen, f, lr);
             //emit_decode_nohash(lcmgen, f, lr);

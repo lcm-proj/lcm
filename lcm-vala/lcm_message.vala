@@ -4,7 +4,7 @@
 
 namespace Lcm {
     public errordomain MessageError {
-        DECODE,
+        WRONG_HASH,
         OVERFLOW
     }
 
@@ -27,6 +27,8 @@ namespace Lcm {
      */
     namespace CoreTypes {
         // intptr defined in VAPI
+
+        // -*- encoder helpers -*-
 
         ssize_t bool_encode_array(void[] buf, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
             assert(sizeof(bool) == 1);  // todo: check actual bool size in vala
@@ -93,6 +95,86 @@ namespace Lcm {
 
                 pos += int32_encode_array(buf, offset + pos, &length, 1);
                 pos += int8_encode_array(buf, offset + pos, val[idx].data, length);
+            }
+
+            return pos;
+        }
+
+        // -*- decode helpers -*-
+
+        ssize_t bool_decode_array(void[] buf, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
+            assert(sizeof(bool) == 1);  // todo: check actual bool size in vala
+            return int8_decode_array(buf, offset, (int8 *) val, elements);
+        }
+
+        ssize_t int8_decode_array(void[] buf, Posix.off_t offset, int8 *val, size_t elements) throws MessageError {
+            if (buf.length - offset < elements)
+                throw new MessageError.OVERFLOW();
+
+            Memory.copy(val, &buf[offset], elements);
+            return elements;
+        }
+
+        ssize_t int16_decode_array(void[] buf, Posix.off_t offset, int16 *val, size_t elements) throws MessageError {
+            if (buf.length - offset < sizeof(int16) * elements)
+                throw new MessageError.OVERFLOW();
+
+            for (size_t idx = 0; idx < elements; idx++) {
+                int16 be16 = 0;
+                Memory.copy(&be16, &buf[offset + sizeof(int16) * idx], &be16, sizeof(int16));
+                val[idx] = int16.from_big_endian(be16);
+            }
+
+            return sizeof(int16) * elements;
+        }
+
+        ssize_t int32_decode_array(void[] buf, Posix.off_t offset, int32 *val, size_t elements) throws MessageError {
+            if (buf.length - offset < sizeof(int32) * elements)
+                throw new MessageError.OVERFLOW();
+
+            for (size_t idx = 0; idx < elements; idx++) {
+                int32 be32 = 0;
+                Memory.copy(&be32, &buf[offset + sizeof(int32) * idx], &be32, sizeof(int32));
+                val[idx] = int32.from_big_endian(be32);
+            }
+
+            return sizeof(int32) * elements;
+        }
+
+        ssize_t int64_decode_array(void[] buf, Posix.off_t offset, int64 *val, size_t elements) throws MessageError {
+            if (buf.length - offset < sizeof(int64) * elements)
+                throw new MessageError.OVERFLOW();
+
+            for (size_t idx = 0; idx < elements; idx++) {
+                int64 be64 = 0;
+                Memory.copy(&be64, &buf[offset + sizeof(int64) * idx], &be64, sizeof(int64));
+                val[idx] = int64.from_big_endian(be64);
+            }
+
+            return sizeof(int64) * elements;
+        }
+
+        ssize_t float_decode_array(void[] buf, Posix.off_t offset, float *val, size_t elements) throws MessageError {
+            return int32_decode_array(buf, offset, (int32 *) val, elements);
+        }
+
+        ssize_t double_decode_array(void[] buf, Posix.off_t offset, double *val, size_t elements) throws MessageError {
+            return int64_decode_array(buf, offset, (int64 *) val, elements);
+        }
+
+        ssize_t string_decode_array(void[] buf, Posix.off_t offset, string *val, size_t elements) throws MessageError {
+            Posix.off_t pos = 0;
+
+            for (size_t idx = 0; idx < elements; idx++) {
+                int32 length = 0;
+
+                pos += int32_decode_array(buf, offset + pos, &length, 1);
+
+                // skip null terminator
+                var s = string.nfill((length > 0)? length - 1 : 0, '\0');
+                pos += int8_decode_array(buf, offset + pos, s.data, length);
+
+                val[idx] = s;
             }
 
             return pos;
