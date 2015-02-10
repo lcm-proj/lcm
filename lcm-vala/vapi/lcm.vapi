@@ -203,4 +203,19 @@ namespace Lcm {
 			void[] data;
 		}
 	}
+
+	/* -*- other types -*- */
+
+	/**
+	 * intptr_t for use in hash calculation.
+	 * Copy from dova-core integer.vapi
+	 */
+	[CCode (cname = "intptr_t")]
+	[IntegerType (rank = 8)]
+	public struct CoreTypes.intptr {
+		public string to_string () {
+			long l = (long) this;
+			return l.to_string ();
+		}
+	}
 }
