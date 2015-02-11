@@ -303,13 +303,59 @@ static void emit_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "");
 }
 
-static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
+static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    // XXX stub
+	emit(1, "public size_t _encode_no_hash(void[] data, Posix.off_t offset) throws Lcm.MessageError {");
+    if (0 == g_ptr_array_size(ls->members)) {
+        emit(2,     "return 0;");
+        emit(1, "}");
+        emit(0, "");
+        return;
+    }
 
-	emit(1, "public ssize_t _encode_no_hash(void[] data, Posix.off_t offset) throws Lcm.MessageError {");
-	emit(2,     "return 0;");
-	emit(1, "}");
+    emit(2, "size_t pos = 0;");
+    emit(0, "");
+    for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
+        int num_dims = g_ptr_array_size(lm->dimensions);
+
+        if (0 == num_dims) {
+            if (lcm_is_primitive_type(lm->type->lctypename)) {
+                if (strcmp(lm->type->lctypename, "string") == 0) {
+                    emit(2, "pos += Lcm.CoreTypes.string_encode(data, offset + pos, this.%s);",
+                            lm->membername);
+                } else {
+                    emit(2, "pos += Lcm.CoreTypes.%s_encode_array(data, offset + pos, &this.%s, 1);",
+                            map_type_name(lm->type->lctypename), lm->membername);
+                }
+            } else {
+                emit(2, "// XXX TODO field: %s", lm->membername);
+                //_encode_recursive(lcm, f, lm, 0, 0);
+            }
+        } else {
+            emit(2, "// XXX TODO array: %s", lm->membername);
+        }
+#if 0
+        else {
+            lcm_dimension_t *last_dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, num_dims - 1);
+
+            // for non-string primitive types with variable size final
+            // dimension, add an optimization to only call the primitive encode
+            // functions only if the final dimension size is non-zero.
+            if(lcm_is_primitive_type(lm->type->lctypename) &&
+                    strcmp(lm->type->lctypename, "string") &&
+                    !is_dim_size_fixed(last_dim->size)) {
+                emit(1, "if(%s%s > 0) {", dim_size_prefix(last_dim->size), last_dim->size);
+                _encode_recursive(lcm, f, lm, 0, 1);
+                emit(1, "}");
+            } else {
+                _encode_recursive(lcm, f, lm, 0, 0);
+            }
+        }
+#endif
+    }
+    emit(2,     "return pos;");
+    emit(1, "}");
     emit(0, "");
 }
 
@@ -317,7 +363,7 @@ static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 {
     // XXX stub
 
-	emit(1, "public ssize_t _decode_no_hash(void[] data, Posix.off_t offset) throws Lcm.MessageError {");
+	emit(1, "public size_t _decode_no_hash(void[] data, Posix.off_t offset) throws Lcm.MessageError {");
 	emit(2,     "return 0;");
 	emit(1, "}");
     emit(0, "");
