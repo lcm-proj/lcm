@@ -128,3 +128,7 @@ test/xmlrunner.pyc
 test/python/*.pyc
 test/python/lcmtest/
 test/python/lcmtest2/
+test/vala/*.c
+test/vala/lcmtest*.vala
+test/vala/buf-xfer
+test/vala/check-hash
