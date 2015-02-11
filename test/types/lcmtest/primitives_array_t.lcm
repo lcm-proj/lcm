@@ -1,0 +1,8 @@
+package lcmtest;
+
+/// Constant array of primitives_t
+struct primitives_array_t
+{
+    lcmtest.primitives_t items[3];
+    lcmtest.primitives_t items2[3][3];
+}

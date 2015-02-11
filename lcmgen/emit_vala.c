@@ -133,7 +133,7 @@ static void emit_class_start(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "public class %s : Lcm.IMessage {", tn);
 }
 
-static void emit_class_end(FILE *f)
+static void emit_class_end(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(0, "}");
 }
@@ -156,19 +156,12 @@ static void emit_data_members(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         if (ndim == 0) {
             emit(1, "public %-10s %s;", mapped_typename, lm->membername);
         } else {
-            if (lcm_is_constant_size_array(lm)) {
-                emit_start(1, "public %-10s %s[", mapped_typename, lm->membername);
-                for (unsigned int d = 0; d < ndim; d++) {
-                    lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
-                    emit_continue("%s%s", (d != 0)? ", " : "", ld->size);
-                }
-                emit_end("];");
-            } else {
-                char buf[256];
-                emit(1, "public %-10s %s;",
-                        make_dynarray_type(buf, sizeof(buf), mapped_typename, ndim),
-                        lm->membername);
-            }
+            // vala only supports one dimension fixed size array,
+            // so for simplifying all arrays now dynamic
+            char buf[256];
+            emit(1, "public %-10s %s;",
+                    make_dynarray_type(buf, sizeof(buf), mapped_typename, ndim),
+                    lm->membername);
         }
     }
     emit(1, "// @}");
@@ -197,12 +190,95 @@ static void emit_const_members(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "");
 }
 
-static void emit_encode(FILE *f)
+// check that member is string or user defined message
+// or fixed array
+static int is_message_or_const_array(lcm_member_t *lm)
+{
+    int ndim = g_ptr_array_size(lm->dimensions);
+
+    return
+        !lcm_is_primitive_type(lm->type->lctypename) ||
+        (ndim > 0 && lcm_is_constant_size_array(lm));
+}
+
+static void emit_constructor(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    // constructor needed only for user defined messages
+    // and to preallocate constant size arrays
+    int constructor_needed = FALSE;
+    for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
+
+        if (is_message_or_const_array(lm)) {
+            constructor_needed = TRUE;
+            break;
+        }
+    }
+
+    if (!constructor_needed) {
+        emit(1, "// no special constructor needed");
+        emit(0, "");
+        return;
+    }
+
+    emit(1, "//! Constructor.");
+    emit(1, "public %s() {", ls->structname->shortname);
+
+    for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
+        int ndim = g_ptr_array_size(lm->dimensions);
+
+        // construct complex types and const array only.
+        if (!is_message_or_const_array(lm)) {
+            emit(2,     "// '%s' initialized by %s", lm->membername, (ndim > 0)? "user" : "class construction");
+            continue;
+        }
+
+        emit_start(2, "this.%s", lm->membername);
+
+        if (ndim > 0) {
+            emit_continue(" = new %s[", map_type_name(lm->type->lctypename));
+            for (int i = 0; i < ndim; i++) {
+                lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
+                emit_continue("%s%s", (i > 0)? ", " : "", dim->size);
+            }
+            emit_end("];");
+
+            // allocate message types only
+            if (lcm_is_primitive_type(lm->type->lctypename))
+                continue;
+
+            for (int n = 0; n < ndim; n++) {
+                lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, n);
+                emit(2 + n, "for (int a%d = 0; a%d < %s; a%d++) {",
+                        n, n, dim->size, n);
+            }
+
+            emit_start(2 + ndim, "this.%s[", lm->membername);
+            for (int i = 0; i < ndim; i++)
+                emit_continue("%sa%d", (i > 0)? ", " : "", i);
+            emit_end("] = new %s();", lm->type->lctypename);
+
+            for (int n = ndim - 1; n >= 0; n--)
+                emit(2 + n, "}");
+
+        } else if (strcmp(lm->type->lctypename, "string") == 0) {
+            emit_end(" = \"\";");
+        } else {
+            emit_end(" = new %s();", lm->type->lctypename);
+        }
+    }
+
+    emit(1, "}");
+    emit(0, "");
+}
+
+static void emit_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(1, "public void[] encode() throws Lcm.MessageError {");
     emit(2,     "Posix.off_t pos = 0;");
     emit(2,     "int64 hash_ = this.hash;");
-    emit(2,     "var buf = new void[this._encoded_size_no_hash + 8];");
+    emit(2,     "var buf = new void[sizeof(int64) + this._encoded_size_no_hash];");
     emit(0, "");
     emit(2,     "pos += Lcm.CoreTypes.int64_encode_array(buf, pos, &hash_, 1);");
     emit(2,     "this._encode_no_hash(buf, pos);");
@@ -212,7 +288,7 @@ static void emit_encode(FILE *f)
     emit(0, "");
 }
 
-static void emit_decode(FILE *f, lcm_struct_t *ls)
+static void emit_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(1, "public void decode(void[] data) throws Lcm.MessageError {");
     emit(2,     "Posix.off_t pos = 0;");
@@ -287,18 +363,23 @@ static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                         n, n, dim->size, n);
             }
 
-            emit_start(3 + ndim, "enc_size += this.%s", lm->membername);
+            emit_start(3 + ndim, "var _temp_%s = this.%s", lm->membername, lm->membername);
             if (ndim > 0) {
                 emit_continue("[");
                 for (int i = 0; i < ndim; i++)
                     emit_continue("%sa%d", (i > 0)? ", " : "", i);
                 emit_continue("]");
             }
+            emit_end(";");
 
             if (is_string) {
-                emit_end(".length + sizeof(int32) + 1;");
+                // strings may be empty, return empty size (length + terminator)
+                emit(3 + ndim, "enc_size += _temp_%s != null ? _temp_%s.length + sizeof(int32) + 1 : sizeof(int32) + 1;",
+                        lm->membername, lm->membername);
             } else {
-                emit_end("._encoded_size_no_hash;");
+                // object must be constructed
+                emit(3 + ndim, "assert(_temp_%s != null);", lm->membername);
+                emit(3 + ndim, "enc_size += _temp_%s._encoded_size_no_hash;", lm->membername);
             }
 
             for (int n = ndim - 1; n >= 0; n--)
@@ -312,7 +393,7 @@ static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 }
 
 
-static void emit_hash_param(FILE *f)
+static void emit_hash_param(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(1, "private static int64 _hash = _compute_hash(null);");
 	emit(1,	"public int64 hash {");
@@ -385,16 +466,18 @@ int emit_vala(lcmgen_t *lcmgen)
             emit_data_members(lcmgen, f, lr);
             emit_const_members(lcmgen, f, lr);
 
-            emit_encode(f);
-            emit_decode(f, lr);
+            emit_constructor(lcmgen, f, lr);
+
+            emit_encode(lcmgen, f, lr);
+            emit_decode(lcmgen, f, lr);
 
             emit_encode_nohash(lcmgen, f, lr);
             emit_decode_nohash(lcmgen, f, lr);
             emit_encoded_size_nohash(lcmgen, f, lr);
 
-            emit_hash_param(f);
+            emit_hash_param(lcmgen, f, lr);
             emit_compute_hash(lcmgen, f, lr);
-            emit_class_end(f);
+            emit_class_end(lcmgen, f, lr);
 
             fclose(f);
         }
