@@ -91,6 +91,22 @@ static const char *make_dynarray_type(const char *buf, size_t maxlen, char *type
     return buf;
 }
 
+static const char *make_dynarray_accessor(const char *buf, size_t maxlen, char *membername, unsigned int n_ax)
+{
+    FILE *f = fmemopen(buf, maxlen, "w");
+
+    fprintf(f, "this.%s", membername);
+    if (n_ax > 0)
+        fputc('[', f);
+    for (int i = 0; i < n_ax; i++)
+        fprintf(f, "a%d%s", i, (i + 1 < n_ax)? ", " : "");
+    if (n_ax > 0)
+        fputc(']', f);
+
+    fclose(f);
+    return buf;
+}
+
 static int is_dim_size_fixed(const char* dim_size) {
     char *eptr = NULL;
     long asdf = strtol(dim_size, &eptr, 0);
@@ -339,21 +355,14 @@ static void vala_encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int 
     }
     // recursion end
     if (depth == ndim) {
+        char accessor[256];
+        make_dynarray_accessor(accessor, sizeof(accessor), lm->membername, depth);
+
         if (strcmp(lm->type->lctypename, "string") == 0) {
-            emit_start(indent, "unowned string _temp_%s = this.%s[", lm->membername, lm->membername);
-            for (int i = 0; i < depth; i++)
-                emit_continue("a%d%s", i, (i + 1 < depth)? ", " : "");
-            emit_end("];");
+            emit(indent, "unowned string _temp_%s = %s;", lm->membername, accessor);
             emit(indent, "pos += Lcm.CoreTypes.string_encode(data, offset + pos, _temp_%s);", lm->membername);
         } else {
-            emit_start(indent, "pos += this.%s", lm->membername);
-            if (depth > 0)
-                emit_continue("[");
-            for (int i = 0; i < depth; i++)
-                emit_continue("a%d%s", i, (i + 1 < depth)? ", " : "");
-            if (depth > 0)
-                emit_continue("]");
-            emit_end("._encode_no_hash(data, offset + pos);");
+            emit(indent, "pos += %s._encode_no_hash(data, offset + pos);", accessor);
         }
         return;
     }
@@ -412,18 +421,121 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 vala_encode_recursive(lcm, f, lm, 0, 0);
             }
         }
+
+        emit(0, "");
     }
     emit(2,     "return pos;");
     emit(1, "}");
     emit(0, "");
 }
 
-static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
+static void vala_decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int depth)
 {
-    // XXX stub
+    int indent = 2 + depth;
+    int ndim = g_ptr_array_size(lm->dimensions);
 
+    // primitive array
+    if (depth + 1 == ndim &&
+        lcm_is_primitive_type(lm->type->lctypename) &&
+        strcmp(lm->type->lctypename, "string") != 0) {
+
+        lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
+
+        emit_start(indent, "pos += Lcm.CoreTypes.%s_decode_array(data, offset + pos, &this.%s[",
+                map_type_name(lm->type->lctypename), lm->membername);
+        for (int i = 0; i < depth; i++)
+            emit_continue("a%d, ", i);
+        emit_end("0], %s%s);", dim_size_prefix(dim->size), dim->size);
+
+        return;
+    }
+    // recursion end
+    if (depth == ndim) {
+        char accessor[256];
+        make_dynarray_accessor(accessor, sizeof(accessor), lm->membername, depth);
+
+        if (strcmp(lm->type->lctypename, "string") == 0) {
+            emit(indent, "pos += Lcm.CoreTypes.string_decode(data, offset + pos, out %s);", accessor);
+        } else {
+            emit(indent, "if (%s == null) %s = new %s();", accessor, accessor, lm->type->lctypename);
+            emit(indent, "pos += %s._decode_no_hash(data, offset + pos);", accessor);
+        }
+
+        return;
+    }
+
+    lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
+
+    emit(indent, "for (int a%d = 0; a%d < %s%s; a%d++) {",
+            depth, depth, dim_size_prefix(dim->size), dim->size, depth);
+
+    vala_decode_recursive(lcm, f, lm, depth + 1);
+
+    emit(indent, "}");
+}
+
+static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
 	emit(1, "public size_t _decode_no_hash(void[] data, Posix.off_t offset) throws Lcm.MessageError {");
-	emit(2,     "return 0;");
+    if (0 == g_ptr_array_size(ls->members)) {
+        emit(2,     "return 0;");
+        emit(1, "}");
+        emit(0, "");
+        return;
+    }
+
+    emit(2,     "size_t pos = 0;");
+    emit(0, "");
+    for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
+
+        if (0 == g_ptr_array_size(lm->dimensions) && lcm_is_primitive_type(lm->type->lctypename)) {
+            if (strcmp(lm->type->lctypename, "string") == 0) {
+                emit(2, "pos += Lcm.CoreTypes.string_decode(data, offset + pos, out this.%s);",
+                        lm->membername);
+            } else {
+                emit(2, "pos += Lcm.CoreTypes.%s_decode_array(data, offset + pos, &this.%s, 1);",
+                        map_type_name(lm->type->lctypename), lm->membername);
+            }
+        } else {
+            int ndim = g_ptr_array_size(lm->dimensions);
+
+            // for dynamic arrays emit reallocate code
+            if (0 != ndim && !lcm_is_constant_size_array(lm)) {
+                emit_start(2, "if (");
+                for (int i = 0; i < ndim; i++) {
+                    char len_idx[256] = "";
+                    lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
+
+                    if (ndim > 1)
+                        snprintf(len_idx, sizeof(len_idx), "[%d]", i);
+
+                    emit_continue("this.%s.length%s != %s%s",
+                            lm->membername, len_idx, dim_size_prefix(dim->size), dim->size);
+                    if (i + 1 < ndim)
+                        emit_continue(" || ");
+                }
+                emit_end(") {");
+
+                emit_start(3, "this.%s = new %s[", lm->membername, map_type_name(lm->type->lctypename));
+                for (int i = 0; i < ndim; i++) {
+                    lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
+                    emit_continue("%s%s", dim_size_prefix(dim->size), dim->size);
+                    if (i + 1 < ndim)
+                        emit_continue(", ");
+                }
+                emit_end("];");
+
+                emit(2, "}");
+            }
+
+            vala_decode_recursive(lcm, f, lm, 0);
+        }
+
+        emit(0, "");
+    }
+
+	emit(2,     "return pos;");
 	emit(1, "}");
     emit(0, "");
 }

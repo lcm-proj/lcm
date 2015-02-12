@@ -124,10 +124,15 @@ namespace Lcm {
 
         // -*- decode helpers -*-
 
-        // XXX
         size_t bool_decode_array(void[] data, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
-            assert(sizeof(bool) == 1);  // todo: check actual bool size in vala
-            return int8_decode_array(data, offset, (int8 *) val, elements);
+            // gboolean size == gint, convert from byte
+            var i8_val = new int8[elements];
+            var ret = int8_decode_array(data, offset, i8_val, elements);
+
+            for (size_t idx = 0; idx < elements; idx++)
+                val[idx] = (i8_val[idx] > 0)? true : false;
+
+            return ret;
         }
 
         size_t int8_decode_array(void[] data, Posix.off_t offset, int8 *val, size_t elements) throws MessageError {

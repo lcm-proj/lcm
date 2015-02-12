@@ -28,7 +28,7 @@ encdec-msg: encdec-msg.vala $(LCM_VSRC) $(types_src)
 lcmtest.%.vala: ../types/lcmtest/%.lcm $(LCM_GEN)
 	$(LCM_GEN) --vala $<
 
-lcmtest2.%.vala: ../types/lcmtest2/%.lcm
+lcmtest2.%.vala: ../types/lcmtest2/%.lcm $(LCM_GEN)
 	$(LCM_GEN) --vala $<
 
 clean:
