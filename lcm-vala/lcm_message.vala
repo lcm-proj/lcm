@@ -28,11 +28,24 @@ namespace Lcm {
     namespace CoreTypes {
         // intptr defined in VAPI
 
+        // size constants for size calculation routines.
+        const size_t bool_SIZE      = sizeof(int8);
+        const size_t int8_SIZE      = sizeof(int8);
+        const size_t int16_SIZE     = sizeof(int16);
+        const size_t int32_SIZE     = sizeof(int32);
+        const size_t int64_SIZE     = sizeof(int64);
+        const size_t float_SIZE     = sizeof(float);
+        const size_t double_SIZE    = sizeof(double);
+
         // -*- encoder helpers -*-
 
         size_t bool_encode_array(void[] data, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
-            assert(sizeof(bool) == 1);  // todo: check actual bool size in vala
-            return int8_encode_array(data, offset, (int8 *) val, elements);
+            // gboolean size == gint, convert to byte
+            var i8_val = new int8[elements];
+            for (size_t idx = 0; idx < elements; idx++)
+                i8_val[idx] = val[idx]? 1 : 0;
+
+            return int8_encode_array(data, offset, i8_val, elements);
         }
 
         size_t int8_encode_array(void[] data, Posix.off_t offset, int8 *val, size_t elements) throws MessageError {
@@ -91,8 +104,8 @@ namespace Lcm {
             return int64_encode_array(data, offset, (int64 *) val, elements);
         }
 
-        // XXX: check that it actualy can work
         // Note: For _array generated very inefficient code.
+        // So string encoding done pre-object.
         size_t string_encode(void[] data, Posix.off_t offset, string val) throws MessageError {
             Posix.off_t pos = 0;
 
@@ -111,6 +124,7 @@ namespace Lcm {
 
         // -*- decode helpers -*-
 
+        // XXX
         size_t bool_decode_array(void[] data, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
             assert(sizeof(bool) == 1);  // todo: check actual bool size in vala
             return int8_decode_array(data, offset, (int8 *) val, elements);

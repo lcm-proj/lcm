@@ -292,7 +292,7 @@ static void emit_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(1, "public void[] encode() throws Lcm.MessageError {");
     emit(2,     "Posix.off_t pos = 0;");
     emit(2,     "int64 hash_ = this.hash;");
-    emit(2,     "var buf = new void[sizeof(int64) + this._encoded_size_no_hash];");
+    emit(2,     "var buf = new void[Lcm.CoreTypes.int64_SIZE + this._encoded_size_no_hash];");
     emit(0, "");
     emit(2,     "pos += Lcm.CoreTypes.int64_encode_array(buf, pos, &hash_, 1);");
     emit(2,     "this._encode_no_hash(buf, pos);");
@@ -346,10 +346,14 @@ static void vala_encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int 
             emit_end("];");
             emit(indent, "pos += Lcm.CoreTypes.string_encode(data, offset + pos, _temp_%s);", lm->membername);
         } else {
-            emit_start(indent, "pos += this.%s[", lm->membername);
+            emit_start(indent, "pos += this.%s", lm->membername);
+            if (depth > 0)
+                emit_continue("[");
             for (int i = 0; i < depth; i++)
                 emit_continue("a%d%s", i, (i + 1 < depth)? ", " : "");
-            emit_end("]._encode_no_hash(data, offset + pos);");
+            if (depth > 0)
+                emit_continue("]");
+            emit_end("._encode_no_hash(data, offset + pos);");
         }
         return;
     }
@@ -452,10 +456,10 @@ static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             }
             if (ndim > 0) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, ndim - 1);
-                emit_end("sizeof(%s) * %s%s;",
+                emit_end("Lcm.CoreTypes.%s_SIZE * %s%s;",
                         mapped_typename, dim_size_prefix(dim->size), dim->size);
             } else {
-                emit_end("sizeof(%s);", mapped_typename);
+                emit_end("Lcm.CoreTypes.%s_SIZE;", mapped_typename);
             }
         } else {
             for (int n = 0; n < ndim; n++) {
@@ -478,7 +482,9 @@ static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
             if (is_string) {
                 // strings may be empty, return empty size (length + terminator)
-                emit(3 + ndim, "enc_size += _temp_%s != null ? _temp_%s.length + sizeof(int32) + 1 : sizeof(int32) + 1;",
+                emit(3 + ndim, "enc_size += _temp_%s != null ? "
+                        "_temp_%s.length + Lcm.CoreTypes.int32_SIZE + 1 : "
+                        "Lcm.CoreTypes.int32_SIZE + 1;",
                         lm->membername, lm->membername);
             } else {
                 // object must be constructed

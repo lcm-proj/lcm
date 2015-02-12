@@ -4,6 +4,7 @@
 *.lo
 *.la
 *.swp
+core
 
 ABOUT-NLS
 Makefile
@@ -132,3 +133,4 @@ test/vala/*.c
 test/vala/lcmtest*.vala
 test/vala/buf-xfer
 test/vala/check-hash
+test/vala/encdec-msg

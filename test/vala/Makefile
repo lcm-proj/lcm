@@ -13,12 +13,16 @@ types2:=another_type_t cross_package_t
 types_src:=$(types1:%=lcmtest.%.vala) $(types2:%=lcmtest2.%.vala)
 
 all: buf-xfer \
-	check-hash
+	check-hash \
+	encdec-msg
 
 buf-xfer: buf-xfer.vala $(LCM_VSRC)
 	$(VALAC) $(VALAFLAGS) -o $@ $^
 
 check-hash: check-hash.vala $(LCM_VSRC) $(types_src)
+	$(VALAC) $(VALAFLAGS) -o $@ $^
+
+encdec-msg: encdec-msg.vala $(LCM_VSRC) $(types_src)
 	$(VALAC) $(VALAFLAGS) -o $@ $^
 
 lcmtest.%.vala: ../types/lcmtest/%.lcm $(LCM_GEN)
@@ -28,6 +32,6 @@ lcmtest2.%.vala: ../types/lcmtest2/%.lcm
 	$(LCM_GEN) --vala $<
 
 clean:
-	rm -f buf-xfer check-hash
+	rm -f buf-xfer check-hash encdec-msg
 	rm -f lcmtest* lcmtest2*
 	rm -f *.o *.c
