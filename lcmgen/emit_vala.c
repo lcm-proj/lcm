@@ -91,6 +91,20 @@ static const char *make_dynarray_type(const char *buf, size_t maxlen, char *type
     return buf;
 }
 
+static int is_dim_size_fixed(const char* dim_size) {
+    char *eptr = NULL;
+    long asdf = strtol(dim_size, &eptr, 0);
+    (void) asdf;  // suppress compiler warnings
+    return (*eptr == '\0');
+}
+
+static const char * dim_size_prefix(const char *dim_size) {
+    if (is_dim_size_fixed(dim_size))
+        return "";
+    else
+        return "this.";
+}
+
 static void emit_auto_generated_warning(FILE *f)
 {
     fprintf(f,
@@ -146,12 +160,12 @@ static void emit_data_members(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         return;
     }
 
-    emit(1, "// data members @{");
+    emit(1, "// data members begin");
     for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
 
         emit_comment(f, 1, lm->comment);
-        char* mapped_typename = map_type_name(lm->type->lctypename);
+        const char* mapped_typename = map_type_name(lm->type->lctypename);
         int ndim = g_ptr_array_size(lm->dimensions);
         if (ndim == 0) {
             emit(1, "public %-10s %s;", mapped_typename, lm->membername);
@@ -164,29 +178,31 @@ static void emit_data_members(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                     lm->membername);
         }
     }
-    emit(1, "// @}");
+    emit(1, "// end");
     emit(0, "");
 }
 
 static void emit_const_members(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     if (g_ptr_array_size(ls->constants) == 0) {
+        emit(1, "// no constants");
+        emit(0, "");
         return;
     }
 
-    emit(1, "// constants @{");
+    emit(1, "// constants begin");
     for (unsigned int i = 0; i < g_ptr_array_size(ls->constants); i++) {
         lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
         assert(lcm_is_legal_const_type(lc->lctypename));
 
-        char* mapped_typename = map_type_name(lc->lctypename);
+        const char* mapped_typename = map_type_name(lc->lctypename);
 
         emit_comment(f, 1, lc->comment);
         emit(1, "public const %-10s %s = (%s) %s;",
                 mapped_typename, lc->membername,
                 mapped_typename, lc->val_str);
     }
-    emit(1, "// @}");
+    emit(1, "// end");
     emit(0, "");
 }
 
@@ -240,7 +256,7 @@ static void emit_constructor(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             emit_continue(" = new %s[", map_type_name(lm->type->lctypename));
             for (int i = 0; i < ndim; i++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, i);
-                emit_continue("%s%s", (i > 0)? ", " : "", dim->size);
+                emit_continue("%s%s%s", (i > 0)? ", " : "", dim_size_prefix(dim->size), dim->size);
             }
             emit_end("];");
 
@@ -250,8 +266,8 @@ static void emit_constructor(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
             for (int n = 0; n < ndim; n++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, n);
-                emit(2 + n, "for (int a%d = 0; a%d < %s; a%d++) {",
-                        n, n, dim->size, n);
+                emit(2 + n, "for (int a%d = 0; a%d < %s%s; a%d++) {",
+                        n, n, dim_size_prefix(dim->size), dim->size, n);
             }
 
             emit_start(2 + ndim, "this.%s[", lm->membername);
@@ -262,8 +278,6 @@ static void emit_constructor(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             for (int n = ndim - 1; n >= 0; n--)
                 emit(2 + n, "}");
 
-        } else if (strcmp(lm->type->lctypename, "string") == 0) {
-            emit_end(" = \"\";");
         } else {
             emit_end(" = new %s();", lm->type->lctypename);
         }
@@ -303,6 +317,53 @@ static void emit_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "");
 }
 
+static void vala_encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int depth, int extra_indent)
+{
+    int indent = extra_indent + 2 + depth;
+    int ndim = g_ptr_array_size(lm->dimensions);
+
+    // primitive array
+    if (depth + 1 == ndim &&
+            lcm_is_primitive_type(lm->type->lctypename) &&
+            strcmp(lm->type->lctypename, "string") != 0) {
+
+        lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
+
+        emit_start(indent, "pos += Lcm.CoreTypes.%s_encode_array(data, offset + pos, &this.%s[",
+                map_type_name(lm->type->lctypename), lm->membername);
+        for (int i = 0; i < depth; i++)
+            emit_continue("a%d, ", i);
+        emit_end("0], %s%s);", dim_size_prefix(dim->size), dim->size);
+
+        return;
+    }
+    // recursion end
+    if (depth == ndim) {
+        if (strcmp(lm->type->lctypename, "string") == 0) {
+            emit_start(indent, "unowned string _temp_%s = this.%s[", lm->membername, lm->membername);
+            for (int i = 0; i < depth; i++)
+                emit_continue("a%d%s", i, (i + 1 < depth)? ", " : "");
+            emit_end("];");
+            emit(indent, "pos += Lcm.CoreTypes.string_encode(data, offset + pos, _temp_%s);", lm->membername);
+        } else {
+            emit_start(indent, "pos += this.%s[", lm->membername);
+            for (int i = 0; i < depth; i++)
+                emit_continue("a%d%s", i, (i + 1 < depth)? ", " : "");
+            emit_end("]._encode_no_hash(data, offset + pos);");
+        }
+        return;
+    }
+
+    lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
+
+    emit(indent, "for (int a%d = 0; a%d < %s%s; a%d++) {",
+            depth, depth, dim_size_prefix(dim->size), dim->size, depth);
+
+    vala_encode_recursive(lcm, f, lm, depth + 1, extra_indent);
+
+    emit(indent, "}");
+}
+
 static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
 	emit(1, "public size_t _encode_no_hash(void[] data, Posix.off_t offset) throws Lcm.MessageError {");
@@ -329,30 +390,24 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                             map_type_name(lm->type->lctypename), lm->membername);
                 }
             } else {
-                emit(2, "// XXX TODO field: %s", lm->membername);
-                //_encode_recursive(lcm, f, lm, 0, 0);
+                vala_encode_recursive(lcm, f, lm, 0, 0);
             }
         } else {
-            emit(2, "// XXX TODO array: %s", lm->membername);
-        }
-#if 0
-        else {
             lcm_dimension_t *last_dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, num_dims - 1);
 
             // for non-string primitive types with variable size final
             // dimension, add an optimization to only call the primitive encode
             // functions only if the final dimension size is non-zero.
-            if(lcm_is_primitive_type(lm->type->lctypename) &&
-                    strcmp(lm->type->lctypename, "string") &&
+            if (lcm_is_primitive_type(lm->type->lctypename) &&
+                    strcmp(lm->type->lctypename, "string") != 0 &&
                     !is_dim_size_fixed(last_dim->size)) {
-                emit(1, "if(%s%s > 0) {", dim_size_prefix(last_dim->size), last_dim->size);
-                _encode_recursive(lcm, f, lm, 0, 1);
-                emit(1, "}");
+                emit(2, "if (%s%s > 0) {", dim_size_prefix(last_dim->size), last_dim->size);
+                vala_encode_recursive(lcm, f, lm, 0, 1);
+                emit(2, "}");
             } else {
-                _encode_recursive(lcm, f, lm, 0, 0);
+                vala_encode_recursive(lcm, f, lm, 0, 0);
             }
         }
-#endif
     }
     emit(2,     "return pos;");
     emit(1, "}");
@@ -387,29 +442,32 @@ static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
         int ndim = g_ptr_array_size(lm->dimensions);
         int is_string = strcmp(lm->type->lctypename, "string") == 0;
-        char* mapped_typename = map_type_name(lm->type->lctypename);
+        const char* mapped_typename = map_type_name(lm->type->lctypename);
 
         if (lcm_is_primitive_type(lm->type->lctypename) && !is_string) {
             emit_start(3, "enc_size += ");
             for (int n = 0; n < ndim - 1; n++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, n);
-                emit_continue("%s * ", dim->size);
+                emit_continue("%s%s * ", dim_size_prefix(dim->size), dim->size);
             }
             if (ndim > 0) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, ndim - 1);
-                emit_end("sizeof(%s) * %s;",
-                        mapped_typename, dim->size);
+                emit_end("sizeof(%s) * %s%s;",
+                        mapped_typename, dim_size_prefix(dim->size), dim->size);
             } else {
                 emit_end("sizeof(%s);", mapped_typename);
             }
         } else {
             for (int n = 0; n < ndim; n++) {
                 lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, n);
-                emit(3 + n, "for (int a%d = 0; a%d < %s; a%d++) {",
-                        n, n, dim->size, n);
+                emit(3 + n, "for (int a%d = 0; a%d < %s%s; a%d++) {",
+                        n, n, dim_size_prefix(dim->size), dim->size, n);
             }
 
-            emit_start(3 + ndim, "var _temp_%s = this.%s", lm->membername, lm->membername);
+            // use unowned for eliminate strdup/object ref/unref
+            // but vala does not allow `unowned var` so we explicitly define type.
+            emit_start(3 + ndim, "unowned %s _temp_%s = this.%s",
+                    map_type_name(lm->type->lctypename), lm->membername, lm->membername);
             if (ndim > 0) {
                 emit_continue("[");
                 for (int i = 0; i < ndim; i++)
