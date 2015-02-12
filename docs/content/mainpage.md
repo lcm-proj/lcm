@@ -39,6 +39,7 @@ variety of programming languages.
   * Lua
   * MATLAB
   * Python
+  * Vala
 
 # API Reference {#main_api_ref}
 

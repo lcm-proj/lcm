@@ -36,3 +36,4 @@ variety of programming languages.
   * Lua
   * MATLAB
   * Python
+  * Vala
