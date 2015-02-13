@@ -12,5 +12,9 @@ if HAVE_LUA
 SUBDIRS += lcm-lua
 endif
 
+if HAVE_VALA
+SUBDIRS += lcm-vala
+endif
+
 EXTRA_DIST = WinSpecific lcm-dotnet lcm-lite docs test
 ACLOCAL_AMFLAGS = -I m4

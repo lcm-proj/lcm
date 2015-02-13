@@ -110,6 +110,16 @@ AS_IF([test "x$with_lua" != 'xno'],
 
 AM_CONDITIONAL(HAVE_LUA, test "x$with_lua" = "xyes")
 
+dnl ------------------
+dnl Vala support
+dnl ------------------
+AC_ARG_WITH(vala,
+            [AS_HELP_STRING([--without-vala],
+             [Do not install lcm-vala bindings even if Vala is available])],
+            [], [with_vala=yes])
+AM_CONDITIONAL(HAVE_VALA, test "x$with_vala" = "xyes")
+
+
 dnl ---------------------------------------------------------------------------
 dnl Warnings
 dnl ---------------------------------------------------------------------------
@@ -129,6 +139,7 @@ AC_OUTPUT([
   lcm-java/lcm-java.pc
   lcm-python/Makefile
   lcm-lua/Makefile
+  lcm-vala/Makefile
   examples/Makefile
   m4/Makefile
   m4macros/Makefile
@@ -152,6 +163,12 @@ else
     LUA_STR="Disabled"
 fi
 
+if test "$with_vala" = "yes"; then
+    VALA_STR="Enabled"
+else
+    VALA_STR="Disabled"
+fi
+
 echo "
 "
 
@@ -162,4 +179,5 @@ echo "Configuration (LCM v${PACKAGE_VERSION}):
   Java Support:          ${JAVA_STR}
   Python Support:        ${PYTHON_STR}
   Lua Support:           ${LUA_STR}
+  Vala Support:          ${VALA_STR}
 "
