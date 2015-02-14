@@ -23,7 +23,7 @@ int main(string[] args)
 	stdout.printf("testing vapi for LCM %d.%d.%d\n", Lcm.Version.MAJOR, Lcm.Version.MINOR, Lcm.Version.MICRO);
 
 	// create object
-	var lcm = new Lcm.Lcm();
+	var lcm = new Lcm.LcmNode();
 
 	// check file no
 	var fn = lcm.get_fileno();

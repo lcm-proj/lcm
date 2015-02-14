@@ -9,7 +9,7 @@ namespace Lcm {
      */
     [CCode (cname = "lcm_t", free_function = "lcm_destroy", cprefix = "lcm_")]
     [Compact]
-    public class Lcm {
+    public class LcmNode {
         /**
          * Core communication class constructor.
          *
@@ -19,7 +19,7 @@ namespace Lcm {
          *                 If this is null and the environment variable is not defined, then default settings are used.
          */
         [CCode (cname = "lcm_create")]
-        public Lcm(string? provider = null);
+        public LcmNode(string? provider = null);
 
         /**
          * Returns a file descriptor or socket that can be used with
@@ -33,7 +33,7 @@ namespace Lcm {
         /**
          * Subscribe a callback function to a channel.
          *
-         * The callback function will be invoked during calls to Lcm.handle() any time
+         * The callback function will be invoked during calls to LcmNode.handle() any time
          * a message on the specified channel is received.  Multiple callbacks can be
          * subscribed for the same channel.
          *
@@ -45,7 +45,7 @@ namespace Lcm {
          * @param user_data this will be passed to the callback function
          *
          * @return a Subscription to identify the new subscription,
-         *         which can be passed to Lcm.unsubscribe().
+         *         which can be passed to LcmNode.unsubscribe().
          *         The LCM instance owns the subscription object.
          */
         public unowned Subscription subscribe(string channel, Subscription.Handler handler, void *user_data = null);
@@ -80,12 +80,12 @@ namespace Lcm {
          * function, and in the order that they were subscribed.
          *
          * This function waits indefinitely.  If you want timeout behavior, (e.g., wait
-         * 100ms for a message) then consider using Lcm.get_fileno() together with
+         * 100ms for a message) then consider using LcmNode.get_fileno() together with
          * select() or poll()
          *
-         * Recursive calls to Lcm.handle() are not allowed -- do not call Lcm.handle() from
+         * Recursive calls to LcmNode.handle() are not allowed -- do not call LcmNode.handle() from
          * within a message handler.  All other functions are okay (e.g., it is okay to
-         * call Lcm.publish() from within a message handler).
+         * call LcmNode.publish() from within a message handler).
          *
          * @return 0 normally, or -1 when an error has occurred.
          */
@@ -99,7 +99,7 @@ namespace Lcm {
          * function returns.
          *
          * This function largely exists for convenience, and its behavior can be
-         * replicated by using Lcm.get_fileno() and Lcm.handle() in conjunction with
+         * replicated by using LcmNode.get_fileno() and LcmNode.handle() in conjunction with
          * select() or poll().
          *
          * @param timeout_millis the maximum amount of time to wait for a message, in
@@ -161,7 +161,7 @@ namespace Lcm {
         //! timestamp (micrseconds since the epoch) at which the first data bytes of the message were received.
         int64 recv_utime;
         //! LCM that owns this buffer
-        unowned Lcm lcm;
+        unowned LcmNode lcm;
     }
 
     /**
