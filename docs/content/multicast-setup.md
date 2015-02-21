@@ -131,6 +131,21 @@ a 2MB maximum buffer size.
     <td><tt>sysctl -w kern.ipc.maxsockbuf=2097152</tt></td>
     <td>??</td>
 </tr>
+</tr><tr>
+<td>Windows</td>
+<td></td>
+<td>Set registry keys:
+<pre>
+[HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\services\\AFD\\Parameters]
+"DefaultReceiveWindow"=dword:00200000
+"DefaultSendWindow"=dword:00200000
+</pre>
+
+See also:
+1. https://technet.microsoft.com/en-us/library/bb726981.aspx#EBAA
+2. http://stackoverflow.com/questions/18985816/change-default-socket-buffer-size-under-windows
+</td>
+</tr>
 </table>
 
 Most GNU/Linux distributions also allow setting these permanently using the
