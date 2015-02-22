@@ -29,6 +29,7 @@ namespace LCM.LCM
         private const int FRAGMENTATION_THRESHOLD = 64000;
 
         private Thread reader;
+        private volatile bool readerDone = false;
 
         private int msgSeqNumber = 0;
 
@@ -148,6 +149,8 @@ namespace LCM.LCM
 				if (reader != null)
 				{
 					reader.Interrupt();
+					readerDone = true;
+					sock.Close(); // close early to interrupt the blocking call: sock.Receive
 					try
 					{
 						reader.Join();
@@ -266,16 +269,24 @@ namespace LCM.LCM
 			byte[] packetData;
             IPEndPoint from = new IPEndPoint(IPAddress.Any, 0);
 			
-			while (true)
+			readerDone = false;
+			while (!readerDone)
 			{
 				try
 				{
 					packetData = sock.Receive(ref from);
 					HandlePacket(packetData, from);
 				}
+				catch(SocketException ex)
+				{
+					if (readerDone) break; // finish if readerDone is true
+					Console.Error.WriteLine("Ex: " + ex);
+					continue;
+				}
 				catch (Exception ex)
 				{
 					Console.Error.WriteLine("Ex: " + ex);
+					if (readerDone) break;
 					continue;
 				}
 			}
