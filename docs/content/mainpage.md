@@ -41,6 +41,10 @@ variety of programming languages.
   * Python
   * Vala
 
+## Forks / clones
+
+ - https://github.com/vooon/lcm-vala - Vala language support
+
 # API Reference {#main_api_ref}
 
  - [C](\ref LcmC)
@@ -73,6 +77,7 @@ LCM was originally developed in 2006 for the MIT DARPA Urban Challenge team,
 and has since been used in many robotic and autonomous systems, in both
 research and production environments. Its users have included:
 
+* Autonomos GmbH
 * BAE Systems
 * Bender Robotics
 * Carnegie Mellon University
