@@ -303,6 +303,15 @@ static void emit_constructor(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "");
 }
 
+static void emit_constructor_from_rbuf(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    emit(1, "//! Construct and decode message from Lcm.RecvBuf");
+    emit(1, "public %s.from_rbuf(Lcm.RecvBuf rbuf) throws Lcm.MessageError {", ls->structname->shortname);
+    emit(2,     "this.decode(rbuf.data);");
+    emit(1, "}");
+    emit(0, "");
+}
+
 static void emit_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(1, "public void[] encode() throws Lcm.MessageError {");
@@ -689,6 +698,7 @@ int emit_vala(lcmgen_t *lcmgen)
             emit_const_members(lcmgen, f, lr);
 
             emit_constructor(lcmgen, f, lr);
+            emit_constructor_from_rbuf(lcmgen, f, lr);
 
             emit_encode(lcmgen, f, lr);
             emit_decode(lcmgen, f, lr);
