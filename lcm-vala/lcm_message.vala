@@ -29,17 +29,17 @@ namespace Lcm {
         // intptr defined in VAPI
 
         // size constants for size calculation routines.
-        const size_t bool_SIZE      = sizeof(int8);
-        const size_t int8_SIZE      = sizeof(int8);
-        const size_t int16_SIZE     = sizeof(int16);
-        const size_t int32_SIZE     = sizeof(int32);
-        const size_t int64_SIZE     = sizeof(int64);
-        const size_t float_SIZE     = sizeof(float);
-        const size_t double_SIZE    = sizeof(double);
+        public const size_t bool_SIZE      = sizeof(int8);
+        public const size_t int8_SIZE      = sizeof(int8);
+        public const size_t int16_SIZE     = sizeof(int16);
+        public const size_t int32_SIZE     = sizeof(int32);
+        public const size_t int64_SIZE     = sizeof(int64);
+        public const size_t float_SIZE     = sizeof(float);
+        public const size_t double_SIZE    = sizeof(double);
 
         // -*- encoder helpers -*-
 
-        size_t bool_encode_array(void[] data, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
+        public size_t bool_encode_array(void[] data, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
             // gboolean size == gint, convert to byte
             var i8_val = new int8[elements];
             for (size_t idx = 0; idx < elements; idx++)
@@ -48,7 +48,7 @@ namespace Lcm {
             return int8_encode_array(data, offset, i8_val, elements);
         }
 
-        size_t int8_encode_array(void[] data, Posix.off_t offset, int8 *val, size_t elements) throws MessageError {
+        public size_t int8_encode_array(void[] data, Posix.off_t offset, int8 *val, size_t elements) throws MessageError {
             unowned int8[] buf = (int8[]) data;
             if (buf.length - offset < elements)
                 throw new MessageError.OVERFLOW("encode");
@@ -57,7 +57,7 @@ namespace Lcm {
             return elements;
         }
 
-        size_t int16_encode_array(void[] data, Posix.off_t offset, int16 *val, size_t elements) throws MessageError {
+        public size_t int16_encode_array(void[] data, Posix.off_t offset, int16 *val, size_t elements) throws MessageError {
             unowned int8[] buf = (int8[]) data;
             if (buf.length - offset < sizeof(int16) * elements)
                 throw new MessageError.OVERFLOW("encode");
@@ -70,7 +70,7 @@ namespace Lcm {
             return sizeof(int16) * elements;
         }
 
-        size_t int32_encode_array(void[] data, Posix.off_t offset, int32 *val, size_t elements) throws MessageError {
+        public size_t int32_encode_array(void[] data, Posix.off_t offset, int32 *val, size_t elements) throws MessageError {
             unowned int8[] buf = (int8[]) data;
             if (buf.length - offset < sizeof(int32) * elements)
                 throw new MessageError.OVERFLOW("encode");
@@ -83,7 +83,7 @@ namespace Lcm {
             return sizeof(int32) * elements;
         }
 
-        size_t int64_encode_array(void[] data, Posix.off_t offset, int64 *val, size_t elements) throws MessageError {
+        public size_t int64_encode_array(void[] data, Posix.off_t offset, int64 *val, size_t elements) throws MessageError {
             unowned int8[] buf = (int8[]) data;
             if (buf.length - offset < sizeof(int64) * elements)
                 throw new MessageError.OVERFLOW("encode");
@@ -96,17 +96,21 @@ namespace Lcm {
             return sizeof(int64) * elements;
         }
 
-        size_t float_encode_array(void[] data, Posix.off_t offset, float *val, size_t elements) throws MessageError {
+        public size_t float_encode_array(void[] data, Posix.off_t offset, float *val, size_t elements) throws MessageError {
             return int32_encode_array(data, offset, (int32 *) val, elements);
         }
 
-        size_t double_encode_array(void[] data, Posix.off_t offset, double *val, size_t elements) throws MessageError {
+        public size_t double_encode_array(void[] data, Posix.off_t offset, double *val, size_t elements) throws MessageError {
             return int64_encode_array(data, offset, (int64 *) val, elements);
         }
 
-        // Note: For _array generated very inefficient code.
-        // So string encoding done pre-object.
-        size_t string_encode(void[] data, Posix.off_t offset, string val) throws MessageError {
+        /**
+         * String encoder helper.
+         *
+         * Note: For _array generated very inefficient code.
+         * So string encoding done per-object.
+         */
+        public size_t string_encode(void[] data, Posix.off_t offset, string val) throws MessageError {
             Posix.off_t pos = 0;
 
             // string may be null, fallback to empty string
@@ -124,7 +128,7 @@ namespace Lcm {
 
         // -*- decode helpers -*-
 
-        size_t bool_decode_array(void[] data, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
+        public size_t bool_decode_array(void[] data, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
             // gboolean size == gint, convert from byte
             var i8_val = new int8[elements];
             var ret = int8_decode_array(data, offset, i8_val, elements);
@@ -135,7 +139,7 @@ namespace Lcm {
             return ret;
         }
 
-        size_t int8_decode_array(void[] data, Posix.off_t offset, int8 *val, size_t elements) throws MessageError {
+        public size_t int8_decode_array(void[] data, Posix.off_t offset, int8 *val, size_t elements) throws MessageError {
             unowned int8[] buf = (int8[]) data;
             if (buf.length - offset < elements)
                 throw new MessageError.OVERFLOW("decode");
@@ -144,7 +148,7 @@ namespace Lcm {
             return elements;
         }
 
-        size_t int16_decode_array(void[] data, Posix.off_t offset, int16 *val, size_t elements) throws MessageError {
+        public size_t int16_decode_array(void[] data, Posix.off_t offset, int16 *val, size_t elements) throws MessageError {
             unowned int8[] buf = (int8[]) data;
             if (buf.length - offset < sizeof(int16) * elements)
                 throw new MessageError.OVERFLOW("decode");
@@ -158,7 +162,7 @@ namespace Lcm {
             return sizeof(int16) * elements;
         }
 
-        size_t int32_decode_array(void[] data, Posix.off_t offset, int32 *val, size_t elements) throws MessageError {
+        public size_t int32_decode_array(void[] data, Posix.off_t offset, int32 *val, size_t elements) throws MessageError {
             unowned int8[] buf = (int8[]) data;
             if (buf.length - offset < sizeof(int32) * elements)
                 throw new MessageError.OVERFLOW("decode");
@@ -172,7 +176,7 @@ namespace Lcm {
             return sizeof(int32) * elements;
         }
 
-        size_t int64_decode_array(void[] data, Posix.off_t offset, int64 *val, size_t elements) throws MessageError {
+        public size_t int64_decode_array(void[] data, Posix.off_t offset, int64 *val, size_t elements) throws MessageError {
             unowned int8[] buf = (int8[]) data;
             if (buf.length - offset < sizeof(int64) * elements)
                 throw new MessageError.OVERFLOW("decode");
@@ -186,17 +190,21 @@ namespace Lcm {
             return sizeof(int64) * elements;
         }
 
-        size_t float_decode_array(void[] data, Posix.off_t offset, float *val, size_t elements) throws MessageError {
+        public size_t float_decode_array(void[] data, Posix.off_t offset, float *val, size_t elements) throws MessageError {
             return int32_decode_array(data, offset, (int32 *) val, elements);
         }
 
-        size_t double_decode_array(void[] data, Posix.off_t offset, double *val, size_t elements) throws MessageError {
+        public size_t double_decode_array(void[] data, Posix.off_t offset, double *val, size_t elements) throws MessageError {
             return int64_decode_array(data, offset, (int64 *) val, elements);
         }
 
-        // XXX: check that it actualy can work
-        // Note: For array generated very inefficient code.
-        size_t string_decode(void[] data, Posix.off_t offset, out string val) throws MessageError {
+        /**
+         * String decoder helper.
+         *
+         * Note: For _array generated very inefficient code.
+         * So string encoding done per-object.
+         */
+        public size_t string_decode(void[] data, Posix.off_t offset, out string val) throws MessageError {
             Posix.off_t pos = 0;
 
             int32 length = 0;
@@ -212,3 +220,5 @@ namespace Lcm {
         }
     }
 }
+
+// vim:set et ts=4 sw=4:
