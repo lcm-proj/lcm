@@ -41,11 +41,14 @@ namespace Lcm {
 
         public size_t bool_encode_array(void[] data, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
             // gboolean size == gint, convert to byte
-            var i8_val = new int8[elements];
-            for (size_t idx = 0; idx < elements; idx++)
-                i8_val[idx] = val[idx]? 1 : 0;
+            unowned int8[] buf = (int8[]) data;
+            if (buf.length - offset < elements)
+                throw new MessageError.OVERFLOW("encode");
 
-            return int8_encode_array(data, offset, i8_val, elements);
+            for (size_t idx = 0; idx < elements; idx++)
+                buf[offset + idx] = val[idx]? 1 : 0;
+
+            return elements;
         }
 
         public size_t int8_encode_array(void[] data, Posix.off_t offset, int8 *val, size_t elements) throws MessageError {
@@ -130,13 +133,14 @@ namespace Lcm {
 
         public size_t bool_decode_array(void[] data, Posix.off_t offset, bool *val, size_t elements) throws MessageError {
             // gboolean size == gint, convert from byte
-            var i8_val = new int8[elements];
-            var ret = int8_decode_array(data, offset, i8_val, elements);
+            unowned int8[] buf = (int8[]) data;
+            if (buf.length - offset < elements)
+                throw new MessageError.OVERFLOW("decode");
 
             for (size_t idx = 0; idx < elements; idx++)
-                val[idx] = (i8_val[idx] > 0)? true : false;
+                val[idx] = buf[offset + idx] != 0;
 
-            return ret;
+            return elements;
         }
 
         public size_t int8_decode_array(void[] data, Posix.off_t offset, int8 *val, size_t elements) throws MessageError {
