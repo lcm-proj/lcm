@@ -190,8 +190,7 @@ typedef struct _lcm_frag_buf {
     uint32_t  data_size;
     uint16_t  fragments_remaining;
     uint32_t  msg_seqno;
-    GTimeVal last_packet_time;
-    int64_t   first_packet_utime;
+    int64_t   last_packet_utime;
 } lcm_frag_buf_t;
 
 lcm_frag_buf_t * lcm_frag_buf_new(struct sockaddr_in from, const char *channel,

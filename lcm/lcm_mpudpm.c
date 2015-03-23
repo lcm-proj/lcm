@@ -485,7 +485,7 @@ recv_message_fragment (lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
 
     // copy data
     memcpy (fbuf->data + fragment_offset, data_start, frag_size);
-    g_get_current_time(&fbuf->last_packet_time);
+    fbuf->last_packet_utime = lcmb->recv_utime;
 
     fbuf->fragments_remaining --;
 
@@ -516,7 +516,7 @@ recv_message_fragment (lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
         lcmb->channel_size = strlen (lcmb->channel_name);
         lcmb->data_offset = 0;
         lcmb->data_size = fbuf->data_size;
-        lcmb->recv_utime = fbuf->first_packet_utime;
+        lcmb->recv_utime = fbuf->last_packet_utime;
 
         // don't need the fragment buffer anymore
         lcm_frag_buf_store_remove (lcm->frag_bufs, fbuf);
