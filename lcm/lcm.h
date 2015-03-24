@@ -68,8 +68,8 @@ struct _lcm_recv_buf_t
      */
     uint32_t data_size;
     /**
-     * timestamp (micrseconds since the epoch) at which the first data
-     * bytes of the message were received.
+     * timestamp (micrseconds since the epoch) at which the message was
+     * received.
      */
     int64_t recv_utime;
     /**

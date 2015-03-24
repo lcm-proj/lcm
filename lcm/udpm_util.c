@@ -22,7 +22,7 @@ lcm_frag_buf_new (struct sockaddr_in from, const char *channel,
     fbuf->data = (char*)malloc (data_size);
     fbuf->data_size = data_size;
     fbuf->fragments_remaining = nfragments;
-    fbuf->first_packet_utime = first_packet_utime;
+    fbuf->last_packet_utime = first_packet_utime;
     return fbuf;
 }
 
@@ -61,8 +61,8 @@ _find_lru_frag_buf (gpointer key, gpointer value, void *user_data)
 {
     lcm_frag_buf_t **lru_fbuf = (lcm_frag_buf_t**) user_data;
     lcm_frag_buf_t *c_fbuf = (lcm_frag_buf_t*) value;
-    if (! *lru_fbuf || lcm_timeval_compare (&c_fbuf->last_packet_time,
-                &(*lru_fbuf)->last_packet_time) < 0) {
+    if (! *lru_fbuf ||
+        (c_fbuf->last_packet_utime < (*lru_fbuf)->last_packet_utime)) {
         *lru_fbuf = c_fbuf;
     }
 }
