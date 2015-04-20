@@ -27,6 +27,7 @@
 // to support python 3 where all ints are long
 #if PY_MAJOR_VERSION >= 3
     #define PyInt_FromLong PyLong_FromLong
+    #define PyInt_AsLong PyLong_AsLong
 #endif
 
 PyDoc_STRVAR (pylcm_doc,
