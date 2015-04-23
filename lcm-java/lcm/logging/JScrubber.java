@@ -35,6 +35,8 @@ public class JScrubber extends JComponent
 
     JPopupMenu popupMenu = new JPopupMenu();
     double popupPosition;
+    
+    int mouseDownRow = 0;
 
     public static final int BOOKMARK_PLAIN = 0, BOOKMARK_LREPEAT = 1, BOOKMARK_RREPEAT = 2;
     class Bookmark
@@ -230,7 +232,7 @@ public class JScrubber extends JComponent
         return pos;
     }
 
-    // convert an X coordinate to a position for the main scrubber
+    // convert an X coordinate to a position for the zoomed-in scrubber
     double getPosition2(int x)
     {
         double pos = ((double) x - MARGIN)/(getWidth() - 2*MARGIN);
@@ -258,6 +260,18 @@ public class JScrubber extends JComponent
             position = getPosition2(x);
 
         return position;
+    }
+    
+    /**
+     * Get position for a mouse click on a particular row
+     * Set row = 1 for the zoomed in slider.
+     */
+    double getPosition(int x, int y, int row) {
+        if (row == 1) {
+            return getPosition2(x);
+        } else {
+            return getPosition(x);
+        }
     }
 
     void updateGeometry()
@@ -427,8 +441,10 @@ public class JScrubber extends JComponent
 
         public void mousePressed(MouseEvent e)
         {
-            double position = getPosition(e.getX(), e.getY());
-            double tolerance = getPosition(e.getX()+CLICK_CLOSENESS, e.getY()) - position;
+            mouseDownRow = getRow(e.getX(), e.getY());
+            
+            double position = getPosition(e.getX(), e.getY(), mouseDownRow);
+            double tolerance = getPosition(e.getX()+CLICK_CLOSENESS, e.getY(), mouseDownRow) - position;
 
             if (e.getButton()==3)
             {
@@ -501,10 +517,9 @@ public class JScrubber extends JComponent
 
         public void mouseDragged(MouseEvent e)
         {
-            double position = getPosition(e.getX(), e.getY());
-            int row = getRow(e.getX(), e.getY());
+            double position = getPosition(e.getX(), e.getY(), mouseDownRow);
 
-            if (row == 1)
+            if (mouseDownRow == 1)
                 inhibitGeometryChanges = true;
             else
                 inhibitGeometryChanges = false;
