@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdio>  /* needed for FILE* */
 #include "lcm.h"
 
 namespace lcm {
@@ -548,6 +549,18 @@ class LogFile {
          * @sa lcm_eventlog_write_event()
          */
         inline int writeEvent(LogEvent* event);
+
+        /**
+         * @brief retrives the underlying FILE* wrapped by this class.
+         *
+         * This method should be used carefully and sparingly.
+         * An example use-case is borrowing to tweak the behavior of the I/O.
+         * Calls of interest include fflush(), fileno(), setvbuf(), etc
+         * It is a bad idea to attempt reading or writing on the raw FILE*
+         *
+         * @return the FILE* wrapped by this object.
+         */
+         inline FILE* getFilePtr();
 
     private:
         LogEvent curEvent;

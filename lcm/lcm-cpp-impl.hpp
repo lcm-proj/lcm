@@ -355,3 +355,9 @@ LogFile::writeEvent(LogEvent* event)
     evt.data = event->data;
     return lcm_eventlog_write_event(eventlog, &evt);
 }
+
+FILE*
+LogFile::getFilePtr()
+{
+    return eventlog->f;
+}
