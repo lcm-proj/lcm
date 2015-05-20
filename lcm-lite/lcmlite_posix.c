@@ -32,7 +32,7 @@ void transmit_packet(const void *_buf, int buf_len, void *user)
         perror("transmit_packet: sendto");
 }
 
-void abc_callback(lcmlite_t *lcm, const char *channel, const void *buf, int buf_len, void *user)
+static void abc_callback(lcmlite_t *lcm, const char *channel, const void *buf, int buf_len, void *user)
 {
     int8_t v = 17;
     printf("%d\n", buf_len);
@@ -48,6 +48,11 @@ void abc_callback(lcmlite_t *lcm, const char *channel, const void *buf, int buf_
     printf("Got abc!\n");
 
     lcmlite_publish(lcm, "ECHO", buf, buf_len);
+}
+
+static void generic_callback(lcmlite_t *lcm, const char *channel, const void *buf, int buf_len, void *user)
+{
+    printf("rx %20s %d bytes\n", channel, buf_len);
 }
 
 int main(int argc, char *argv[])
@@ -120,12 +125,21 @@ int main(int argc, char *argv[])
     lcmlite_init(&lcm, transmit_packet, &tinfo);
 
     // subscribe to LCM messages
-    lcmlite_subscription_t sub1;
-    sub1.channel = "FOOBAR";
-    sub1.callback = abc_callback;
-    sub1.user = NULL;
+    if (1) {
+        lcmlite_subscription_t *sub = calloc(1, sizeof(lcmlite_subscription_t));
+        sub->channel = "ABC";
+        sub->callback = abc_callback;
+        sub->user = NULL;
+        lcmlite_subscribe(&lcm, sub);
+    }
 
-    lcmlite_subscribe(&lcm, &sub1);
+    if (1) {
+        lcmlite_subscription_t *sub = calloc(1, sizeof(lcmlite_subscription_t));
+        sub->channel = "NMEA";
+        sub->callback = generic_callback;
+        sub->user = NULL;
+        lcmlite_subscribe(&lcm, sub);
+    }
 
     // read packets, pass them to LCM
     while (1) {
