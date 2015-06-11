@@ -371,8 +371,7 @@ public class ObjectPanel extends JPanel
             }
 
             // if this section is collapsed, resume drawing.
-            if (sections.get(section).collapsed)
-            {
+            if (sections.get(section).collapsed) {
                 collapse_depth --;
             }
 
