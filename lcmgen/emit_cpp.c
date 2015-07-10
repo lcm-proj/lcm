@@ -128,6 +128,7 @@ map_type_name(const char *t)
 
 void setup_cpp_options(getopt_t *gopt)
 {
+    getopt_add_string (gopt, 0, "cpp-std",    "c++98",      "C++ standard(c++98, c++11)");
     getopt_add_string (gopt, 0, "cpp-hpath",    ".",      "Location for .hpp files");
     getopt_add_string (gopt, 0, "cpp-include",   "",       "Generated #include lines reference this folder");
 }
@@ -188,7 +189,7 @@ emit_package_namespace_close(lcmgen_t* lcmgen, FILE* f, lcm_struct_t* ls)
 }
 
 /** Emit header file **/
-static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
+static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls, const char* cpp_std)
 {
     char *tn = ls->structname->lctypename;
     char *sn = ls->structname->shortname;
@@ -298,8 +299,13 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
               if (!strcmp(lc->lctypename, "int64_t"))
                 suffix = "LL";
               char* mapped_typename = map_type_name(lc->lctypename);
-              emit(2, "static const %-8s %s = %s%s;", mapped_typename,
+              if(!strcmp (cpp_std, "c++11")) {
+                emit(2, "static constexpr %-8s %s = %s%s;", mapped_typename,
                   lc->membername, lc->val_str, suffix);
+              } else {
+                emit(2, "static const %-8s %s = %s%s;", mapped_typename,
+                  lc->membername, lc->val_str, suffix);
+              }
               free(mapped_typename);
             }
         }
@@ -739,6 +745,9 @@ int emit_cpp(lcmgen_t *lcmgen)
                 strlen(getopt_get_string(lcmgen->gopt, "cpp-hpath")) > 0 ? G_DIR_SEPARATOR_S : "",
                 tn_);
 
+        // get cpp standard
+        char *cpp_std = getopt_get_string(lcmgen->gopt, "cpp-std");
+                
         // generate code if needed
         if (lcm_needs_generation(lcmgen, lr->lcmfile, header_name)) {
             make_dirs_for_file(header_name);
@@ -747,7 +756,7 @@ int emit_cpp(lcmgen_t *lcmgen)
             if (f == NULL)
                 return -1;
 
-            emit_header_start(lcmgen, f, lr);
+            emit_header_start(lcmgen, f, lr, cpp_std);
             emit_encode(lcmgen, f, lr);
             emit_decode(lcmgen, f, lr);
             emit_encoded_size(lcmgen, f, lr);
