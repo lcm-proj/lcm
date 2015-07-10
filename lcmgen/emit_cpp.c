@@ -194,9 +194,6 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     char *tn = ls->structname->lctypename;
     char *sn = ls->structname->shortname;
     char *tn_ = dots_to_underscores(tn);
-
-    // get cpp standard
-    char *cpp_std = getopt_get_string(lcmgen->gopt, "cpp-std");
     
     emit_auto_generated_warning(f);
 
@@ -302,6 +299,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
               if (!strcmp(lc->lctypename, "int64_t"))
                 suffix = "LL";
               char* mapped_typename = map_type_name(lc->lctypename);
+              char *cpp_std = getopt_get_string(lcmgen->gopt, "cpp-std");
               if(!strcmp (cpp_std, "c++11")) {
                 emit(2, "static constexpr %-8s %s = %s%s;", mapped_typename,
                   lc->membername, lc->val_str, suffix);
