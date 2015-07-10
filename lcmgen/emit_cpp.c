@@ -189,12 +189,15 @@ emit_package_namespace_close(lcmgen_t* lcmgen, FILE* f, lcm_struct_t* ls)
 }
 
 /** Emit header file **/
-static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls, const char* cpp_std)
+static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
 {
     char *tn = ls->structname->lctypename;
     char *sn = ls->structname->shortname;
     char *tn_ = dots_to_underscores(tn);
 
+    // get cpp standard
+    char *cpp_std = getopt_get_string(lcmgen->gopt, "cpp-std");
+    
     emit_auto_generated_warning(f);
 
     fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
@@ -303,8 +306,12 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls, const
                 emit(2, "static constexpr %-8s %s = %s%s;", mapped_typename,
                   lc->membername, lc->val_str, suffix);
               } else {
+                emit(2, "// If you're using C++11 and are getting compiler errors saying things like");
+                emit(2, "// ‘constexpr’ needed for in-class initialization of static data member");
+                emit(2, "// then re-run lcm-gen with '--cpp-std=c++11' to generate code that is");
+                emit(2, "// compliant with C++11");
                 emit(2, "static const %-8s %s = %s%s;", mapped_typename,
-                  lc->membername, lc->val_str, suffix);
+                lc->membername, lc->val_str, suffix);
               }
               free(mapped_typename);
             }
@@ -744,9 +751,6 @@ int emit_cpp(lcmgen_t *lcmgen)
                 getopt_get_string(lcmgen->gopt, "cpp-hpath"),
                 strlen(getopt_get_string(lcmgen->gopt, "cpp-hpath")) > 0 ? G_DIR_SEPARATOR_S : "",
                 tn_);
-
-        // get cpp standard
-        char *cpp_std = getopt_get_string(lcmgen->gopt, "cpp-std");
                 
         // generate code if needed
         if (lcm_needs_generation(lcmgen, lr->lcmfile, header_name)) {
@@ -756,7 +760,7 @@ int emit_cpp(lcmgen_t *lcmgen)
             if (f == NULL)
                 return -1;
 
-            emit_header_start(lcmgen, f, lr, cpp_std);
+            emit_header_start(lcmgen, f, lr);
             emit_encode(lcmgen, f, lr);
             emit_decode(lcmgen, f, lr);
             emit_encoded_size(lcmgen, f, lr);
