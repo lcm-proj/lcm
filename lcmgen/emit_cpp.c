@@ -128,6 +128,7 @@ map_type_name(const char *t)
 
 void setup_cpp_options(getopt_t *gopt)
 {
+    getopt_add_string (gopt, 0, "cpp-std",    "c++98",      "C++ standard(c++98, c++11)");
     getopt_add_string (gopt, 0, "cpp-hpath",    ".",      "Location for .hpp files");
     getopt_add_string (gopt, 0, "cpp-include",   "",       "Generated #include lines reference this folder");
 }
@@ -298,8 +299,24 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
               if (!strcmp(lc->lctypename, "int64_t"))
                 suffix = "LL";
               char* mapped_typename = map_type_name(lc->lctypename);
-              emit(2, "static const %-8s %s = %s%s;", mapped_typename,
+              char *cpp_std = getopt_get_string(lcmgen->gopt, "cpp-std");
+              if(strcmp("c++98",cpp_std) && strcmp("c++11",cpp_std)) {
+                  printf("%s is not a valid cpp_std. Use --cpp-std=c++98 or --cpp-std=c++11 instead\n\n", cpp_std);
+                  fflush(stdout);
+                  _exit(1);
+              }
+
+              if(!strcmp (cpp_std, "c++11")) {
+                emit(2, "static constexpr %-8s %s = %s%s;", mapped_typename,
                   lc->membername, lc->val_str, suffix);
+              } else {
+                emit(2, "// If you're using C++11 and are getting compiler errors saying things like");
+                emit(2, "// ‘constexpr’ needed for in-class initialization of static data member");
+                emit(2, "// then re-run lcm-gen with '--cpp-std=c++11' to generate code that is");
+                emit(2, "// compliant with C++11");
+                emit(2, "static const %-8s %s = %s%s;", mapped_typename,
+                lc->membername, lc->val_str, suffix);
+              }
               free(mapped_typename);
             }
         }
