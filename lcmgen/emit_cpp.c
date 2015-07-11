@@ -4,8 +4,6 @@
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
-#include <unistd.h>
-#include <stdbool.h>
 #ifdef WIN32
 #define __STDC_FORMAT_MACROS			// Enable integer types
 #endif
