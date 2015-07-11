@@ -194,7 +194,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     char *tn = ls->structname->lctypename;
     char *sn = ls->structname->shortname;
     char *tn_ = dots_to_underscores(tn);
-    
+
     emit_auto_generated_warning(f);
 
     fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
@@ -749,7 +749,7 @@ int emit_cpp(lcmgen_t *lcmgen)
                 getopt_get_string(lcmgen->gopt, "cpp-hpath"),
                 strlen(getopt_get_string(lcmgen->gopt, "cpp-hpath")) > 0 ? G_DIR_SEPARATOR_S : "",
                 tn_);
-                
+
         // generate code if needed
         if (lcm_needs_generation(lcmgen, lr->lcmfile, header_name)) {
             make_dirs_for_file(header_name);
