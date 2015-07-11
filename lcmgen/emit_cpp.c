@@ -4,6 +4,8 @@
 #include <assert.h>
 #include <string.h>
 #include <ctype.h>
+#include <unistd.h>
+#include <stdbool.h>
 #ifdef WIN32
 #define __STDC_FORMAT_MACROS			// Enable integer types
 #endif
@@ -300,6 +302,12 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
                 suffix = "LL";
               char* mapped_typename = map_type_name(lc->lctypename);
               char *cpp_std = getopt_get_string(lcmgen->gopt, "cpp-std");
+              if(strcmp("c++98",cpp_std) && strcmp("c++11",cpp_std)) {
+                  printf("%s is not a valid cpp_std. Use --cpp-std=c++98 or --cpp-std=c++11 instead\n\n", cpp_std);
+                  fflush(stdout);
+                  _exit(1);
+              }
+
               if(!strcmp (cpp_std, "c++11")) {
                 emit(2, "static constexpr %-8s %s = %s%s;", mapped_typename,
                   lc->membername, lc->val_str, suffix);
