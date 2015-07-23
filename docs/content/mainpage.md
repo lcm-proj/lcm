@@ -84,10 +84,10 @@ research and production environments. Its users have included:
 * Ford Motor Company
 * Georgia Tech
 * Google
+* Korea Advanced Institute of Science and Technology (KAIST)
 * MIT
 * Soar Technology
 * University of Michigan
 * Woods Hole Oceanographic Institute
 
-If you're using LCM for development or production, we'd love to hear about it.
-Send an e-mail to lcm-dev@googlegroups.com to let us know.
+If you're using LCM for development or production, we'd love to hear about it.  Let us know by sending a message to the [mailing list](http://groups.google.com/group/lcm-users).
