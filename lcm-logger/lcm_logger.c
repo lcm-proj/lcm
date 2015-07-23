@@ -69,6 +69,7 @@ struct logger
     int fflush_interval_ms;
     int rotate;
     int quiet;
+    int append;
 
     GThread *write_thread;
     GAsyncQueue *write_queue;
@@ -157,7 +158,7 @@ open_logfile(logger_t* logger)
         snprintf(logger->fname, sizeof(logger->fname), "%s.0", logger->fname_prefix);
     } else {
         strcpy(logger->fname, logger->fname_prefix);
-        if (! logger->force_overwrite) {
+        if (! (logger->force_overwrite || logger->append)) {
             if (g_file_test(logger->fname, G_FILE_TEST_EXISTS))
             {
                 fprintf (stderr, "Refusing to overwrite existing file \"%s\"\n",
@@ -178,9 +179,9 @@ open_logfile(logger_t* logger)
         printf("Opening log file \"%s\"\n", logger->fname);
     }
 
-    // open output file in append mode if we're rotating log files, or write
-    // mode if not.
-    const char* logmode = (logger->rotate > 0) ? "a" : "w";
+    // open output file in append mode if we're rotating log files or appending
+    // use write mode if not.
+    const char* logmode = (logger->rotate > 0 || logger->append) ? "a" : "w";
     logger->log = lcm_eventlog_create(logger->fname, logmode);
     if (logger->log == NULL) {
         perror ("Error: fopen failed");
@@ -388,6 +389,7 @@ static void usage ()
             "                             (can be fractional).  This option requires -i\n"
             "                             or --rotate.\n"
             "  -q, --quiet                Suppress normal output and only report errors.\n"
+            "  -a, --append               Append events to the given log file.\n"
             "  -s, --strftime             Format FILE with strftime.\n"
             "  -v, --invert-channels      Invert channels.  Log everything that CHAN\n"
             "                             does not match.\n"
@@ -428,9 +430,10 @@ int main(int argc, char *argv[])
     logger.fflush_interval_ms = 100;
     logger.rotate = -1;
     logger.quiet = 0;
+    logger.append = 0;
 
     char *lcmurl = NULL;
-    char *optstring = "a:fic:shm:vu:q";
+    char *optstring = "fic:shm:vu:qa";
     int c;
     struct option long_opts[] = {
         { "split-mb", required_argument, 0, 'b' },
@@ -442,6 +445,7 @@ int main(int argc, char *argv[])
         { "rotate", required_argument, 0, 'r' },
         { "strftime", required_argument, 0, 's' },
         { "quiet", no_argument, 0, 'q' },
+        { "append", no_argument, 0, 'a' },
         { "invert-channels", no_argument, 0, 'v' },
         { "flush-interval", required_argument, 0,'u'},
         { 0, 0, 0, 0 }
@@ -504,6 +508,9 @@ int main(int argc, char *argv[])
                   return 1;
               }
               break;
+            case 'a':
+              logger.append = 1;
+              break;
             case 'h':
             default:
                 usage();
@@ -530,6 +537,9 @@ int main(int argc, char *argv[])
     if(logger.rotate > 0 && logger.auto_increment) {
         fprintf(stderr, "ERROR.  --increment and --rotate can't both be used\n");
         return 1;
+    }
+    if (logger.force_overwrite && logger.append) {
+        fprintf(stderr, "ERROR.  --force_overwrite and --append can't both be used\n");
     }
 
     // initialize GLib threading

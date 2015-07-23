@@ -14,12 +14,20 @@
 #include "dbg.h"
 #include "eventlog.h"
 
+typedef enum {
+  LCM_LOGPROV_READ_MODE=0,
+  LCM_LOGPROV_WRITE_MODE=1,
+  LCM_LOGPROV_APPEND_MODE=2,
+} lcm_log_provider_mode_t;
+
 typedef struct _lcm_provider_t lcm_logprov_t;
 struct _lcm_provider_t {
     lcm_t * lcm;
 
     char * filename;
-    int8_t writer;
+
+    // The log file mode (reading, writing, append)
+    lcm_log_provider_mode_t log_mode;
 
     lcm_eventlog_t * log;
     lcm_eventlog_event_t * event;
@@ -127,10 +135,14 @@ new_argument (gpointer key, gpointer value, gpointer user)
             fprintf (stderr, "Warning: Invalid value for start_timestamp\n");
     } else if (!strcmp ((char *) key, "mode")) {
         const char *mode = (char *) value;
-        if(!strcmp(mode, "w")) {
-            lr->writer=1;
-        } else if (strcmp(mode, "r")) {
-            fprintf(stderr, "Warning: Invalid value for mode\n");
+        if (!strcmp(mode, "r")) {
+            lr->log_mode = LCM_LOGPROV_READ_MODE;
+        } else if(!strcmp(mode, "w")) {
+          lr->log_mode = LCM_LOGPROV_WRITE_MODE;
+        } else if(!strcmp(mode, "a")) {
+            lr->log_mode = LCM_LOGPROV_APPEND_MODE;
+        } else {
+          fprintf(stderr, "Warning: Invalid value for mode: %s\n", mode);
         }
     } else {
         fprintf(stderr, "Warning: unrecognized option: [%s]\n",
@@ -183,10 +195,20 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
     }
     //fcntl (lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
 
-    if (!lr->writer) {
-        lr->log = lcm_eventlog_create (lr->filename, "r");
-    } else {
-        lr->log = lcm_eventlog_create (lr->filename, "w");
+    switch (lr->log_mode) {
+        case LCM_LOGPROV_READ_MODE:
+            lr->log = lcm_eventlog_create(lr->filename, "r");
+            break;
+        case LCM_LOGPROV_WRITE_MODE:
+            lr->log = lcm_eventlog_create(lr->filename, "w");
+            break;
+        case LCM_LOGPROV_APPEND_MODE:
+            lr->log = lcm_eventlog_create(lr->filename, "a");
+            break;
+        default:
+            fprintf(stderr, "Error: invalid log_mode: %d\n", lr->log_mode);
+            lcm_logprov_destroy(lr);
+            return NULL;
     }
 
     if (!lr->log) {
@@ -196,8 +218,8 @@ lcm_logprov_create (lcm_t * parent, const char *target, const GHashTable *args)
         return NULL;
     }
 
-    // only start the reader thread if not in write mode
-    if (!lr->writer){
+    // only start the reader thread if we're in read mode
+    if (lr->log_mode == LCM_LOGPROV_READ_MODE){
         if (load_next_event (lr) < 0) {
             fprintf (stderr, "Error: Failed to read first event from log\n");
             lcm_logprov_destroy (lr);
@@ -303,8 +325,8 @@ static int
 lcm_logprov_publish (lcm_logprov_t *lcm, const char *channel, const void *data,
         unsigned int datalen)
 {
-    if(!lcm->writer) {
-        dbg(DBG_LCM, "Called publish(), but lcm file provider is not in write mode\n");
+    if(lcm->log_mode == LCM_LOGPROV_READ_MODE) {
+        dbg(DBG_LCM, "Called publish(), but lcm file provider is in read mode\n");
         return -1;
     }
     int channellen = strlen(channel);
