@@ -322,6 +322,7 @@ public class ObjectPanel extends JPanel
                 g.drawString(tok, tok_pixidx, y);
                 g.drawString(drawtype, type_pixidx, y);
 
+                int y_top = y;
                 // check if type field is too long. put name on new line if yes
                 if (type_pixidx + type_len > x[1])
                     y+= textheight;
@@ -339,12 +340,11 @@ public class ObjectPanel extends JPanel
                 // we are collapsed.
                 cs.x0 = x[0];
                 cs.x1 = getWidth();
-                cs.y0 = y - textheight;
+                cs.y0 = y_top - textheight;
                 cs.y1 = y;
 
                 y += textheight;
 
-                indent();
             }
             else
             {
@@ -356,6 +356,9 @@ public class ObjectPanel extends JPanel
             // if this section is collapsed, stop drawing.
             if (sections.get(section).collapsed) {
                 collapse_depth ++;
+            } else if (collapse_depth == 0) {
+                // Only indent if this section isn't collapsed.
+                indent();
             }
 
             return section;
@@ -364,7 +367,6 @@ public class ObjectPanel extends JPanel
         public void endSection(int section)
         {
             Section cs = sections.get(section);
-            cs.y1 = y;
             
             if (collapse_depth == 0) {
                 unindent();
