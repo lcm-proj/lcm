@@ -681,7 +681,14 @@ public class ObjectPanel extends JPanel
     {
         this.o = o;
         this.utime = utime - chartData.getStartTime();
-        repaint();
+        
+        JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        
+        if (topFrame.getExtendedState() == Frame.ICONIFIED) {
+            UpdateGraphDataWithoutPaint();
+        } else {
+            repaint();
+        }
     }
 
     public Dimension getPreferredSize()
@@ -876,6 +883,95 @@ public class ObjectPanel extends JPanel
             }
 
             ps.endSection(sec);
+        }
+    }
+    
+    /**
+     * Usually the paintRecurse method deals with searching through the incoming data
+     * but when the window is minimized, we do not paint, causing the child graphs
+     * to stop updating.  This method performs that search and adds data to the graphs
+     * without actually drawing anything
+     */
+    void UpdateGraphDataWithoutPaint() {
+        for (SparklineData data : graphingSparklines) {
+            UpdateGraphDataWithoutPaintRecurse(data, "", o.getClass(), o);
+        }
+    }
+    
+    /**
+     * Recursive call for the search through the data object
+     *
+     * @param sparklineToUpdate data to update
+     * @param name
+     * @param cls
+     * @param o
+     */
+    void UpdateGraphDataWithoutPaintRecurse(SparklineData sparklineToUpdate, String name, Class cls, Object o) {
+
+        if (sparklineToUpdate.chart == null) {
+            // don't have a big chart for this, no point in updating it
+            return;
+        }
+        
+        if (o instanceof Enum || cls.equals(String.class)) {
+            // no further objects to recurse into and no
+            // data to store
+            return;
+        }
+        
+        
+        if (cls.isPrimitive() || cls.equals(Byte.TYPE)) {
+
+            if (sparklineToUpdate.name.equals(name))
+            {
+                // we found the part of the data that this chart is using
+                // update it!
+                double value = Double.NaN;
+
+                if (o instanceof Double)
+                    value = (Double) o;
+                else if (o instanceof Float)
+                    value = (Float) o;
+                else if (o instanceof Integer)
+                    value = (Integer) o;
+                else if (o instanceof Long)
+                    value = (Long) o;
+                else if (o instanceof Short)
+                    value = (Short) o;
+                else if (o instanceof Byte)
+                    value = (Byte) o;
+                
+                
+                ITrace2D trace = sparklineToUpdate.chart.getTraces().first();
+                
+                if (trace.getMaxX() < (double)utime/1000000.0d) {
+                    // this is a new point, add it
+                    trace.addPoint((double)utime/1000000.0d, value);
+                }
+                return;
+            }
+            
+        } else if (cls.isArray())  {
+
+            int sz = Array.getLength(o);
+
+            for (int i = 0; i < sz; i++)
+                UpdateGraphDataWithoutPaintRecurse(sparklineToUpdate, name+"["+i+"]", cls.getComponentType(), Array.get(o, i));
+
+        } else {
+
+            // it's a compound type. recurse.
+
+            // it's a class
+            Field fs[] = cls.getFields();
+            for (Field f : fs) {
+                try {
+                    UpdateGraphDataWithoutPaintRecurse(sparklineToUpdate, f.getName(), f.getType(), f.get(o));
+                } catch (Exception ex) {
+                    System.out.println(ex.getMessage());
+                    ex.printStackTrace(System.out);
+                }
+            }
         }
     }
 
