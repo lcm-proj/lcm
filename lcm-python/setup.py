@@ -1,7 +1,8 @@
-import commands
+import subprocess
 from distutils.core import setup, Extension
 from distutils import msvccompiler
 import os
+import sys
 
 sources = [ \
     "module.c",
@@ -64,19 +65,19 @@ else:
     pkg_deps = "glib-2.0 gthread-2.0"
 
     # include path
-    pkgconfig_include_flags = commands.getoutput("pkg-config --cflags-only-I")
+    pkgconfig_include_flags = subprocess.check_output( ["pkg-config", "--cflags-only-I", pkg_deps] ).decode(sys.stdout.encoding)
     include_dirs = [ t[2:] for t in pkgconfig_include_flags.split() ]
 
     # libraries
-    pkgconfig_lflags = commands.getoutput("pkg-config --libs-only-l %s" % pkg_deps)
+    pkgconfig_lflags = subprocess.check_output( ["pkg-config", "--libs-only-l", pkg_deps] ).decode(sys.stdout.encoding)
     libraries = [ t[2:] for t in pkgconfig_lflags.split() ]
 
     # link directories
-    pkgconfig_biglflags = commands.getoutput("pkg-config --libs-only-L %s" % pkg_deps)
+    pkgconfig_biglflags = subprocess.check_output( ["pkg-config", "--libs-only-L", pkg_deps ] ).decode(sys.stdout.encoding)
     library_dirs = [ t[2:] for t in pkgconfig_biglflags.split() ]
 
     # other compiler flags
-    pkgconfig_cflags = commands.getoutput("pkg-config --cflags %s" % pkg_deps).split()
+    pkgconfig_cflags = subprocess.check_output( ["pkg-config", "--cflags", pkg_deps] ).decode(sys.stdout.encoding).split()
     extra_compile_args = [ \
         '-Wno-strict-prototypes',
         "-D_FILE_OFFSET_BITS=64",

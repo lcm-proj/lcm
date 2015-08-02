@@ -354,8 +354,9 @@ public class ObjectPanel extends JPanel
 
 
             // if this section is collapsed, stop drawing.
-            if (sections.get(section).collapsed)
+            if (sections.get(section).collapsed) {
                 collapse_depth ++;
+            }
 
             return section;
         }
@@ -364,12 +365,16 @@ public class ObjectPanel extends JPanel
         {
             Section cs = sections.get(section);
             cs.y1 = y;
+            
+            if (collapse_depth == 0) {
+                unindent();
+            }
 
             // if this section is collapsed, resume drawing.
-            if (sections.get(section).collapsed)
+            if (sections.get(section).collapsed) {
                 collapse_depth --;
+            }
 
-            unindent();
             spacer();
             endColorBlock();
             spacer();

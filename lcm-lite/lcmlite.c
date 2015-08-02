@@ -76,12 +76,11 @@ static void deliver_packet(lcmlite_t *lcm, const char *channel, const void *buf,
                 break;
 
             if (sub->channel[pos] == channel[pos]) {
-                // end of string? if so, we're done.
+                // end of both strings? if so, we're done.
                 if (channel[pos] == 0)
                     break;
 
                 // proceed to the next letter
-                pos++;
                 continue;
             }
 
@@ -101,7 +100,7 @@ int lcmlite_init(lcmlite_t *lcm, void (*transmit_packet)(const void *_buf, int b
     memset(lcm, 0, sizeof(lcmlite_t));
     lcm->transmit_packet = transmit_packet;
     lcm->transmit_user = transmit_user;
-    
+
     return 0;
 }
 
@@ -129,7 +128,7 @@ int lcmlite_receive_packet(lcmlite_t *lcm, const void *_buf, int buf_len, uint64
 
         uint32_t msg_seq = decode_u32(&buf[buf_pos]);  buf_pos += 4;
         (void) msg_seq; // quiet unused variable warning.
-        
+
         // copy out zero-terminated string holding the channel #.
         char channel[LCM_MAX_CHANNEL_LENGTH];
         int channel_len = 0;
@@ -322,6 +321,6 @@ int lcmlite_publish(lcmlite_t *lcm, const char *channel, const void *_buf, int b
             fragment_id++;
         }
     }
-    
+
     return 0;
 }

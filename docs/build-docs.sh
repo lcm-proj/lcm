@@ -29,4 +29,4 @@ doxygen
 cd ../lcm-dotnet
 doxygen
 mv lcm-dotnet/html ../docs/html/lcm-dotnet
-rmdir lcm-dotnet
+rm -rf lcm-dotnet
