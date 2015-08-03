@@ -345,7 +345,7 @@ public class ObjectPanel extends JPanel
                 // we are collapsed.
                 cs.x0 = x[0];
 
-             // only have section minimization out to the edge of the text
+                // only have section minimization out to the edge of the text
                 if (name_len > 0)
                     cs.x1 = x[1] + name_len + extra_click_margin;
                 else {
@@ -356,7 +356,6 @@ public class ObjectPanel extends JPanel
 
                 y += textheight;
 
-                indent();
             }
             else
             {
@@ -368,6 +367,9 @@ public class ObjectPanel extends JPanel
             // if this section is collapsed, stop drawing.
             if (sections.get(section).collapsed) {
                 collapse_depth ++;
+            } else if (collapse_depth == 0) {
+                // Only indent if this section isn't collapsed.
+                indent();
             }
 
             return section;

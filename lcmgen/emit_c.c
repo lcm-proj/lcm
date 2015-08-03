@@ -342,7 +342,7 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
 
     emit(0,"// LCM support functions. Users should not call these");
     emit(0,"int64_t __%s_get_hash(void);", tn_);
-    emit(0,"int64_t __%s_hash_recursive(const __lcm_hash_ptr *p);", tn_);
+    emit(0,"uint64_t __%s_hash_recursive(const __lcm_hash_ptr *p);", tn_);
     emit(0,"int     __%s_encode_array(void *buf, int offset, int maxlen, const %s *p, int elements);", tn_, tn_);
     emit(0,"int     __%s_decode_array(const void *buf, int offset, int maxlen, %s *p, int elements);", tn_, tn_);
     emit(0,"int     __%s_decode_array_cleanup(%s *p, int elements);", tn_, tn_);
@@ -358,10 +358,10 @@ static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     char *tn_ = dots_to_underscores(tn);
 
     emit(0, "static int __%s_hash_computed;", tn_);
-    emit(0, "static int64_t __%s_hash;", tn_);
+    emit(0, "static uint64_t __%s_hash;", tn_);
     emit(0, "");
 
-    emit(0, "int64_t __%s_hash_recursive(const __lcm_hash_ptr *p)", tn_);
+    emit(0, "uint64_t __%s_hash_recursive(const __lcm_hash_ptr *p)", tn_);
     emit(0, "{");
     emit(1,     "const __lcm_hash_ptr *fp;");
     emit(1,     "for (fp = p; fp != NULL; fp = fp->parent)");
@@ -373,7 +373,7 @@ static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(1, "cp.v = (void*)__%s_get_hash;", tn_);
     emit(1, "(void) cp;");
     emit(0, "");
-    emit(1, "int64_t hash = (int64_t)0x%016"PRIx64"LL", ls->hash);
+    emit(1, "uint64_t hash = (uint64_t)0x%016"PRIx64"LL", ls->hash);
 
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
@@ -389,7 +389,7 @@ static void emit_c_struct_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "int64_t __%s_get_hash(void)", tn_);
     emit(0, "{");
     emit(1, "if (!__%s_hash_computed) {", tn_);
-    emit(2,      "__%s_hash = __%s_hash_recursive(NULL);", tn_, tn_);
+    emit(2,      "__%s_hash = (int64_t)__%s_hash_recursive(NULL);", tn_, tn_);
     emit(2,      "__%s_hash_computed = 1;", tn_);
     emit(1,      "}");
     emit(0, "");
@@ -499,7 +499,11 @@ static void emit_c_encode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     emit(0,"int __%s_encode_array(void *buf, int offset, int maxlen, const %s *p, int elements)", tn_, tn_);
     emit(0,"{");
-    emit(1,    "int pos = 0, thislen, element;");
+    emit(1,    "int pos = 0, element;");
+    if (g_ptr_array_size(ls->members) > 0) {
+        emit(1, "int thislen;");
+    }
+
     emit(0,"");
     emit(1,    "for (element = 0; element < elements; element++) {");
     emit(0,"");
