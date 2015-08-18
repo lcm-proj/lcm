@@ -160,7 +160,7 @@ static void emit_class_start(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     const char *tn = ls->structname->lctypename;
 
     emit_comment(f, 0, ls->comment);
-    emit(0, "public class %s : Lcm.IMessage {", tn);
+    emit(0, "public class %s : Lcm.IMessage, Object {", tn);
 }
 
 static void emit_class_end(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
