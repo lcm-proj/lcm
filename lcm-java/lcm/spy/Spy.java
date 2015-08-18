@@ -207,7 +207,6 @@ public class Spy
             cd.viewerFrame = new JFrame(cd.name);
 
             cd.viewer = new ObjectPanel(cd.name, chartData);
-            cd.viewer.setObject(cd.last, cd.last_utime);
 
             //    cd.viewer = new ObjectViewer(cd.name, cd.cls, null);
             cd.viewerFrame.setLayout(new BorderLayout());
@@ -220,8 +219,10 @@ public class Spy
             // make smart decisions about which elements are in view of the user
             // so it can avoid drawing items outside the view
             cd.viewer.setViewport(viewerScrollPane.getViewport());
-
+            
             cd.viewerFrame.add(viewerScrollPane, BorderLayout.CENTER);
+            
+            cd.viewer.setObject(cd.last, cd.last_utime);
 
             //jdp.add(cd.viewerFrame);
 
