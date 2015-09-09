@@ -96,7 +96,7 @@ pylog_seek (PyLogObject *self, PyObject *arg)
         return NULL;
     }
 
-    fseek (self->eventlog->f, offset, SEEK_SET);
+    fseeko (self->eventlog->f, offset, SEEK_SET);
 
     Py_INCREF (Py_None);
     return Py_None;
