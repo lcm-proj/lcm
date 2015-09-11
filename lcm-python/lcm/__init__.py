@@ -66,6 +66,16 @@ to next() returning the next L{Event<lcm.Event>} in the log.
         """
         return self.c_eventlog.seek (filepos)
 
+    def seek_to_timestamp (self, timestamp):
+        """Seek (approximately) to a particular timestamp.
+
+        @param eventlog The log file object
+        @param ts Timestamp of the target event in the log file.
+
+        @return: None
+        """
+        return self.c_eventlog.seek_to_timestamp (timestamp)
+
     def size (self):
         """
         @return: the total size of the log file, in bytes
