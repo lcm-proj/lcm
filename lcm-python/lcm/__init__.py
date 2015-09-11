@@ -11,10 +11,10 @@ class Event(object):
         Initializer
         """
 
-        self.eventnum = eventnum 
+        self.eventnum = eventnum
         """Event number"""
 
-        self.timestamp = timestamp 
+        self.timestamp = timestamp
         """Microseconds since 00:00:00 Jan 1, 1970 UTC marking the time at
         which the message was originally received
         """
@@ -38,7 +38,7 @@ to next() returning the next L{Event<lcm.Event>} in the log.
 
         @param path:  Path to the logfile to open
         @param mode:  Open the log for reading ('r') or writing ('w')
-        @param overwrite:  If mode is 'w', and the filename at path already 
+        @param overwrite:  If mode is 'w', and the filename at path already
         exists, then EventLog will truncate and overwrite the file if this
         parameter is set to True.  Otherwise, EventLog refuses to overwrite
         existing files and raises a ValueError.
@@ -103,15 +103,15 @@ to next() returning the next L{Event<lcm.Event>} in the log.
         tup = self.c_eventlog.read_next_event ()
         if not tup: return None
         return Event (*tup)
-    
+
     def __iter__ (self):
         self.c_eventlog.seek (0)
         return self
-    
+
     def __next__ (self):
         """
         Python 2.6 - 3.x version for iterators
-        
+
         @rtype: L{Event<lcm.Event>}
         """
         return self.next()
