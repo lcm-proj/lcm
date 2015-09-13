@@ -368,3 +368,21 @@ clear_lcmtest2_another_type_t(lcmtest2_another_type_t* msg)
 {
     return;
 }
+
+char*
+make_tmpnam()
+{
+#ifndef WIN32
+    return tmpnam(NULL);
+#else
+    return _tempnam(NULL, NULL);
+#endif
+}
+
+void
+free_tmpnam(char* tmpnam)
+{
+#ifdef WIN32
+    free(tmpnam);
+#endif
+}

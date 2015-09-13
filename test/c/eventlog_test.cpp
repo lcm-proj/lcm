@@ -3,19 +3,24 @@
 #include <gtest/gtest.h>
 
 #include <lcm/lcm.h>
+#include "common.h"
 
 TEST(LCM_C, EventLogBasic) {
     // Open and close a log file.
-    char* fname = tmpnam(NULL);
+    char* fname = make_tmpnam();
+
     lcm_eventlog_t* wlog = lcm_eventlog_create(fname, "w");
     EXPECT_NE((void*)NULL, wlog);
     lcm_eventlog_destroy(wlog);
+
+    free_tmpnam(fname);
 }
 
 TEST(LCM_C, EventLogWriteRead) {
     // Write some events to a log, then read them back in and check what was
     // read is the same as what was written.
-    char* fname = tmpnam(NULL);
+    char* fname = make_tmpnam();
+
     lcm_eventlog_t* wlog = lcm_eventlog_create(fname, "w");
     EXPECT_NE((void*)NULL, wlog);
 
@@ -73,11 +78,13 @@ TEST(LCM_C, EventLogWriteRead) {
     }
 
     lcm_eventlog_destroy(rlog);
+    free_tmpnam(fname);
 }
 
 TEST(LCM_C, EventLogCorrupt) {
     // Tests detection of corrupt data.
-    char* fname = tmpnam(NULL);
+    char* fname = make_tmpnam();
+
     lcm_eventlog_t* wlog = lcm_eventlog_create(fname, "w");
     ASSERT_NE((void*)NULL, wlog);
 
@@ -119,4 +126,5 @@ TEST(LCM_C, EventLogCorrupt) {
     EXPECT_EQ((void*)NULL, revent);
 
     lcm_eventlog_destroy(rlog);
+    free_tmpnam(fname);
 }

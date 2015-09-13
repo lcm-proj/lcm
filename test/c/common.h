@@ -39,6 +39,9 @@ int check_lcmtest2_another_type_t(const lcmtest2_another_type_t* msg, int expect
 void fill_lcmtest2_another_type_t(int n, lcmtest2_another_type_t* msg);
 void clear_lcmtest2_another_type_t(lcmtest2_another_type_t* msg);
 
+char* make_tmpnam();
+void free_tmpnam(char* tmpnam);
+
 #ifdef __cplusplus
 }
 #endif
