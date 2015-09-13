@@ -233,6 +233,10 @@ lcm_handle_timeout (lcm_t *lcm, int timeout_milis)
   timeout.tv_sec = timeout_milis / 1000;
   timeout.tv_usec = (timeout_milis % 1000) * 1000;
 
+  if (timeout_milis < 0) {
+      return -1;
+  }
+
   int select_result = select(lcm_fd + 1, &fds, NULL, NULL, &timeout);
   if (select_result > 0) {
       int lcm_handle_result = lcm_handle(lcm);
