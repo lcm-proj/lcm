@@ -11,7 +11,9 @@ extern "C" {
 #include "lcmtest_multidim_array_t.h"
 #include "lcmtest2_cross_package_t.h"
 
+#ifndef _MSC_VER
 char* _strdup(const char* src);
+#endif
 
 int check_lcmtest_multidim_array_t(const lcmtest_multidim_array_t* msg, int expected);
 void fill_lcmtest_multidim_array_t(int num_children, lcmtest_multidim_array_t* result);
