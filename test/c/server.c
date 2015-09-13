@@ -114,7 +114,7 @@ int main(int argc, char** argv)
     if(!g_lcm)
         return 1;
 
-    lcm_subscribe(g_lcm, "TEST_QUIT", &quit_handler, NULL);
+    lcm_subscribe(g_lcm, "TEST_QUIT", (lcm_msg_handler_t)&quit_handler, NULL);
 
     lcm_subscribe(g_lcm, "TEST_ECHO", &echo_handler, NULL);
 
