@@ -9,14 +9,14 @@ import xml.etree.ElementTree
 import xmlrunner
 
 def run_gtest(name):
-    xml_fname = name.replace("/", "_")
+    xml_fname = name.replace(os.sep, "_")
     subprocess.check_call("%s --gtest_output=xml:lcm_unittest/%s.xml" % \
             (name, xml_fname), shell=True)
 
 def run_tests():
     # Python unit tests
     print("Running Python unit tests")
-    py_results_file = open("lcm_unittest/lcm_python.xml", "w")
+    py_results_file = open(os.path.join("lcm_unittest", "lcm_python.xml"), "w")
     sys.path.append("python")
     tests = unittest.TestLoader().discover("python", "*_test.py")
     runner = xmlrunner.XMLTestRunner(py_results_file)
@@ -25,12 +25,12 @@ def run_tests():
 
     # C unit tests
     print("Running C unit tests")
-    run_gtest("c/memq_test")
-    run_gtest("c/eventlog_test")
+    run_gtest(os.path.join("c", "memq_test"))
+    run_gtest(os.path.join("c", "eventlog_test"))
 
     # C++ unit tests
     print("Running C++ unit tests")
-    run_gtest("cpp/memq_test")
+    run_gtest(os.path.join("cpp", "memq_test"))
 
 def summarize_results():
     # Parse and summarize unit test results
@@ -38,7 +38,7 @@ def summarize_results():
     num_tests = 0
     num_errors = 0
     for bname in os.listdir("lcm_unittest"):
-        fname = "lcm_unittest/%s" % bname
+        fname = os.path.join("lcm_unittest", bname)
         tree = xml.etree.ElementTree.parse(fname)
         root = tree.getroot()
         for testsuite in root.iter("testsuite"):
