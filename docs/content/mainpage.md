@@ -88,6 +88,7 @@ research and production environments. Its users have included:
 * MIT
 * Soar Technology
 * University of Michigan
+* Volvo Car Group
 * Woods Hole Oceanographic Institute
 
 If you're using LCM for development or production, we'd love to hear about it.  Let us know by sending a message to the [mailing list](http://groups.google.com/group/lcm-users).
