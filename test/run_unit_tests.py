@@ -9,7 +9,7 @@ import xml.etree.ElementTree
 import xmlrunner
 
 def run_gtest(name):
-    xml_fname = name.replace(os.sep, "_")
+    xml_fname = name.replace(os.path.sep, "_")
     subprocess.check_call("%s --gtest_output=xml:lcm_unittest/%s.xml" % \
             (name, xml_fname), shell=True)
 
