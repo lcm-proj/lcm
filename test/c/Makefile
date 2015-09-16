@@ -35,7 +35,7 @@ client.o: client.cpp $(types_src)
 server.o: server.c $(types_src)
 	$(CC) $(CFLAGS) -c $<
 
-eventlog_test: eventlog_test.o
+eventlog_test: eventlog_test.o common.o
 	$(CXX) -o $@ $^ $(LDFLAGS) $(GTEST_LIBS)
 
 eventlog_test.o: eventlog_test.cpp
