@@ -4,7 +4,7 @@ AM_CPPFLAGS = $(GLIB_CFLAGS)
 
 lib_LTLIBRARIES = liblcm.la
 
-liblcm_la_LDFLAGS = -version-info @LIBLCM_VERSION_INFO@
+liblcm_la_LDFLAGS = -version-info @LIBLCM_VERSION_INFO@ -no-undefined
 liblcm_la_SOURCES = \
 	dbg.h \
 	lcm.c \
