@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6C7970F3-262A-439D-854C-CF3A82EFC824}</ProjectGuid>
+    <RootNamespace>lcm</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Common.props" />
+    <Import Project="Release.props" />
+    <Import Project="UseGlib.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Common.props" />
+    <Import Project="Debug.props" />
+    <Import Project="UseGlib.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>$(ProjectName)d</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions> /SECTION:.winlcm,RWS %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions> /SECTION:.winlcm,RWS %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\lcm\eventlog.c" />
+    <ClCompile Include="..\..\lcm\lcm.c" />
+    <ClCompile Include="..\..\lcm\lcm_file.c" />
+    <ClCompile Include="..\..\lcm\lcm_tcpq.c" />
+    <ClCompile Include="..\..\lcm\lcm_memq.c" />
+    <ClCompile Include="..\..\lcm\lcm_udpm.c" />
+    <ClCompile Include="..\..\lcm\lcm_mpudpm.c" />
+    <ClCompile Include="..\..\lcm\ringbuffer.c" />
+    <ClCompile Include="..\..\lcm\udpm_util.c" />
+    <ClCompile Include="..\..\lcm\windows\WinLCM.cpp" />
+    <ClCompile Include="..\..\lcm\windows\WinPorting.cpp" />
+    <ClCompile Include="..\..\lcm\lcmtypes\channel_to_port_t.c" />
+    <ClCompile Include="..\..\lcm\lcmtypes\channel_port_map_update_t.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\lcm\dbg.h" />
+    <ClInclude Include="..\..\lcm\eventlog.h" />
+    <ClInclude Include="..\..\lcm\ioutils.h" />
+    <ClInclude Include="..\..\lcm\lcm-cpp-impl.hpp" />
+    <ClInclude Include="..\..\lcm\lcm-cpp.hpp" />
+    <ClInclude Include="..\..\lcm\lcm.h" />
+    <ClInclude Include="..\..\lcm\lcm_internal.h" />
+    <ClInclude Include="..\..\lcm\ringbuffer.h" />
+    <ClInclude Include="..\..\lcm\udpm_util.h" />
+    <ClInclude Include="..\..\lcm\windows\WinPorting.h" />
+    <ClInclude Include="..\..\lcm\lcmtypes\channel_port_map_update_t.h" />
+    <ClInclude Include="..\..\lcm\lcmtypes\channel_to_port_t.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -18,6 +18,39 @@ typedef int SOCKET;
         return 0; \
     }
 
+#if defined(_MSC_VER) && _MSC_VER < 1900
+
+#define snprintf c99_snprintf
+#define vsnprintf c99_vsnprintf
+
+inline int c99_vsnprintf(char *outBuf, size_t size, const char *format, va_list ap)
+{
+    int count = -1;
+
+    if (size != 0)
+        count = _vsnprintf_s(outBuf, size, _TRUNCATE, format, ap);
+    if (count == -1)
+        count = _vscprintf(format, ap);
+
+    return count;
+}
+
+inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
+{
+    int count;
+    va_list ap;
+
+    va_start(ap, format);
+    count = c99_vsnprintf(outBuf, size, format, ap);
+    va_end(ap);
+
+    return count;
+}
+
+#endif
+
+// Avoid clashing with predefined _strdup
+#ifndef _MSC_VER
 char*
 _strdup(const char* src)
 {
@@ -26,6 +59,7 @@ _strdup(const char* src)
     memcpy(result, src, len+1);
     return result;
 }
+#endif
 
 int
 check_lcmtest_multidim_array_t(const lcmtest_multidim_array_t* msg, int expected)
@@ -333,4 +367,22 @@ void
 clear_lcmtest2_another_type_t(lcmtest2_another_type_t* msg)
 {
     return;
+}
+
+char*
+make_tmpnam()
+{
+#ifndef WIN32
+    return tmpnam(NULL);
+#else
+    return _tempnam(NULL, NULL);
+#endif
+}
+
+void
+free_tmpnam(char* tmpnam)
+{
+#ifdef WIN32
+    free(tmpnam);
+#endif
 }

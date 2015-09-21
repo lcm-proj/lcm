@@ -1,0 +1,90 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{6E85223D-3400-4C7E-9A7F-EAE0DA912C06}</ProjectGuid>
+    <RootNamespace>testclientcpp</RootNamespace>
+    <ProjectName>client-cpp</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Common.props" />
+    <Import Project="Debug.props" />
+    <Import Project="IncludeTypes.props" />
+    <Import Project="Test.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="Common.props" />
+    <Import Project="Release.props" />
+    <Import Project="IncludeTypes.props" />
+    <Import Project="Test.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(TEST_DIR)\cpp\</OutDir>
+    <TargetName>client</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(TEST_DIR)\cpp\</OutDir>
+    <TargetName>client</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+  <ItemGroup>
+    <ClCompile Include="..\..\test\cpp\client.cpp" />
+    <ClCompile Include="..\..\test\cpp\common.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\test\cpp\common.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="gtest.vcxproj">
+      <Project>{b6b001f5-b500-47a5-aab7-0e71fbb32e30}</Project>
+    </ProjectReference>
+    <ProjectReference Include="gtest_main.vcxproj">
+      <Project>{48b8526d-9203-4255-8d10-eb1b5f7f921f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="lcm.vcxproj">
+      <Project>{6c7970f3-262a-439d-854c-cf3a82efc824}</Project>
+    </ProjectReference>
+    <ProjectReference Include="lcmtest.vcxproj">
+      <Project>{f7117953-d813-4870-ad75-d598d000c149}</Project>
+    </ProjectReference>
+    <ProjectReference Include="lcmtest2.vcxproj">
+      <Project>{66298ab4-106d-4079-bebf-c7d9e8835567}</Project>
+    </ProjectReference>
+    <ProjectReference Include="test-copy-lcm-cpp.vcxproj">
+      <Project>{f2c3a9dc-15cc-46ec-9852-73769b5b3db2}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
