@@ -39,6 +39,9 @@ int emit_csharp(lcmgen_t *lcm);
 void setup_cpp_options(getopt_t *gopt);
 int emit_cpp(lcmgen_t *lcm);
 
+void setup_m_options(getopt_t *gopt);
+int emit_m(lcmgen_t *lcm);
+
 int main(int argc, char *argv[])
 {
     getopt_t *gopt = getopt_create();
@@ -66,6 +69,10 @@ int main(int argc, char *argv[])
     getopt_add_bool  (gopt, 'j', "java",      0,     "Emit Java code");
     setup_java_options(gopt);
 
+    getopt_add_spacer(gopt, "**** Matlab options ****");
+    getopt_add_bool  (gopt, 'm', "matlab",      0,     "Emit Matlab code");
+    setup_m_options(gopt);
+
     getopt_add_spacer(gopt, "**** Python options ****");
     getopt_add_bool  (gopt, 'p', "python",      0,     "Emit Python code");
     setup_python_options(gopt);
@@ -77,6 +84,7 @@ int main(int argc, char *argv[])
     getopt_add_spacer(gopt, "**** C#.NET options ****");
     getopt_add_bool  (gopt, 0, "csharp",      0,     "Emit C#.NET code");
     setup_csharp_options(gopt);
+
 
     if (!getopt_parse(gopt, argc, argv, 1) || getopt_get_bool(gopt,"help")) {
         printf("Usage: %s [options] <input files>\n\n", argv[0]);
@@ -134,6 +142,14 @@ int main(int argc, char *argv[])
             perror("An error occurred while emitting Java code.\n");
         }
     }
+
+    if (getopt_get_bool(gopt, "matlab")) {
+        did_something = 1;
+        if (emit_m(lcm)) {
+            printf("An error occurred while emitting Matlab code.\n");
+        }
+    }
+
 
     if (getopt_get_bool(gopt, "python")) {
         did_something = 1;
