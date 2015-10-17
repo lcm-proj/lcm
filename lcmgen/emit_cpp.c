@@ -111,7 +111,7 @@ static int is_dim_size_fixed(const char* dim_size) {
 // Some types do not have a 1:1 mapping from lcm types to native C
 // storage types. Do not free the string pointers returned by this
 // function.
-static char *
+static const char *
 map_type_name(const char *t)
 {
     if (!strcmp(t,"boolean"))
@@ -251,7 +251,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
 
             emit_comment(f, 2, lm->comment);
-            char* mapped_typename = map_type_name(lm->type->lctypename);
+            char const* mapped_typename = map_type_name(lm->type->lctypename);
             int ndim = g_ptr_array_size(lm->dimensions);
             if (ndim == 0) {
                 emit(2, "%-10s %s;", mapped_typename, lm->membername);
@@ -273,7 +273,6 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
                     emit_end(" %s;", lm->membername);
                 }
             }
-            free(mapped_typename);
             if (mind < g_ptr_array_size(ls->members) - 1) {
                 emit(0, "");
             }
@@ -298,7 +297,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
               const char *suffix = "";
               if (!strcmp(lc->lctypename, "int64_t"))
                 suffix = "LL";
-              char* mapped_typename = map_type_name(lc->lctypename);
+              char const* mapped_typename = map_type_name(lc->lctypename);
               char *cpp_std = getopt_get_string(lcmgen->gopt, "cpp-std");
               if(strcmp("c++98",cpp_std) && strcmp("c++11",cpp_std)) {
                   printf("%s is not a valid cpp_std. Use --cpp-std=c++98 or --cpp-std=c++11 instead\n\n", cpp_std);
@@ -317,7 +316,6 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
                 emit(2, "static const %-8s %s = %s%s;", mapped_typename,
                 lc->membername, lc->val_str, suffix);
               }
-              free(mapped_typename);
             }
         }
         emit(0, "");
