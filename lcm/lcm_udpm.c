@@ -37,9 +37,11 @@
 #include "dbg.h"
 #include "ringbuffer.h"
 #include "udpm_util.h"
-
+#include "parse_url.h"
 
 #define SELF_TEST_CHANNEL "LCM_SELF_TEST"
+
+int isMulticast;
 
 /**
  * udpm_params_t:
@@ -184,32 +186,82 @@ lcm_udpm_destroy (lcm_udpm_t *lcm)
     free (lcm);
 }
 
+/**
+ *  default URL for parse_mc_addr_and_port if no URL is given.
+ */
+static const char DEFAULT_URL[] = "udp://239.255.76.67:7667";
+
+
+/**
+ *  default scheme if none is given
+ */
+static const Scheme DEFAULT_SCHEME = UNICAST;
+
+
+/**
+ *  default port if no port is given
+ */
+static const int DEFAULT_PORT = 7667;
+
+
+/**
+ *  \brief Returns str if str is given and not empty, or the default URL
+ *      otherwise.
+ */
+static const char *
+get_url(const char * str)
+{
+    if((0 == str) || (0 == strlen(str))) {
+        return DEFAULT_URL;
+    }
+
+    return str;
+}
+
+
 static int
 parse_mc_addr_and_port (const char *str, udpm_params_t * params)
 {
-    if (!str || !strlen (str)) {
-        str = "239.255.76.67:7667";
+    //The scheme should not be visible in this function. But if it is, the
+    //scheme is interpreted and overrides the unicast/mutlicast flag set in
+    //create_udp and create_udpm!
+    const char * url = get_url(str);
+
+    Scheme scheme;
+    char host[strlen(url) + 1];
+    int port;
+    const bool urlOk = parse_url(url, &scheme, host, &port);
+    if(!urlOk) {
+        fprintf(stderr, "Error: Invalid address: %s\n", url);
+        return -1;
     }
 
-    char **words = g_strsplit (str, ":", 2);
-    if (inet_aton (words[0], (struct in_addr*) &params->mc_addr) == 0) {
-        fprintf (stderr, "Error: Bad multicast IP address \"%s\"\n", words[0]);
-        goto fail;
+    if(NOT_SPECIFIED == scheme) {
+        scheme = DEFAULT_SCHEME;
     }
-    if (words[1]) {
-        char *st = NULL;
-        int port = strtol (words[1], &st, 0);
-        if (st == words[1] || port < 0 || port > 65535) {
-            fprintf (stderr, "Error: Bad multicast port \"%s\"\n", words[1]);
-            goto fail;
-        }
-        params->mc_port = htons (port);
+
+    if(-1 == port) {
+        fprintf(
+            stderr, "Warning: Falling back to default port %d.\n",
+            DEFAULT_PORT);
+        port = DEFAULT_PORT;
     }
-    g_strfreev (words);
+
+    if(inet_aton(host, (struct in_addr*)&params->mc_addr) < 0) {
+               fprintf(stderr, "Error: Bad IP address: \"%s\".\n", host);
+        perror("inet_aton");
+        return -1;
+    }
+
+    if (port < 0 || port > 65535) {
+               fprintf (stderr, "Error: Bad port in address \"%s\".\n", url);
+        return -1;
+    }
+
+    isMulticast = (MULTICAST == scheme);
+
+    params->mc_port = htons(port);
     return 0;
-fail:
-    g_strfreev (words);
-    return -1;
 }
 
 static void
@@ -1081,7 +1133,7 @@ setup_recv_thread_fail:
 }
 
 lcm_provider_t * 
-lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
+lcm_udp_and_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 {
     udpm_params_t params;
     memset (&params, 0, sizeof (udpm_params_t));
@@ -1200,15 +1252,17 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     mreq.imr_multiaddr = lcm->params.mc_addr;
     mreq.imr_interface.s_addr = INADDR_ANY;
     dbg (DBG_LCM, "LCM: joining multicast group\n");
-    if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
-            (char*)&mreq, sizeof (mreq)) < 0) {
-#ifdef WIN32
-      // ignore this error in windows... see issue #60
-#else
-        perror ("setsockopt (IPPROTO_IP, IP_ADD_MEMBERSHIP)");
-        lcm_udpm_destroy (lcm);
-        return NULL;
-#endif
+    if ( isMulticast ) {
+        if (setsockopt (lcm->sendfd, IPPROTO_IP, IP_ADD_MEMBERSHIP,
+                (char*)&mreq, sizeof (mreq)) < 0) {
+    #ifdef WIN32
+          // ignore this error in windows... see issue #60
+    #else
+            perror ("setsockopt (IPPROTO_IP, IP_ADD_MEMBERSHIP)");
+            lcm_udpm_destroy (lcm);
+            return NULL;
+    #endif
+        }
     }
 
     return lcm;
@@ -1217,12 +1271,30 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
 static lcm_provider_vtable_t udpm_vtable;
 static lcm_provider_info_t udpm_info;
 
+lcm_provider_t *
+create_udpm(lcm_t * parent, const char *network, const GHashTable *args)
+{
+  isMulticast = 1;
+
+  return lcm_udp_and_udpm_create(parent, network, args);
+}
+
+
+lcm_provider_t *
+create_udp(lcm_t * parent, const char *network, const GHashTable *args)
+{
+  isMulticast = 0;
+
+  return lcm_udp_and_udpm_create(parent, network, args);
+}
+
+
 void
 lcm_udpm_provider_init (GPtrArray * providers)
 {
 // Because of Microsoft Visual Studio compiler
 // difficulties, do this now, not statically
-    udpm_vtable.create      = lcm_udpm_create;
+    udpm_vtable.create      = create_udpm;
     udpm_vtable.destroy     = lcm_udpm_destroy;
     udpm_vtable.subscribe   = lcm_udpm_subscribe;
     udpm_vtable.unsubscribe = NULL;
@@ -1234,5 +1306,27 @@ lcm_udpm_provider_init (GPtrArray * providers)
     udpm_info.vtable = &udpm_vtable;
 
     g_ptr_array_add (providers, &udpm_info);
+}
+
+static lcm_provider_vtable_t udp_vtable;
+static lcm_provider_info_t udp_info;
+
+void
+lcm_udp_provider_init (GPtrArray * providers)
+{
+// Because of Microsoft Visual Studio compiler
+// difficulties, do this now, not statically
+    udp_vtable.create      = create_udp;
+    udp_vtable.destroy     = lcm_udpm_destroy;
+    udp_vtable.subscribe   = lcm_udpm_subscribe;
+    udp_vtable.unsubscribe = NULL;
+    udp_vtable.publish     = lcm_udpm_publish;
+    udp_vtable.handle      = lcm_udpm_handle;
+    udp_vtable.get_fileno  = lcm_udpm_get_fileno;
+
+    udp_info.name = "udp";
+    udp_info.vtable = &udp_vtable;
+
+    g_ptr_array_add (providers, &udp_info);
 }
 
