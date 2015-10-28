@@ -38,22 +38,21 @@ From a terminal, run the following commands.
 
 There are several ways to build LCM on OS X, none of which are necessarily better than the others.
 
-### MacPorts {#build_osx_macports}
+### Homebrew
 
-Required packages:
- - glib2
+Install Homebrew packages
 
-Strongly recommended packages:
-  - openjdk6
-  - python26 or python27
+    $ brew install glib pkg-config
 
-From a terminal, run the following commands.  Replace X.Y.Z with the latest version of LCM.
+Install Java.  Type `javac` in a terminal, then follow the instructions
+
+Download and build LCM
 
     $ unzip lcm-X.Y.Z.zip
     $ cd lcm-X.Y.Z
     $ ./configure
     $ make
-    $ sudo make install
+    $ make install
 
 ## Windows {#build_windows}
 
@@ -100,7 +99,22 @@ From a terminal, run the following commands.
 
 ## OS X {#build_git_osx}
 
-*TODO*
+### Homebrew
+
+Install Homebrew packages
+
+    $ brew install glib pkg-config automake libtool
+
+Install Java.  Type `javac` in a terminal, then follow the instructions
+
+Download and build LCM
+
+    $ git clone https://github.com/lcm-proj/lcm lcm
+    $ cd lcm
+    $ ./bootstrap.sh
+    $ ./configure
+    $ make
+    $ make install
 
 ## Windows {#build_git_windows}
 
