@@ -363,8 +363,11 @@ class LCM {
          *
          * @param subscription a Subscription object previously returned by a
          * call to subscribe() or subscribeFunction().
+         *
+         * @return 0 on success, -1 if @p subscription is not a valid
+         * subscription.
          */
-        inline void unsubscribe(Subscription* subscription);
+        inline int unsubscribe(Subscription* subscription);
 
         /**
          * @brief retrives the lcm_t C data structure wrapped by this class.

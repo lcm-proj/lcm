@@ -160,23 +160,24 @@ LCM::publish(const std::string& channel, const MessageType *msg) {
     return status;
 }
 
-inline void
+inline int
 LCM::unsubscribe(Subscription *subscription) {
     if(!this->lcm) {
         fprintf(stderr,
             "LCM instance not initialized.  Ignoring call to unsubscribe()\n");
-        return;
+        return -1;
     }
     std::vector<Subscription*>::iterator iter;
     std::vector<Subscription*>::iterator eiter = subscriptions.end();
     for(iter=subscriptions.begin(); iter!= eiter; ++iter) {
         if(*iter == subscription) {
-            lcm_unsubscribe(lcm, subscription->c_subs);
+            int status = lcm_unsubscribe(lcm, subscription->c_subs);
             subscriptions.erase(iter);
             delete subscription;
-            break;
+            return status;
         }
     }
+    return -1;
 }
 
 inline int
