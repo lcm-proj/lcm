@@ -81,7 +81,6 @@ static lcm_eventlog_event_t *read_event_helper (lcm_eventlog_t *l)
     le->channel = (char *) calloc(1, le->channellen+1);
     if (fread(le->channel, 1, le->channellen, l->f) != (size_t) le->channellen) {
         free(le->channel);
-        free(le->data);
         free(le);
         return NULL;
     }
