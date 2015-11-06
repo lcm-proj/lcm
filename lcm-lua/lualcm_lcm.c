@@ -40,8 +40,8 @@
 
 /* lcm userdata */
 typedef struct impl_lcm_userdata {
-	lcm_t * lcm;
-	lua_State * handler_lua_State;
+  lcm_t * lcm;
+  lua_State * handler_lua_State;
 } impl_lcm_userdata_t;
 
 /* methods */
@@ -64,21 +64,21 @@ static impl_lcm_userdata_t * impl_lcm_checkuserdata(lua_State *, int);
 static void impl_lcm_createsubscriptiontable(lua_State *, int);
 static void impl_lcm_getsubscriptiontable(lua_State *, int);
 static void * impl_lcm_addtosubscriptiontable(lua_State *, int,
-		int **, lcm_subscription_t ***);
+    int **, lcm_subscription_t ***);
 static int impl_lcm_getfromsubscriptiontable(lua_State *, int,
-		int, lcm_subscription_t **);
+    int, lcm_subscription_t **);
 static int impl_lcm_removefromsubscriptiontable(lua_State *, int,
-		int, lcm_subscription_t **);
+    int, lcm_subscription_t **);
 
 /* subscription userdata */
 typedef struct impl_sub_userdata {
-	lcm_subscription_t * subscription;
-	impl_lcm_userdata_t * owning_lcm_userdata;
-	int ref_num;
+  lcm_subscription_t * subscription;
+  impl_lcm_userdata_t * owning_lcm_userdata;
+  int ref_num;
 } impl_sub_userdata_t;
 
 static int impl_abs_index(lua_State * L, int i){
-	return i > 0 ? i : i <= LUA_REGISTRYINDEX ? i : lua_gettop(L) + 1 + i;
+  return i > 0 ? i : i <= LUA_REGISTRYINDEX ? i : lua_gettop(L) + 1 + i;
 }
 
 /**
@@ -91,44 +91,44 @@ static int impl_abs_index(lua_State * L, int i){
  */
 void ll_lcm_makemetatable(lua_State * L){
 
-	/* create empty meta table */
-	if(!luaL_newmetatable(L, "lcm.lcm")){
-		lua_pushstring(L, "cannot create metatable");
-		lua_error(L);
-	}
+  /* create empty meta table */
+  if(!luaL_newmetatable(L, "lcm.lcm")){
+    lua_pushstring(L, "cannot create metatable");
+    lua_error(L);
+  }
 
-	const struct luaL_Reg metas[] = {
-		{"__tostring", impl_lcm_tostring},
-		{"__gc", impl_lcm_gc},
-		{NULL, NULL},
-	};
+  const struct luaL_Reg metas[] = {
+    {"__tostring", impl_lcm_tostring},
+    {"__gc", impl_lcm_gc},
+    {NULL, NULL},
+  };
 
-	/* register to meta */
-	luaX_registertable(L, metas);
+  /* register to meta */
+  luaX_registertable(L, metas);
 
-	const struct luaL_Reg methods[] = {
-		{"subscribe", impl_lcm_subscribe},
-		{"unsubscribe", impl_lcm_unsubscribe},
-		{"publish", impl_lcm_publish},
-		{"handle", impl_lcm_handle},
-		{"handle_timeout", impl_lcm_handle_timeout},
-		{"timedhandle", impl_lcm_timedhandle},
-		{NULL, NULL},
-	};
+  const struct luaL_Reg methods[] = {
+    {"subscribe", impl_lcm_subscribe},
+    {"unsubscribe", impl_lcm_unsubscribe},
+    {"publish", impl_lcm_publish},
+    {"handle", impl_lcm_handle},
+    {"handle_timeout", impl_lcm_handle_timeout},
+    {"timedhandle", impl_lcm_timedhandle},
+    {NULL, NULL},
+  };
 
-	/* register methods to new table, set __index */
-	lua_pushstring(L, "__index");
-	lua_newtable(L);
-	luaX_registertable(L, methods);
-	lua_rawset(L, -3);
+  /* register methods to new table, set __index */
+  lua_pushstring(L, "__index");
+  lua_newtable(L);
+  luaX_registertable(L, methods);
+  lua_rawset(L, -3);
 
-	/* TODO hide metatable */
-	/*lua_pushstring(L, "__metatable");
-	lua_pushnil(L);
-	lua_rawset(L, -3);*/
+  /* TODO hide metatable */
+  /*lua_pushstring(L, "__metatable");
+  lua_pushnil(L);
+  lua_rawset(L, -3);*/
 
-	/* pop the metatable */
-	lua_pop(L, 1);
+  /* pop the metatable */
+  lua_pop(L, 1);
 }
 
 /**
@@ -142,12 +142,12 @@ void ll_lcm_makemetatable(lua_State * L){
  */
 void ll_lcm_register_new(lua_State * L){
 
-	const struct luaL_Reg new_function[] = {
-		{"new", impl_lcm_new},
-		{NULL, NULL},
-	};
+  const struct luaL_Reg new_function[] = {
+    {"new", impl_lcm_new},
+    {NULL, NULL},
+  };
 
-	luaX_registerglobal(L, "lcm.lcm", new_function);
+  luaX_registerglobal(L, "lcm.lcm", new_function);
 }
 
 /**
@@ -173,35 +173,35 @@ void ll_lcm_register_new(lua_State * L){
  */
 static int impl_lcm_new(lua_State * L){
 
-	/* we expect 1 argument */
-	lua_settop(L, 1);
+  /* we expect 1 argument */
+  lua_settop(L, 1);
 
-	/* check for a string containing the provider */
-	const char * provider = NULL;
-	if(!lua_isnil(L, 1)){
-		/* if there was no argument, the stack will have nil */
-		provider = luaL_checkstring(L, 1);
-	}
+  /* check for a string containing the provider */
+  const char * provider = NULL;
+  if(!lua_isnil(L, 1)){
+    /* if there was no argument, the stack will have nil */
+    provider = luaL_checkstring(L, 1);
+  }
 
-	/* open the lcm connection */
-	lcm_t * lc = lcm_create(provider);
+  /* open the lcm connection */
+  lcm_t * lc = lcm_create(provider);
 
-	/* check for failure */
-	if(!lc){
-		lua_pushstring(L, "error lcm create");
-		lua_error(L);
-	}
+  /* check for failure */
+  if(!lc){
+    lua_pushstring(L, "error lcm create");
+    lua_error(L);
+  }
 
-	/* create lcm userdata */
-	impl_lcm_userdata_t * lcmu = impl_lcm_newuserdata(L);
-	lcmu->lcm = lc;
+  /* create lcm userdata */
+  impl_lcm_userdata_t * lcmu = impl_lcm_newuserdata(L);
+  lcmu->lcm = lc;
 
-	/* create a subscription table */
-	impl_lcm_createsubscriptiontable(L, -1);
+  /* create a subscription table */
+  impl_lcm_createsubscriptiontable(L, -1);
 
-	/* return lcm userdata, which is on top of the stack */
+  /* return lcm userdata, which is on top of the stack */
 
-	return 1;
+  return 1;
 }
 
 /**
@@ -223,26 +223,26 @@ static int impl_lcm_new(lua_State * L){
  */
 static int impl_lcm_publish(lua_State * L){
 
-	/* we expect 3 arguments */
-	lua_settop(L, 3);
+  /* we expect 3 arguments */
+  lua_settop(L, 3);
 
-	/* get the lcm userdata */
-	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
+  /* get the lcm userdata */
+  impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
 
-	/* get the channel */
-	const char * channel = luaL_checkstring(L, 2);
+  /* get the channel */
+  const char * channel = luaL_checkstring(L, 2);
 
-	/* get the buffer */
-	size_t data_size;
-	const char * data = luaL_checklstring(L, 3, &data_size);
+  /* get the buffer */
+  size_t data_size;
+  const char * data = luaL_checklstring(L, 3, &data_size);
 
-	/* publish the message */
-	if(lcm_publish(lcmu->lcm, channel, data, data_size) != 0){
-		lua_pushstring(L, "error lcm publish");
-		lua_error(L);
-	}
+  /* publish the message */
+  if(lcm_publish(lcmu->lcm, channel, data, data_size) != 0){
+    lua_pushstring(L, "error lcm publish");
+    lua_error(L);
+  }
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -271,35 +271,35 @@ static int impl_lcm_publish(lua_State * L){
  */
 static int impl_lcm_subscribe(lua_State * L){
 
-	/* we expect 3 arguments */
-	lua_settop(L, 3);
+  /* we expect 3 arguments */
+  lua_settop(L, 3);
 
-	/* get the lcm userdata */
-	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
+  /* get the lcm userdata */
+  impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
 
-	/* get the channel */
-	const char * channel = luaL_checkstring(L, 2);
+  /* get the channel */
+  const char * channel = luaL_checkstring(L, 2);
 
-	/* check the handler */
-	luaL_checktype(L, 3, LUA_TFUNCTION);
+  /* check the handler */
+  luaL_checktype(L, 3, LUA_TFUNCTION);
 
-	/* add a subscription table entry */
-	int * ref_num_ptr;
-	lcm_subscription_t ** subscription;
-	void * userdata =
-			impl_lcm_addtosubscriptiontable(L, 1, &ref_num_ptr, &subscription);
+  /* add a subscription table entry */
+  int * ref_num_ptr;
+  lcm_subscription_t ** subscription;
+  void * userdata =
+      impl_lcm_addtosubscriptiontable(L, 1, &ref_num_ptr, &subscription);
 
-	/* pop subscription table */
-	lua_pop(L, 1);
+  /* pop subscription table */
+  lua_pop(L, 1);
 
-	/* do the actual subscribe */
-	*subscription =
-			lcm_subscribe(lcmu->lcm, channel, impl_lcm_c_handler, userdata);
+  /* do the actual subscribe */
+  *subscription =
+      lcm_subscribe(lcmu->lcm, channel, impl_lcm_c_handler, userdata);
 
-	/* push reference number */
-	lua_pushinteger(L, *ref_num_ptr);
+  /* push reference number */
+  lua_pushinteger(L, *ref_num_ptr);
 
-	return 1;
+  return 1;
 }
 
 /**
@@ -329,22 +329,22 @@ static int impl_lcm_subscribe(lua_State * L){
  */
 static int impl_lcm_handle(lua_State * L){
 
-	/* we expect 1 argument */
-	lua_settop(L, 1);
+  /* we expect 1 argument */
+  lua_settop(L, 1);
 
-	/* get the lcm userdata */
-	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
+  /* get the lcm userdata */
+  impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
 
-	/* update the lua state */
-	lcmu->handler_lua_State = L;
+  /* update the lua state */
+  lcmu->handler_lua_State = L;
 
-	/* call lcm handle */
-	if(lcm_handle(lcmu->lcm) != 0){
-		lua_pushstring(L, "error lcm handle");
-		lua_error(L);
-	}
+  /* call lcm handle */
+  if(lcm_handle(lcmu->lcm) != 0){
+    lua_pushstring(L, "error lcm handle");
+    lua_error(L);
+  }
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -375,39 +375,39 @@ static int impl_lcm_handle(lua_State * L){
  */
 static int impl_lcm_handle_timeout(lua_State * L){
 
-	/* we expect 2 arguments */
-	lua_settop(L, 2);
+  /* we expect 2 arguments */
+  lua_settop(L, 2);
 
-	/* get the lcm userdata */
-	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
+  /* get the lcm userdata */
+  impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
 
-	/* check for a timeout in milliseconds */
-	lua_Integer timeout_millisec = luaL_checkinteger(L, 2);
+  /* check for a timeout in milliseconds */
+  lua_Integer timeout_millisec = luaL_checkinteger(L, 2);
 
-	/* update the lua state */
-	lcmu->handler_lua_State = L;
+  /* update the lua state */
+  lcmu->handler_lua_State = L;
 
-	/* call lcm handle_timeout */
-	int status = lcm_handle_timeout(lcmu->lcm, timeout_millisec);
+  /* call lcm handle_timeout */
+  int status = lcm_handle_timeout(lcmu->lcm, timeout_millisec);
 
-	if(status == 1){
+  if(status == 1){
 
-		/* ok, return true */
-		lua_pushboolean(L, 1);
+    /* ok, return true */
+    lua_pushboolean(L, 1);
 
-	}else if(status == 0){
+  }else if(status == 0){
 
-		/* timeout, return false */
-		lua_pushboolean(L, 0);
+    /* timeout, return false */
+    lua_pushboolean(L, 0);
 
-	}else{
+  }else{
 
-		/* an error occured */
-		lua_pushstring(L, "error lcm handle");
-		lua_error(L);
-	}
+    /* an error occured */
+    lua_pushstring(L, "error lcm handle");
+    lua_error(L);
+  }
 
-	return 1;
+  return 1;
 }
 
 /**
@@ -441,53 +441,53 @@ static int impl_lcm_handle_timeout(lua_State * L){
  */
 static int impl_lcm_timedhandle(lua_State * L){
 
-	/* we expect 2 arguments */
-	lua_settop(L, 2);
+  /* we expect 2 arguments */
+  lua_settop(L, 2);
 
-	/* get the lcm userdata */
-	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
+  /* get the lcm userdata */
+  impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
 
-	/* check for a floating point timeout */
-	double timeout_sec = luaL_checknumber(L, 2);
+  /* check for a floating point timeout */
+  double timeout_sec = luaL_checknumber(L, 2);
 
-	/* update the lua state */
-	lcmu->handler_lua_State = L;
+  /* update the lua state */
+  lcmu->handler_lua_State = L;
 
-	int fd = lcm_get_fileno(lcmu->lcm);
-	fd_set fds;
-	FD_ZERO(&fds);
-	FD_SET(fd, &fds);
+  int fd = lcm_get_fileno(lcmu->lcm);
+  fd_set fds;
+  FD_ZERO(&fds);
+  FD_SET(fd, &fds);
 
-	/* convert the timeout to microseconds */
-	struct timeval timeout = {0};
-	timeout.tv_usec = timeout_sec * 1000000.0;
+  /* convert the timeout to microseconds */
+  struct timeval timeout = {0};
+  timeout.tv_usec = timeout_sec * 1000000.0;
 
-	int status = select(fd + 1, &fds, 0, 0, &timeout);
+  int status = select(fd + 1, &fds, 0, 0, &timeout);
 
-	if(status == 0){
+  if(status == 0){
 
-		/* timeout, return false */
-		lua_pushboolean(L, 0);
+    /* timeout, return false */
+    lua_pushboolean(L, 0);
 
-	}else if(FD_ISSET(fd, &fds)){
+  }else if(FD_ISSET(fd, &fds)){
 
-		/* read for handle */
-		if(lcm_handle(lcmu->lcm) != 0){
-			lua_pushstring(L, "error lcm handle");
-			lua_error(L);
-		}
+    /* read for handle */
+    if(lcm_handle(lcmu->lcm) != 0){
+      lua_pushstring(L, "error lcm handle");
+      lua_error(L);
+    }
 
-		/* ok, return true */
-		lua_pushboolean(L, 1);
+    /* ok, return true */
+    lua_pushboolean(L, 1);
 
-	}else{
+  }else{
 
-		/* select must have encountered an error */
-		lua_pushstring(L, "error lcm handle (select)");
-		lua_error(L);
-	}
+    /* select must have encountered an error */
+    lua_pushstring(L, "error lcm handle (select)");
+    lua_error(L);
+  }
 
-	return 1;
+  return 1;
 }
 
 /**
@@ -520,37 +520,37 @@ static int impl_lcm_timedhandle(lua_State * L){
  * @throws The handler function may propagate Lua errors.
  */
 static void impl_lcm_c_handler(const lcm_recv_buf_t * recv_buf,
-		const char * channel, void * userdata){
+    const char * channel, void * userdata){
 
-	/* get the subscription userdata */
-	impl_sub_userdata_t * subu =
-			(impl_sub_userdata_t *) userdata;
+  /* get the subscription userdata */
+  impl_sub_userdata_t * subu =
+      (impl_sub_userdata_t *) userdata;
 
-	/* get the current lua state */
-	lua_State * L = subu->owning_lcm_userdata->handler_lua_State;
+  /* get the current lua state */
+  lua_State * L = subu->owning_lcm_userdata->handler_lua_State;
 
-	/* get the ref_num */
-	int ref_num = subu->ref_num;
+  /* get the ref_num */
+  int ref_num = subu->ref_num;
 
-	/* remeber, lcm userdata is the only value on the stack */
-	/* this was setup by handle function */
+  /* remeber, lcm userdata is the only value on the stack */
+  /* this was setup by handle function */
 
-	/* get subscription table entry, this pushes the handler on the stack */
-	lcm_subscription_t * subscription;
-	if(!impl_lcm_getfromsubscriptiontable(L, 1, ref_num, &subscription)){
-		/* this should never happen */
-		lua_pushstring(L, "lcm handler cannot find lua handler");
-		lua_error(L);
-	}
+  /* get subscription table entry, this pushes the handler on the stack */
+  lcm_subscription_t * subscription;
+  if(!impl_lcm_getfromsubscriptiontable(L, 1, ref_num, &subscription)){
+    /* this should never happen */
+    lua_pushstring(L, "lcm handler cannot find lua handler");
+    lua_error(L);
+  }
 
-	/* push channel */
-	lua_pushstring(L, channel);
+  /* push channel */
+  lua_pushstring(L, channel);
 
-	/* push buffer as a binary string */
-	lua_pushlstring(L, (const char *) recv_buf->data, recv_buf->data_size);
+  /* push buffer as a binary string */
+  lua_pushlstring(L, (const char *) recv_buf->data, recv_buf->data_size);
 
-	/* call the handler */
-	lua_call(L, 2, 0);
+  /* call the handler */
+  lua_call(L, 2, 0);
 }
 
 /**
@@ -572,30 +572,30 @@ static void impl_lcm_c_handler(const lcm_recv_buf_t * recv_buf,
  */
 static int impl_lcm_unsubscribe(lua_State * L){
 
-	/* we expect 2 arguments */
-	lua_settop(L, 2);
+  /* we expect 2 arguments */
+  lua_settop(L, 2);
 
-	/* get the lcm userdata */
-	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
+  /* get the lcm userdata */
+  impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
 
-	/* get the ref_num */
-	int ref_num = luaL_checkint(L, 2);
+  /* get the ref_num */
+  int ref_num = luaL_checkint(L, 2);
 
-	/* get subscription table entry, this pushes the handler on the stack */
-	lcm_subscription_t * subscription;
-	if(!impl_lcm_removefromsubscriptiontable(L, 1, ref_num, &subscription)){
-		/* made up reference number */
-		lua_pushstring(L, "subscription number invalid");
-		lua_error(L);
-	}
+  /* get subscription table entry, this pushes the handler on the stack */
+  lcm_subscription_t * subscription;
+  if(!impl_lcm_removefromsubscriptiontable(L, 1, ref_num, &subscription)){
+    /* made up reference number */
+    lua_pushstring(L, "subscription number invalid");
+    lua_error(L);
+  }
 
-	/* unsubscribe */
-	if(lcm_unsubscribe(lcmu->lcm, subscription) != 0){
-		lua_pushstring(L, "error lcm unsubscribe");
-		lua_error(L);
-	}
+  /* unsubscribe */
+  if(lcm_unsubscribe(lcmu->lcm, subscription) != 0){
+    lua_pushstring(L, "error lcm unsubscribe");
+    lua_error(L);
+  }
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -613,17 +613,17 @@ static int impl_lcm_unsubscribe(lua_State * L){
  */
 static int impl_lcm_tostring(lua_State * L){
 
-	/* we expect 1 argument */
-	lua_settop(L, 1);
+  /* we expect 1 argument */
+  lua_settop(L, 1);
 
-	/* get the lcm userdata */
-	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
+  /* get the lcm userdata */
+  impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
 
-	/* make the string */
-	lua_pushfstring(L, "lcm.lcm [v%d.%d.%d] (@ %p)",
-			LCM_MAJOR_VERSION, LCM_MINOR_VERSION, LCM_MICRO_VERSION, lcmu);
+  /* make the string */
+  lua_pushfstring(L, "lcm.lcm [v%d.%d.%d] (@ %p)",
+      LCM_MAJOR_VERSION, LCM_MINOR_VERSION, LCM_MICRO_VERSION, lcmu);
 
-	return 1;
+  return 1;
 }
 
 /**
@@ -645,48 +645,48 @@ static int impl_lcm_tostring(lua_State * L){
  */
 static int impl_lcm_gc(lua_State * L){
 
-	/* we expect 1 argument */
-	lua_settop(L, 1);
+  /* we expect 1 argument */
+  lua_settop(L, 1);
 
-	/* get the lcm userdata */
-	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
+  /* get the lcm userdata */
+  impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, 1);
 
-	/* check if this userdata was ever created */
-	if(!lcmu->lcm){
-		return 0;
-	}
+  /* check if this userdata was ever created */
+  if(!lcmu->lcm){
+    return 0;
+  }
 
-	/* get subscription table */
-	impl_lcm_getsubscriptiontable(L, 1);
+  /* get subscription table */
+  impl_lcm_getsubscriptiontable(L, 1);
 
-	/* subscription table traversal */
-	lua_pushnil(L); /* first key */
-	while(lua_next(L, 2) != 0){
+  /* subscription table traversal */
+  lua_pushnil(L); /* first key */
+  while(lua_next(L, 2) != 0){
 
-		/* get the subscription userdata */
-		lua_pushstring(L, "userdata");
-		lua_rawget(L, -2);
+    /* get the subscription userdata */
+    lua_pushstring(L, "userdata");
+    lua_rawget(L, -2);
 
-		impl_sub_userdata_t * subu =
-				(impl_sub_userdata_t *) lua_touserdata(L, -1);
+    impl_sub_userdata_t * subu =
+        (impl_sub_userdata_t *) lua_touserdata(L, -1);
 
-		/* unsubscribe */
-		if(lcm_unsubscribe(lcmu->lcm, subu->subscription) != 0){
-			lua_pushstring(L, "error lcm unsubscribe");
-			lua_error(L);
-		}
+    /* unsubscribe */
+    if(lcm_unsubscribe(lcmu->lcm, subu->subscription) != 0){
+      lua_pushstring(L, "error lcm unsubscribe");
+      lua_error(L);
+    }
 
-		/* pop the userdata and subscription table entry */
-		lua_pop(L, 2);
-	}
+    /* pop the userdata and subscription table entry */
+    lua_pop(L, 2);
+  }
 
-	/* free lcm */
-	lcm_destroy(lcmu->lcm);
+  /* free lcm */
+  lcm_destroy(lcmu->lcm);
 
-	/* clear out the subscription table */
-	impl_lcm_createsubscriptiontable(L, 1);
+  /* clear out the subscription table */
+  impl_lcm_createsubscriptiontable(L, 1);
 
-	return 0;
+  return 0;
 }
 
 /**
@@ -706,24 +706,24 @@ static int impl_lcm_gc(lua_State * L){
  */
 static impl_lcm_userdata_t * impl_lcm_newuserdata(lua_State * L){
 
-	/* make new user data */
-	impl_lcm_userdata_t * lcmu =
-	  (impl_lcm_userdata_t *)
-	  lua_newuserdata(L, sizeof(impl_lcm_userdata_t));
+  /* make new user data */
+  impl_lcm_userdata_t * lcmu =
+    (impl_lcm_userdata_t *)
+    lua_newuserdata(L, sizeof(impl_lcm_userdata_t));
 
-	/* initialize struct */
-	lcmu->lcm = NULL;
-	lcmu->handler_lua_State = NULL;
+  /* initialize struct */
+  lcmu->lcm = NULL;
+  lcmu->handler_lua_State = NULL;
 
-	/* set the metatable */
-	luaL_getmetatable(L, "lcm.lcm");
-	if(lua_isnil(L, -1)){
-		lua_pushstring(L, "cannot find metatable");
-		lua_error(L);
-	}
-	lua_setmetatable(L, -2);
+  /* set the metatable */
+  luaL_getmetatable(L, "lcm.lcm");
+  if(lua_isnil(L, -1)){
+    lua_pushstring(L, "cannot find metatable");
+    lua_error(L);
+  }
+  lua_setmetatable(L, -2);
 
-	return lcmu;
+  return lcmu;
 }
 
 /**
@@ -743,8 +743,8 @@ static impl_lcm_userdata_t * impl_lcm_newuserdata(lua_State * L){
  * @return A pointer to the LCM userdata.
  */
 static impl_lcm_userdata_t * impl_lcm_checkuserdata(lua_State * L, int index){
-	return (impl_lcm_userdata_t *)
-	  luaL_checkudata(L, index, "lcm.lcm");
+  return (impl_lcm_userdata_t *)
+    luaL_checkudata(L, index, "lcm.lcm");
 }
 
 /**
@@ -763,26 +763,26 @@ static impl_lcm_userdata_t * impl_lcm_checkuserdata(lua_State * L, int index){
  */
 static void impl_lcm_createsubscriptiontable(lua_State * L, int index){
 
-	index = impl_abs_index(L, index);
+  index = impl_abs_index(L, index);
 
-	/* check userdata type */
-	/* ...unnecessary, assume lcm userdata at index */
+  /* check userdata type */
+  /* ...unnecessary, assume lcm userdata at index */
 
-	/* create a blank table */
-	lua_newtable(L);
+  /* create a blank table */
+  lua_newtable(L);
 
-	/* add subscription table */
-	lua_pushstring(L, "subscriptions");
-	lua_newtable(L);
-	lua_rawset(L, -3);
+  /* add subscription table */
+  lua_pushstring(L, "subscriptions");
+  lua_newtable(L);
+  lua_rawset(L, -3);
 
-	/* add a table to hold references */
-	lua_pushstring(L, "subreflist");
-	lua_newtable(L);
-	lua_rawset(L, -3);
+  /* add a table to hold references */
+  lua_pushstring(L, "subreflist");
+  lua_newtable(L);
+  lua_rawset(L, -3);
 
-	/* set as environment */
-	luaX_setfenv(L, index);
+  /* set as environment */
+  luaX_setfenv(L, index);
 }
 
 /**
@@ -800,24 +800,24 @@ static void impl_lcm_createsubscriptiontable(lua_State * L, int index){
  */
 static void impl_lcm_getsubscriptiontable(lua_State * L, int index){
 
-	/* index = impl_abs_index(L, index); */
+  /* index = impl_abs_index(L, index); */
 
-	/* check userdata type */
-	/* ...unnecessary, assume lcm userdata at index */
+  /* check userdata type */
+  /* ...unnecessary, assume lcm userdata at index */
 
-	/* get the environment */
-	luaX_getfenv(L, index);
+  /* get the environment */
+  luaX_getfenv(L, index);
 
-	/* get the subscription table */
-	lua_pushstring(L, "subscriptions");
-	lua_rawget(L, -2);
+  /* get the subscription table */
+  lua_pushstring(L, "subscriptions");
+  lua_rawget(L, -2);
 
-	/* get subscription reference list */
-	lua_pushstring(L, "subreflist");
-	lua_rawget(L, -3);
+  /* get subscription reference list */
+  lua_pushstring(L, "subreflist");
+  lua_rawget(L, -3);
 
-	/* remove the environment */
-	lua_remove(L, -3);
+  /* remove the environment */
+  lua_remove(L, -3);
 }
 
 /**
@@ -843,57 +843,57 @@ static void impl_lcm_getsubscriptiontable(lua_State * L, int index){
  *     pointer. This needs to be set by the caller.
  */
 static void * impl_lcm_addtosubscriptiontable(lua_State * L, int index,
-		int ** ref_num_ptr, lcm_subscription_t *** subscription_double_ptr){
+    int ** ref_num_ptr, lcm_subscription_t *** subscription_double_ptr){
 
-	/* leave nothing new on the stack */
-	const int initial_top = lua_gettop(L);
+  /* leave nothing new on the stack */
+  const int initial_top = lua_gettop(L);
 
-	/* save handler index for later */
-	int handler_index = impl_abs_index(L, -1);
+  /* save handler index for later */
+  int handler_index = impl_abs_index(L, -1);
 
-	/* get the lcm userdata */
-	impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, index);
+  /* get the lcm userdata */
+  impl_lcm_userdata_t * lcmu = impl_lcm_checkuserdata(L, index);
 
-	/* get the subscription table */
-	impl_lcm_getsubscriptiontable(L, index);
-	int subscription_table_index = impl_abs_index(L, -2);
-	int subscription_ref_list_index = impl_abs_index(L, -1);
+  /* get the subscription table */
+  impl_lcm_getsubscriptiontable(L, index);
+  int subscription_table_index = impl_abs_index(L, -2);
+  int subscription_ref_list_index = impl_abs_index(L, -1);
 
-	/* the new subscription table entry */
-	lua_newtable(L);
+  /* the new subscription table entry */
+  lua_newtable(L);
 
-	/* add userdata to table */
-	lua_pushstring(L, "userdata");
-	impl_sub_userdata_t * subu =
-			(impl_sub_userdata_t *)
-			lua_newuserdata(L, sizeof(impl_sub_userdata_t));
-	lua_rawset(L, -3);
+  /* add userdata to table */
+  lua_pushstring(L, "userdata");
+  impl_sub_userdata_t * subu =
+      (impl_sub_userdata_t *)
+      lua_newuserdata(L, sizeof(impl_sub_userdata_t));
+  lua_rawset(L, -3);
 
-	/* set the owning lcm userdata */
-	subu->owning_lcm_userdata = lcmu;
+  /* set the owning lcm userdata */
+  subu->owning_lcm_userdata = lcmu;
 
-	/* we need to return a pointer to this subscription pointer */
-	*subscription_double_ptr = &subu->subscription;
+  /* we need to return a pointer to this subscription pointer */
+  *subscription_double_ptr = &subu->subscription;
 
-	/* we need to return a pointer to this int */
-	*ref_num_ptr = &subu->ref_num;
+  /* we need to return a pointer to this int */
+  *ref_num_ptr = &subu->ref_num;
 
-	/* add handler function to table */
-	lua_pushstring(L, "handler");
-	lua_pushvalue(L, handler_index);
-	lua_rawset(L, -3);
+  /* add handler function to table */
+  lua_pushstring(L, "handler");
+  lua_pushvalue(L, handler_index);
+  lua_rawset(L, -3);
 
-	/* add to subscription table */
-	subu->ref_num = luaX_ref(L, subscription_table_index,
-			subscription_ref_list_index);
+  /* add to subscription table */
+  subu->ref_num = luaX_ref(L, subscription_table_index,
+      subscription_ref_list_index);
 
-	/* leave nothing new on the stack */
-	lua_settop(L, initial_top);
+  /* leave nothing new on the stack */
+  lua_settop(L, initial_top);
 
-	/* pop handler table */
-	lua_pop(L, 1);
+  /* pop handler table */
+  lua_pop(L, 1);
 
-	return (void *) subu;
+  return (void *) subu;
 }
 
 /**
@@ -917,46 +917,46 @@ static void * impl_lcm_addtosubscriptiontable(lua_State * L, int index,
  * @return Non-zero on success.
  */
 static int impl_lcm_getfromsubscriptiontable(lua_State * L, int index,
-		int ref_num, lcm_subscription_t ** subscription){
+    int ref_num, lcm_subscription_t ** subscription){
 
-	/* get lcm userdata */
-	impl_lcm_getsubscriptiontable(L, index);
+  /* get lcm userdata */
+  impl_lcm_getsubscriptiontable(L, index);
 
-	/* remove the reference list, don't need it */
-	lua_pop(L, 1);
+  /* remove the reference list, don't need it */
+  lua_pop(L, 1);
 
-	/* get the subscription table entry */
-	lua_rawgeti(L, -1, ref_num);
+  /* get the subscription table entry */
+  lua_rawgeti(L, -1, ref_num);
 
-	/* remove subscription table */
-	lua_remove(L, -2);
+  /* remove subscription table */
+  lua_remove(L, -2);
 
-	/* make sure this is a real entry */
-	if(lua_isnil(L, -1)){
-		return 0;
-	}
+  /* make sure this is a real entry */
+  if(lua_isnil(L, -1)){
+    return 0;
+  }
 
-	/* get the userdata */
-	lua_pushstring(L, "userdata");
-	lua_rawget(L, -2);
+  /* get the userdata */
+  lua_pushstring(L, "userdata");
+  lua_rawget(L, -2);
 
-	impl_sub_userdata_t * subu =
-			(impl_sub_userdata_t *) lua_touserdata(L, -1);
+  impl_sub_userdata_t * subu =
+      (impl_sub_userdata_t *) lua_touserdata(L, -1);
 
-	/* set the subscription */
-	*subscription = subu->subscription;
+  /* set the subscription */
+  *subscription = subu->subscription;
 
-	/* pop the userdata */
-	lua_pop(L, 1);
+  /* pop the userdata */
+  lua_pop(L, 1);
 
-	/* get the handler */
-	lua_pushstring(L, "handler");
-	lua_rawget(L, -2);
+  /* get the handler */
+  lua_pushstring(L, "handler");
+  lua_rawget(L, -2);
 
-	/* remove the subscription table entry */
-	lua_remove(L, -2);
+  /* remove the subscription table entry */
+  lua_remove(L, -2);
 
-	return 1;
+  return 1;
 }
 
 /**
@@ -981,40 +981,40 @@ static int impl_lcm_getfromsubscriptiontable(lua_State * L, int index,
  * Doesn't push handler function.
  */
 static int impl_lcm_removefromsubscriptiontable(lua_State * L, int index,
-		int ref_num, lcm_subscription_t ** subscription){
+    int ref_num, lcm_subscription_t ** subscription){
 
-	/* leave nothing new on the stack */
-	const int initial_top = lua_gettop(L);
+  /* leave nothing new on the stack */
+  const int initial_top = lua_gettop(L);
 
-	/* get lcm userdata */
-	impl_lcm_getsubscriptiontable(L, index);
-	int subscription_table_index = impl_abs_index(L, -2);
-	int subscription_ref_list_index = impl_abs_index(L, -1);
+  /* get lcm userdata */
+  impl_lcm_getsubscriptiontable(L, index);
+  int subscription_table_index = impl_abs_index(L, -2);
+  int subscription_ref_list_index = impl_abs_index(L, -1);
 
-	/* get the subscription table entry */
-	lua_rawgeti(L, subscription_table_index, ref_num);
+  /* get the subscription table entry */
+  lua_rawgeti(L, subscription_table_index, ref_num);
 
-	/* make sure this is a real entry */
-	if(lua_isnil(L, -1)){
-		return 0;
-	}
+  /* make sure this is a real entry */
+  if(lua_isnil(L, -1)){
+    return 0;
+  }
 
-	/* get the userdata */
-	lua_pushstring(L, "userdata");
-	lua_rawget(L, -2);
+  /* get the userdata */
+  lua_pushstring(L, "userdata");
+  lua_rawget(L, -2);
 
-	impl_sub_userdata_t * subu =
-			(impl_sub_userdata_t *) lua_touserdata(L, -1);
+  impl_sub_userdata_t * subu =
+      (impl_sub_userdata_t *) lua_touserdata(L, -1);
 
-	/* set the subscription */
-	*subscription = subu->subscription;
+  /* set the subscription */
+  *subscription = subu->subscription;
 
-	/* remove from subscription table */
-	luaX_unref(L, subscription_table_index,
-			subscription_ref_list_index, ref_num);
+  /* remove from subscription table */
+  luaX_unref(L, subscription_table_index,
+      subscription_ref_list_index, ref_num);
 
-	/* leave nothing new on the stack */
-	lua_settop(L, initial_top);
+  /* leave nothing new on the stack */
+  lua_settop(L, initial_top);
 
-	return 1;
+  return 1;
 }
