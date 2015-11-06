@@ -30,44 +30,36 @@
 
 #include <stdlib.h>
 
-int utf8_check(const char * s, size_t length)
-{
+int utf8_check(const char* s, size_t length) {
   size_t i = 0;
   while (i < length) {
-    if (s[i] < 0x80)
-      /* 0xxxxxxx */
+    if (s[i] < 0x80) /* 0xxxxxxx */
       i++;
     else if ((s[i] & 0xe0) == 0xc0) {
       /* 110XXXXx 10xxxxxx */
-      if (i + 1 >= length)
-        return 0;
-      if ((s[i + 1] & 0xc0) != 0x80 ||
-          (s[i] & 0xfe) == 0xc0)    /* overlong? */
+      if (i + 1 >= length) return 0;
+      if ((s[i + 1] & 0xc0) != 0x80 || (s[i] & 0xfe) == 0xc0) /* overlong? */
         return 0;
       else
         i += 2;
     } else if ((s[i] & 0xf0) == 0xe0) {
       /* 1110XXXX 10Xxxxxx 10xxxxxx */
-      if (i + 2 >= length)
-        return 0;
-      if ((s[i + 1] & 0xc0) != 0x80 ||
-          (s[i + 2] & 0xc0) != 0x80 ||
-          (s[i] == 0xe0 && (s[i + 1] & 0xe0) == 0x80) ||    /* overlong? */
-          (s[i] == 0xed && (s[i + 1] & 0xe0) == 0xa0) ||    /* surrogate? */
+      if (i + 2 >= length) return 0;
+      if ((s[i + 1] & 0xc0) != 0x80 || (s[i + 2] & 0xc0) != 0x80 ||
+          (s[i] == 0xe0 && (s[i + 1] & 0xe0) == 0x80) || /* overlong? */
+          (s[i] == 0xed && (s[i + 1] & 0xe0) == 0xa0) || /* surrogate? */
           (s[i] == 0xef && s[i + 1] == 0xbf &&
-              (s[i + 2] & 0xfe) == 0xbe))    /* U+FFFE or U+FFFF? */
+           (s[i + 2] & 0xfe) == 0xbe)) /* U+FFFE or U+FFFF? */
         return 0;
       else
         i += 3;
     } else if ((s[i] & 0xf8) == 0xf0) {
       /* 11110XXX 10XXxxxx 10xxxxxx 10xxxxxx */
-      if (i + 3 >= length)
-        return 0;
-      if ((s[i + 1] & 0xc0) != 0x80 ||
-          (s[i + 2] & 0xc0) != 0x80 ||
+      if (i + 3 >= length) return 0;
+      if ((s[i + 1] & 0xc0) != 0x80 || (s[i + 2] & 0xc0) != 0x80 ||
           (s[i + 3] & 0xc0) != 0x80 ||
           (s[i] == 0xf0 && (s[i + 1] & 0xf0) == 0x80) ||    /* overlong? */
-          (s[i] == 0xf4 && s[i + 1] > 0x8f) || s[i] > 0xf4)    /* > U+10FFFF? */
+          (s[i] == 0xf4 && s[i + 1] > 0x8f) || s[i] > 0xf4) /* > U+10FFFF? */
         return 0;
       else
         i += 4;

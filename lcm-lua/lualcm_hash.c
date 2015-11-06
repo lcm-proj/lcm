@@ -19,8 +19,8 @@ static int impl_hash_add(lua_State *);
 static int impl_hash_tostring(lua_State *);
 
 /* supporting functions */
-static impl_hash_userdata_t * impl_hash_newuserdata(lua_State *);
-static impl_hash_userdata_t * impl_hash_checkudata(lua_State *, int);
+static impl_hash_userdata_t *impl_hash_newuserdata(lua_State *);
+static impl_hash_userdata_t *impl_hash_checkudata(lua_State *, int);
 
 /**
  * Makes the hash userdata's metatable. The metatable is named "lcm._hash".
@@ -30,27 +30,26 @@ static impl_hash_userdata_t * impl_hash_checkudata(lua_State *, int);
  *
  * @param L The Lua state.
  */
-void ll_hash_makemetatable(lua_State * L){
-
+void ll_hash_makemetatable(lua_State *L) {
   /* create empty meta table */
-  if(!luaL_newmetatable(L, "lcm._hash")){
+  if (!luaL_newmetatable(L, "lcm._hash")) {
     lua_pushstring(L, "cannot create metatable");
     lua_error(L);
   }
 
   const struct luaL_Reg metas[] = {
-    {"__add", impl_hash_add},
-    {"__tostring", impl_hash_tostring},
-    {NULL, NULL},
+      {"__add", impl_hash_add},
+      {"__tostring", impl_hash_tostring},
+      {NULL, NULL},
   };
 
   /* register to meta */
   luaX_registertable(L, metas);
 
   const struct luaL_Reg methods[] = {
-    {"tobytes", impl_hash_tobytes},
-    {"rotate", impl_hash_rotate},
-    {NULL, NULL},
+      {"tobytes", impl_hash_tobytes},
+      {"rotate", impl_hash_rotate},
+      {NULL, NULL},
   };
 
   /* register methods to new table, set __index */
@@ -76,11 +75,9 @@ void ll_hash_makemetatable(lua_State * L){
  *
  * @param L The Lua state.
  */
-void ll_hash_register_new(lua_State * L){
-
+void ll_hash_register_new(lua_State *L) {
   const struct luaL_Reg new_function[] = {
-    {"new", impl_hash_new},
-    {NULL, NULL},
+      {"new", impl_hash_new}, {NULL, NULL},
   };
 
   luaX_registerglobal(L, "lcm._hash", new_function);
@@ -89,16 +86,16 @@ void ll_hash_register_new(lua_State * L){
 /**
  *
  */
-void ll_hash_fromvalue(lua_State * L, uint64_t hash){
-  impl_hash_userdata_t * hashu = impl_hash_newuserdata(L);
+void ll_hash_fromvalue(lua_State *L, uint64_t hash) {
+  impl_hash_userdata_t *hashu = impl_hash_newuserdata(L);
   hashu->hash = hash;
 }
 
 /**
  *
  */
-uint64_t ll_hash_tovalue(lua_State * L, int index){
-  impl_hash_userdata_t * hashu = impl_hash_checkudata(L, index);
+uint64_t ll_hash_tovalue(lua_State *L, int index) {
+  impl_hash_userdata_t *hashu = impl_hash_checkudata(L, index);
   return hashu->hash;
 }
 
@@ -120,25 +117,24 @@ uint64_t ll_hash_tovalue(lua_State * L, int index){
  *
  * @throws Lua error if hash userdata cannot be created.
  */
-static int impl_hash_new(lua_State * L){
-
+static int impl_hash_new(lua_State *L) {
   /* we expect 1 argument */
   lua_settop(L, 1);
 
   /* first arg is a string containing the provider */
-  const char * hash_str = luaL_checkstring(L, 1);
+  const char *hash_str = luaL_checkstring(L, 1);
 
   /* use sscanf to parse the string */
   /* should use uint64_t here, but it causes a warning  with sscanf */
   unsigned long long hash = 0;
   int matches = sscanf(hash_str, "%llx", &hash);
-  if(matches != 1){
+  if (matches != 1) {
     lua_pushstring(L, "error creating hash");
     lua_error(L);
   }
 
   /* create hash userdata */
-  impl_hash_userdata_t * hashu = impl_hash_newuserdata(L);
+  impl_hash_userdata_t *hashu = impl_hash_newuserdata(L);
   hashu->hash = hash;
 
   /* return hash userdata, which is on top of the stack */
@@ -160,18 +156,17 @@ static int impl_hash_new(lua_State * L){
  * @param L The Lua state.
  * @return The number of return values on the Lua stack.
  */
-static int impl_hash_tobytes(lua_State * L){
-
+static int impl_hash_tobytes(lua_State *L) {
   /* we expect 1 argument */
   lua_settop(L, 1);
 
   /* get the hash userdata */
-  impl_hash_userdata_t * hashu = impl_hash_checkudata(L, 1);
+  impl_hash_userdata_t *hashu = impl_hash_checkudata(L, 1);
 
-  uint8_t * bytes = (uint8_t *) &hashu->hash;
+  uint8_t *bytes = (uint8_t *)&hashu->hash;
 
   int i;
-  for(i = 0; i < sizeof(hashu->hash); i++){
+  for (i = 0; i < sizeof(hashu->hash); i++) {
     lua_pushinteger(L, bytes[i]);
   }
 
@@ -201,13 +196,12 @@ static int impl_hash_tobytes(lua_State * L){
  * @param L The Lua state.
  * @return The number of return values on the Lua stack.
  */
-static int impl_hash_rotate(lua_State * L){
-
+static int impl_hash_rotate(lua_State *L) {
   /* we expect 2 arguments */
   lua_settop(L, 2);
 
   /* get the hash userdata */
-  impl_hash_userdata_t * hashu = impl_hash_checkudata(L, 1);
+  impl_hash_userdata_t *hashu = impl_hash_checkudata(L, 1);
 
   /* get the rotation */
   lua_Integer rotation = luaL_checkinteger(L, 2);
@@ -236,17 +230,16 @@ static int impl_hash_rotate(lua_State * L){
  * @param L The Lua state.
  * @return The number of return values on the Lua stack.
  */
-static int impl_hash_add(lua_State * L){
-
+static int impl_hash_add(lua_State *L) {
   /* we expect 2 arguments */
   lua_settop(L, 2);
 
   /* get the hash userdatas */
-  impl_hash_userdata_t * left_hashu = impl_hash_checkudata(L, 1);
-  impl_hash_userdata_t * right_hashu = impl_hash_checkudata(L, 2);
+  impl_hash_userdata_t *left_hashu = impl_hash_checkudata(L, 1);
+  impl_hash_userdata_t *right_hashu = impl_hash_checkudata(L, 2);
 
   /* make result */
-  impl_hash_userdata_t * new_hashu = impl_hash_newuserdata(L);
+  impl_hash_userdata_t *new_hashu = impl_hash_newuserdata(L);
   new_hashu->hash = left_hashu->hash + right_hashu->hash;
 
   return 1;
@@ -265,22 +258,21 @@ static int impl_hash_add(lua_State * L){
  * @param L The Lua state.
  * @return The number of return values on the Lua stack.
  */
-static int impl_hash_tostring(lua_State * L){
-
+static int impl_hash_tostring(lua_State *L) {
   /* we expect 1 argument */
   lua_settop(L, 1);
 
   /* get the hash userdata */
-  impl_hash_userdata_t * hashu = impl_hash_checkudata(L, 1);
+  impl_hash_userdata_t *hashu = impl_hash_checkudata(L, 1);
 
   /* convert uint64_t to string */
   /* use snprintf because lua_pushfstring can't handle %llx */
   /* have to cast uint64_t to avoid warning with snprintf */
   char hash_str[20];
 #ifndef WIN32
-  snprintf(hash_str, 20, "0x%llx", (unsigned long long) hashu->hash);
+  snprintf(hash_str, 20, "0x%llx", (unsigned long long)hashu->hash);
 #else
-  _snprintf(hash_str, 20, "0x%llx", (unsigned long long) hashu->hash);
+  _snprintf(hash_str, 20, "0x%llx", (unsigned long long)hashu->hash);
 #endif
   /* make the string */
   lua_pushfstring(L, "lcm._hash = %s (@ %p)", hash_str, hashu);
@@ -303,19 +295,17 @@ static int impl_hash_tostring(lua_State * L){
  * @param L The Lua state.
  * @return A pointer to the new hash userdata.
  */
-static impl_hash_userdata_t * impl_hash_newuserdata(lua_State * L){
-
+static impl_hash_userdata_t *impl_hash_newuserdata(lua_State *L) {
   /* make new user data */
-  impl_hash_userdata_t * hashu =
-      (impl_hash_userdata_t *)
-      lua_newuserdata(L, sizeof(impl_hash_userdata_t));
+  impl_hash_userdata_t *hashu =
+      (impl_hash_userdata_t *)lua_newuserdata(L, sizeof(impl_hash_userdata_t));
 
   /* initialize struct */
   hashu->hash = 0;
 
   /* set the metatable */
   luaL_getmetatable(L, "lcm._hash");
-  if(lua_isnil(L, -1)){
+  if (lua_isnil(L, -1)) {
     lua_pushstring(L, "cannot find metatable");
     lua_error(L);
   }
@@ -340,7 +330,6 @@ static impl_hash_userdata_t * impl_hash_newuserdata(lua_State * L){
  * @param index The index of the hash userdata.
  * @return A pointer to the hash userdata.
  */
-static impl_hash_userdata_t * impl_hash_checkudata(lua_State * L, int index){
-  return (impl_hash_userdata_t *)
-      luaL_checkudata(L, index, "lcm._hash");
+static impl_hash_userdata_t *impl_hash_checkudata(lua_State *L, int index) {
+  return (impl_hash_userdata_t *)luaL_checkudata(L, index, "lcm._hash");
 }

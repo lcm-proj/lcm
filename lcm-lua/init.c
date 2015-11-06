@@ -10,31 +10,27 @@ extern "C" {
 #include "lualcm_hash.h"
 #include "lualcm_pack.h"
 
-int luaopen_lcm_lcm(lua_State * L){
-
+int luaopen_lcm_lcm(lua_State* L) {
   ll_lcm_makemetatable(L);
   ll_lcm_register_new(L);
 
   return 1;
 }
 
-int luaopen_lcm__hash(lua_State * L){
-
+int luaopen_lcm__hash(lua_State* L) {
   ll_hash_makemetatable(L);
   ll_hash_register_new(L);
 
   return 1;
 }
 
-int luaopen_lcm__pack(lua_State * L){
-
+int luaopen_lcm__pack(lua_State* L) {
   ll_pack_register(L);
 
   return 1;
 }
 
-int luaopen_lcm(lua_State * L){
-
+int luaopen_lcm(lua_State* L) {
   lua_newtable(L);
 
   lua_pushstring(L, "lcm");
