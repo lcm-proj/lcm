@@ -1,4 +1,3 @@
-
 #include "lualcm_lcm.h"
 #include "lcm/lcm.h"
 #include "lua_ref_helper.h"
@@ -1019,4 +1018,3 @@ static int impl_lcm_removefromsubscriptiontable(lua_State * L, int index,
 
 	return 1;
 }
-

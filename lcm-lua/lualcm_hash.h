@@ -1,5 +1,3 @@
-
-
 #ifndef TPRK77_LUALCM_HASH_H
 #define TPRK77_LUALCM_HASH_H
 

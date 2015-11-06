@@ -1,5 +1,3 @@
-
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -53,4 +51,3 @@ int luaopen_lcm(lua_State * L){
 
 	return 1;
 }
-

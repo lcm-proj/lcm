@@ -1,5 +1,3 @@
-
-
 #include "lualcm_hash.h"
 #include "stdio.h"
 #include "lua_ver_helper.h"
@@ -346,4 +344,3 @@ static impl_hash_userdata_t * impl_hash_checkudata(lua_State * L, int index){
 	return (impl_hash_userdata_t *)
 		  luaL_checkudata(L, index, "lcm._hash");
 }
-

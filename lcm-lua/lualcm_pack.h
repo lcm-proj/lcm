@@ -1,5 +1,3 @@
-
-
 #ifndef TPRK77_LCM_PACK_H
 #define TPRK77_LCM_PACK_H
 

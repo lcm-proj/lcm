@@ -1,5 +1,3 @@
-
-
 #ifndef TPRK77_LUA_REF_HELPER_H
 #define TPRK77_LUA_REF_HELPER_H
 

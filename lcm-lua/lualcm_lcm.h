@@ -1,5 +1,3 @@
-
-
 #ifndef TPRK77_LCM_LCM_H
 #define TPRK77_LCM_LCM_H
 
@@ -23,4 +21,3 @@ void ll_lcm_makemetatable(lua_State *);
 void ll_lcm_register_new(lua_State *);
 
 #endif
-

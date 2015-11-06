@@ -1,10 +1,3 @@
-/*
- * test_unref.c
- *
- *  Created on: Oct 6, 2012
- *      Author: tperkins
- */
-
 #ifdef __cplusplus
 extern "C" {
 #endif
