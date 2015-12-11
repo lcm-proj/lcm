@@ -1,7 +1,7 @@
-JAVAROOT = build
+JAVAROOT = $(builddir)/build
 JARFILE = lcm.jar
-jchart2d_src_dir = $(srcdir)/jchart2d-code/src
-jchart2d_ext_dir = $(srcdir)/jchart2d-code/ext
+jchart2d_src_dir = $(abs_srcdir)/jchart2d-code/src
+jchart2d_ext_dir = $(abs_srcdir)/jchart2d-code/ext
 jide_jar = $(jchart2d_ext_dir)/jide-oss-2.9.7.jar
 xmlgraphics_jar = $(jchart2d_ext_dir)/xmlgraphics-commons-1.3.1.jar
 JAVACFLAGS = -source 1.5 -target 1.5 -classpath $(jide_jar):$(xmlgraphics_jar):$(jchart2d_src_dir)
@@ -18,10 +18,14 @@ $(JARFILE): $(jchart2d_jar) $(jide_extract) $(xmlgraphics_extract) classfiles
 jar_DATA = $(JARFILE) $(jchart2d_jar)
 
 $(jide_extract): $(jide_jar)
-	cd $(JAVAROOT) && $(JAR) xf ../$(jide_jar)
+	cd $(JAVAROOT) && $(JAR) xf $(jide_jar)
 
-$(xmlgraphics_extract): $(xmlgraphics_jar)
-	cd $(JAVAROOT) && $(JAR) xf ../$(xmlgraphics_jar)
+# NOTE: This rule depends on $(jide_extract) because there seemed to be a race condition in
+# extracting the jars, specifically during a parallel build both jar xf jobs will attempt
+# to create the same directories if they do not exist causing one of the mkdir attempts
+# to fail.
+$(xmlgraphics_extract): $(xmlgraphics_jar) $(jide_extract)
+	cd $(JAVAROOT) && $(JAR) xf $(xmlgraphics_jar)
 
 jchart2d_cleanfiles = $(JAVAROOT)/com/jidesoft/plaf/xerto/icons/rollover_c.gif \
     $(JAVAROOT)/com/jidesoft/plaf/xerto/icons/rollover.gif \
@@ -431,10 +435,10 @@ jchart2d_java_files = \
 
 dist_noinst_JAVA = $(lcm_java_files) $(jchart2d_java_files)
 
-$(dist_noinst_JAVA): build
+$(dist_noinst_JAVA): $(builddir)/build
 
-build:
-	mkdir build
+$(builddir)/build:
+	mkdir -p $(builddir)/build
 
 man_MANS = lcm-spy.1 lcm-logplayer-gui.1
 
