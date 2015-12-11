@@ -9,7 +9,9 @@ JAVACFLAGS = -source 1.5 -target 1.5 -classpath $(jide_jar):$(xmlgraphics_jar):$
 jide_extract = $(JAVAROOT)/com/jidesoft/comparator/AlphanumComparator.class
 xmlgraphics_extract = $(JAVAROOT)/org/apache/xmlgraphics/java2d/TextHandler.class
 
-.PHONY classfiles: classdist_noinst.stamp classnoinst.stamp
+# NOTE: JAVAROOT is put on the classpath when javac is called, we ned to make
+# sure that it exists before compiling java
+.PHONY classfiles: classdist_noinst.stamp classnoinst.stamp $(JAVAROOT)
 
 $(JARFILE): $(jchart2d_jar) $(jide_extract) $(xmlgraphics_extract) classfiles
 	rm -f $(JARFILE)
