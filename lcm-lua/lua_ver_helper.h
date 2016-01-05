@@ -12,7 +12,7 @@
 #define luaX_setfenv(L, INDEX) lua_setfenv(L, INDEX)
 #define luaX_getfenv(L, INDEX) lua_getfenv(L, INDEX)
 
-#elif LUA_VERSION_NUM == 502
+#elif LUA_VERSION_NUM >= 502
 
 #define luaX_registerglobal(L, NAME, FUNCS) \
   do {                                      \
