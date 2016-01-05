@@ -1,6 +1,9 @@
 #ifndef TPRK77_LCM_LCM_H
 #define TPRK77_LCM_LCM_H
 
+// Needed for luaL_checkint which is deprecated in Lua 5.3
+#define LUA_COMPAT_APIINTCASTS
+
 #ifdef __cplusplus
 extern "C" {
 #endif
