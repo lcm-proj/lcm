@@ -137,7 +137,7 @@ Some Linux distributions, such as Arch, do not contain the default install locat
 
 In addition, `pkgconfig` can be configured to find lcm.pc.
 
-$ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$LCM_INSTALL_DIR/pkgconfig
+    $ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$LCM_INSTALL_DIR/pkgconfig
 
 Python users may need to add the lcm install location to Python's site packages search path using a .pth file.
 
