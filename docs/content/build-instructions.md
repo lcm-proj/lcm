@@ -125,3 +125,27 @@ Same as building from a released version, as above.
 To build from Git in other GNU/Linux distributions, FreeBSD, Solaris, etc.,
 you'll need to install autotools.  Then follow the terminal commands shown
 above for Ubuntu.
+
+# Post Install {#build_post}
+
+## Linux {#build_post_linux}
+
+Some Linux distributions, such as Arch, do not contain the default install location (`/usr/local/lib</`) in the `ld.so.conf` search path. In this case, create a `ld.so.conf` file for lcm:
+
+    $ export LCM_INSTALL_DIR=/usr/local/lib
+    $ echo $LCM_INSTALL_DIR > /etc/ld.so.conf.d/lcm.conf
+
+In addition, `pkgconfig` can be configured to find lcm.pc.
+
+$ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$LCM_INSTALL_DIR/pkgconfig
+
+Python users may need to add the lcm install location to Python's site packages search path using a .pth file.
+
+    $ export PYTHON_VERSION=$(python -c "import sys; print(\"%s.%s\" % sys.version_info[:2])")
+    $ export PYTHON_USER_SITE=$(python -m site --user-site)
+    $ echo "$LCM_INSTALL_DIR/python$PYTHON_VERSION/site-packages" > $PYTHON_USER_SITE/lcm.pth
+
+Lua users may need to add to `LUA_CPATH`
+
+    $ export LUA_VERSION=$(lua -e "print(string.sub(_VERSION, 5))")
+    $ export LUA_CPATH=$LUA_CPATH:$LCM_INSTALL_DIR/lua/$LUA_VERSION/?.so
