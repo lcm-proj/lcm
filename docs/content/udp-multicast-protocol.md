@@ -23,9 +23,8 @@ messages of interest and discarding the remainder.
 # Small messages
 
 A small message is defined as one where the LCM small message header, channel
-name, and the payload can fit into a single UDP datagram.  While this can
-technically be up to 64 kb, in practice the current LCM implementations limit
-this to 1400 bytes (to stay under the Ethernet MTU).
+name, and the payload can fit into a single UDP datagram.  Small messages have
+an upper size limit of 64 kB, after which they must be fragmented.
 
 The header for a small message is 8 bytes long and has the following form:
 
