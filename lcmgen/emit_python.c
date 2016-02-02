@@ -616,7 +616,7 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         const char *msn = lm->type->shortname;
         if (! lcm_is_primitive_type (lm->type->lctypename)) {
             const char *ghr = "_get_hash_recursive(newparents)";
-            if (is_same_type (lm->type, ls->structname)) {
+            if (is_same_type (lm->type, ls->structname) || strlen(lm->type->package) == 0) {
                 emit_continue ("+ %s.%s", msn, ghr);
             } else {
                 emit_continue ("+ %s.%s.%s", lm->type->package, msn, ghr);
