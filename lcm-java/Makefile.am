@@ -33,9 +33,9 @@ CLEANFILES = $(bin_SCRIPTS) $(javaroot_cleanfiles) $(JARFILE)
 clean-local:
 	rm -rf $(JAVAROOT)
 
-lcm_java_files = $(shell find lcm -name "*.java")
+lcm_java_files = $(shell find $(abs_srcdir)/lcm -type f -name "*.java" -not -path "*/\.*")
 
-jchart2d_java_files = $(shell find $(jchart2d_src_dir) -name "*.java")
+jchart2d_java_files = $(shell find $(jchart2d_src_dir) -type f -name "*.java"  -not -path "*/\.*")
 
 dist_noinst_JAVA = $(lcm_java_files) $(jchart2d_java_files)
 
