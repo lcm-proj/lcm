@@ -22,7 +22,7 @@ lcm-logplayer-gui: Makefile
 
 lcm-spy: Makefile
 	@echo > $@ "#!/bin/sh"
-	@echo >> $@ "exec java -server -Xincgc -Xmx128m -Xms64m -ea -cp ${jardir}/lcm.jar lcm.spy.Spy \$$*"
+	@echo >> $@ "exec java -server -Djava.net.preferIPv4Stack=true -Xincgc -Xmx128m -Xms64m -ea -cp ${jardir}/lcm.jar lcm.spy.Spy \$$*"
 	chmod 755 $@
 
 javaroot_cleanfiles = $(shell find $(JAVAROOT) -type f)
