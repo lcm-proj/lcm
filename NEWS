@@ -1,3 +1,19 @@
+April 29, 2016
+==============
+
+Release 1.3.1
+
+This is primarily a bugfix and maintenance release.
+
+- Java
+  - Fix lcm-java automake for out of source builds
+- Lua
+  - Add support for Lua 5.3
+- Python
+  - Fix python LCM code generation when a package is not specified
+- General
+  - Minor documentation updates
+
 Oct 28, 2015
 ============
 
