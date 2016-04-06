@@ -21,7 +21,7 @@ pkg_check_modules(GTHREAD2 REQUIRED gthread-2.0)
 # Core modules
 add_subdirectory(lcm)
 # add_subdirectory(liblcm-test) TODO
-# add_subdirectory(lcmgen) TODO
+add_subdirectory(lcmgen)
 # add_subdirectory(lcm-logger) TODO
 
 # Java

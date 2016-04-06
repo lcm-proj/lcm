@@ -20,7 +20,11 @@ write_basic_package_version_file(
 )
 
 # Exported targets for build directory
-export(TARGETS lcm FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake)
+export(TARGETS
+  lcm
+  lcm-gen
+  FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake
+)
 
 # Exported targets for installation
 install(EXPORT ${PROJECT_NAME}Targets
