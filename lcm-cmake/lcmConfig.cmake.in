@@ -1,0 +1,3 @@
+set(LCM_VERSION @LCM_VERSION@)
+
+include(${CMAKE_CURRENT_LIST_DIR}/lcmTargets.cmake)
