@@ -53,6 +53,10 @@ target_include_directories(lcm PRIVATE
   ${GTHREAD2_INCLUDE_DIRS}
 )
 
+target_include_directories(lcm INTERFACE
+  $<BUILD_INTERFACE:${lcm_SOURCE_DIR}>
+)
+
 target_link_libraries(lcm PRIVATE
   ${GLIB2_LIBRARIES}
   ${GTHREAD2_LIBRARIES}
