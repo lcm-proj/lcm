@@ -36,6 +36,18 @@ install(EXPORT ${PROJECT_NAME}Targets
 install(FILES
   ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
   ${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
-  # TODO 'Use' file
+  ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Utilities.cmake
   DESTINATION ${CONFIG_INSTALL_DIR}
+)
+
+# Copy 'use' file to build directory
+add_custom_command(
+  OUTPUT ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Utilities.cmake
+  DEPENDS ${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Utilities.cmake
+  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+    ${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Utilities.cmake
+    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Utilities.cmake
+)
+add_custom_target(lcm_use_file ALL
+  DEPENDS ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Utilities.cmake
 )
