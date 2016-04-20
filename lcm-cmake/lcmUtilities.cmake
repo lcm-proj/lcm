@@ -142,7 +142,7 @@ function(lcm_wrap_types)
     list(APPEND _args --java --jpath ${_DESTINATION})
   endif()
   if(DEFINED _PYTHON_SOURCES)
-    list(APPEND _args --python --ppath ${_DESTINATION})
+    list(APPEND _args --python --python-no-init --ppath ${_DESTINATION})
   endif()
 
   # Create build rules
