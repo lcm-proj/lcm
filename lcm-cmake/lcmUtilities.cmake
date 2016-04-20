@@ -29,6 +29,12 @@ macro(_lcm_add_outputs VAR)
 endmacro()
 
 #------------------------------------------------------------------------------
+macro(_lcm_parent_list_append VAR)
+  list(APPEND ${VAR} ${ARGN})
+  set(${VAR} "${${VAR}}" PARENT_SCOPE)
+endmacro()
+
+#------------------------------------------------------------------------------
 macro(_lcm_export VAR)
   if(DEFINED ${VAR})
     set(${${VAR}} "${${${VAR}}}" PARENT_SCOPE)
@@ -36,7 +42,7 @@ macro(_lcm_export VAR)
 endmacro()
 
 #------------------------------------------------------------------------------
-function(_lcm_create_aggregate_header NAME)
+function(_lcm_create_aggregate_header NAME VAR)
   set(_header "${_DESTINATION}/${NAME}")
   list(FIND _aggregate_headers "${_header}" _index)
   if(_index EQUAL -1)
@@ -46,8 +52,8 @@ function(_lcm_create_aggregate_header NAME)
       "#define ${_guard}\n"
       "\n"
     )
-    list(APPEND _aggregate_headers ${_header})
-    set(_aggregate_headers "${_aggregate_headers}" PARENT_SCOPE)
+    _lcm_parent_list_append(_aggregate_headers ${_header})
+    _lcm_parent_list_append(${VAR} ${_header})
   endif()
 endfunction()
 
@@ -160,10 +166,10 @@ function(lcm_wrap_types)
         string(REPLACE "." "/" _package_dir "${_package}")
         string(REPLACE "." "_" _package_pre "${_package}")
         if(DEFINED _C_HEADERS AND _CREATE_C_AGGREGATE_HEADER)
-          _lcm_create_aggregate_header("${_package_dir}.h")
+          _lcm_create_aggregate_header("${_package_dir}.h" _C_HEADERS)
         endif()
         if(DEFINED _CPP_HEADERS AND _CREATE_CPP_AGGREGATE_HEADER)
-          _lcm_create_aggregate_header("${_package_dir}.hpp")
+          _lcm_create_aggregate_header("${_package_dir}.hpp" _CPP_HEADERS)
         endif()
       elseif(_line MATCHES "^ *(struct|enum) +")
         # Get type name
