@@ -69,6 +69,25 @@ function(_lcm_add_aggregate_include AGGREGATE_HEADER TYPE_HEADER)
 endfunction()
 
 #------------------------------------------------------------------------------
+function(_lcm_add_python_package PATH)
+  list(FIND _python_packages "${PATH}" _index)
+  if(_index EQUAL -1)
+    set(_init "${_DESTINATION}/${PATH}/__init__.py")
+    if(EXISTS ${_init})
+      file(REMOVE ${_init})
+    endif()
+    _lcm_parent_list_append(_python_packages ${PATH})
+    _lcm_parent_list_append(${_PYTHON_SOURCES} ${_init})
+  endif()
+endfunction()
+
+#------------------------------------------------------------------------------
+function(_lcm_add_python_type PACKAGE TYPE)
+  set(_init "${_DESTINATION}/${PACKAGE}/__init__.py")
+  file(APPEND ${_init} "from .${TYPE} import ${TYPE}\n")
+endfunction()
+
+#------------------------------------------------------------------------------
 function(lcm_wrap_types)
   # Parse arguments
   set(_flags
@@ -147,6 +166,7 @@ function(lcm_wrap_types)
 
   # Create build rules
   set(_aggregate_headers "")
+  set(_python_packages "")
   foreach(_lcmtype ${_UNPARSED_ARGUMENTS})
     set(_package "")
     set(_outputs "")
@@ -191,7 +211,12 @@ function(lcm_wrap_types)
               "${_type}.hpp" "${_package_dir}")
           endif()
         endif()
-        # TODO Python, Java
+        if(DEFINED _PYTHON_SOURCES)
+          _lcm_add_python_package(${_package_dir})
+          _lcm_add_python_type(${_package_dir} ${_type})
+          _lcm_add_outputs(_PYTHON_SOURCES ${_package_dir}/${_type}.py)
+        endif()
+        # TODO Java
       endif()
     endforeach()
 
