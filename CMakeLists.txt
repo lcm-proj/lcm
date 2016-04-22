@@ -39,9 +39,9 @@ endif()
 lcm_option(
   LCM_ENABLE_PYTHON
   "Build Python bindings and utilities"
-  PYTHONINTERP_FOUND PythonInterp)
+  PYTHONLIBS_FOUND PythonLibs)
 if(LCM_ENABLE_PYTHON)
-#   add_subdirectory(lcm-python) TODO
+  add_subdirectory(lcm-python)
 endif()
 
 # Lua

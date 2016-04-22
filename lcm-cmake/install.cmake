@@ -41,13 +41,7 @@ install(FILES
 )
 
 # Copy 'use' file to build directory
-add_custom_command(
-  OUTPUT ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Utilities.cmake
-  DEPENDS ${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Utilities.cmake
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-    ${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Utilities.cmake
-    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Utilities.cmake
-)
-add_custom_target(lcm_use_file ALL
-  DEPENDS ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Utilities.cmake
+lcm_copy_file_target(lcm_use_file
+  ${CMAKE_CURRENT_LIST_DIR}/${PROJECT_NAME}Utilities.cmake
+  ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Utilities.cmake
 )
