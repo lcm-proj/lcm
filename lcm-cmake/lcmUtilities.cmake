@@ -8,6 +8,9 @@
 #                  [DESTIONATION <PATH>]
 #                  <FILE> [<FILE>...])
 #     generate bindings for specified LCM type definition files
+#
+#   lcm_install_python([DESTINATION <PATH>]
+#                      <FILE> [<FILE>...])
 
 cmake_minimum_required(VERSION 2.8.3)
 include(CMakeParseArguments)
@@ -240,4 +243,34 @@ function(lcm_wrap_types)
   _lcm_export(_CPP_SOURCES)
   _lcm_export(_CPP_HEADERS)
   _lcm_export(_PYTHON_SOURCES)
+endfunction()
+
+#------------------------------------------------------------------------------
+function(lcm_install_python)
+  # Parse arguments
+  set(_flags "")
+  set(_sv_opts DESTINATION RELATIVE_PATH)
+  set(_mv_opts "")
+  cmake_parse_arguments("" "${_flags}" "${_sv_opts}" "${_mv_opts}" ${ARGN})
+
+  # Set default destination and relative path, if none given
+  if(NOT DEFINED _DESTINATION)
+    if(NOT PYTHONINTERP_FOUND)
+      message(SEND_ERROR
+        "lcm_install_python: no DESTINATION given"
+        " and no Python interpreter found (required to guess DESTINATION)")
+      return()
+    endif()
+    set(_pyshort python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
+    set(_DESTINATION lib${LIB_SUFFIX}/${_pyshort}/site-packages)
+  endif()
+  if(NOT DEFINED _RELATIVE_PATH)
+    set(_RELATIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+  endif()
+
+  foreach(_file ${_UNPARSED_ARGUMENTS})
+    file(RELATIVE_PATH _package_dir ${_RELATIVE_PATH} ${_file})
+    get_filename_component(_package_dir ${_package_dir} PATH)
+    install(FILES ${_file} DESTINATION ${_DESTINATION}/${_package_dir})
+  endforeach()
 endfunction()
