@@ -29,10 +29,8 @@ lcm_option(
   LCM_ENABLE_JAVA
   "Build Java bindings and utilities"
   JAVA_FOUND Java 1.6)
-
 if(LCM_ENABLE_JAVA)
-  include(UseJava)
-#   add_subdirectory(lcm-java) TODO
+  add_subdirectory(lcm-java)
 endif()
 
 # Python

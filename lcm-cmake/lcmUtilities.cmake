@@ -219,7 +219,9 @@ function(lcm_wrap_types)
           _lcm_add_python_type(${_package_dir} ${_type})
           _lcm_add_outputs(_PYTHON_SOURCES ${_package_dir}/${_type}.py)
         endif()
-        # TODO Java
+        if(DEFINED _JAVA_SOURCES)
+          _lcm_add_outputs(_JAVA_SOURCES ${_package_dir}/${_type}.java)
+        endif()
       endif()
     endforeach()
 
@@ -243,6 +245,7 @@ function(lcm_wrap_types)
   _lcm_export(_CPP_SOURCES)
   _lcm_export(_CPP_HEADERS)
   _lcm_export(_PYTHON_SOURCES)
+  _lcm_export(_JAVA_SOURCES)
 endfunction()
 
 #------------------------------------------------------------------------------
