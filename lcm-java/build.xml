@@ -8,7 +8,7 @@
 <!-- Clean everything -->
 <target name="clean" depends="clean-java"/>
 
-<!-- Dist Clean everyting -->
+<!-- Dist Clean everything -->
 <target name="distclean" depends="clean">
   <delete dir="build/lcm"/>
   <delete file="lcm.jar"/>

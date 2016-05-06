@@ -34,7 +34,7 @@ struct tokenize
     int unget_line, unget_column;
 
 	// the current line, and our position in the input stream.
-    // (ignoring the occurence of ungets.)
+    // (ignoring the occurrence of ungets.)
 	char *buffer;
     int buffer_line, buffer_column;
     int buffer_len;

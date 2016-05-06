@@ -346,7 +346,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(2, " * @param buf The buffer containing the encoded message.");
     emit(2, " * @param offset The byte offset into @p buf where the encoded message starts.");
     emit(2, " * @param maxlen The maximum number of bytes to reqad while decoding.");
-    emit(2, " * @return The number of bytes decoded, or <0 if an error occured.");
+    emit(2, " * @return The number of bytes decoded, or <0 if an error occurred.");
     emit(2, " */");
     emit(2, "inline int decode(const void *buf, int offset, int maxlen);");
     emit(0, "");

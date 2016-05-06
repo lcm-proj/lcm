@@ -47,7 +47,7 @@ import java.awt.Graphics;
 public interface ITracePainter<T extends ITracePainter<T>> extends IPointPainter<T> {
 
   /**
-   * Invoked to inform the painter that a discontinue in the trace to # paint has occured.
+   * Invoked to inform the painter that a discontinue in the trace to # paint has occurred.
    * <p>
    * This only has to be implemented by painters that collect several points of
    * {@link #paintPoint(int, int, int, int, Graphics, ITracePoint2D)} to draw them as polygons (e.g.:

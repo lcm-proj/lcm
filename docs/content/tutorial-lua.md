@@ -212,4 +212,4 @@ If your application has other work to do while waiting for messages (e.g.,
 print out a message every few seconds or check for input somewhere else), you
 can use the \ref lcm_userdata_handle_timeout method. This method will block for
 up to the specified number of milliseconds, and then return a boolean: true if
-a message was recieved and handled, and false otherwise.
+a message was received and handled, and false otherwise.

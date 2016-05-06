@@ -48,7 +48,7 @@ public final class Chart2DActionSetCustomGridColor extends AChart2DAction {
   private static final long serialVersionUID = 3691034370412916788L;
 
   /**
-   * Reference to the last custom color chosen to check wether the corresponding
+   * Reference to the last custom color chosen to check whether the corresponding
    * menu is selected.
    */
   private Color m_lastChosenColor;

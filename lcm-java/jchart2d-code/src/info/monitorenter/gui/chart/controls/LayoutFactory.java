@@ -3452,7 +3452,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Returns wether the chart show x grid menu should be created.
+   * Returns whether the chart show x grid menu should be created.
    * <p>
    * 
    * @return the showAxisXGridMenu.
@@ -3775,7 +3775,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the axis x show grid menu should be created.
+   * Set whether the axis x show grid menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -3789,7 +3789,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the axis x menu should be created.
+   * Set whether the axis x menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -3803,7 +3803,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the axis x range policy menu should be created.
+   * Set whether the axis x range policy menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -3827,7 +3827,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the axis x type menu should be created.
+   * Set whether the axis x type menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -3841,7 +3841,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the axis y show grid menu should be created.
+   * Set whether the axis y show grid menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -3855,7 +3855,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the axis y menu should be created.
+   * Set whether the axis y menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -3869,7 +3869,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the axis y range policy menu should be created.
+   * Set whether the axis y range policy menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -3893,7 +3893,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the axis y type menu should be created.
+   * Set whether the axis y type menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -3907,7 +3907,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the chart set background menu should be created.
+   * Set whether the chart set background menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -3921,7 +3921,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the chart set foreground menu should be created.
+   * Set whether the chart set foreground menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -3957,7 +3957,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the chart grid color menu should be created.
+   * Set whether the chart grid color menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.
@@ -4028,7 +4028,7 @@ public final class LayoutFactory {
   }
 
   /**
-   * Set wether the save menu should be created.
+   * Set whether the save menu should be created.
    * <p>
    * Configure this before using any instance of
    * {@link info.monitorenter.gui.chart.views.ChartPanel} or it will be useless.

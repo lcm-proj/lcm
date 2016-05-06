@@ -168,8 +168,8 @@ LCM::unsubscribe(Subscription *subscription) {
         return -1;
     }
     std::vector<Subscription*>::iterator iter;
-    std::vector<Subscription*>::iterator eiter = subscriptions.end();
-    for(iter=subscriptions.begin(); iter!= eiter; ++iter) {
+    std::vector<Subscription*>::iterator either = subscriptions.end();
+    for(iter=subscriptions.begin(); iter!= either; ++iter) {
         if(*iter == subscription) {
             int status = lcm_unsubscribe(lcm, subscription->c_subs);
             subscriptions.erase(iter);

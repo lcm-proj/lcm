@@ -116,9 +116,9 @@ function NodeTest:make_message(iteration)
 	return msg
 end
 
-function NodeTest:check_reply(msg, iteration, decendant)
+function NodeTest:check_reply(msg, iteration, descendant)
 
-	if not decendant then
+	if not descendant then
 		-- this is only used for the root of the message
 		check_field(msg.num_children, iteration + 1, "num_children")
 	else

@@ -269,7 +269,7 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
         emit(0, " *                This function is invoked by LCM during calls to lcm_handle() and");
         emit(0, " *                lcm_handle_timeout().");
         emit(0, " * @param userdata An opaque pointer passed to @p handler when it is invoked.");
-        emit(0, " * @return 0 on success, <0 if an error occured");
+        emit(0, " * @return 0 on success, <0 if an error occurred");
         emit(0, " */");
         emit(0,"%s_subscription_t* %s_subscribe(lcm_t *lcm, const char *channel, %s_handler_t handler, void *userdata);",
                 tn_, tn_, tn_);
@@ -290,7 +290,7 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
         emit(0, " * @param subs the subscription to modify.");
         emit(0, " * @param num_messages The maximum number of messages to queue");
         emit(0, " *  on the subscription.");
-        emit(0, " * @return 0 on success, <0 if an error occured");
+        emit(0, " * @return 0 on success, <0 if an error occurred");
         emit(0, " */");
         emit(0,"int %s_subscription_set_queue_capacity(%s_subscription_t* subs,\n"
             "                              int num_messages);\n", tn_, tn_);
@@ -304,7 +304,7 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(0, " * @param maxlen Maximum number of bytes to write.  This should generally");
     emit(0, " *               be equal to %s_encoded_size().", tn_);
     emit(0, " * @param msg The message to encode.");
-    emit(0, " * @return The number of bytes encoded, or <0 if an error occured.");
+    emit(0, " * @return The number of bytes encoded, or <0 if an error occurred.");
     emit(0, " */");
     emit(0,"int %s_encode(void *buf, int offset, int maxlen, const %s *p);", tn_, tn_);
     emit(0, "");
@@ -318,7 +318,7 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(0, " * @param offset The byte offset into @p buf where the encoded message starts.");
     emit(0, " * @param maxlen The maximum number of bytes to read while decoding.");
     emit(0, " * @param msg Output parameter where the decoded message is stored");
-    emit(0, " * @return The number of bytes decoded, or <0 if an error occured.");
+    emit(0, " * @return The number of bytes decoded, or <0 if an error occurred.");
     emit(0, " */");
     emit(0,"int %s_decode(const void *buf, int offset, int maxlen, %s *msg);", tn_, tn_);
     emit(0, "");

@@ -318,7 +318,7 @@ int lcm_handle (lcm_t *lcm);
  *        returns immediately.  Values less than 0 are not allowed.
  *
  * @return >0 if a message was handled, 0 if the function timed out, and <0 if
- * an error occured.
+ * an error occurred.
  */
 LCM_API_FUNCTION
 int lcm_handle_timeout (lcm_t *lcm, int timeout_millis);

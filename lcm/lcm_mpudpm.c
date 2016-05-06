@@ -565,7 +565,7 @@ recv_short_message (lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, int sz)
     return 1;
 }
 
-// this function will aquire locks if needed
+// this function will acquire locks if needed
 static void dispatch_complete_message(lcm_mpudpm_t * lcm, lcm_buf_t * lcmb,
         int actual_size) {
     int handled_internal_message = 0;
@@ -1761,7 +1761,7 @@ lcm_mpudpm_create (lcm_t * parent, const char *network, const GHashTable *args)
             params.mc_port_range_start+params.num_mc_ports-1);
 
     // create the channel string to port number hash table
-    // we strdup keys so pass free() as the destory function for keys,
+    // we strdup keys so pass free() as the destroy function for keys,
     // but store shorts as pointers so no destroy function for values
     lcm->channel_to_port_map = g_hash_table_new_full(g_str_hash, g_str_equal,
             free, NULL );

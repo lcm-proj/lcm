@@ -61,7 +61,7 @@ public class Trace2DReplacing extends Trace2DSimple {
   /**
    * In case p has an x- value already contained, the old tracepoint with that
    * value will be replaced by the new one. Else the new tracepoint will be
-   * added to the end, not caring wether tracepoints with a higher x- value are
+   * added to the end, not caring whether tracepoints with a higher x- value are
    * contained.
    * <p>
    * 

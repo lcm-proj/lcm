@@ -389,7 +389,7 @@ static int impl_lcm_handle_timeout(lua_State *L) {
     lua_pushboolean(L, 0);
 
   } else {
-    /* an error occured */
+    /* an error occurred */
     lua_pushstring(L, "error lcm handle");
     lua_error(L);
   }

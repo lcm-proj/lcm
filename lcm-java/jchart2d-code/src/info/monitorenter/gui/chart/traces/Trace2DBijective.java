@@ -1,6 +1,6 @@
 /*
  * Trace2DBijective, a list- based implementation of a ITrace2D that only
- *  allows a single occurance of a certain x- value.
+ *  allows a single occurrence of a certain x- value.
  * Copyright (c) 2004 - 2011  Achim Westermann, Achim.Westermann@gmx.de
  *
  *  This library is free software; you can redistribute it and/or
@@ -28,7 +28,7 @@ import info.monitorenter.gui.chart.ITracePoint2D;
 import java.util.Iterator;
 
 /**
- * A <code> Trace2D</code> who only allows a single occurance of a tracepoint
+ * A <code> Trace2D</code> who only allows a single occurrence of a tracepoint
  * with a certain x- value xi. <br>
  * <p>
  * From <i>y1 = f(x1) = f(x2) </i> follows: <i>x1==x2 </i> (injective) <br>

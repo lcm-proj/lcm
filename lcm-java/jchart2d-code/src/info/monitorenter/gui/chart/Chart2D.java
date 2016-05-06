@@ -1046,7 +1046,7 @@ public class Chart2D extends JPanel implements PropertyChangeListener, Iterable<
 
           } else {
             throw new RuntimeException(
-                "Programming error. Unneccessary event caught: "
+                "Programming error. Unnecessary event caught: "
                     + evt
                     + ". You only have to fire this event, if a point highlighter was addded or removed.");
           }
@@ -2983,7 +2983,7 @@ public class Chart2D extends JPanel implements PropertyChangeListener, Iterable<
             /*
              * Special case: if we have NaN just don't interpolate anything or
              * paint but just continue (and give a signal to trace painters to
-             * discontinue which is neccessary for implementations that paint
+             * discontinue which is necessary for implementations that paint
              * polylines and must not accumulate polylines that have a
              * discontinuation within):
              */
@@ -3369,7 +3369,7 @@ public class Chart2D extends JPanel implements PropertyChangeListener, Iterable<
       } else if (property.equals(IAxis.PROPERTY_LABELFORMATTER)) {
         /*
          * TODO: Maybe only repaint the axis? Much complicated work vs.
-         * occassional user interaction.
+         * occasional user interaction.
          */
       } else if (property.equals(IAxis.PROPERTY_ADD_REMOVE_TRACE)) {
         /*
@@ -4171,7 +4171,7 @@ public class Chart2D extends JPanel implements PropertyChangeListener, Iterable<
    * <p>
    * This turns on tool tip support (like
    * {@link javax.swing.JComponent#setToolTipText(java.lang.String)}) if
-   * neccessary.
+   * necessary.
    * <p>
    * 
    * @deprecated use <code> {@link #setToolTipType(IToolTipType)} </code> with
@@ -4417,7 +4417,7 @@ public class Chart2D extends JPanel implements PropertyChangeListener, Iterable<
   }
 
   /**
-   * Compares wether the bounds since last invocation have changed and
+   * Compares whether the bounds since last invocation have changed and
    * conditionally rescales the internal <code>{@link TracePoint2D}</code>
    * instances.
    * <p>

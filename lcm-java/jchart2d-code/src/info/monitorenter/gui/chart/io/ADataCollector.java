@@ -58,7 +58,7 @@ import info.monitorenter.gui.chart.ITracePoint2D;
  */
 public abstract class ADataCollector implements Runnable {
 
-  /** Flag to check wether the collector is running. */
+  /** Flag to check whether the collector is running. */
   private boolean m_isRunning = false;
 
   /** The interval for data collection of a single point. */
