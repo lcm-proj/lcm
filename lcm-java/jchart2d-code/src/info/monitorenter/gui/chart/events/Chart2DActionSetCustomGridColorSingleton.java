@@ -107,7 +107,7 @@ public final class Chart2DActionSetCustomGridColorSingleton extends AChart2DActi
   }
 
   /**
-   * Reference to the last custom color chosen to check wether the corresponding
+   * Reference to the last custom color chosen to check whether the corresponding
    * menu is selected.
    */
   private Color m_lastChosenColor;

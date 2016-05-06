@@ -155,7 +155,7 @@ jchart2d-3.2.0 - June, 2nd, 2010
 * Fixed unreported issue with grid paint state lost when setting a new axis (that replaces the previous ones. 
 * Fixed bug #2990054: Axis properties change when using the "Chart"-Menu.
 * Fixed unreported issue with Axis not rescaling (->LabelFormatterAutoUnits not picking the correct unit for labels) when setting new Axis to chart. 
-* Fixed issue #2948043:Tics dont scoll properly in dynamic graphs.
+* Fixed issue #2948043:Tics don't scroll properly in dynamic graphs.
 * Fixed issue #1867872: Jumping of first x-axis gridline (contribution by Nobody/Anonymous).
 * Fixed issue with Double.NaN points beeing plotted: Traces with this are discontinued now (contribution by Horea Haitonic). 
 * Fixed issue with two points not intersecting the chart's viewport at all being painted (dots at edge or wrong error bars).
@@ -756,7 +756,7 @@ jchart2d-1.1.1 - April 13th, 2006
 * Close the polygon of TracePainterFill correctly.
 * Bufix: NPE when setting trace name with null argument.
 * Bugfix #1430180: Update scaling of points when range policy is changed at runtime.
-! Set display of grid x and grid y seperately from context menu.
+! Set display of grid x and grid y separately from context menu.
 
 jchart2d-1.1.0 - February 12th, 2006
 
@@ -800,7 +800,7 @@ jchart2d-1.1.0 - February 12th, 2006
 1.02:
  * Deadlock when explicitly invoking Chart2D.paint(..)
    [BTW no swing/awt program should do this]. Dropped
-   unneccessary monitor.
+   unnecessary monitor.
 
 1.01:
  * A major bug in the Trace2DSimple implementation,

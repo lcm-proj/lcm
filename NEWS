@@ -101,7 +101,7 @@ This is a bugfix and maintenance release.
     - fix eventlog memory leak when errors occur.
 - lcm-gen
     - Apply patch from bibocc to fix lcm-gen regression (fixes issue #92).
-    - fix emit-cpp for the case where it needs to includ both `<vector>` and
+    - fix emit-cpp for the case where it needs to include both `<vector>` and
     `<string>`.
     - Resize vector in decode after checking whether the size > 0.
     - fix tokenizer regression in parsing empty comment blocks (fixes issue #93).
@@ -259,7 +259,7 @@ This release adds a constructor to the C++ API, some command line options to
 lcm-logger, and incorporates a number of bugfixes.
 
 - Java
-    - workaround to accomodate recent changes in Automake.  In particular, fixes
+    - workaround to accommodate recent changes in Automake.  In particular, fixes
       lcm-java for Ubuntu 12.04.
 - C
     - add start_timestamp option to log file provider

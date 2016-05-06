@@ -57,7 +57,7 @@ public final class JComponentActionSetCustomForegroundSingleton extends AJCompon
   private static final long serialVersionUID = 3904680491952451890L;
 
   /**
-   * Reference to the last custom color chosen to check wether the corresponding
+   * Reference to the last custom color chosen to check whether the corresponding
    * menu is selected.
    */
   private Color m_lastChosenColor;

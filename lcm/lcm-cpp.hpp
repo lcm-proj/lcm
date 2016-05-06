@@ -125,7 +125,7 @@ class LCM {
          * New in LCM 1.1.0.
          *
          * @return >0 if a message was handled, 0 if the function timed out,
-         * and <0 if an error occured.
+         * and <0 if an error occurred.
          * @sa lcm_handle_timeout()
          */
         inline int handleTimeout(int timeout_millis);

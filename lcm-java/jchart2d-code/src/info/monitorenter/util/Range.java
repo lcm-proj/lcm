@@ -172,7 +172,7 @@ public class Range implements Serializable {
    * <p>
    * 
    * @param contained
-   *          the value to test wether it is contained within this range.
+   *          the value to test whether it is contained within this range.
    * 
    * @return true if the given value is covered by this range.
    */

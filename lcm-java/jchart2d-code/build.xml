@@ -148,7 +148,7 @@
                        as the  destfile of the makejar- target [depend].
              -->
 			<injar name="${outjar}" />
-			<outjar name="${basedir}/${project.name}-${project.version}-shrinked.jar" />
+			<outjar name="${basedir}/${project.name}-${project.version}-shrunk.jar" />
 			<!-- Filter -->
 			<!-- keep all interfaces -->
 			<keep name="*" type="interface" />
@@ -217,14 +217,14 @@
              <keepattribute name="InnerClasses" />
              -->
 		</proguard>
-		<!-- Delete big jar and rename shrinked to that name. -->
+		<!-- Delete big jar and rename shrunk to that name. -->
 		<delete file="${outjar}" />
-		<move tofile="${outjar}" file="${basedir}/${project.name}-${project.version}-shrinked.jar" />
+		<move tofile="${outjar}" file="${basedir}/${project.name}-${project.version}-shrunk.jar" />
 	</target>
 
 	<target name="makejarApplet" depends="makejarFat">
 		<description>
-     Create a jar file that is shrinked by proguard for
+     Create a jar file that is shrunk by proguard for
      faster download. Only the codepath for the applet
      init will be kept.
     </description>

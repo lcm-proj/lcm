@@ -207,7 +207,7 @@ public class TestTreeSetGreedy
   }
 
   /**
-   * Add 1,1,1,1,1 and test, wether all numbers are different.
+   * Add 1,1,1,1,1 and test, whether all numbers are different.
    * <p>
    * 
    */
@@ -259,7 +259,7 @@ public class TestTreeSetGreedy
   }
 
   /**
-   * Add 1,1,1 and test, wether all numbers are different.
+   * Add 1,1,1 and test, whether all numbers are different.
    * <p>
    */
   public void testAddEqual3() {
@@ -278,7 +278,7 @@ public class TestTreeSetGreedy
   }
 
   /**
-   * Add 1,1,1,1,1 and test, wether all numbers are different.
+   * Add 1,1,1,1,1 and test, whether all numbers are different.
    * <p>
    * 
    */

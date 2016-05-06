@@ -104,7 +104,7 @@ public abstract class AAxisTransformation<T extends AxisScalePolicyTransformatio
             }
           } catch (IllegalArgumentException e) {
             long tstamp = System.currentTimeMillis();
-            if (tstamp - AAxisTransformation.this.m_outputErrorTstamp > AAxisTransformation.OUTPUT_ERROR_THRESHHOLD) {
+            if (tstamp - AAxisTransformation.this.m_outputErrorTstamp > AAxisTransformation.OUTPUT_ERROR_THRESHOLD) {
               System.out.println(e.getLocalizedMessage());
               AAxisTransformation.this.m_outputErrorTstamp = tstamp;
             }
@@ -158,7 +158,7 @@ public abstract class AAxisTransformation<T extends AxisScalePolicyTransformatio
         }
       } catch (IllegalArgumentException e) {
         long tstamp = System.currentTimeMillis();
-        if (tstamp - AAxisTransformation.this.m_outputErrorTstamp > AAxisTransformation.OUTPUT_ERROR_THRESHHOLD) {
+        if (tstamp - AAxisTransformation.this.m_outputErrorTstamp > AAxisTransformation.OUTPUT_ERROR_THRESHOLD) {
           System.out.println(e.getLocalizedMessage());
           AAxisTransformation.this.m_outputErrorTstamp = tstamp;
         }
@@ -222,7 +222,7 @@ public abstract class AAxisTransformation<T extends AxisScalePolicyTransformatio
             }
           } catch (IllegalArgumentException e) {
             long tstamp = System.currentTimeMillis();
-            if (tstamp - AAxisTransformation.this.m_outputErrorTstamp > AAxisTransformation.OUTPUT_ERROR_THRESHHOLD) {
+            if (tstamp - AAxisTransformation.this.m_outputErrorTstamp > AAxisTransformation.OUTPUT_ERROR_THRESHOLD) {
               System.out.println(e.getLocalizedMessage());
               AAxisTransformation.this.m_outputErrorTstamp = tstamp;
             }
@@ -277,7 +277,7 @@ public abstract class AAxisTransformation<T extends AxisScalePolicyTransformatio
         }
       } catch (IllegalArgumentException e) {
         long tstamp = System.currentTimeMillis();
-        if (tstamp - AAxisTransformation.this.m_outputErrorTstamp > AAxisTransformation.OUTPUT_ERROR_THRESHHOLD) {
+        if (tstamp - AAxisTransformation.this.m_outputErrorTstamp > AAxisTransformation.OUTPUT_ERROR_THRESHOLD) {
           System.out.println(e.getLocalizedMessage());
           AAxisTransformation.this.m_outputErrorTstamp = tstamp;
         }
@@ -298,7 +298,7 @@ public abstract class AAxisTransformation<T extends AxisScalePolicyTransformatio
    * axis is not recommended for the data used) should be reported on system
    * output.
    */
-  private static final int OUTPUT_ERROR_THRESHHOLD = 30000;
+  private static final int OUTPUT_ERROR_THRESHOLD = 30000;
 
   /** Generated <code>serialVersionUID</code>. **/
   private static final long serialVersionUID = -4665444421196939779L;
@@ -416,7 +416,7 @@ public abstract class AAxisTransformation<T extends AxisScalePolicyTransformatio
       }
     } catch (IllegalArgumentException e) {
       long tstamp = System.currentTimeMillis();
-      if (tstamp - this.m_outputErrorTstamp > AAxisTransformation.OUTPUT_ERROR_THRESHHOLD) {
+      if (tstamp - this.m_outputErrorTstamp > AAxisTransformation.OUTPUT_ERROR_THRESHOLD) {
         System.out.println(e.getLocalizedMessage());
         this.m_outputErrorTstamp = tstamp;
       }

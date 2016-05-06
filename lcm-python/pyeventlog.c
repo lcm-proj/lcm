@@ -155,7 +155,7 @@ pylog_write_next_event (PyLogObject *self, PyObject *args)
         return NULL;
     }
 
-    lcm_eventlog_event_t le; //msvc needs init of all fields seperately
+    lcm_eventlog_event_t le; //msvc needs init of all fields separately
     le.eventnum = 0;
     le.timestamp = utime;
     le.channellen = channellen;

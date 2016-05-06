@@ -2769,7 +2769,7 @@ public abstract class AAxis<T extends IAxisScalePolicy> implements IAxis<T>, Pro
   }
 
   /**
-   * Set wether scale values are started from major ticks.
+   * Set whether scale values are started from major ticks.
    * <p>
    * 
    * @param majorTick

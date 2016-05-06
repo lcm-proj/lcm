@@ -321,7 +321,7 @@ public final class FileUtil extends Object {
   }
 
   /**
-   * Tests wether the given input stream only contains ASCII characters if
+   * Tests whether the given input stream only contains ASCII characters if
    * interpreted by reading bytes (16 bit).
    * <p>
    * This does not mean that the underlying content is really an ASCII text

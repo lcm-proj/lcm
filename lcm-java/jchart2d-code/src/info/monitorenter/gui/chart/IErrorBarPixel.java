@@ -36,7 +36,7 @@ import java.io.Serializable;
  */
 public interface IErrorBarPixel extends Serializable {
 
-  /** Constant that identifies a resulting error to be non-existant. */
+  /** Constant that identifies a resulting error to be non-existent. */
   public static final int ERROR_PIXEL_NONE = Integer.MAX_VALUE;
 
   /**

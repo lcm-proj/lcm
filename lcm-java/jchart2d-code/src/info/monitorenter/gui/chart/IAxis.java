@@ -880,10 +880,10 @@ public interface IAxis<T extends IAxisScalePolicy> extends Serializable {
   public boolean isDirtyScaling();
 
   /**
-   * Returns wether the x grid is painted or not.
+   * Returns whether the x grid is painted or not.
    * <p>
    * 
-   * @return wether the x grid is painted or not.
+   * @return whether the x grid is painted or not.
    */
   public abstract boolean isPaintGrid();
 
@@ -896,7 +896,7 @@ public interface IAxis<T extends IAxisScalePolicy> extends Serializable {
   public abstract boolean isPaintScale();
 
   /**
-   * Check wether scale values are started from major ticks.
+   * Check whether scale values are started from major ticks.
    * <p>
    * 
    * @return true if scale values start from major ticks.
@@ -1085,7 +1085,7 @@ public interface IAxis<T extends IAxisScalePolicy> extends Serializable {
   public abstract void setMinorTickSpacing(final double minorTickSpacing);
 
   /**
-   * Set wether the grid in this dimension should be painted or not.
+   * Set whether the grid in this dimension should be painted or not.
    * <p>
    * A repaint operation for the chart is triggered.
    * <p>
@@ -1188,7 +1188,7 @@ public interface IAxis<T extends IAxisScalePolicy> extends Serializable {
   public abstract void setRangePolicy(final IRangePolicy rangePolicy);
 
   /**
-   * Set wether scale values are started from major ticks.
+   * Set whether scale values are started from major ticks.
    * <p>
    * 
    * @param majorTick
