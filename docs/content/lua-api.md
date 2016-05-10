@@ -117,7 +117,7 @@ local sub = lc:subscribe('somechannel', handler)
 
 \em Parameters
 
-\li \c sub The subscription refernce to unsubscribe.
+\li \c sub The subscription reference to unsubscribe.
 
 <em>Return Values</em>
 
@@ -161,7 +161,7 @@ lc:unsubscribe(sub)
 
 \em Description
 
-Waits for an incomming message, and dispatches handler callbacks as necessary. This method will block indefinitely until a message is recieved. When a message is received, all of the handler callbacks for the message's channel are invoked, in the same order they were \ref lcm_userdata_subscribe "subscribed".
+Waits for an incomming message, and dispatches handler callbacks as necessary. This method will block indefinitely until a message is received. When a message is received, all of the handler callbacks for the message's channel are invoked, in the same order they were \ref lcm_userdata_subscribe "subscribed".
 
 <em>Example Code</em>
 
