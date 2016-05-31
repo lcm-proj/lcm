@@ -8,16 +8,19 @@ endif()
 
 # Java exported targets (note: must precede configure_package_config_file)
 if(LCM_ENABLE_JAVA)
+  include(UseJava)
   set(LCM_INCLUDE_JAVA
     "include(\${CMAKE_CURRENT_LIST_DIR}/lcmJavaTargets.cmake)"
   )
-  set(LCM_JAVATARGETS_CMAKE
-    ${PROJECT_BINARY_DIR}/${PROJECT_NAME}JavaTargets.cmake
-  )
 
-  lcm_install_jars(lcm-java)
-  lcm_export_java_targets(${LCM_JAVATARGETS_CMAKE} ${CONFIG_INSTALL_DIR}
-    lcm-java
+  export_jars(
+    TARGETS lcm-java
+    FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}JavaTargets.cmake
+   )
+  install_jar_exports(
+    TARGETS lcm-java
+    FILE ${PROJECT_NAME}JavaTargets.cmake
+    DESTINATION ${CONFIG_INSTALL_DIR}
   )
 endif()
 
@@ -52,7 +55,6 @@ install(FILES
   ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Config.cmake
   ${PROJECT_BINARY_DIR}/${PROJECT_NAME}ConfigVersion.cmake
   ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Utilities.cmake
-  ${LCM_JAVATARGETS_CMAKE}
   DESTINATION ${CONFIG_INSTALL_DIR}
 )
 

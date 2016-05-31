@@ -41,3 +41,5 @@ add_jar(lcm-java
   INCLUDE_JARS jchart2d
   SOURCES ${lcm_java_sources}
 )
+
+install_jar(lcm-java DESTINATION share/java)

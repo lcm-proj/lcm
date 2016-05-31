@@ -35,9 +35,5 @@ unset(_targetsDefined)
 unset(_targetsNotDefined)
 unset(_expectedTargets)
 
-set(_prefix ${CMAKE_CURRENT_LIST_DIR}/@__relpath__@)
-
 @__targetdefs__@
-unset(_prefix)
-
 cmake_policy(POP)

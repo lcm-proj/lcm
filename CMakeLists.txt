@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.8.12)
 
 project(lcm)
 
+# TODO remove when minimum CMake >= 3.7
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 find_package(PkgConfig REQUIRED)
 
 # Configuration and utility functions
