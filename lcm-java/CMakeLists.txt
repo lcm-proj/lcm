@@ -40,6 +40,28 @@ set(lcm_java_sources
 add_jar(lcm-java
   INCLUDE_JARS jchart2d
   SOURCES ${lcm_java_sources}
+  OUTPUT_NAME lcm
 )
 
 install_jar(lcm-java DESTINATION share/java)
+
+lcm_copy_file_target(lcm-spy
+  ${CMAKE_CURRENT_SOURCE_DIR}/lcm-spy.sh
+  ${CMAKE_CURRENT_BINARY_DIR}/lcm-spy
+)
+lcm_copy_file_target(lcm-logplayer-gui
+  ${CMAKE_CURRENT_SOURCE_DIR}/lcm-logplayer-gui.sh
+  ${CMAKE_CURRENT_BINARY_DIR}/lcm-logplayer-gui
+)
+
+install(PROGRAMS
+  ${CMAKE_CURRENT_BINARY_DIR}/lcm-logplayer-gui
+  ${CMAKE_CURRENT_BINARY_DIR}/lcm-spy
+  DESTINATION bin
+)
+
+install(FILES
+  lcm-logplayer-gui.1
+  lcm-spy.1
+  DESTINATION share/man/man1
+)
