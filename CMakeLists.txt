@@ -14,8 +14,10 @@ include(lcm-cmake/version.cmake)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 if (WIN32)
+  add_definitions(-DWIN32 -D_CRT_SECURE_NO_WARNINGS)
   include_directories(${lcm_SOURCE_DIR}/WinSpecific/include)
   include_directories(${lcm_SOURCE_DIR}/WinSpecific/getopt)
+  include_directories(${lcm_SOURCE_DIR})
 endif()
 
 pkg_check_modules(GLIB2 REQUIRED glib-2.0)
