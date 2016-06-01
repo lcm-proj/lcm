@@ -5,7 +5,6 @@
 #define strtoll   _strtoi64
 #define	strdup		_strdup
 #define	mode_t		int
-#define snprintf	_snprintf
 #define	PATH_MAX	MAX_PATH
 #define	fseeko		_fseeki64
 #define ftello		_ftelli64
@@ -17,6 +16,9 @@
 #define F_GETFL		3
 #define	F_SETFL		4
 
+#if _MSC_VER < 1900
+#define snprintf	_snprintf
+#endif
 
 #include <direct.h>
 #include <Winsock2.h>
