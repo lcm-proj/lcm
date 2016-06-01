@@ -2,7 +2,6 @@
 #define _WINPORTING_H_
 
 
-#define strtoll   _strtoi64
 #define	strdup		_strdup
 #define	mode_t		int
 #define	PATH_MAX	MAX_PATH
@@ -15,6 +14,10 @@
 #define O_NONBLOCK	0x4000
 #define F_GETFL		3
 #define	F_SETFL		4
+
+#if _MSC_VER < 1800
+#define strtoll		_strtoi64
+#endif
 
 #if _MSC_VER < 1900
 #define snprintf	_snprintf
