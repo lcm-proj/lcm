@@ -20,6 +20,8 @@ endif()
 
 pkg_check_modules(GLIB2 REQUIRED glib-2.0)
 pkg_check_modules(GTHREAD2 REQUIRED gthread-2.0)
+link_directories(${GLIB2_LIBRARY_DIRS})
+link_directories(${GTHREAD2_LIBRARY_DIRS})
 
 # Core modules
 add_subdirectory(lcm)
