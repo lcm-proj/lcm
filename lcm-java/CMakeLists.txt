@@ -45,11 +45,11 @@ add_jar(lcm-java
 
 install_jar(lcm-java DESTINATION share/java)
 
-lcm_copy_file_target(lcm-spy
+lcm_copy_file_target(lcm-spy-alias
   ${CMAKE_CURRENT_SOURCE_DIR}/lcm-spy.sh
   ${CMAKE_CURRENT_BINARY_DIR}/lcm-spy
 )
-lcm_copy_file_target(lcm-logplayer-gui
+lcm_copy_file_target(lcm-logplayer-gui-alias
   ${CMAKE_CURRENT_SOURCE_DIR}/lcm-logplayer-gui.sh
   ${CMAKE_CURRENT_BINARY_DIR}/lcm-logplayer-gui
 )

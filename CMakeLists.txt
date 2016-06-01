@@ -38,6 +38,8 @@ lcm_option(
   JAVA_FOUND Java 1.6)
 if(LCM_ENABLE_JAVA)
   add_subdirectory(lcm-java)
+  add_custom_target(lcm-spy DEPENDS lcm-spy-alias)
+  add_custom_target(lcm-logplayer-gui DEPENDS lcm-logplayer-gui-alias)
 endif()
 
 # Python
