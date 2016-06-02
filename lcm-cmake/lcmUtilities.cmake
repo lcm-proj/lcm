@@ -56,7 +56,7 @@ function(_lcm_create_aggregate_header NAME VAR)
       "\n"
     )
     _lcm_parent_list_append(_aggregate_headers ${_header})
-    _lcm_parent_list_append(${VAR} ${_header})
+    _lcm_parent_list_append(${${VAR}} ${_header})
   endif()
 endfunction()
 
@@ -242,7 +242,6 @@ function(lcm_wrap_types)
   # Set output files in parent scope
   _lcm_export(_C_SOURCES)
   _lcm_export(_C_HEADERS)
-  _lcm_export(_CPP_SOURCES)
   _lcm_export(_CPP_HEADERS)
   _lcm_export(_PYTHON_SOURCES)
   _lcm_export(_JAVA_SOURCES)
