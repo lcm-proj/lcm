@@ -1,0 +1,12 @@
+prefix=@LCM_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib@LIB_SUFFIX@
+includedir=${prefix}/include
+
+Name: lcm-java
+Description: lcm-java
+Requires:
+Version: @LCM_VERSION@
+Libs:
+Cflags:
+classpath=${prefix}/share/java/lcm.jar

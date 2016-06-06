@@ -59,3 +59,8 @@ endif()
 
 # Install rules
 include(lcm-cmake/install.cmake)
+
+option(LCM_GENERATE_PKGCONFIG "Install pkg-config files" ON)
+if(LCM_GENERATE_PKGCONFIG)
+  add_subdirectory(lcm-pkgconfig)
+endif()
