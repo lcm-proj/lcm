@@ -27,8 +27,13 @@ link_directories(${GTHREAD2_LIBRARY_DIRS})
 
 # Core modules
 add_subdirectory(lcm)
-# add_subdirectory(liblcm-test) TODO
 add_subdirectory(lcmgen)
+
+option(LCM_ENABLE_EXAMPLES "Build test and example programs" ON)
+if(LCM_ENABLE_EXAMPLES)
+  add_subdirectory(liblcm-test)
+endif()
+
 # add_subdirectory(lcm-logger) TODO
 
 # Java
