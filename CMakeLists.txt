@@ -56,7 +56,13 @@ if(LCM_ENABLE_PYTHON)
 endif()
 
 # Lua
-# TODO
+lcm_option(
+  LCM_ENABLE_LUA
+  "Build Lua bindings and utilities"
+  LUA_FOUND Lua)
+if(LCM_ENABLE_LUA)
+  add_subdirectory(lcm-lua)
+endif()
 
 # .NET
 # TODO
