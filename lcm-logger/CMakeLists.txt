@@ -1,10 +1,8 @@
-include_directories(${GLIB2_INCLUDE_DIRS} ${GTHREAD2_INCLUDE_DIRS})
-
 add_executable(lcm-logger lcm_logger.c glib_util.c)
 target_link_libraries(lcm-logger
   lcm
-  ${GLIB2_LIBRARIES}
-  ${GTHREAD2_LIBRARIES}
+  GLib2::glib
+  GLib2::gthread
 )
 
 add_executable(lcm-logplayer lcm_logplayer.c)

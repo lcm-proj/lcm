@@ -1,5 +1,3 @@
-include_directories(${GLIB2_INCLUDE_DIRS} ${GTHREAD2_INCLUDE_DIRS})
-
 add_executable(lcm-sink lcm-sink.c)
 target_link_libraries(lcm-sink lcm)
 
@@ -7,19 +5,19 @@ add_executable(lcm-source lcm-source.c)
 target_link_libraries(lcm-source lcm)
 
 add_executable(lcm-tester lcm-tester.c)
-target_link_libraries(lcm-tester lcm ${GLIB2_LIBRARIES})
+target_link_libraries(lcm-tester lcm GLib2::glib)
 
 add_executable(lcm-example lcm-example.c)
 target_link_libraries(lcm-example lcm)
 
 add_executable(lcm-logfilter lcm-logfilter.c)
-target_link_libraries(lcm-logfilter lcm ${GLIB2_LIBRARIES})
+target_link_libraries(lcm-logfilter lcm GLib2::glib)
 
 add_executable(lcm-buftest-receiver buftest-receiver.c)
-target_link_libraries(lcm-buftest-receiver lcm ${GLIB2_LIBRARIES})
+target_link_libraries(lcm-buftest-receiver lcm GLib2::glib)
 
 add_executable(lcm-buftest-sender buftest-sender.c)
-target_link_libraries(lcm-buftest-sender lcm ${GLIB2_LIBRARIES})
+target_link_libraries(lcm-buftest-sender lcm GLib2::glib)
 
 install(TARGETS
   lcm-sink

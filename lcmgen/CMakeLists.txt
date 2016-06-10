@@ -15,8 +15,7 @@ set(lcm-gen_sources
 )
 
 add_executable(lcm-gen ${lcm-gen_sources})
-target_include_directories(lcm-gen PRIVATE ${GLIB2_INCLUDE_DIRS})
-target_link_libraries(lcm-gen PRIVATE ${GLIB2_LIBRARIES})
+target_link_libraries(lcm-gen PRIVATE GLib2::glib)
 
 install(TARGETS lcm-gen
   EXPORT lcmTargets

@@ -5,8 +5,6 @@ project(lcm)
 # TODO remove when minimum CMake >= 3.7
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-find_package(PkgConfig REQUIRED)
-
 # Configuration and utility functions
 include(lcm-cmake/config.cmake)
 include(lcm-cmake/functions.cmake)
@@ -20,10 +18,7 @@ if (WIN32)
   include_directories(${lcm_SOURCE_DIR})
 endif()
 
-pkg_check_modules(GLIB2 REQUIRED glib-2.0)
-pkg_check_modules(GTHREAD2 REQUIRED gthread-2.0)
-link_directories(${GLIB2_LIBRARY_DIRS})
-link_directories(${GTHREAD2_LIBRARY_DIRS})
+find_package(GLib2 REQUIRED COMPONENTS gthread)
 
 # Core modules
 add_subdirectory(lcm)

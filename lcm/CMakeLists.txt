@@ -48,18 +48,13 @@ set_target_properties(lcm PROPERTIES
   PUBLIC_HEADER "${lcm_install_headers}"
 )
 
-target_include_directories(lcm PRIVATE
-  ${GLIB2_INCLUDE_DIRS}
-  ${GTHREAD2_INCLUDE_DIRS}
-)
-
 target_include_directories(lcm INTERFACE
   $<BUILD_INTERFACE:${lcm_SOURCE_DIR}>
 )
 
 target_link_libraries(lcm PRIVATE
-  ${GLIB2_LIBRARIES}
-  ${GTHREAD2_LIBRARIES}
+  GLib2::glib
+  GLib2::gthread
   ${CMAKE_THREAD_LIBS_INIT}
 )
 
