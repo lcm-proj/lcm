@@ -2,16 +2,19 @@ add_executable(lcm-sink lcm-sink.c)
 target_link_libraries(lcm-sink lcm)
 
 add_executable(lcm-source lcm-source.c)
-target_link_libraries(lcm-source lcm)
+target_link_libraries(lcm-source lcm ${lcm-winport})
 
 add_executable(lcm-tester lcm-tester.c)
 target_link_libraries(lcm-tester lcm GLib2::glib)
 
 add_executable(lcm-example lcm-example.c)
 target_link_libraries(lcm-example lcm)
+if(WIN32)
+  target_link_libraries(lcm-example lcm-winport ws2_32)
+endif()
 
 add_executable(lcm-logfilter lcm-logfilter.c)
-target_link_libraries(lcm-logfilter lcm GLib2::glib)
+target_link_libraries(lcm-logfilter lcm ${lcm-winport} GLib2::glib)
 
 add_executable(lcm-buftest-receiver buftest-receiver.c)
 target_link_libraries(lcm-buftest-receiver lcm GLib2::glib)

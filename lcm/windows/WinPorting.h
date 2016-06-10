@@ -52,12 +52,12 @@ typedef struct msghdr
 
 int inet_aton(const char *cp, struct in_addr *inp);
 
-int	lcm_internal_pipe_create ( int filedes[2] );
-size_t lcm_internal_pipe_write ( int fd, const void *buf, size_t count );
-size_t lcm_internal_pipe_read ( int fd, void *buf, size_t count );
-int	lcm_internal_pipe_close ( int fd );
+int    __declspec(dllexport) lcm_internal_pipe_create ( int filedes[2] );
+size_t __declspec(dllexport) lcm_internal_pipe_write ( int fd, const void *buf, size_t count );
+size_t __declspec(dllexport) lcm_internal_pipe_read ( int fd, void *buf, size_t count );
+int    __declspec(dllexport) lcm_internal_pipe_close ( int fd );
 
-int fcntl (int fd, int flag1, ...);
+int __declspec(dllexport) fcntl (int fd, int flag1, ...);
 
 size_t recvmsg ( SOCKET s, struct msghdr *msg, int flags );
 size_t sendmsg ( SOCKET s, const struct msghdr *msg, int flags );

@@ -81,6 +81,12 @@ _glib2_find_library(GLIB glib)
 
 _glib2_add_target(glib GLIB GLIB GLIBCONFIG)
 
+if(WIN32 AND TARGET GLib2::glib)
+  set_property(TARGET GLib2::glib APPEND PROPERTY
+    INTERFACE_LINK_LIBRARIES ws2_32 winmm
+  )
+endif()
+
 foreach(_glib2_component ${GLib2_FIND_COMPONENTS})
 
   if(_glib2_component STREQUAL "gio")
