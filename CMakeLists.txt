@@ -36,6 +36,9 @@ if(LCM_ENABLE_EXAMPLES)
   add_subdirectory(liblcm-test)
 endif()
 
+# Documentation (Main, C/C++, .NET)
+add_subdirectory(docs)
+
 # Java
 lcm_option(
   LCM_ENABLE_JAVA

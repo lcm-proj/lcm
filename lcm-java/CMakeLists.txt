@@ -65,3 +65,27 @@ install(FILES
   lcm-spy.1
   DESTINATION share/man/man1
 )
+
+if(NOT Java_JAVADOC_EXECUTABLE)
+  message(WARNING
+    "javadoc was not found; Java documentation will not be generated")
+  return()
+endif()
+
+set(lcm_java_doc_classes
+  lcm/lcm/LCM.java
+  lcm/lcm/LCMEncodable.java
+  lcm/lcm/LCMSubscriber.java
+  lcm/lcm/MessageAggregator.java
+  lcm/logging/Log.java
+)
+
+add_custom_target(doc-java
+  COMMAND  ${Java_JAVADOC_EXECUTABLE}
+    -d ${lcm_BINARY_DIR}/docs/html/javadocs
+    -link https://docs.oracle.com/javase/1.5.0/docs/api
+    ${lcm_java_doc_classes}
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  DEPENDS doc-clean)
+
+add_dependencies(doc doc-java)
