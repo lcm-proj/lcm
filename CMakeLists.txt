@@ -69,7 +69,12 @@ endif()
 # Install rules
 include(lcm-cmake/install.cmake)
 
-option(LCM_GENERATE_PKGCONFIG "Install pkg-config files" ON)
-if(LCM_GENERATE_PKGCONFIG)
+option(LCM_INSTALL_M4MACROS "Install autotools support M4 macros" ON)
+if(LCM_INSTALL_M4MACROS)
+  add_subdirectory(m4macros)
+endif()
+
+option(LCM_INSTALL_PKGCONFIG "Install pkg-config files" ON)
+if(LCM_INSTALL_PKGCONFIG)
   add_subdirectory(lcm-pkgconfig)
 endif()
