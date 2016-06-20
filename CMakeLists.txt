@@ -7,6 +7,8 @@ if(CMAKE_VERSION VERSION_LESS 3.7)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/3.7")
 endif()
 
+find_package(GLib2 REQUIRED COMPONENTS gthread)
+
 # Configuration and utility functions
 include(lcm-cmake/config.cmake)
 include(lcm-cmake/functions.cmake)
@@ -20,11 +22,11 @@ if (WIN32)
   include_directories(${lcm_SOURCE_DIR})
   add_subdirectory(WinSpecific)
   set(lcm-winport lcm-winport)
+  get_filename_component(LCM_LCMGEN_PATH ${GLIB2_GLIB_RUNTIME} DIRECTORY)
+  set(LCM_USE_GLIB_RUNTIME "set(LCM_LCMGEN_PATH \"${LCM_LCMGEN_PATH}\")")
 else()
   set(lcm-winport)
 endif()
-
-find_package(GLib2 REQUIRED COMPONENTS gthread)
 
 # Core modules
 add_subdirectory(lcm)

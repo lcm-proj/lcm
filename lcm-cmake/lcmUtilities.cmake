@@ -12,7 +12,12 @@
 #   lcm_install_python([DESTINATION <PATH>]
 #                      <FILE> [<FILE>...])
 
-cmake_minimum_required(VERSION 2.8.3)
+if(WIN32)
+  # Need 'cmake -E env'
+  cmake_minimum_required(VERSION 3.1.0)
+else()
+  cmake_minimum_required(VERSION 2.8.3)
+endif()
 include(CMakeParseArguments)
 
 #------------------------------------------------------------------------------
@@ -227,11 +232,20 @@ function(lcm_wrap_types)
 
     # Define build command for input file
     get_filename_component(_lcmtype_full "${_lcmtype}" ABSOLUTE)
-    add_custom_command(
-      OUTPUT ${_outputs}
-      COMMAND lcm-gen ${_args} ${_lcmtype_full}
-      DEPENDS ${_lcmtype}
-    )
+    if(WIN32)
+      add_custom_command(
+        OUTPUT ${_outputs}
+        COMMAND ${CMAKE_COMMAND} -E env "PATH=${LCM_LCMGEN_PATH}"
+          $<TARGET_FILE:lcm-gen> ${_args} ${_lcmtype_full}
+        DEPENDS ${_lcmtype}
+      )
+    else()
+      add_custom_command(
+        OUTPUT ${_outputs}
+        COMMAND lcm-gen ${_args} ${_lcmtype_full}
+        DEPENDS ${_lcmtype}
+      )
+    endif()
   endforeach()
 
   # Finalize aggregate headers

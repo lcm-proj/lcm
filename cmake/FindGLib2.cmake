@@ -42,6 +42,14 @@ function(_glib2_find_library VAR LIB)
     PATHS ${_paths}
   )
   mark_as_advanced(GLIB2_${VAR}_LIBRARY)
+
+  if(WIN32)
+    find_program(GLIB2_${VAR}_RUNTIME
+      NAMES lib${LIB}-2.0-0.dll
+      PATHS $ENV{GLIB_PATH}/bin
+    )
+    mark_as_advanced(GLIB2_${VAR}_RUNTIME)
+  endif()
 endfunction()
 
 #------------------------------------------------------------------------------
