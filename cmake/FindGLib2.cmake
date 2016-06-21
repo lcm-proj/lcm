@@ -4,50 +4,30 @@ include(FindPackageHandleStandardArgs)
 
 #------------------------------------------------------------------------------
 function(_glib2_find_include VAR HEADER)
-  set(_suffixes
-    glib-2.0
-    glib-2.0/include
-  )
+  list(APPEND CMAKE_PREFIX_PATH $ENV{GLIB_PATH})
 
-  set(_paths "")
-  foreach(_prefix ${CMAKE_PREFIX_PATH} /usr/local /usr $ENV{GLIB_PATH})
-    if(CMAKE_LIBRARY_ARCHITECTURE)
-      list(APPEND ${_prefix}/lib/${CMAKE_LIBRARY_ARCHITECTURE})
-    endif()
-    list(APPEND _paths
-      ${_prefix}/include
-      ${_prefix}/lib${LIB_SUFFIX}
-      ${_prefix}/lib64
-      ${_prefix}/lib
-    )
+  set(_paths)
+  foreach(_lib ${ARGN})
+    get_filename_component(_libpath ${GLIB2_${_lib}_LIBRARY} DIRECTORY)
+    list(APPEND _paths ${_libpath})
   endforeach()
 
   find_path(GLIB2_${VAR}_INCLUDE_DIR ${HEADER}
     PATHS ${_paths}
-    PATH_SUFFIXES ${_suffixes}
+    PATH_SUFFIXES glib-2.0 glib-2.0/include
   )
   mark_as_advanced(GLIB2_${VAR}_INCLUDE_DIR)
 endfunction()
 
 #------------------------------------------------------------------------------
 function(_glib2_find_library VAR LIB)
-  set(_paths
-    $ENV{GLIB_PATH}/lib${LIB_SUFFIX}
-    $ENV{GLIB_PATH}/lib64
-    $ENV{GLIB_PATH}/lib
-  )
+  list(APPEND CMAKE_PREFIX_PATH $ENV{GLIB_PATH})
 
- find_library(GLIB2_${VAR}_LIBRARY
-    NAMES ${LIB}-2.0 ${LIB}
-    PATHS ${_paths}
-  )
+  find_library(GLIB2_${VAR}_LIBRARY NAMES ${LIB}-2.0 ${LIB})
   mark_as_advanced(GLIB2_${VAR}_LIBRARY)
 
   if(WIN32)
-    find_program(GLIB2_${VAR}_RUNTIME
-      NAMES lib${LIB}-2.0-0.dll
-      PATHS $ENV{GLIB_PATH}/bin
-    )
+    find_program(GLIB2_${VAR}_RUNTIME NAMES lib${LIB}-2.0-0.dll)
     mark_as_advanced(GLIB2_${VAR}_RUNTIME)
   endif()
 endfunction()
@@ -83,9 +63,9 @@ endfunction()
 
 ###############################################################################
 
-_glib2_find_include(GLIB glib.h)
-_glib2_find_include(GLIBCONFIG glibconfig.h)
 _glib2_find_library(GLIB glib)
+_glib2_find_include(GLIB glib.h)
+_glib2_find_include(GLIBCONFIG glibconfig.h GLIB)
 
 _glib2_add_target(glib GLIB GLIB GLIBCONFIG)
 
