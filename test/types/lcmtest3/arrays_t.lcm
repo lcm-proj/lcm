@@ -1,0 +1,6 @@
+package lcmtest3;
+
+struct arrays_t {
+    const int8_t dim = 10;
+    int8_t arr[dim];
+}

@@ -33,6 +33,7 @@
       <arg value="../types/lcmtest/byte_array_t.lcm"/>
       <arg value="../types/lcmtest2/cross_package_t.lcm"/>
       <arg value="../types/lcmtest2/another_type_t.lcm"/>
+      <arg value="../types/lcmtest3/arrays_t.lcm"/>
     </exec>
     <javac srcdir="lcmtest"
       classpath="../../lcm-java/lcm.jar"
