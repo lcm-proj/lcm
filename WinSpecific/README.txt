@@ -23,10 +23,17 @@ don't have any revision requirements that we know of.  The GLib DLLs will need
 to be somewhere on the system path, or the glib\bin folder will need to be
 added to the PATH environment variable.
 
-GLib for Windows can be obtained at:  http://www.gtk.org
 You'll need the following packages:
-    GLib              Run-Time, Dev
-    gettext-runtime   Run-Time
+
+Package         | Notes         | Location
+================|===============|================
+GLib            | Run-Time, Dev | http://ftp.gnome.org/pub/gnome/binaries/win32/glib
+gettext-runtime | Run-Time      | http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/
+
+We specifically recommend the following:
+- http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.28/glib_2.28.8-1_win32.zip
+- http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.28/glib-dev_2.28.8-1_win32.zip
+- http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/gettext-runtime_0.18.1.1-2_win32.zip
 
 The Visual Studio build requires an environment variable GLIB_PATH, which
 expects to find headers in $(GLIB_PATH)\include\glib-2.0 and libraries in

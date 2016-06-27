@@ -10,8 +10,9 @@ GTEST_LIBS=../gtest/libgtest.a ../gtest/libgtest_main.a
 
 types1:=exampleconst_t primitives_t primitives_list_t multidim_array_t node_t comments_t
 types2:=another_type_t cross_package_t
-types_obj:=$(types1:%=lcmtest_%.o) $(types2:%=lcmtest2_%.o)
-types_src:=$(types1:%=lcmtest_%.c) $(types1:%=lcmtest_%.h) $(types2:%=lcmtest2_%.c) $(types2:%=lcmtest2_%.h)
+types3:=arrays_t
+types_obj:=$(types1:%=lcmtest_%.o) $(types2:%=lcmtest2_%.o) $(types3:%=lcmtest3_%.o)
+types_src:=$(types1:%=lcmtest_%.c) $(types1:%=lcmtest_%.h) $(types2:%=lcmtest2_%.c) $(types2:%=lcmtest2_%.h) $(types3:%=lcmtest3_%.c) $(types3:%=lcmtest3_%.h)
 
 all: server \
 	client \
@@ -60,6 +61,9 @@ lcmtest_%.c lcmtest_%.h: ../types/lcmtest/%.lcm
 	$(LCM_GEN) -c $<
 
 lcmtest2_%.c lcmtest2_%.h: ../types/lcmtest2/%.lcm
+	$(LCM_GEN) -c $<
+
+lcmtest3_%.c lcmtest3_%.h: ../types/lcmtest3/%.lcm
 	$(LCM_GEN) -c $<
 
 clean:

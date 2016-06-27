@@ -1,5 +1,5 @@
-#ifndef __lightweight_comunications_h__
-#define __lightweight_comunications_h__
+#ifndef __lightweight_communications_h__
+#define __lightweight_communications_h__
 
 #ifdef __cplusplus
 extern "C" {
@@ -98,7 +98,7 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  *
  * <tt>"provider://network?option1=value1&option2=value2&...&optionN=valueN"</tt>
  *
- * @param provider  Initializationg string specifying the LCM network provider.
+ * @param provider  Initialization string specifying the LCM network provider.
  * If this is NULL, and the environment variable "LCM_DEFAULT_URL" is defined,
  * then the environment variable is used instead.  If this is NULL and the
  * environment variable is not defined, then default settings are used.

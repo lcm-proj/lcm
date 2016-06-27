@@ -36,7 +36,7 @@
 
 /** The LCM grammar is implemented here with a recursive-descent parser.
     handle_file is the top-level function, which calls parse_struct/parse_enum,
-    and so on. 
+    and so on.
 
     Every LCM type has an associated "signature", which is a hash of
     various components of its delcaration. If the declaration of a
@@ -91,7 +91,7 @@ static int string_in_array(const char *t, const char **ts)
     return 0;
 }
 
-int lcm_is_primitive_type(const char *t) 
+int lcm_is_primitive_type(const char *t)
 {
     return string_in_array(t, primitive_types);
 }
@@ -130,7 +130,7 @@ static int64_t hash_string_update(int64_t v, const char *s)
 
     return v;
 }
- 
+
 // Create a parsing context
 lcmgen_t *lcmgen_create()
 {
@@ -166,7 +166,7 @@ lcm_typename_t *lcm_typename_create(lcmgen_t *lcmgen, const char *lctypename)
         } else {
             // we're overriding the package name using the last directive.
             lt->package = strdup(lcmgen->package);
-            lt->lctypename = g_strdup_printf("%s%s%s", lt->package, 
+            lt->lctypename = g_strdup_printf("%s%s%s", lt->package,
                                           strlen(lcmgen->package)>0 ? "." : "",
                                           lt->shortname);
         }
@@ -251,7 +251,7 @@ int64_t lcm_struct_hash(lcm_struct_t *lr)
 
     // NO: Purposefully, we do NOT include the structname in the hash.
     // this allows people to rename data types and still have them work.
-    // 
+    //
     // In contrast, we DO hash the types of a structs members (and their names).
     //  v = hash_string_update(v, lr->structname);
 
@@ -403,13 +403,13 @@ void parse_require(tokenize_t *t, char *tok)
         res = tokenize_next(t);
     } while (t->token_type == LCM_TOK_COMMENT);
 
-    if (res == EOF || strcmp(t->token, tok)) 
+    if (res == EOF || strcmp(t->token, tok))
         parse_error(t, "expected token %s", tok);
 
 }
 
 // require that the next token exist (not EOF). Description is a
-// human-readable description of what was expected to be read. 
+// human-readable description of what was expected to be read.
 void tokenize_next_or_fail(tokenize_t *t, const char *description)
 {
     int res = tokenize_next(t);
@@ -595,27 +595,35 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
                 if (!lcm_is_legal_member_name(t->token))
                     semantic_error(t, "Invalid array size variable name: must start with [a-zA-Z_].");
 
-                // make sure the named variable is 
-                // 1) previously declared and 
-                // 2) an integer type
-                int okay = 0;
+                lcm_constant_t* const_dim_var = lcm_find_const(lr, t->token);
+                if (const_dim_var) {
+                    if (!lcm_is_array_dimension_type(const_dim_var->lctypename))
+                        semantic_error(t, "Array dimension '%s' must be an integer type.", t->token);
 
-                for (unsigned int i = 0; i < g_ptr_array_size(lr->members); i++) {
-                    lcm_member_t *thislm = (lcm_member_t*) g_ptr_array_index(lr->members, i);
-                    if (!strcmp(thislm->membername, t->token)) {
-                        if (g_ptr_array_size(thislm->dimensions) != 0)
-                            semantic_error(t, "Array dimension '%s' must be not be an array type.", t->token);
-                        if (!lcm_is_array_dimension_type(thislm->type->lctypename))
-                            semantic_error(t, "Array dimension '%s' must be an integer type.", t->token);
-                        okay = 1;
-                        break;
+                    dim->mode = LCM_CONST;
+                    dim->size = strdup(const_dim_var->val_str);
+                } else {
+                    // make sure the named variable is
+                    // 1) previously declared and
+                    // 2) an integer type
+                    int okay = 0;
+                    for (unsigned int i = 0; i < g_ptr_array_size(lr->members); i++) {
+                        lcm_member_t *thislm = (lcm_member_t*) g_ptr_array_index(lr->members, i);
+                        if (!strcmp(thislm->membername, t->token)) {
+                            if (g_ptr_array_size(thislm->dimensions) != 0)
+                                semantic_error(t, "Array dimension '%s' must be not be an array type.", t->token);
+                            if (!lcm_is_array_dimension_type(thislm->type->lctypename))
+                                semantic_error(t, "Array dimension '%s' must be an integer type.", t->token);
+                            okay = 1;
+                            break;
+                        }
                     }
-                }
-                if (!okay) 
-                    semantic_error(t, "Unknown variable array index '%s'. Index variables must be declared before the array.", t->token);
+                    if (!okay)
+                        semantic_error(t, "Unknown variable array index '%s'. Index variables must be declared before the array.", t->token);
 
-                dim->mode = LCM_VAR;
-                dim->size = strdup(t->token);
+                    dim->mode = LCM_VAR;
+                    dim->size = strdup(t->token);
+                }
             }
             parse_require(t, "]");
 
@@ -623,7 +631,7 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
             g_ptr_array_add(lm->dimensions, dim);
         }
 
-        if (!parse_try_consume(t, ",")) 
+        if (!parse_try_consume(t, ","))
             break;
     }
 
@@ -712,10 +720,10 @@ lcm_enum_t *parse_enum(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
 
     lcm_enum_t *le = lcm_enum_create(lcmgen, lcmfile, name);
     parse_require(t, "{");
-    
+
     while (!parse_try_consume(t, "}")) {
         parse_enum_value(le, t);
-        
+
         parse_try_consume(t, ",");
         parse_try_consume(t, ";");
     }
@@ -836,7 +844,7 @@ void lcm_member_dump(lcm_member_t *lm)
     int ndim = g_ptr_array_size(lm->dimensions);
     for (int i = 0; i < ndim; i++) {
         lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, i);
-        switch (dim->mode) 
+        switch (dim->mode)
         {
         case LCM_CONST:
             printf(" [ (const) %s ]", dim->size);
@@ -938,13 +946,13 @@ int lcm_needs_generation(lcmgen_t *lcmgen, const char *declaringfile, const char
 int lcm_is_constant_size_array(lcm_member_t *lm)
 {
     int ndim = g_ptr_array_size(lm->dimensions);
-    
+
     if (ndim == 0)
         return 1;
 
     for (int i = 0; i < ndim; i++) {
         lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, i);
-        
+
         if (dim->mode == LCM_VAR)
             return 0;
     }

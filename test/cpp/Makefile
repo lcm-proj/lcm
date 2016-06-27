@@ -9,7 +9,8 @@ GTEST_LIBS=../gtest/libgtest.a ../gtest/libgtest_main.a
 
 types1:=exampleconst_t primitives_t primitives_list_t multidim_array_t node_t
 types2:=another_type_t cross_package_t
-types_src:=$(types1:%=lcmtest/%.hpp) $(types2:%=lcmtest2/%.hpp)
+types3:=arrays_t
+types_src:=$(types1:%=lcmtest/%.hpp) $(types2:%=lcmtest2/%.hpp) $(types3:%=lcmtest3/%.hpp)
 
 all: client \
 	memq_test
@@ -33,6 +34,9 @@ lcmtest/%.hpp: ../types/lcmtest/%.lcm
 	$(LCM_GEN) --cpp $<
 
 lcmtest2/%.hpp: ../types/lcmtest2/%.lcm
+	$(LCM_GEN) --cpp $<
+
+lcmtest3/%.hpp: ../types/lcmtest3/%.lcm
 	$(LCM_GEN) --cpp $<
 
 clean:
