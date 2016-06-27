@@ -198,7 +198,7 @@ static void dbg_init()
 
 #else
 
-#define dbg(mode, arg) 
+#define dbg(mode, ...) 
 #define dbg_active(mode) false
 #define cdbg(mode,color,dtag,arg) 
 
