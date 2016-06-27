@@ -7,5 +7,5 @@ all: $(types)
 	$(LCM_GEN) --python $(types)
 
 clean:
-	rm -rf lcmtest lcmtest2
+	rm -rf lcmtest lcmtest2 lcmtest3
 
