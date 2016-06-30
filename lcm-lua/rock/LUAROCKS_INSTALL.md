@@ -10,8 +10,8 @@ Avoid using the both the Autotools build and LuaRocks. Using both will cause the
 module to be installed twice, in two different location. You should really only
 use one or the other, to avoid confusion later when updating, uninstalling, etc.
 
-The rock depends on `glib-2.0` and `gthread-2.0`, like the LCM library itself.
-The rock does not depend on the LCM library; the LCM sources are compiled in.
+The rock depends on `glib-2.0`, like the LCM library itself. The rock does not
+depend on the LCM library; the LCM sources are compiled in.
 
 LuaRocks will look for:
 

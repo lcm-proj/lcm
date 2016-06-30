@@ -63,7 +63,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /SECTION:.winlcm,RWS"
-				AdditionalDependencies="Ws2_32.lib winmm.lib glib-2.0.lib gthread-2.0.lib"
+				AdditionalDependencies="Ws2_32.lib winmm.lib glib-2.0.lib"
 				OutputFile="$(OutDir)\$(ProjectName)d.dll"
 				AdditionalLibraryDirectories="$(GLIB_PATH)\lib"
 				GenerateDebugInformation="true"
@@ -137,7 +137,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions=" /SECTION:.winlcm,RWS"
-				AdditionalDependencies="Ws2_32.lib winmm.lib glib-2.0.lib gthread-2.0.lib"
+				AdditionalDependencies="Ws2_32.lib winmm.lib glib-2.0.lib"
 				AdditionalLibraryDirectories="$(GLIB_PATH)\lib"
 				RandomizedBaseAddress="1"
 				DataExecutionPrevention="0"

@@ -46,7 +46,7 @@ if os.name == 'nt':
     # define additional macro WIN32, used to discriminate win specific code
     define_macros = [('WIN32', 1)]
 
-    libraries = [ 'Ws2_32', 'glib-2.0', 'gthread-2.0' ]
+    libraries = [ 'Ws2_32', 'glib-2.0' ]
 
     # compiler arguments
     # /TP enforces compilation of code as c++
@@ -62,7 +62,7 @@ if os.name == 'nt':
     sources.append(os.path.join("..", "lcm", "windows", "WinPorting.cpp"))
 
 else:
-    pkg_deps = "glib-2.0 gthread-2.0"
+    pkg_deps = "glib-2.0"
 
     # include path
     pkgconfig_include_flags = subprocess.check_output( ["pkg-config", "--cflags-only-I", pkg_deps] ).decode(sys.stdout.encoding)
