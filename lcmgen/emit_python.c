@@ -91,8 +91,10 @@ _hash_table_get_vals (GHashTable *hash_table)
 
 void setup_python_options(getopt_t *gopt)
 {
-    getopt_add_string(gopt, 0,   "ppath",     "",         
+    getopt_add_string(gopt, 0,   "ppath",           "",
             "Python destination directory");
+    getopt_add_bool  (gopt, 0,   "python-no-init",  0,
+            "Do not emit  __init__.py");
 }
 
 static int
@@ -695,6 +697,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
     char package_dir[PATH_MAX];
     char package_dir_prefix[PATH_MAX];
     int have_package = dirs[0] != NULL;
+    int write_init_py = !getopt_get_bool(lcm->gopt, "python-no-init");
 
     sprintf (package_dir_prefix, "%s%s", getopt_get_string(lcm->gopt, "ppath"), 
             strlen(getopt_get_string(lcm->gopt, "ppath")) > 0 ? 
@@ -717,7 +720,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
     FILE *init_py_fp = NULL;
     GHashTable * init_py_imports = g_hash_table_new_full(g_str_hash, 
             g_str_equal, free, NULL);
-    if (have_package) {
+    if (have_package && write_init_py) {
         int ndirs = 0;
         for (ndirs=0; dirs[ndirs]; ndirs++);
 
