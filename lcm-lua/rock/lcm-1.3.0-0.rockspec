@@ -62,8 +62,7 @@ build = {
       },
       defines = {},
       libraries = {
-        "glib-2.0",
-        "gthread-2.0"
+        "glib-2.0"
       },
       incdirs = {
         "../..",
@@ -102,8 +101,7 @@ build = {
           defines = {'WIN32="lean_and_mean"'},
           libraries = {
             "Ws2_32",
-            "glib-2.0",
-            "gthread-2.0"
+            "glib-2.0"
           }
         }
       }
