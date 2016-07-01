@@ -85,3 +85,11 @@ option(LCM_INSTALL_PKGCONFIG "Install pkg-config files" ON)
 if(LCM_INSTALL_PKGCONFIG)
   add_subdirectory(lcm-pkgconfig)
 endif()
+
+# Distribution rules
+add_custom_target(dist
+  COMMAND ${CMAKE_COMMAND}
+    -DSOURCE_DIR=${lcm_SOURCE_DIR}
+    -DOUTPUT_DIR=${lcm_BINARY_DIR}
+    -DVERSION=${LCM_VERSION}
+    -P ${lcm_SOURCE_DIR}/lcm-cmake/mkdist.cmake)
