@@ -1,4 +1,4 @@
-LCM port to Windows changes.
+LCM port to Windows changes:
 ----------------------------
 
 IMPORTANT: The current port will only work on Windows XP and newer versions of
@@ -17,28 +17,29 @@ should be nothing additional to do to make them work.  However, please note
 that .C files created by lcmgen will most likely need to be compiled as C++
 under VS 2005.
 
-For the Visual Studio build we require an installation of GLib, with header
-files, libraries and DLLs.  We built with version glib-2.20.5, although we
-don't have any revision requirements that we know of.  The GLib DLLs will need
-to be somewhere on the system path, or the glib\bin folder will need to be
-added to the PATH environment variable.
-
-You'll need the following packages:
-
-Package         | Notes         | Location
-================|===============|================
-GLib            | Run-Time, Dev | http://ftp.gnome.org/pub/gnome/binaries/win32/glib
-gettext-runtime | Run-Time      | http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/
-
-We specifically recommend the following:
-- http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.28/glib_2.28.8-1_win32.zip
-- http://ftp.gnome.org/pub/gnome/binaries/win32/glib/2.28/glib-dev_2.28.8-1_win32.zip
-- http://ftp.gnome.org/pub/gnome/binaries/win32/dependencies/gettext-runtime_0.18.1.1-2_win32.zip
-
 The bulk of the changes are in lcm_udp.c and lcm_file.c. We relied on glib to
 provide the regex functionality.  The pipe() functionality has been
 re-implemented using sockets, which should now provide almost identical
 compatibility to the UNIX pipe() functions.
+
+GLib dependency:
+----------------
+
+For the Visual Studio build we require an installation of GLib, with header
+files, libraries and DLLs. We built with GLib version 2.45.4, but any version
+greater than 2.32.0 should work. The GLib DLLs will need to be somewhere on the
+system path, or the glib\bin folder will need to be added to the PATH
+environment variable.
+
+To get GLib for Windows, please see: http://www.gtk.org/download/windows.php
+
+The GTK project recommends using MSYS, but it's also possible to build it from
+source using Visual Studio, following the instructions on the Wiki:
+
+https://wiki.gnome.org/Projects/GTK+/Win32/MSVCCompilationOfGTKStack#GLib
+
+Including LCM header:
+---------------------
 
 When writing programs that use LCM (but are not internal to LCM) with Visual
 Studio 2008 and earlier, add "WinSpecific/include" to your include path to get
