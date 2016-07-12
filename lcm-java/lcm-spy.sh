@@ -1,5 +1,5 @@
 #!/bin/sh
-if [ -n "$(type -p perl)" ]
+if (perl -e '' 2>/dev/null)
   then mydir="$(dirname "$(perl -MCwd -le 'print Cwd::abs_path(shift)' "$0")")"
   else mydir="$(dirname "$0")"
 fi
