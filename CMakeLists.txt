@@ -56,7 +56,7 @@ endif()
 lcm_option(
   LCM_ENABLE_PYTHON
   "Build Python bindings and utilities"
-  PYTHONLIBS_FOUND PythonLibs)
+  PYTHON_FOUND Python)
 if(LCM_ENABLE_PYTHON)
   add_subdirectory(lcm-python)
 endif()

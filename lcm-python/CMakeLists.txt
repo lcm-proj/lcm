@@ -1,5 +1,3 @@
-find_package(PythonInterp REQUIRED)
-
 set(PYTHON_SHORT python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
 set(PYTHON_SITE lib${LIB_SUFFIX}/${PYTHON_SHORT}/site-packages)
 
