@@ -1,7 +1,7 @@
 #!/bin/sh
-if [ -n "$(type -p perl)" ]
-  then mydir="$(dirname "$(perl -MCwd -le 'print Cwd::abs_path(shift)' "${BASH_SOURCE[0]}")")"
-  else mydir="$(dirname "${BASH_SOURCE[0]}")"
+if (perl -e '' 2>/dev/null)
+  then mydir="$(dirname "$(perl -MCwd -le 'print Cwd::abs_path(shift)' "$0")")"
+  else mydir="$(dirname "$0")"
 fi
 if [ -e "$mydir/lcm.jar" ]
   then jardir="$mydir"
