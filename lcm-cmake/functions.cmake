@@ -10,7 +10,15 @@ endfunction()
 
 #------------------------------------------------------------------------------
 macro(lcm_option NAME DOCSTRING TEST)
-  find_package(${ARGN})
+  # Look for the dependency; if the option already exists and is ON, go ahead
+  # and require it, otherwise just see if we find it
+  if(DEFINED ${NAME} AND ${NAME})
+    find_package(${ARGN} REQUIRED)
+  else()
+    find_package(${ARGN})
+  endif()
+
+  # Create the option; ON by default if the dependency is found, otherwise OFF
   if(${TEST})
     set(_${NAME}_DEFAULT ON)
   else()
@@ -18,7 +26,10 @@ macro(lcm_option NAME DOCSTRING TEST)
   endif()
   option(${NAME} ${DOCSTRING} ${_${NAME}_DEFAULT})
   unset(_${NAME}_DEFAULT)
-  if(${NAME})
+
+  # If the option is ON and we didn't already find the dependency, require it
+  # now
+  if(${NAME} AND NOT ${TEST})
     find_package(${ARGN} REQUIRED)
   endif()
 endmacro()
