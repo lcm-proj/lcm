@@ -34,6 +34,7 @@ if(WIN32)
   )
 endif()
 
+add_library(lcm-coretypes INTERFACE)
 add_library(lcm ${lcm_sources})
 
 target_compile_definitions(lcm PRIVATE
@@ -48,6 +49,9 @@ set_target_properties(lcm PROPERTIES
   PUBLIC_HEADER "${lcm_install_headers}"
 )
 
+target_include_directories(lcm-coretypes INTERFACE
+  $<BUILD_INTERFACE:${lcm_SOURCE_DIR}>
+)
 target_include_directories(lcm INTERFACE
   $<BUILD_INTERFACE:${lcm_SOURCE_DIR}>
 )
@@ -58,7 +62,7 @@ target_link_libraries(lcm PRIVATE
   ${CMAKE_THREAD_LIBS_INIT}
 )
 
-install(TARGETS lcm
+install(TARGETS lcm-coretypes lcm
   EXPORT lcmTargets
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib${LIB_SUFFIX}
