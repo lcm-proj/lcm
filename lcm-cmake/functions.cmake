@@ -9,18 +9,30 @@ function(lcm_concat VAR)
 endfunction()
 
 #------------------------------------------------------------------------------
-function(lcm_option NAME DOCSTRING TEST)
-  find_package(${ARGN})
-  if(${TEST})
-    set(default ON)
+macro(lcm_option NAME DOCSTRING TEST)
+  # Look for the dependency; if the option already exists and is ON, go ahead
+  # and require it, otherwise just see if we find it
+  if(DEFINED ${NAME} AND ${NAME})
+    find_package(${ARGN} REQUIRED)
   else()
-    set(default OFF)
+    find_package(${ARGN})
   endif()
-  option(${NAME} ${DOCSTRING} ${default})
-  if(${NAME})
+
+  # Create the option; ON by default if the dependency is found, otherwise OFF
+  if(${TEST})
+    set(_${NAME}_DEFAULT ON)
+  else()
+    set(_${NAME}_DEFAULT OFF)
+  endif()
+  option(${NAME} ${DOCSTRING} ${_${NAME}_DEFAULT})
+  unset(_${NAME}_DEFAULT)
+
+  # If the option is ON and we didn't already find the dependency, require it
+  # now
+  if(${NAME} AND NOT ${TEST})
     find_package(${ARGN} REQUIRED)
   endif()
-endfunction()
+endmacro()
 
 #------------------------------------------------------------------------------
 function(lcm_copy_file_target TARGET INPUT OUTPUT)
