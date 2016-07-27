@@ -5,7 +5,7 @@
 #                   [CPP_INCLUDE <PATH>] [CPP11]]
 #                  [JAVA_SOURCES <VARIABLE_NAME>]
 #                  [PYTHON_SOURCES <VARIABLE_NAME>]
-#                  [DESTIONATION <PATH>]
+#                  [DESTINATION <PATH>]
 #                  <FILE> [<FILE>...])
 #     generate bindings for specified LCM type definition files
 #
