@@ -73,6 +73,12 @@ endif()
 # .NET
 # TODO
 
+option(LCM_ENABLE_TESTS "Build unit tests" ON)
+if(LCM_ENABLE_TESTS)
+  enable_testing()
+  add_subdirectory(test)
+endif()
+
 # Install rules
 include(lcm-cmake/install.cmake)
 

@@ -1,0 +1,9 @@
+set(test_cpp_libs lcm-test-types-cpp lcm gtest gtest_main)
+
+add_executable(test-cpp-client client.cpp common.cpp)
+target_link_libraries(test-cpp-client ${test_cpp_libs})
+
+add_executable(test-cpp-memq_test memq_test.cpp common.cpp)
+target_link_libraries(test-cpp-memq_test ${test_cpp_libs})
+
+add_test(NAME CPP::memq_test COMMAND test-cpp-memq_test)
