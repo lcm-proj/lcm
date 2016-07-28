@@ -49,7 +49,11 @@ if(NOT EPYDOC_EXECUTABLE)
 endif()
 
 if(NOT "$ENV{PYTHONPATH}" STREQUAL "")
-  set(EXTRA_PYTHON_PATH ":$ENV{PYTHONPATH}")
+  if(WIN32)
+    set(EXTRA_PYTHON_PATH ";$ENV{PYTHONPATH}")
+  else()
+    set(EXTRA_PYTHON_PATH ":$ENV{PYTHONPATH}")
+  endif()
 else()
   set(EXTRA_PYTHON_PATH "")
 endif()
@@ -57,7 +61,7 @@ endif()
 add_custom_target(doc-python
   COMMAND ${CMAKE_COMMAND} -E make_directory ${lcm_BINARY_DIR}/docs/html/python
   COMMAND ${CMAKE_COMMAND} -E env
-    PYTHONPATH=${CMAKE_BINARY_DIR}/${PYTHON_SITE}${EXTRA_PYTHON_PATH}
+    "PYTHONPATH=${CMAKE_BINARY_DIR}/${PYTHON_SITE}${EXTRA_PYTHON_PATH}"
     ${EPYDOC_EXECUTABLE} --config ${lcm_SOURCE_DIR}/docs/epydoc.cfg
   WORKING_DIRECTORY ${lcm_BINARY_DIR}/docs
   DEPENDS doc-clean)
