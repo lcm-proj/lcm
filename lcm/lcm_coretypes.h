@@ -69,7 +69,7 @@ static inline int __byte_decode_array(const void *_buf, int offset, int maxlen, 
     if (maxlen < elements)
         return -1;
 
-    uint8_t *buf = (uint8_t*) _buf;
+    const uint8_t *buf = (const uint8_t*) _buf;
     memcpy(p, &buf[offset], elements);
 
     return elements;
@@ -109,7 +109,7 @@ static inline int __int8_t_decode_array(const void *_buf, int offset, int maxlen
     if (maxlen < elements)
         return -1;
 
-    int8_t *buf = (int8_t*) _buf;
+    const int8_t *buf = (const int8_t*) _buf;
     memcpy(p, &buf[offset], elements);
 
     return elements;
@@ -147,7 +147,7 @@ static inline int __int16_t_encode_array(void *_buf, int offset, int maxlen, con
     //  See Section 5.8 paragraph 3 of the standard
     //  http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4527.pdf
     //  use uint for shifting instead if int
-    const uint16_t *unsigned_p = (uint16_t*)p;
+    const uint16_t *unsigned_p = (const uint16_t*)p;
     for (element = 0; element < elements; element++) {
         uint16_t v = unsigned_p[element];
         buf[pos++] = (v>>8) & 0xff;
@@ -160,7 +160,7 @@ static inline int __int16_t_encode_array(void *_buf, int offset, int maxlen, con
 static inline int __int16_t_decode_array(const void *_buf, int offset, int maxlen, int16_t *p, int elements)
 {
     int total_size = sizeof(int16_t) * elements;
-    uint8_t *buf = (uint8_t*) _buf;
+    const uint8_t *buf = (const uint8_t*) _buf;
     int pos = offset;
     int element;
 
@@ -207,7 +207,7 @@ static inline int __int32_t_encode_array(void *_buf, int offset, int maxlen, con
     //  See Section 5.8 paragraph 3 of the standard
     //  http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4527.pdf
     //  use uint for shifting instead if int
-    const uint32_t* unsigned_p = (uint32_t*)p;
+    const uint32_t* unsigned_p = (const uint32_t*)p;
     for (element = 0; element < elements; element++) {
         const uint32_t v = unsigned_p[element];
         buf[pos++] = (v>>24)&0xff;
@@ -222,7 +222,7 @@ static inline int __int32_t_encode_array(void *_buf, int offset, int maxlen, con
 static inline int __int32_t_decode_array(const void *_buf, int offset, int maxlen, int32_t *p, int elements)
 {
     int total_size = sizeof(int32_t) * elements;
-    uint8_t *buf = (uint8_t*) _buf;
+    const uint8_t *buf = (const uint8_t*) _buf;
     int pos = offset;
     int element;
 
@@ -272,7 +272,7 @@ static inline int __int64_t_encode_array(void *_buf, int offset, int maxlen, con
     //  See Section 5.8 paragraph 3 of the standard
     //  http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4527.pdf
     //  use uint for shifting instead if int
-    const uint64_t * unsigned_p = (uint64_t*)p;
+    const uint64_t * unsigned_p = (const uint64_t*)p;
     for (element = 0; element < elements; element++) {
         const uint64_t v = unsigned_p[element];
         buf[pos++] = (v>>56)&0xff;
@@ -291,7 +291,7 @@ static inline int __int64_t_encode_array(void *_buf, int offset, int maxlen, con
 static inline int __int64_t_decode_array(const void *_buf, int offset, int maxlen, int64_t *p, int elements)
 {
     int total_size = sizeof(int64_t) * elements;
-    uint8_t *buf = (uint8_t*) _buf;
+    const uint8_t *buf = (const uint8_t*) _buf;
     int pos = offset;
     int element;
 
@@ -333,7 +333,7 @@ static inline int __float_encoded_array_size(const float *p, int elements)
 
 static inline int __float_encode_array(void *_buf, int offset, int maxlen, const float *p, int elements)
 {
-    return __int32_t_encode_array(_buf, offset, maxlen, (int32_t*) p, elements);
+    return __int32_t_encode_array(_buf, offset, maxlen, (const int32_t*) p, elements);
 }
 
 static inline int __float_decode_array(const void *_buf, int offset, int maxlen, float *p, int elements)
@@ -362,7 +362,7 @@ static inline int __double_encoded_array_size(const double *p, int elements)
 
 static inline int __double_encode_array(void *_buf, int offset, int maxlen, const double *p, int elements)
 {
-    return __int64_t_encode_array(_buf, offset, maxlen, (int64_t*) p, elements);
+    return __int64_t_encode_array(_buf, offset, maxlen, (const int64_t*) p, elements);
 }
 
 static inline int __double_decode_array(const void *_buf, int offset, int maxlen, double *p, int elements)

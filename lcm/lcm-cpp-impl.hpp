@@ -352,7 +352,7 @@ LogFile::writeEvent(LogEvent* event)
     evt.timestamp = event->timestamp;
     evt.channellen = event->channel.size();
     evt.datalen = event->datalen;
-    evt.channel = (char*) event->channel.c_str();
+    evt.channel = const_cast<char*>(event->channel.c_str());
     evt.data = event->data;
     return lcm_eventlog_write_event(eventlog, &evt);
 }
