@@ -16,11 +16,11 @@ class EchoTest {
   EchoTest()
       : lcm_(),
         num_trials_(100),
-        test_channel_("TEST_ECHO"),
-        response_count_(0),
-        echo_data_(NULL),
         echo_msg_len_(0),
-        subscription_() {
+        echo_data_(NULL),
+        response_count_(0),
+        subscription_(),
+        test_channel_("TEST_ECHO") {
   }
 
   bool Run(void) {
@@ -79,10 +79,10 @@ class TypedTest {
  public:
   TypedTest(const std::string test_name, int num_trials)
       : lcm_(),
-      test_channel_(test_name),
       response_count_(0),
       num_trials_(num_trials),
-      subscription_() {
+      subscription_(),
+      test_channel_(test_name) {
   }
 
   bool Run(void) {
