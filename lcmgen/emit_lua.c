@@ -94,6 +94,8 @@ void setup_lua_options(getopt_t *gopt)
 {
     getopt_add_string(gopt, 0,   "lpath",     "",
             "Lua destination directory");
+    getopt_add_bool  (gopt, 0,   "lua-no-init",  0,
+            "Do not create init.lua");
 }
 
 static int
@@ -755,6 +757,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
     char package_dir[PATH_MAX];
     char package_dir_prefix[PATH_MAX];
     int have_package = dirs[0] != NULL;
+    int write_init_lua = !getopt_get_bool(lcm->gopt, "lua-no-init");
 
     sprintf (package_dir_prefix, "%s%s", getopt_get_string(lcm->gopt, "lpath"),
             strlen(getopt_get_string(lcm->gopt, "lpath")) > 0 ?
@@ -778,7 +781,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
     GHashTable * initlua_requires = NULL;
     GHashTable * initlua_requires_subpack = NULL;
 
-    if (have_package) {
+    if (have_package && write_init_lua) {
         int ndirs = 0;
         for (ndirs=0; dirs[ndirs]; ndirs++);
 

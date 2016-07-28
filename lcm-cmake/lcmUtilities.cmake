@@ -5,7 +5,8 @@
 #                   [CPP_INCLUDE <PATH>] [CPP11]]
 #                  [JAVA_SOURCES <VARIABLE_NAME>]
 #                  [PYTHON_SOURCES <VARIABLE_NAME>]
-#                  [DESTIONATION <PATH>]
+#                  [LUA_SOURCES <VARIABLE_NAME>]
+#                  [DESTINATION <PATH>]
 #                  <FILE> [<FILE>...])
 #     generate bindings for specified LCM type definition files
 #
@@ -90,9 +91,41 @@ function(_lcm_add_python_package PATH)
 endfunction()
 
 #------------------------------------------------------------------------------
+function(_lcm_add_lua_package PATH)
+  list(FIND _lua_packages "${PATH}" _index)
+  if(_index EQUAL -1)
+    set(_init "${_DESTINATION}/${PATH}/init.lua")
+    file(WRITE ${_init} "local M = {}\n\n")
+    _lcm_parent_list_append(_lua_packages ${PATH})
+    _lcm_parent_list_append(${_LUA_SOURCES} ${_init})
+  endif()
+endfunction()
+
+#------------------------------------------------------------------------------
 function(_lcm_add_python_type PACKAGE TYPE)
   set(_init "${_DESTINATION}/${PACKAGE}/__init__.py")
   file(APPEND ${_init} "from .${TYPE} import ${TYPE}\n")
+endfunction()
+
+#------------------------------------------------------------------------------
+function(_lcm_add_lua_type PACKAGE TYPE)
+  set(_init "${_DESTINATION}/${PACKAGE}/init.lua")
+  file(APPEND ${_init} "M.${TYPE} = require('${PACKAGE}.${TYPE}')\n")
+endfunction()
+
+#------------------------------------------------------------------------------
+function(_lcm_finalize_aggregate_headers)
+  foreach(_header ${_aggregate_headers})
+    file(APPEND "${_header}" "\n#endif\n")
+  endforeach()
+endfunction()
+
+#------------------------------------------------------------------------------
+function(_lcm_finalize_lua_packages)
+  foreach(_package ${_lua_packages})
+    set(_init "${_DESTINATION}/${_package}/init.lua")
+    file(APPEND ${_init} "\nreturn M\n")
+  endforeach()
 endfunction()
 
 #------------------------------------------------------------------------------
@@ -109,6 +142,7 @@ function(lcm_wrap_types)
     CPP_HEADERS CPP_INCLUDE
     JAVA_SOURCES
     PYTHON_SOURCES
+    LUA_SOURCES
     DESTINATION
   )
   set(_mv_opts "")
@@ -130,10 +164,11 @@ function(lcm_wrap_types)
   if(NOT DEFINED _C_HEADERS AND
      NOT DEFINED _CPP_HEADERS AND
      NOT DEFINED _JAVA_SOURCES AND
-     NOT DEFINED _PYTHON_SOURCES)
+     NOT DEFINED _PYTHON_SOURCES AND
+     NOT DEFINED _LUA_SOURCES)
     message(SEND_ERROR
       "lcm_wrap_types: at least one of C_HEADERS, CPP_HEADERS, JAVA_SOURCES,"
-      " or PYTHON_SOURCES is required")
+      " PYTHON_SOURCES or LUA_SOURCES is required")
     return()
   endif()
 
@@ -171,10 +206,14 @@ function(lcm_wrap_types)
   if(DEFINED _PYTHON_SOURCES)
     list(APPEND _args --python --python-no-init --ppath ${_DESTINATION})
   endif()
+  if(DEFINED _LUA_SOURCES)
+    list(APPEND _args --lua --lua-no-init --lpath ${_DESTINATION})
+  endif()
 
   # Create build rules
   set(_aggregate_headers "")
   set(_python_packages "")
+  set(_lua_packages "")
   foreach(_lcmtype ${_UNPARSED_ARGUMENTS})
     set(_package "")
     set(_outputs "")
@@ -224,6 +263,11 @@ function(lcm_wrap_types)
           _lcm_add_python_type(${_package_dir} ${_type})
           _lcm_add_outputs(_PYTHON_SOURCES ${_package_dir}/${_type}.py)
         endif()
+        if(DEFINED _LUA_SOURCES)
+          _lcm_add_lua_package(${_package_dir})
+          _lcm_add_lua_type(${_package_dir} ${_type})
+          _lcm_add_outputs(_LUA_SOURCES ${_package_dir}/${_type}.lua)
+        endif()
         if(DEFINED _JAVA_SOURCES)
           _lcm_add_outputs(_JAVA_SOURCES ${_package_dir}/${_type}.java)
         endif()
@@ -248,17 +292,17 @@ function(lcm_wrap_types)
     endif()
   endforeach()
 
-  # Finalize aggregate headers
-  foreach(_header ${_aggregate_headers})
-    file(APPEND "${_header}" "\n#endif\n")
-  endforeach()
+  # Finalize aggregate headers and packages
+  _lcm_finalize_aggregate_headers()
+  _lcm_finalize_lua_packages()
 
   # Set output files in parent scope
   _lcm_export(_C_SOURCES)
   _lcm_export(_C_HEADERS)
   _lcm_export(_CPP_HEADERS)
-  _lcm_export(_PYTHON_SOURCES)
   _lcm_export(_JAVA_SOURCES)
+  _lcm_export(_PYTHON_SOURCES)
+  _lcm_export(_LUA_SOURCES)
 endfunction()
 
 #------------------------------------------------------------------------------

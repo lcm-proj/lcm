@@ -94,7 +94,7 @@ void setup_python_options(getopt_t *gopt)
     getopt_add_string(gopt, 0,   "ppath",           "",
             "Python destination directory");
     getopt_add_bool  (gopt, 0,   "python-no-init",  0,
-            "Do not emit  __init__.py");
+            "Do not create __init__.py");
 }
 
 static int
