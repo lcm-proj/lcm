@@ -10,6 +10,7 @@ if(LCM_ENABLE_PYTHON)
 endif()
 
 # TODO java
-# TODO lua
 
-# TODO client-server tests
+if(LCM_ENABLE_LUA)
+  add_subdirectory(lua)
+endif()

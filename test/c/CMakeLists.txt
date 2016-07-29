@@ -17,3 +17,11 @@ target_link_libraries(test-c-udpm_test ${test_c_libs})
 
 add_test(NAME C::memq_test COMMAND test-c-memq_test)
 add_test(NAME C::eventlog_test COMMAND test-c-eventlog_test)
+
+if(PYTHON_EXECUTABLE)
+  add_test(NAME C::client_server COMMAND
+    ${PYTHON_EXECUTABLE}
+    ${CMAKE_CURRENT_SOURCE_DIR}/../run_client_server_test.py
+    $<TARGET_FILE:test-c-server>
+    $<TARGET_FILE:test-c-client>)
+endif()
