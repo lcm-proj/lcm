@@ -9,7 +9,9 @@ if(LCM_ENABLE_PYTHON)
   add_subdirectory(python)
 endif()
 
-# TODO java
+if(LCM_ENABLE_JAVA)
+  add_subdirectory(java)
+endif()
 
 if(LCM_ENABLE_LUA)
   add_subdirectory(lua)
