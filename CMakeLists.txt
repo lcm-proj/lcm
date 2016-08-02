@@ -7,7 +7,7 @@ if(CMAKE_VERSION VERSION_LESS 3.7)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/3.7")
 endif()
 
-find_package(GLib2 REQUIRED COMPONENTS gthread)
+find_package(GLib2 REQUIRED)
 
 # Configuration and utility functions
 include(lcm-cmake/config.cmake)
