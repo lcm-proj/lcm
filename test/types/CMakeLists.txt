@@ -39,7 +39,10 @@ target_include_directories(lcm-test-types-c INTERFACE
 add_custom_target(lcm-test-types-generate-cpp DEPENDS ${cpp_headers})
 
 add_library(lcm-test-types-cpp INTERFACE)
-add_dependencies(lcm-test-types-cpp lcm-test-types-generate-cpp)
+if(NOT CMAKE_VERSION VERSION_LESS 3.3) # TODO remove when we require >=3.3
+  # NOTE: dependencies on INTERFACE targets not supported before CMake 3.3
+  add_dependencies(lcm-test-types-cpp lcm-test-types-generate-cpp)
+endif()
 target_link_libraries(lcm-test-types-cpp INTERFACE lcm-coretypes)
 target_include_directories(lcm-test-types-cpp INTERFACE
   ${CMAKE_CURRENT_BINARY_DIR})
