@@ -58,7 +58,6 @@ target_include_directories(lcm INTERFACE
 
 target_link_libraries(lcm PRIVATE
   GLib2::glib
-  GLib2::gthread
   ${CMAKE_THREAD_LIBS_INIT}
 )
 

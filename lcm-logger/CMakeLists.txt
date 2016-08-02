@@ -3,7 +3,6 @@ target_link_libraries(lcm-logger
   lcm
   ${lcm-winport}
   GLib2::glib
-  GLib2::gthread
 )
 
 add_executable(lcm-logplayer lcm_logplayer.c)
