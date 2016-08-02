@@ -58,8 +58,6 @@ extern void lcm_memq_provider_init(GPtrArray * providers);
 lcm_t * 
 lcm_create (const char *url)
 {
-    if (!g_thread_supported ()) g_thread_init (NULL);
-
 #ifdef WIN32
     WSADATA    wsd;
     int status = WSAStartup ( MAKEWORD ( 2, 0 ), &wsd );

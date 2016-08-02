@@ -542,9 +542,6 @@ int main(int argc, char *argv[])
         fprintf(stderr, "ERROR.  --force_overwrite and --append can't both be used\n");
     }
 
-    // initialize GLib threading
-    g_thread_init(NULL);
-
     logger.time0 = timestamp_now();
     logger.max_write_queue_size = (int64_t)(max_write_queue_size_mb * (1 << 20));
 
