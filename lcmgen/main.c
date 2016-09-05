@@ -39,6 +39,9 @@ int emit_csharp(lcmgen_t *lcm);
 void setup_cpp_options(getopt_t *gopt);
 int emit_cpp(lcmgen_t *lcm);
 
+void setup_vala_options(getopt_t *gopt);
+int emit_vala(lcmgen_t *lcm);
+
 int main(int argc, char *argv[])
 {
     getopt_t *gopt = getopt_create();
@@ -77,6 +80,10 @@ int main(int argc, char *argv[])
     getopt_add_spacer(gopt, "**** C#.NET options ****");
     getopt_add_bool  (gopt, 0, "csharp",      0,     "Emit C#.NET code");
     setup_csharp_options(gopt);
+
+    getopt_add_spacer(gopt, "**** VALA options ****");
+    getopt_add_bool  (gopt, 0, "vala",      0,     "Emit VALA code");
+    setup_vala_options(gopt);
 
     if (!getopt_parse(gopt, argc, argv, 1) || getopt_get_bool(gopt,"help")) {
         printf("Usage: %s [options] <input files>\n\n", argv[0]);
@@ -153,6 +160,13 @@ int main(int argc, char *argv[])
         did_something = 1;
         if (emit_csharp(lcm)) {
             printf("An error occurred while emitting C#.NET code.\n");
+        }
+    }
+
+    if (getopt_get_bool(gopt, "vala")) {
+        did_something = 1;
+        if (emit_vala(lcm)) {
+            printf("An error occurred while emitting VALA code.\n");
         }
     }
 
