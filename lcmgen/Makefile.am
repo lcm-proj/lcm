@@ -14,7 +14,8 @@ lcm_gen_SOURCES = main.c \
 				 emit_java.c \
 				 emit_csharp.c \
 				 emit_python.c \
-				 emit_lua.c
+				 emit_lua.c \
+				 emit_m.c
 
 lcm_gen_LDADD = $(GLIB_LIBS)
 

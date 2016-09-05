@@ -111,7 +111,7 @@ static int is_dim_size_fixed(const char* dim_size) {
 // Some types do not have a 1:1 mapping from lcm types to native C
 // storage types. Do not free the string pointers returned by this
 // function.
-static char *
+static const char *
 map_type_name(const char *t)
 {
     if (!strcmp(t,"boolean"))
@@ -124,6 +124,36 @@ map_type_name(const char *t)
         return strdup("uint8_t");
 
     return dots_to_double_colons (t);
+}
+
+static const char *
+init_test_value(const char *t)
+{
+       if (!strcmp(t,"boolean"))
+               return strdup("true");
+
+       else if (!strcmp(t,"std::string"))
+               return strdup("\"1\"");
+
+       else if (!strcmp(t,"int8_t"))
+               return strdup("INT8_MAX-5");
+
+       else if (!strcmp(t,"int16_t"))
+               return strdup("INT16_MAX-5");
+
+       else if (!strcmp(t,"int32_t"))
+               return strdup("INT32_MAX-5");
+
+       else if (!strcmp(t,"int64_t"))
+               return strdup("INT64_MAX-5");
+
+       else if (!strcmp(t,"float"))
+               return strdup("1.0");
+
+       else if (!strcmp(t,"double"))
+               return strdup("1.0");
+
+       return strdup("0");
 }
 
 void setup_cpp_options(getopt_t *gopt)
@@ -203,9 +233,8 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     fprintf(f, "#define __%s_hpp__\n", tn_);
     fprintf(f, "\n");
 
-    // do we need to #include <vector> and/or <string>?
+    // do we need to #include <vector> ?
     int emit_include_vector = 0;
-    int emit_include_string = 0;
     for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
         lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, mind);
         if (g_ptr_array_size(lm->dimensions) != 0 &&
@@ -213,12 +242,11 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
             emit(0, "#include <vector>");
             emit_include_vector = 1;
         }
-        if(!emit_include_string &&
-            !strcmp(lm->type->lctypename, "string")) {
-            emit(0, "#include <string>");
-            emit_include_string = 1;
-        }
     }
+
+    emit(0, "#include <cmath>\t// For fabs to compare floats");
+    emit(0, "#include <string>\t// For return type of toStr()");
+    emit(0, "#include <sstream>\t// For stringstream in toStr()");
 
     // include header files for other LCM types
     for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
@@ -251,7 +279,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
 
             emit_comment(f, 2, lm->comment);
-            char* mapped_typename = map_type_name(lm->type->lctypename);
+            char const* mapped_typename = map_type_name(lm->type->lctypename);
             int ndim = g_ptr_array_size(lm->dimensions);
             if (ndim == 0) {
                 emit(2, "%-10s %s;", mapped_typename, lm->membername);
@@ -273,7 +301,6 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
                     emit_end(" %s;", lm->membername);
                 }
             }
-            free(mapped_typename);
             if (mind < g_ptr_array_size(ls->members) - 1) {
                 emit(0, "");
             }
@@ -298,7 +325,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
               const char *suffix = "";
               if (!strcmp(lc->lctypename, "int64_t"))
                 suffix = "LL";
-              char* mapped_typename = map_type_name(lc->lctypename);
+              char const* mapped_typename = map_type_name(lc->lctypename);
               char *cpp_std = getopt_get_string(lcmgen->gopt, "cpp-std");
               if(strcmp("c++98",cpp_std) && strcmp("c++11",cpp_std)) {
                   printf("%s is not a valid cpp_std. Use --cpp-std=c++98 or --cpp-std=c++11 instead\n\n", cpp_std);
@@ -317,7 +344,6 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
                 emit(2, "static const %-8s %s = %s%s;", mapped_typename,
                 lc->membername, lc->val_str, suffix);
               }
-              free(mapped_typename);
             }
         }
         emit(0, "");
@@ -349,6 +375,53 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(2, " * @return The number of bytes decoded, or <0 if an error occured.");
     emit(2, " */");
     emit(2, "inline int decode(const void *buf, int offset, int maxlen);");
+    emit(0, "");
+    emit(2, "/**");
+    emit(2, " * Compare two instances of the same type.");
+    emit(2, " *");
+    emit(2, " * @param[in] other The object to compare.");
+    emit(2, " * @return true if all elements are equal, false otherwise.");
+    emit(2, " */");
+    emit(2, "inline bool operator==(%s const & other) const;", sn);
+    emit(0, "");
+    emit(2, "/**");
+    emit(2, " * Construct a string from the object for debugging purposes.");
+    emit(2, " * Note that arrays are cropped for readability. Only the first and last elements are shown.");
+    emit(2, " *");
+    emit(2, " * @param[in] layout A placeholder for the tree structure.");
+    emit(2, " */");
+    emit(2, "inline std::string toDebugStr(std::string const & layout=\"|-\") const;");
+    emit(0, "");
+    emit(2, "/**");
+    emit(2, " * Initialize all values of a test object to pre-defined values.");
+    emit(2, " * The values used are much more informative than using 0 because");
+    emit(2, " * they are type-dependant. This way, the user knows directly whether");
+    emit(2, " * the type is correct or not. Typically the default values are the");
+    emit(2, " * maximum value allowed by the type minus 5, and 1.0 for float and double.");
+    emit(2, " * Note that for arrays only the first and last elements are considered.");
+    emit(2, " *");
+    emit(2, " * @return success.");
+    emit(2, " */");
+    emit(2, "inline bool initTestObject();");
+    emit(0, "");
+    emit(2, "/**");
+    emit(2, " * Increment every variable in the object.");
+    emit(2, " * Works well with initTestObject() and compareTestObject().");
+    emit(2, " * Note that for arrays only the first and last elements are considered.");
+    emit(2, " *");
+    emit(2, " * @return success.");
+    emit(2, " */");
+    emit(2, "inline bool incTestObject();");
+    emit(0, "");
+    emit(2, "/**");
+    emit(2, " * Compare two instances of the same type.");
+    emit(2, " * Works well with initTestObject() and incTestObject().");
+    emit(2, " * Note that for arrays only the first and last elements are considered.");
+    emit(2, " *");
+    emit(2, " * @param[in] other The object to compare.");
+    emit(2, " * @return true if all elements are equal, false otherwise.");
+    emit(2, " */");
+    emit(2, "inline bool compareTestObject(%s const & other) const;", sn);
     emit(0, "");
     emit(2, "/**");
     emit(2, " * Retrieve the 64-bit fingerprint identifying the structure of the message.");
@@ -479,6 +552,464 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "}");
     emit(0, "");
 }
+
+static void emit_compare(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char *sn = ls->structname->shortname;
+    emit(0, "/// Deep compare. FIXME floats and doubles are compared to 1e-5");
+    emit(0, "bool %s::operator==(%s const & other) const", sn, sn);
+    emit(0, "{");
+    if(0 == g_ptr_array_size(ls->members)) {
+        emit(1,     "return true;");
+        emit(0,"}");
+        emit(0,"");
+        return;
+    }
+    // For each member (non-array)
+    uint8_t firstNonArray = 1;
+    uint8_t arraysExist = 0;
+    emit_start(1, "bool equal = true;");
+    for (unsigned int mInd = 0; mInd < g_ptr_array_size(ls->members); ++mInd) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mInd);
+        uint8_t isFloat = (0==strcmp(lm->type->lctypename,"float")) || (0==strcmp(lm->type->lctypename,"double"));
+
+        // Deal with arrays afterwards
+        if (0 != g_ptr_array_size(lm->dimensions)) {
+            arraysExist = 1;
+            continue;
+        }
+
+        emit_end("");
+        if (firstNonArray) {
+            if (isFloat) {
+                emit_start(1, "equal = ( (std::fabs(%s - other.%s) < 1e-5) )", lm->membername, lm->membername);
+            }
+            else {
+                emit_start(1, "equal = (%s == other.%s)", lm->membername, lm->membername);
+            }
+            firstNonArray = 0;
+        }
+        else {
+            if (isFloat) {
+                emit_start(2, "&& ( (std::fabs(%s - other.%s) < 1e-5) )", lm->membername, lm->membername);
+            }
+            else {
+                emit_start(2, "&& (%s == other.%s)", lm->membername, lm->membername);
+            }
+        }
+    }
+    emit_end(";");
+    emit(0,"");
+
+    if (arraysExist) {
+        emit(1, "if (!equal) {");
+        emit(2, "return false;");
+        emit(1, "}");
+        emit(0,"");
+        // For each array member
+        for (unsigned int mInd = 0; mInd < g_ptr_array_size(ls->members); ++mInd) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mInd);
+            int numDim = g_ptr_array_size(lm->dimensions);
+
+            if (0 == numDim) {
+                continue;
+            }
+
+            uint8_t isFloat = (0==strcmp(lm->type->lctypename,"float")) || (0==strcmp(lm->type->lctypename,"double"));
+
+            char * dimStr = g_strdup_printf("");
+            for (uint8_t dim = 0; dim < numDim; ++dim) {
+                lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                emit(1+dim, "for ( uint dim%i = 0; dim%i < %i; ++dim%i)", dim, dim, atoi(ld->size) , dim);
+                char * tmpStr = g_strdup_printf("%s", dimStr);
+                g_free(dimStr);
+                dimStr = g_strdup_printf("%s[dim%i]", tmpStr, dim);
+                g_free(tmpStr);
+            }
+
+            emit (numDim, "{");
+            if (isFloat) {
+                emit (numDim+1, "if ( (std::fabs(%s - other.%s) > 1e-5) )", lm->membername, lm->membername);
+            }
+            else {
+                emit (numDim+1, "if (!(%s%s == other.%s%s))", lm->membername, dimStr, lm->membername, dimStr);
+            }
+            emit (numDim+1, "{");
+            emit (numDim+2, "return false;");
+            emit (numDim+1, "}");
+
+            emit (numDim, "}");
+
+            emit(0,"");
+            g_free(dimStr);
+        }
+    }
+    emit(1, "return equal;");
+    emit(0,"}");
+    emit(0,"");
+}
+
+static void emit_print(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char *sn = ls->structname->shortname;
+    emit(0, "std::string %s::toDebugStr(std::string const & layout) const", sn);
+    emit(0, "{");
+    if(0 == g_ptr_array_size(ls->members)) {
+        emit(1,     "return \"\";");
+        emit(0,"}");
+        emit(0,"");
+        return;
+    }
+    emit(1, "std::stringstream ss(\"\");");
+    // For each member
+    for (unsigned int mInd = 0; mInd < g_ptr_array_size(ls->members); mInd++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mInd);
+        uint8_t isString = (0==strcmp(lm->type->lctypename,"string"));
+        int ndim = g_ptr_array_size(lm->dimensions);
+
+        char * valueAssignment;
+        char * valueAssignment2;     // Needs to be split for possibly adding array index
+        if (isString) {
+            valueAssignment = g_strdup_printf("= '\" << %s << \"'\"", lm->membername);
+            valueAssignment2 = g_strdup_printf(" << std::endl;");
+        }
+        else if ( lcm_is_primitive_type(lm->type->lctypename) ) {
+            valueAssignment = g_strdup_printf("= \" << std::to_string(%s", lm->membername);
+            valueAssignment2 = g_strdup_printf(") << std::endl;");
+        }
+        else {
+            valueAssignment = g_strdup_printf("\" << std::endl << %s", lm->membername);
+            if (0==ndim) {
+                valueAssignment2 = g_strdup_printf(".toDebugStr(\"  \"+layout);");
+            }
+            else {
+                valueAssignment2 = g_strdup_printf(".toDebugStr(\"    \"+layout);");
+            }
+        }
+
+        emit_start(1, "ss << layout << \"%s ", lm->membername);
+        if (0==ndim) {
+            emit_end("%s%s", valueAssignment, valueAssignment2);
+        }
+        else {
+            // Check if it's a dynamic array, in which case we ignore it at the moment.
+            uint8_t isDynamic=0;
+            for (int dim=0; dim < ndim; ++dim) {
+                lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                if (!is_dim_size_fixed(ld->size)){
+                     isDynamic=1;
+                     break;
+                }
+            }
+            if (!isDynamic) {
+                // End previous line so that each element is on a new line
+                emit_end("\" << std::endl;");
+
+                // Print first component in array
+                emit_start(1, "ss << \"  \" << layout << \"");
+                for (int dim=0; dim < ndim; ++dim) {
+                     emit_continue("[0]");
+                }
+                emit_continue("%s", valueAssignment);
+                for (int dim=0; dim < ndim; ++dim) { // Copy-paste is not pretty but is the simplest way to avoid mem allocation
+                     emit_continue("[0]");
+                }
+                emit_end("%s", valueAssignment2);
+
+                // Print last component in array
+                emit_start(1, "ss << \"  \" << layout << \"");
+                for (int dim=0; dim < ndim; ++dim) {
+                     lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                     emit_continue("[%i]", atoi(ld->size)-1);
+                }
+                emit_continue("%s", valueAssignment);
+                for (int dim=0; dim < ndim; ++dim) { // Copy-paste is not pretty but is the simplest way to avoid mem allocation
+                     lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                     emit_continue("[%i]", atoi(ld->size)-1);
+                }
+                emit_end("%s", valueAssignment2);
+            }
+            else {
+                emit_end("is a dynamic array\" << std::endl;");
+            }
+        }
+        g_free (valueAssignment);
+    }
+    emit(0, "");
+    emit(1, "return ss.str();");
+    emit(0,"}");
+    emit(0,"");
+}
+
+static void emit_init_test(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char *sn = ls->structname->shortname;
+    emit(0, "bool %s::initTestObject()", sn);
+    emit(0, "{");
+    if(0 == g_ptr_array_size(ls->members)) {
+        emit(1,     "return true;");
+        emit(0,"}");
+        emit(0,"");
+        return;
+    }
+    // For each member
+    for (unsigned int mInd = 0; mInd < g_ptr_array_size(ls->members); mInd++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mInd);
+        char const* mapped_typename = map_type_name(lm->type->lctypename);
+        char const* typeInitValue = init_test_value(mapped_typename);
+        char * valueAssignment;
+
+        // For non-primitive types, simply call object's init function
+        if ( ! lcm_is_primitive_type(lm->type->lctypename) ) {
+            valueAssignment = strdup(".initTestObject();");
+        }
+        else {
+            valueAssignment = g_strdup_printf(" = %s;", typeInitValue);
+        }
+
+        int ndim = g_ptr_array_size(lm->dimensions);
+
+        if (0==ndim) {
+            emit(1, "%s%s", lm->membername, valueAssignment);
+            free (valueAssignment);
+        }
+        else {
+            // Check if it's a dynamic array, in which case we ignore it at the moment.
+            uint8_t isDynamic=0;
+            for (int dim=0; dim < ndim; ++dim) {
+                lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                if (!is_dim_size_fixed(ld->size)){
+                     isDynamic=1;
+                     break;
+                }
+            }
+            if (!isDynamic) {
+                // Set first component in array
+                emit_start(1, "%s", lm->membername);
+                for (int dim=0; dim < ndim; ++dim) {
+                     emit_continue("[0]");
+                }
+                emit_end("%s", valueAssignment);
+
+                // Set last component in array
+                emit_start(1, "%s", lm->membername);
+                for (int dim=0; dim < ndim; ++dim) {
+                     lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                     emit_continue("[%i]", atoi(ld->size)-1);
+                }
+                emit_end("%s", valueAssignment);
+            }
+            else {
+                emit(1, "//%s is a dynamic array", lm->membername);
+            }
+            g_free (valueAssignment);
+            free((char*)mapped_typename);
+            free((char*)typeInitValue);
+        }
+    }
+    emit(0, "");
+    emit(1, "return true;");
+    emit(0,"}");
+    emit(0,"");
+}
+
+
+static void emit_inc_test(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char *sn = ls->structname->shortname;
+    emit(0, "bool %s::incTestObject()", sn);
+    emit(0, "{");
+    if(0 == g_ptr_array_size(ls->members)) {
+        emit(1,     "return true;");
+        emit(0,"}");
+        emit(0,"");
+        return;
+    }
+    // For each member
+    for (unsigned int mInd = 0; mInd < g_ptr_array_size(ls->members); mInd++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mInd);
+        char * valueAssignment;
+
+        // For non-primitive types, simply call object's increment function
+        if ( ! lcm_is_primitive_type(lm->type->lctypename) ) {
+            valueAssignment = strdup(".incTestObject()");
+        }
+        else if (!strcmp(lm->type->lctypename,"string")){
+            valueAssignment = g_strdup_printf(" = std::to_string(std::stol(%s", lm->membername);
+        }
+        else {
+            valueAssignment = strdup("++");
+        }
+
+        int ndim = g_ptr_array_size(lm->dimensions);
+
+        if (0==ndim) {
+            emit_start(1, "%s%s", lm->membername, valueAssignment);
+            if (!strcmp(lm->type->lctypename,"string")) {
+                emit_continue(")+1)");
+            }
+            emit_end(";");
+        }
+        else {
+            // Check if it's a dynamic array, in which case we ignore it at the moment.
+            uint8_t isDynamic=0;
+            for (int dim=0; dim < ndim; ++dim) {
+                lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                if (!is_dim_size_fixed(ld->size)){
+                     isDynamic=1;
+                     break;
+                }
+            }
+            if (!isDynamic) {
+                // Inc first component in array
+                emit_start(1, "%s", lm->membername);
+                for (int dim=0; dim < ndim; ++dim) {
+                     emit_continue("[0]");
+                }
+                emit_continue("%s", valueAssignment);
+                if (!strcmp(lm->type->lctypename,"string")) {
+                     // This is not pretty but is the simplest way to avoid mem allocation
+                     for (int dim=0; dim < ndim; ++dim) {
+                        emit_continue("[0]");
+                     }
+                     emit_continue(")+1)");
+                }
+                emit_end(";");
+
+                // Inc last component in array
+                emit_start(1, "%s", lm->membername);
+                for (int dim=0; dim < ndim; ++dim) {
+                     lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                     emit_continue("[%i]", atoi(ld->size)-1);
+                }
+                emit_continue("%s", valueAssignment);
+                if (!strcmp(lm->type->lctypename,"string")) {
+                     // This is not pretty but is the simplest way to avoid mem allocation
+                     for (int dim=0; dim < ndim; ++dim) {
+                        lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                        emit_continue("[%i]", atoi(ld->size)-1);
+                     }
+                     emit_continue(")+1)");
+                }
+                emit_end(";");
+            }
+            else {
+                emit(1, "//%s is a dynamic array", lm->membername);
+            }
+            g_free (valueAssignment);
+        }
+    }
+    emit(0, "");
+    emit(1, "return true;");
+    emit(0,"}");
+    emit(0,"");
+}
+
+static void emit_compare_test(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char *sn = ls->structname->shortname;
+    emit(0, "bool %s::compareTestObject(%s const & other) const", sn, sn);
+    emit(0, "{");
+    if(0 == g_ptr_array_size(ls->members)) {
+        emit(1,     "return true;");
+        emit(0,"}");
+        emit(0,"");
+        return;
+    }
+    // For each member
+    uint8_t firstVar = 1;
+    emit_start(1, "bool equal = true;");
+    for (unsigned int mInd = 0; mInd < g_ptr_array_size(ls->members); ++mInd) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mInd);
+        int numDim = g_ptr_array_size(lm->dimensions);
+        uint8_t isFloat = (0==strcmp(lm->type->lctypename,"float")) || (0==strcmp(lm->type->lctypename,"double"));
+
+        emit_end("");
+        if (firstVar) {
+            emit_start(1, "equal = ");
+            firstVar = 0;
+        }
+        else {
+            emit_start(2, "&& ");
+        }
+
+        if (0==numDim) {
+            if (isFloat) {
+                emit_continue("( (std::fabs(%s - other.%s) < 1e-5) )", lm->membername, lm->membername);
+            }
+            else if ( ! lcm_is_primitive_type(lm->type->lctypename) ) {
+                emit_continue("(%s.compareTestObject(other.%s))", lm->membername, lm->membername);
+            }
+            else {
+                emit_continue("(%s == other.%s)", lm->membername, lm->membername);
+            }
+        }
+        else {
+            // Check if it's a dynamic array, in which case we ignore it at the moment.
+            uint8_t isDynamic=0;
+            for (int dim=0; dim < numDim; ++dim) {
+                lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                if (!is_dim_size_fixed(ld->size)){
+                     isDynamic=1;
+                     break;
+                }
+            }
+            if (!isDynamic) {
+                // Compare first component in array
+                char * dimStr = g_strdup_printf("");
+                for (uint8_t dim = 0; dim < numDim; ++dim) {
+                     char * tmpStr = g_strdup_printf("%s", dimStr);
+                     g_free(dimStr);
+                     dimStr = g_strdup_printf("%s[0]", tmpStr);
+                     g_free(tmpStr);
+                }
+
+                if (isFloat) {
+                     emit_continue("( (std::fabs(%s%s - other.%s%s) < 1e-5) )", lm->membername, dimStr, lm->membername, dimStr);
+                }
+                else if ( ! lcm_is_primitive_type(lm->type->lctypename) ) {
+                     emit_continue("(%s%s.compareTestObject(other.%s%s))", lm->membername, dimStr, lm->membername, dimStr);
+                }
+                else {
+                     emit_continue("(%s%s == other.%s%s)", lm->membername, dimStr, lm->membername, dimStr);
+                }
+                g_free(dimStr);
+
+                dimStr = g_strdup_printf("");
+                // Compare last component in array
+                for (uint8_t dim = 0; dim < numDim; ++dim) {
+                     lcm_dimension_t *ld = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim);
+                     char * tmpStr = g_strdup_printf("%s", dimStr);
+                     g_free(dimStr);
+                     dimStr = g_strdup_printf("%s[%i]", tmpStr, atoi(ld->size)-1);
+                     g_free(tmpStr);
+                }
+
+                if (isFloat) {
+                     emit_continue(" && ( (std::fabs(%s%s - other.%s%s) < 1e-5) )", lm->membername, dimStr, lm->membername, dimStr);
+                }
+                else if ( ! lcm_is_primitive_type(lm->type->lctypename) ) {
+                     emit_continue(" && (%s%s.compareTestObject(other.%s%s))", lm->membername, dimStr, lm->membername, dimStr);
+                }
+                else {
+                     emit_continue(" && (%s%s == other.%s%s)", lm->membername, dimStr, lm->membername, dimStr);
+                }
+                g_free(dimStr);
+            }
+            else {
+                emit_end("// %s is a dynamic array", lm->membername);
+            }
+        }
+
+    }
+    emit_end(";");
+    emit(0,"");
+    emit(1, "return equal;");
+    emit(0,"}");
+    emit(0,"");
+}
+
+
 
 static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int depth, int extra_indent)
 {
@@ -779,6 +1310,15 @@ int emit_cpp(lcmgen_t *lcmgen)
             emit_decode_nohash(lcmgen, f, lr);
             emit_encoded_size_nohash(lcmgen, f, lr);
             emit_compute_hash(lcmgen, f, lr);
+
+            emit_compare(lcmgen, f, lr);
+            emit(0, "/// Testing (ignores dynamic arrays & affects only first and last elements of static arrays)");
+            emit(0, "/// {");
+            emit_print(lcmgen, f, lr);
+            emit_init_test(lcmgen, f, lr);
+            emit_inc_test(lcmgen, f, lr);
+            emit_compare_test(lcmgen, f, lr);
+            emit(0, "/// }");
 
             emit_package_namespace_close(lcmgen, f, lr);
             emit(0, "#endif");

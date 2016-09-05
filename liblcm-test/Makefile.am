@@ -40,3 +40,7 @@ EXTRA_DIST = lcm-example.1 \
 			 lcm-logfilter.vcproj \
 			 lcm-example.vcproj \
 			 lcm-source.vcproj
+
+bin_PROGRAMS = vcc-parseurltest
+vcc_parseurltest_SOURCES = parseurltest.c
+vcc_parseurltest_LDADD = $(GLIB_LIBS) ../lcm/liblcm.la

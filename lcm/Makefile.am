@@ -27,7 +27,14 @@ liblcm_la_SOURCES = \
 	lcmtypes/channel_to_port_t.c \
 	lcmtypes/channel_to_port_t.h \
 	lcmtypes/channel_port_map_update_t.c \
-	lcmtypes/channel_port_map_update_t.h 
+	lcmtypes/channel_port_map_update_t.h \
+        parse_url.c \
+        parse_url.h \
+        url_util.c \
+        url_util.h \
+        util.c \
+        util.h
+
 
 liblcm_la_LIBADD = $(GLIB_LIBS)
 
