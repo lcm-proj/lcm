@@ -500,10 +500,10 @@ static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
     //
     if(depth == g_ptr_array_size(lm->dimensions)) {
         if(!strcmp(lm->type->lctypename, "string")) {
-            emit_start(indent, "char* __cstr = (char*) this->%s", lm->membername);
+            emit_start(indent, "char* __cstr = const_cast<char*>(this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
-            emit_end(".c_str();");
+            emit_end(".c_str());");
             emit(indent, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &__cstr, 1);");
         } else {
             emit_start(indent, "tlen = this->%s", lm->membername);
@@ -547,7 +547,7 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         if (0 == num_dims) {
             if (lcm_is_primitive_type(lm->type->lctypename)) {
                 if(!strcmp(lm->type->lctypename, "string")) {
-                    emit(1, "char* %s_cstr = (char*) this->%s.c_str();", lm->membername, lm->membername);
+                    emit(1, "char* %s_cstr = const_cast<char*>(this->%s.c_str());", lm->membername, lm->membername);
                     emit(1, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &%s_cstr, 1);",
                             lm->membername);
                 } else {

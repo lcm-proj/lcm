@@ -31,7 +31,7 @@ TEST(LCM_C, EventLogWriteRead) {
 
     lcm_eventlog_event_t event;
     event.channellen = channellen;
-    event.channel = (char*) channel;
+    event.channel = const_cast<char*>(channel);
     event.datalen = datalen;
     event.data = data;
 
@@ -98,7 +98,7 @@ TEST(LCM_C, EventLogCorrupt) {
     lcm_eventlog_event_t event;
     event.timestamp = 0;
     event.channellen = channellen;
-    event.channel = (char*) channel;
+    event.channel = const_cast<char*>(channel);
     event.datalen = datalen;
     event.data = data;
 
