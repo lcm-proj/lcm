@@ -37,7 +37,7 @@ for all programming languages.
 The remaining steps vary across programming
 languages, consult the following sections for language-specific tutorials.
 
- - \ref tutorial_c "Steps 2-4: C"
+ - \ref tut_c "Steps 2-4: C"
  - \ref tut_cpp "Steps 2-4: C++"
  - \ref tut_dotnet "Steps 2-4: C# / .NET"
  - \ref tut_java "Steps 2-4: Java"
