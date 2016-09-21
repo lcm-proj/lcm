@@ -129,6 +129,15 @@ function(_lcm_finalize_lua_packages)
 endfunction()
 
 #------------------------------------------------------------------------------
+function(_lcm_install_files DESTINATION RELATIVE_PATH)
+  foreach(_file ${ARGN})
+    file(RELATIVE_PATH _package_dir ${RELATIVE_PATH} ${_file})
+    get_filename_component(_package_dir ${_package_dir} PATH)
+    install(FILES ${_file} DESTINATION ${DESTINATION}/${_package_dir})
+  endforeach()
+endfunction()
+
+#------------------------------------------------------------------------------
 function(lcm_wrap_types)
   # Parse arguments
   set(_flags
@@ -306,6 +315,25 @@ function(lcm_wrap_types)
 endfunction()
 
 #------------------------------------------------------------------------------
+function(lcm_install_headers)
+  # Parse arguments
+  set(_flags "")
+  set(_sv_opts DESTINATION RELATIVE_PATH)
+  set(_mv_opts "")
+  cmake_parse_arguments("" "${_flags}" "${_sv_opts}" "${_mv_opts}" ${ARGN})
+
+  # Set default destination and relative path, if none given
+  if(NOT DEFINED _DESTINATION)
+    set(_DESTINATION include)
+  endif()
+  if(NOT DEFINED _RELATIVE_PATH)
+    set(_RELATIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
+  endif()
+
+  _lcm_install_files(${_DESTINATION} ${_RELATIVE_PATH} ${_UNPARSED_ARGUMENTS})
+endfunction()
+
+#------------------------------------------------------------------------------
 function(lcm_install_python)
   # Parse arguments
   set(_flags "")
@@ -328,9 +356,5 @@ function(lcm_install_python)
     set(_RELATIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}")
   endif()
 
-  foreach(_file ${_UNPARSED_ARGUMENTS})
-    file(RELATIVE_PATH _package_dir ${_RELATIVE_PATH} ${_file})
-    get_filename_component(_package_dir ${_package_dir} PATH)
-    install(FILES ${_file} DESTINATION ${_DESTINATION}/${_package_dir})
-  endforeach()
+  _lcm_install_files(${_DESTINATION} ${_RELATIVE_PATH} ${_UNPARSED_ARGUMENTS})
 endfunction()
