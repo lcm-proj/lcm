@@ -49,6 +49,12 @@ Note that C and C++ are considered to be separate programming languages.  It is
 possible to use the C bindings from C++, but there are also LCM bindings
 specific to C++.
 
+Of course, serious projects will need a build system. LCM itself is built with
+[CMake](https://cmake.org/), and provides helper functions to simplify the
+binding generation process for projects built with CMake.
+
+ - \ref tut_cmake "Steps 5: Generating bindings with CMake"
+
 # Additional examples
 
 Additional examples are provided with the source distribution of LCM.
