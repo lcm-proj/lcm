@@ -23,6 +23,17 @@ sources = [ \
     ]
 
 
+lcm_version_info = {}
+with open(os.path.join("..", "lcm", "lcm_version.h"), 'r') as lcm_version_file:
+    for line in lcm_version_file:
+        if line.startswith('#define LCM_VERSION'):
+            parts = line.strip().split()
+            lcm_version_info[parts[1]] = parts[2]
+
+lcm_version = \
+    '%(LCM_VERSION_MAJOR)s.%(LCM_VERSION_MINOR)s.%(LCM_VERSION_PATCH)s' \
+    % lcm_version_info
+
 include_dirs = []
 define_macros = [('LCM_PYTHON','')]
 library_dirs = []
@@ -92,6 +103,6 @@ pylcm_extension = Extension("lcm._lcm",
         libraries=libraries,
         extra_compile_args=extra_compile_args)
 
-setup(name="lcm", version="1.3.1",
+setup(name="lcm", version=lcm_version,
       ext_modules=[pylcm_extension],
       packages=["lcm"])

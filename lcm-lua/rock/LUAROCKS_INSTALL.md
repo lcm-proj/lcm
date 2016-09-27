@@ -23,11 +23,14 @@ Depending your machine, you may need to specify these directories. On my
 machine (Ubuntu 14.04), LuaRocks must be invoked in the following way:
 
 ```
-$ luarocks make lcm-1.3.0-0.rockspec \
+$ luarocks make lcm-<version>-0.rockspec \
 GLIB_INCDIR=/usr/include/glib-2.0 \
 GLIB_CONFIG_INCDIR=/usr/lib/i386-linux-gnu/glib-2.0/include \
 GLIB_LIBDIR=/usr/lib/i386-linux-gnu
 ```
+
+(Be sure to replace `<version>` in the above with the version of LCM you are
+building.)
 
 If the build fails because of initializers in for loops, you will need to
 add a C99 flag to the CC variable, like `CC="CC -std=gnu99"`.
@@ -35,7 +38,7 @@ add a C99 flag to the CC variable, like `CC="CC -std=gnu99"`.
 The following command should command should "just work" for most people:
 
 ```
-$ luarocks make lcm-1.3.0-0.rockspec CC="gcc -std=gnu99" \
+$ luarocks make lcm-<version>-0.rockspec CC="gcc -std=gnu99" \
 GLIB_INCDIR="$(dirname $(locate -n 1 glib-2.0/glib.h))" \
 GLIB_CONFIG_INCDIR="$(dirname $(locate -n 1 glib-2.0/include/glibconfig.h))" \
 GLIB_LIBDIR="$(dirname $(locate -n 1 -r 'libglib-2.0.so$'))"

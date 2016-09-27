@@ -3,8 +3,8 @@
 1. Update NEWS (use Markdown syntax)
 2. Verify that all manpages are up to date
 3. Bump the version number in:
-  a. lcm-cmake/version.cmake
-  b. lcm/lcm.h
+  a. lcm/lcm_version.h
+  b. lcm-lua/rock/lcm-<version>-0.rockspec
 4. Commit the above changes and create the vX.Y.Z git tag.
   $ git commit -a -m "Release X.Y.Z"
   $ git tag vX.Y.Z
