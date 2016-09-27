@@ -37,36 +37,45 @@ if(WIN32)
   )
 endif()
 
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+
 add_library(lcm-coretypes INTERFACE)
-add_library(lcm ${lcm_sources})
+add_library(lcm-static STATIC ${lcm_sources})
+add_library(lcm SHARED ${lcm_sources})
 
-target_compile_definitions(lcm PRIVATE
-  _FILE_OFFSET_BITS=64
-  _LARGEFILE_SOURCE
-  _REENTRANT
-)
+foreach(lcm_lib lcm lcm-static)
+  target_compile_definitions(${lcm_lib} PRIVATE
+    _FILE_OFFSET_BITS=64
+    _LARGEFILE_SOURCE
+    _REENTRANT
+  )
 
-set_target_properties(lcm PROPERTIES
-  VERSION ${LCM_VERSION}
-  SOVERSION ${LCM_ABI_VERSION}
-  PUBLIC_HEADER "${lcm_install_headers}"
-)
+  set_target_properties(${lcm_lib} PROPERTIES
+    VERSION ${LCM_VERSION}
+    SOVERSION ${LCM_ABI_VERSION}
+    PUBLIC_HEADER "${lcm_install_headers}"
+  )
 
-generate_export_header(lcm)
+  target_include_directories(${lcm_lib} INTERFACE
+    $<BUILD_INTERFACE:${lcm_SOURCE_DIR}>
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
+  )
+
+  target_link_libraries(${lcm_lib} PRIVATE
+    GLib2::glib
+    ${CMAKE_THREAD_LIBS_INIT}
+  )
+endforeach()
+
+generate_export_header(lcm STATIC_DEFINE LCM_STATIC)
+
+target_compile_definitions(lcm-static PUBLIC LCM_STATIC)
 
 target_include_directories(lcm-coretypes INTERFACE
   $<BUILD_INTERFACE:${lcm_SOURCE_DIR}>
 )
-target_include_directories(lcm INTERFACE
-  $<BUILD_INTERFACE:${lcm_SOURCE_DIR}>
-)
 
-target_link_libraries(lcm PRIVATE
-  GLib2::glib
-  ${CMAKE_THREAD_LIBS_INIT}
-)
-
-install(TARGETS lcm-coretypes lcm
+install(TARGETS lcm-coretypes lcm-static lcm
   EXPORT lcmTargets
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib${LIB_SUFFIX}

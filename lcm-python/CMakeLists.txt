@@ -25,7 +25,7 @@ target_include_directories(lcm-python PRIVATE
 )
 
 target_link_libraries(lcm-python PRIVATE
-  lcm
+  lcm-static
   ${PYTHON_LIBRARY}
 )
 
