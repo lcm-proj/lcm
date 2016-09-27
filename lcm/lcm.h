@@ -1,11 +1,9 @@
 #ifndef __lightweight_communications_h__
 #define __lightweight_communications_h__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
+
+#include "lcm_version.h"
 
 #include "eventlog.h"
 
@@ -17,6 +15,10 @@ extern "C" {
 #define LCM_API_FUNCTION __declspec(dllexport)
 #else
 #define LCM_API_FUNCTION
+#endif
+
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /**
@@ -343,15 +345,6 @@ int lcm_handle_timeout (lcm_t *lcm, int timeout_millis);
  */
 LCM_API_FUNCTION
 int lcm_subscription_set_queue_capacity(lcm_subscription_t* handler, int num_messages);
-
-/// LCM release major version - the X in version X.Y.Z
-#define LCM_MAJOR_VERSION 1
-
-/// LCM release minor version - the Y in version X.Y.Z
-#define LCM_MINOR_VERSION 3
-
-/// LCM release micro version - the Z in version X.Y.Z
-#define LCM_MICRO_VERSION 1
 
 /**
  * @}
