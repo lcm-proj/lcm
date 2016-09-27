@@ -37,7 +37,7 @@ for all programming languages.
 The remaining steps vary across programming
 languages, consult the following sections for language-specific tutorials.
 
- - \ref tutorial_c "Steps 2-4: C"
+ - \ref tut_c "Steps 2-4: C"
  - \ref tut_cpp "Steps 2-4: C++"
  - \ref tut_dotnet "Steps 2-4: C# / .NET"
  - \ref tut_java "Steps 2-4: Java"
@@ -48,6 +48,12 @@ languages, consult the following sections for language-specific tutorials.
 Note that C and C++ are considered to be separate programming languages.  It is
 possible to use the C bindings from C++, but there are also LCM bindings
 specific to C++.
+
+Of course, serious projects will need a build system. LCM itself is built with
+[CMake](https://cmake.org/), and provides helper functions to simplify the
+binding generation process for projects built with CMake.
+
+ - \ref tut_cmake "Steps 5: Generating bindings with CMake"
 
 # Additional examples
 

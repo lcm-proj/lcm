@@ -1,4 +1,4 @@
-C Tutorial {#tutorial_c}
+C Tutorial {#tut_c}
 ====
 \brief Sending and receiving LCM messages with C
 
