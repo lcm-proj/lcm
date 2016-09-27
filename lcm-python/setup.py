@@ -24,7 +24,7 @@ sources = [ \
 
 
 include_dirs = []
-define_macros = []
+define_macros = [('LCM_PYTHON','')]
 library_dirs = []
 libraries = []
 extra_compile_args = []
@@ -44,7 +44,7 @@ if os.name == 'nt':
     library_dirs.append(os.path.join(glibPath, 'lib'))
 
     # define additional macro WIN32, used to discriminate win specific code
-    define_macros = [('WIN32', 1)]
+    define_macros += [('WIN32', 1)]
 
     libraries = [ 'Ws2_32', 'glib-2.0' ]
 

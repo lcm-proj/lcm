@@ -4,17 +4,15 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifdef LCM_PYTHON
+#define LCM_EXPORT
+#else
+#include "lcm_export.h"
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifndef LCM_API_FUNCTION
-#ifdef WIN32
-#define LCM_API_FUNCTION __declspec(dllexport)
-#else
-#define LCM_API_FUNCTION
-#endif // WIN32
-#endif // LCM_API_FUNCTION
 
 /**
  * @defgroup LcmC_lcm_eventlog_t lcm_eventlog_t
@@ -86,7 +84,7 @@ struct _lcm_eventlog_event_t {
  *
  * @return a newly allocated lcm_eventlog_t, or NULL on failure.
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode);
 
 /**
@@ -98,7 +96,7 @@ lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode);
  * @return the next event in the log file.  Returns NULL when the end of the
  * file has been reached or when invalid data is read.
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *eventlog);
 
 /**
@@ -106,7 +104,7 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *eventlog);
  *
  * @param event A structure returned by lcm_eventlog_read_next_event()
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 void lcm_eventlog_free_event(lcm_eventlog_event_t *event);
 
 /**
@@ -117,7 +115,7 @@ void lcm_eventlog_free_event(lcm_eventlog_event_t *event);
  *
  * @return 0 on success, -1 on failure
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *eventlog, int64_t ts);
 
 /**
@@ -129,7 +127,7 @@ int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *eventlog, int64_t ts);
  *
  * @return 0 on success, -1 on failure.
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 int lcm_eventlog_write_event(lcm_eventlog_t *eventlog,
         lcm_eventlog_event_t *event);
 
@@ -138,7 +136,7 @@ int lcm_eventlog_write_event(lcm_eventlog_t *eventlog,
  *
  * @param eventlog The log file object
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 void lcm_eventlog_destroy(lcm_eventlog_t *eventlog);
 
 /**

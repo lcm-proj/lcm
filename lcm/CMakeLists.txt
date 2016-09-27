@@ -1,3 +1,5 @@
+include(GenerateExportHeader)
+
 if(UNIX)
   find_package(Threads)
 endif()
@@ -22,6 +24,7 @@ set(lcm_install_headers
   lcm_coretypes.h
   lcm-cpp.hpp
   lcm-cpp-impl.hpp
+  ${CMAKE_CURRENT_BINARY_DIR}/lcm_exports.h
 )
 
 if(WIN32)
@@ -48,6 +51,8 @@ set_target_properties(lcm PROPERTIES
   SOVERSION ${LCM_ABI_VERSION}
   PUBLIC_HEADER "${lcm_install_headers}"
 )
+
+generate_export_header(lcm)
 
 target_include_directories(lcm-coretypes INTERFACE
   $<BUILD_INTERFACE:${lcm_SOURCE_DIR}>
