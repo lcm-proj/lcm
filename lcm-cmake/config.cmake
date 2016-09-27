@@ -44,6 +44,10 @@ endfunction()
 # Build shared by default
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
+# Enable ELF hidden visibility
+set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
+set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
 # Set extra compiler flags
 if(NOT MSVC)
   lcm_add_c_flags(-std=gnu99)
