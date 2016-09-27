@@ -28,6 +28,6 @@ add_custom_target(doc-doxygen
 add_custom_target(doc-dotnet
   COMMAND ${DOXYGEN_EXECUTABLE} ${lcm_BINARY_DIR}/lcm-dotnet/Doxyfile
   WORKING_DIRECTORY ${lcm_SOURCE_DIR}/lcm-dotnet
-  DEPENDS doc-clean)
+  DEPENDS doc-clean doc-doxygen)
 
 add_dependencies(doc doc-doxygen doc-dotnet)
