@@ -10,6 +10,9 @@
 #                  <FILE> [<FILE>...])
 #     generate bindings for specified LCM type definition files
 #
+#   lcm_install_headers([DESTINATION <PATH>]
+#                       <FILE> [<FILE>...])
+#
 #   lcm_install_python([DESTINATION <PATH>]
 #                      <FILE> [<FILE>...])
 
