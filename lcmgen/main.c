@@ -12,7 +12,7 @@
 #include <sys/types.h>
 #include <inttypes.h>
 #include "lcmgen.h"
-#include "../lcm/lcm.h"
+#include "../lcm/lcm_version.h"
 
 #ifdef WIN32
 #include <lcm/windows/WinPorting.h>

@@ -1,11 +1,15 @@
 #ifndef __lightweight_communications_h__
 #define __lightweight_communications_h__
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
+
+#include "lcm_version.h"
+
+#ifdef LCM_PYTHON
+#define LCM_EXPORT
+#else
+#include "lcm_export.h"
+#endif
 
 #include "eventlog.h"
 
@@ -13,10 +17,8 @@ extern "C" {
 
 #define LCM_MAX_CHANNEL_NAME_LENGTH 63
 
-#ifdef WIN32
-#define LCM_API_FUNCTION __declspec(dllexport)
-#else
-#define LCM_API_FUNCTION
+#ifdef __cplusplus
+extern "C" {
 #endif
 
 /**
@@ -187,13 +189,13 @@ typedef void (*lcm_msg_handler_t) (const lcm_recv_buf_t *rbuf,
  * @return a newly allocated lcm_t instance, or NULL on failure.  Free with
  * lcm_destroy() when no longer needed.
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 lcm_t * lcm_create (const char *provider);
 
 /**
  * @brief Destructor
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 void lcm_destroy (lcm_t *lcm);
 
 /**
@@ -209,7 +211,7 @@ void lcm_destroy (lcm_t *lcm);
  *
  * @return a file descriptor suitable for use with select, poll, etc.
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 int lcm_get_fileno (lcm_t *lcm);
 
 /**
@@ -237,7 +239,7 @@ int lcm_get_fileno (lcm_t *lcm);
  *          which can be passed to lcm_unsubscribe().  The lcm_t instance owns
  *          the subscription object.
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 lcm_subscription_t *lcm_subscribe (lcm_t *lcm, const char *channel,
 				   lcm_msg_handler_t handler, void *userdata);
 
@@ -256,7 +258,7 @@ lcm_subscription_t *lcm_subscribe (lcm_t *lcm, const char *channel,
  *
  * @return 0 on success, or -1 if @c handler is not a valid subscription.
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 int lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *handler);
 
 /**
@@ -274,7 +276,7 @@ int lcm_unsubscribe (lcm_t *lcm, lcm_subscription_t *handler);
  *
  * @return 0 on success, -1 on failure.
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
         unsigned int datalen);
 
@@ -296,7 +298,7 @@ int lcm_publish (lcm_t *lcm, const char *channel, const void *data,
  *
  * @return 0 normally, or -1 when an error has occurred.
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 int lcm_handle (lcm_t *lcm);
 
 /**
@@ -320,7 +322,7 @@ int lcm_handle (lcm_t *lcm);
  * @return >0 if a message was handled, 0 if the function timed out, and <0 if
  * an error occured.
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 int lcm_handle_timeout (lcm_t *lcm, int timeout_millis);
 
 /**
@@ -341,17 +343,8 @@ int lcm_handle_timeout (lcm_t *lcm, int timeout_millis);
  * @param num_messages the maximum queue size, in messages.  The default is 30.
  *
  */
-LCM_API_FUNCTION
+LCM_EXPORT
 int lcm_subscription_set_queue_capacity(lcm_subscription_t* handler, int num_messages);
-
-/// LCM release major version - the X in version X.Y.Z
-#define LCM_MAJOR_VERSION 1
-
-/// LCM release minor version - the Y in version X.Y.Z
-#define LCM_MINOR_VERSION 3
-
-/// LCM release micro version - the Z in version X.Y.Z
-#define LCM_MICRO_VERSION 1
 
 /**
  * @}
