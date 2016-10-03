@@ -38,7 +38,9 @@ static inline void ringbuf_self_test(lcm_ringbuf_t *ring)
     if (!EXTRA_RETENTIVE)
         return;
 
+#if !defined(NDEBUG)
     lcm_ringbuf_rec_t *prev = NULL;
+#endif
     lcm_ringbuf_rec_t *rec = ring->head;
     
     if (rec == NULL) {
@@ -57,8 +59,10 @@ static inline void ringbuf_self_test(lcm_ringbuf_t *ring)
 
         if (!rec->next)
             break;
-
+        
+#if !defined(NDEBUG)
         prev = rec;
+#endif
         rec = rec->next;
     }
 
