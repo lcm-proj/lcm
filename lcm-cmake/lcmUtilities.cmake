@@ -1,6 +1,7 @@
 # Usage:
 #   lcm_wrap_types([C_HEADERS <VARIABLE_NAME> C_SOURCES <VARIABLE_NAME>
-#                   [C_INCLUDE <PATH>] [C_NOPUBSUB] [C_TYPEINFO]]
+#                   [C_INCLUDE <PATH>] [C_EXPORT <NAME>]
+#                   [C_NOPUBSUB] [C_TYPEINFO]]
 #                  [CPP_HEADERS <VARIABLE_NAME>
 #                   [CPP_INCLUDE <PATH>] [CPP11]]
 #                  [JAVA_SOURCES <VARIABLE_NAME>]
@@ -150,7 +151,7 @@ function(lcm_wrap_types)
     CREATE_CPP_AGGREGATE_HEADER
   )
   set(_sv_opts
-    C_HEADERS C_SOURCES C_INCLUDE
+    C_HEADERS C_SOURCES C_INCLUDE C_EXPORT
     CPP_HEADERS CPP_INCLUDE
     JAVA_SOURCES
     PYTHON_SOURCES
@@ -193,6 +194,11 @@ function(lcm_wrap_types)
   set(_args "")
   if(DEFINED _C_HEADERS)
     list(APPEND _args --c --c-cpath ${_DESTINATION} --c-hpath ${_DESTINATION})
+    if(DEFINED _C_EXPORT)
+      string(TOUPPER "${_C_EXPORT}_EXPORT" _C_EXPORT_SYMBOL)
+      list(APPEND _args --c-export-symbol ${_C_EXPORT_SYMBOL})
+      list(APPEND _args --c-export-include "${_C_EXPORT}_export.h")
+    endif()
     if(DEFINED _C_INCLUDE)
       list(APPEND _args --cinclude ${_C_INCLUDE})
     endif()
