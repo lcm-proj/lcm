@@ -43,6 +43,7 @@ the Python bindings unconditionally.)
 Now, you'll want to generate the bindings.
 
     lcm_wrap_types(
+      C_EXPORT my_lcmtypes
       C_SOURCES sources
       C_HEADERS c_install_headers
       CPP_HEADERS cpp_install_headers
@@ -87,6 +88,20 @@ should not be included in the installed version of the library. This prevents
 details of your build from leaking into the install. We'll handle the include
 directory for the installed library differently.
 
+There is one last step for creating the C library. Remember how we passed
+`C_EXPORT` to `lcm_wrap_types`? This tells `lcmgen` to export decorate the C
+bindings, so that we can use ELF hidden symbol visibility and create shared
+libraries on Windows. For this to work, someone needs to define the export
+decoration symbol:
+
+    generate_export_header(my_lcmtypes)
+
+This will create `my_lcmtypes_export.h` defining `MY_LCMTYPES_EXPORT`. You can
+use the `BASE_NAME` argument to `generate_export_header` to choose a different
+name; if you do, be sure to pass the same name to `C_EXPORT` when calling
+`lcm_wrap_types`. (See `test/types/CMakeLists.txt` in the LCM source for an
+example.)
+
 Let's not forget about our C++ users. Since the C++ bindings are header only,
 we'll use an `INTERFACE` library rather than a "real" library. An `INTERFACE`
 library is used to propagate dependencies and interface usage requirements, but
@@ -117,6 +132,7 @@ likewise preserves subdirectory components and also chooses the correct
 destination directory by default.
 
     lcm_install_headers(DESTINATION include
+      ${CMAKE_CURRENT_BINARY_DIR}/my_lcmtypes_export.h
       ${c_install_headers}
       ${cpp_install_headers}
     )
