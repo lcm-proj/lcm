@@ -22,6 +22,7 @@ set(lcm_install_headers
   eventlog.h
   lcm.h
   lcm_coretypes.h
+  lcm_version.h
   lcm-cpp.hpp
   lcm-cpp-impl.hpp
   ${CMAKE_CURRENT_BINARY_DIR}/lcm_export.h
