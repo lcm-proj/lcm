@@ -1,5 +1,6 @@
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
+include(GenerateExportHeader)
 
 #------------------------------------------------------------------------------
 function(lcm_add_c_flags)

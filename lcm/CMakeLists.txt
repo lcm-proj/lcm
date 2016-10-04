@@ -1,5 +1,3 @@
-include(GenerateExportHeader)
-
 if(UNIX)
   find_package(Threads)
 endif()
