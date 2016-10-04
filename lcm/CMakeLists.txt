@@ -24,7 +24,7 @@ set(lcm_install_headers
   lcm_coretypes.h
   lcm-cpp.hpp
   lcm-cpp-impl.hpp
-  ${CMAKE_CURRENT_BINARY_DIR}/lcm_exports.h
+  ${CMAKE_CURRENT_BINARY_DIR}/lcm_export.h
 )
 
 if(WIN32)
