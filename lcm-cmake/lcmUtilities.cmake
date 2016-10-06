@@ -11,6 +11,13 @@
 #                  <FILE> [<FILE>...])
 #     generate bindings for specified LCM type definition files
 #
+#   lcm_add_library(<NAME> C [STATIC|SHARED|MODULE] <SOURCES>)
+#   lcm_add_library(<NAME> CPP <SOURCES>)
+#     declare library for LCM type bindings
+#
+#   lcm_target_link_libraries(<TARGET> <...>)
+#     link libraries, adding dependencies as needed for C++ bindings
+#
 #   lcm_install_headers([DESTINATION <PATH>]
 #                       <FILE> [<FILE>...])
 #
@@ -327,6 +334,76 @@ function(lcm_wrap_types)
   _lcm_export(_PYTHON_SOURCES)
   _lcm_export(_LUA_SOURCES)
 endfunction()
+
+#------------------------------------------------------------------------------
+if(NOT CMAKE_VERSION VERSION_LESS 3.1)
+  function(lcm_add_library NAME LANGUAGE)
+    string(TOUPPER ${LANGUAGE} LANGUAGE)
+
+    # C library
+    if(LANGUAGE STREQUAL "C")
+
+      # Check for library type
+      if(${ARGV2} MATCHES "STATIC|SHARED|MODULE")
+        set(_type ${ARGV2})
+        list(REMOVE_AT ARGN 0)
+      else()
+        set(_type "")
+      endif()
+
+      # Add dependency target for generated sources
+      add_custom_target(${NAME}.sources DEPENDS ${ARGN})
+
+      # Add library
+      add_library(${NAME} ${_type} ${ARGN})
+      add_dependencies(${NAME} ${NAME}.sources)
+      target_link_libraries(${NAME} PRIVATE lcm PUBLIC lcm-coretypes)
+
+    # C++ library
+    elseif(LANGUAGE MATCHES "CXX|CPP|C\\+\\+")
+
+      # Add dependency target for generated sources
+      add_custom_target(${NAME}.sources DEPENDS ${ARGN})
+
+      # Add library
+      add_library(${NAME} INTERFACE)
+      target_link_libraries(${NAME} INTERFACE lcm-coretypes)
+
+      # Add dependency on generated sources
+      # NOTE: dependencies on INTERFACE targets not supported before CMake 3.3
+      if(NOT CMAKE_VERSION VERSION_LESS 3.3)
+        add_dependencies(${NAME} ${NAME}.sources)
+      endif()
+
+    # Unsupported library language
+    else()
+      message(SEND_ERROR
+        "lcm_add_library: library language must be C or CPP")
+    endif()
+  endfunction()
+endif()
+
+#------------------------------------------------------------------------------
+if(NOT CMAKE_VERSION VERSION_LESS 3.1)
+  function(lcm_target_link_libraries TARGET)
+    target_link_libraries(${TARGET} ${ARGN})
+
+    # NOTE: with CMake 3.3 or later, lcm_add_library creates a dependency on
+    # the C++ bindings library that its headers have been created first. This
+    # relies on adding a dependency to an INTERFACE library, which was not
+    # supported prior to CMake 3.3. For older versions of CMake, check if any
+    # argument appears to be a C++ bindings library that was created with
+    # lcm_add_library and, if so, manually add a dependency to the consumer
+    # to ensure the bindings are generated before trying to build the consumer.
+    if(CMAKE_VERSION VERSION_LESS 3.3)
+      foreach(_target ${ARGN})
+        if(TARGET ${_target} AND TARGET ${_target}.sources)
+          add_dependencies(${TARGET} ${_target}.sources)
+        endif()
+      endforeach()
+    endif()
+  endfunction()
+endif()
 
 #------------------------------------------------------------------------------
 function(lcm_install_headers)

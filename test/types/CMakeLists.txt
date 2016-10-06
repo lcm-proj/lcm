@@ -31,22 +31,13 @@ lcm_wrap_types(
   lcmtest3/arrays_t.lcm
 )
 
-add_library(lcm-test-types-c ${sources})
+lcm_add_library(lcm-test-types-c C ${sources} ${c_headers})
+generate_export_header(lcm-test-types-c BASE_NAME lcmtest)
 set_target_properties(lcm-test-types-c PROPERTIES OUTPUT_NAME lcm-test-types)
-target_link_libraries(lcm-test-types-c PRIVATE lcm PUBLIC lcm-coretypes)
 target_include_directories(lcm-test-types-c INTERFACE
   ${CMAKE_CURRENT_BINARY_DIR})
 
-generate_export_header(lcm-test-types-c BASE_NAME lcmtest)
-
-add_custom_target(lcm-test-types-generate-cpp DEPENDS ${cpp_headers})
-
-add_library(lcm-test-types-cpp INTERFACE)
-if(NOT CMAKE_VERSION VERSION_LESS 3.3) # TODO remove when we require >=3.3
-  # NOTE: dependencies on INTERFACE targets not supported before CMake 3.3
-  add_dependencies(lcm-test-types-cpp lcm-test-types-generate-cpp)
-endif()
-target_link_libraries(lcm-test-types-cpp INTERFACE lcm-coretypes)
+lcm_add_library(lcm-test-types-cpp CPP ${cpp_headers})
 target_include_directories(lcm-test-types-cpp INTERFACE
   ${CMAKE_CURRENT_BINARY_DIR})
 
