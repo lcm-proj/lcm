@@ -10,7 +10,7 @@ endif()
 find_package(GLib2 REQUIRED)
 
 # Configuration and utility functions
-include(lcm-cmake/config.cmake)
+include(lcm-cmake/config.cmake NO_POLICY_SCOPE)
 include(lcm-cmake/functions.cmake)
 include(lcm-cmake/version.cmake)
 
