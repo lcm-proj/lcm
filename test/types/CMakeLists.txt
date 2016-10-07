@@ -12,7 +12,7 @@ endif()
 
 lcm_wrap_types(
   C_EXPORT lcmtest
-  C_SOURCES sources
+  C_SOURCES c_sources
   C_HEADERS c_headers
   CPP_HEADERS cpp_headers
   ${python_args}
@@ -31,7 +31,7 @@ lcm_wrap_types(
   lcmtest3/arrays_t.lcm
 )
 
-lcm_add_library(lcm-test-types-c C ${sources} ${c_headers})
+lcm_add_library(lcm-test-types-c C ${c_sources} ${c_headers})
 generate_export_header(lcm-test-types-c BASE_NAME lcmtest)
 set_target_properties(lcm-test-types-c PROPERTIES OUTPUT_NAME lcm-test-types)
 target_include_directories(lcm-test-types-c INTERFACE
