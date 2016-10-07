@@ -43,6 +43,17 @@ static char *dots_to_underscores(const char *s)
     return p;
 }
 
+static char *add_space_or_empty(const char *s)
+{
+    size_t l = strlen(s);
+    if (!l)
+        return "";
+
+    char *p = (char *) malloc(l + 2);
+    sprintf(p, "%s ", s);
+
+    return p;
+}
 
 static void emit_auto_generated_warning(FILE *f)
 {
@@ -75,6 +86,8 @@ void setup_c_options(getopt_t *gopt)
 {
     getopt_add_string (gopt, 0, "c-cpath",    ".",      "Location for .c files");
     getopt_add_string (gopt, 0, "c-hpath",    ".",      "Location for .h files");
+    getopt_add_string (gopt, 0, "c-export-include", "", "#include that provides the export symbol");
+    getopt_add_string (gopt, 0, "c-export-symbol",  "", "ABI export decoration symbol");
     getopt_add_string (gopt, 0, "cinclude",   "",       "Generated #include lines reference this folder");
     getopt_add_bool   (gopt, 0, "c-no-pubsub",   0,     "Do not generate _publish and _subscribe functions");
     getopt_add_bool   (gopt, 0, "c-typeinfo",   0,      "Generate typeinfo functions for each type");
@@ -94,6 +107,12 @@ static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
 
     if(!getopt_get_bool(lcm->gopt, "c-no-pubsub")) {
         fprintf(f, "#include <lcm/lcm.h>\n");
+    }
+    if(strlen(getopt_get_string(lcm->gopt, "c-export-include"))) {
+        fprintf(f, "#include \"%s%s%s\"\n",
+                getopt_get_string(lcm->gopt, "cinclude"),
+                strlen(getopt_get_string(lcm->gopt, "cinclude"))>0 ? "/" : "",
+                getopt_get_string(lcm->gopt, "c-export-include"));
     }
     fprintf(f, "\n");
 
@@ -220,6 +239,8 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
 static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
 {
+    char *xd = getopt_get_string(lcmgen->gopt, "c-export-symbol");
+    char *xd_ = add_space_or_empty(xd);
     char *tn = ls->structname->lctypename;
     char *tn_ = dots_to_underscores(tn);
 
@@ -227,12 +248,12 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(0, " * Create a deep copy of a %s.", tn_);
     emit(0, " * When no longer needed, destroy it with %s_destroy()", tn_);
     emit(0, " */");
-    emit(0,"%s* %s_copy(const %s* to_copy);", tn_, tn_, tn_);
+    emit(0,"%s%s* %s_copy(const %s* to_copy);", xd_, tn_, tn_, tn_);
     emit(0, "");
     emit(0, "/**");
     emit(0, " * Destroy an instance of %s created by %s_copy()", tn_, tn_);
     emit(0, " */");
-    emit(0,"void %s_destroy(%s* to_destroy);", tn_, tn_);
+    emit(0,"%svoid %s_destroy(%s* to_destroy);", xd_, tn_, tn_);
     emit(0,"");
 
     if (!getopt_get_bool(lcmgen->gopt, "c-no-pubsub")) {
@@ -258,7 +279,7 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
         emit(0, " * @return 0 on success, <0 on error.  Success means LCM has transferred");
         emit(0, " * responsibility of the message data to the OS.");
         emit(0, " */");
-        emit(0,"int %s_publish(lcm_t *lcm, const char *channel, const %s *msg);", tn_, tn_);
+        emit(0,"%sint %s_publish(lcm_t *lcm, const char *channel, const %s *msg);", xd_, tn_, tn_);
         emit(0, "");
         emit(0, "/**");
         emit(0, " * Subscribe to messages of type %s using LCM.", tn_);
@@ -271,13 +292,13 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
         emit(0, " * @param userdata An opaque pointer passed to @p handler when it is invoked.");
         emit(0, " * @return 0 on success, <0 if an error occured");
         emit(0, " */");
-        emit(0,"%s_subscription_t* %s_subscribe(lcm_t *lcm, const char *channel, %s_handler_t handler, void *userdata);",
-                tn_, tn_, tn_);
+        emit(0,"%s%s_subscription_t* %s_subscribe(lcm_t *lcm, const char *channel, %s_handler_t handler, void *userdata);",
+                xd_, tn_, tn_, tn_);
         emit(0, "");
         emit(0, "/**");
         emit(0, " * Removes and destroys a subscription created by %s_subscribe()", tn_);
         emit(0, " */");
-        emit(0,"int %s_unsubscribe(lcm_t *lcm, %s_subscription_t* hid);", tn_, tn_);
+        emit(0,"%sint %s_unsubscribe(lcm_t *lcm, %s_subscription_t* hid);", xd_, tn_, tn_);
         emit(0, "");
         emit(0, "/**");
         emit(0, " * Sets the queue capacity for a subscription.");
@@ -292,8 +313,8 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
         emit(0, " *  on the subscription.");
         emit(0, " * @return 0 on success, <0 if an error occured");
         emit(0, " */");
-        emit(0,"int %s_subscription_set_queue_capacity(%s_subscription_t* subs,\n"
-            "                              int num_messages);\n", tn_, tn_);
+        emit(0,"%sint %s_subscription_set_queue_capacity(%s_subscription_t* subs,\n"
+            "                              int num_messages);\n", xd_, tn_, tn_);
     }
 
     emit(0, "/**");
@@ -306,7 +327,7 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(0, " * @param msg The message to encode.");
     emit(0, " * @return The number of bytes encoded, or <0 if an error occured.");
     emit(0, " */");
-    emit(0,"int %s_encode(void *buf, int offset, int maxlen, const %s *p);", tn_, tn_);
+    emit(0,"%sint %s_encode(void *buf, int offset, int maxlen, const %s *p);", xd_, tn_, tn_);
     emit(0, "");
     emit(0, "/**");
     emit(0, " * Decode a message of type %s from binary form.", tn_);
@@ -320,34 +341,34 @@ static void emit_header_prototypes(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(0, " * @param msg Output parameter where the decoded message is stored");
     emit(0, " * @return The number of bytes decoded, or <0 if an error occured.");
     emit(0, " */");
-    emit(0,"int %s_decode(const void *buf, int offset, int maxlen, %s *msg);", tn_, tn_);
+    emit(0,"%sint %s_decode(const void *buf, int offset, int maxlen, %s *msg);", xd_, tn_, tn_);
     emit(0, "");
     emit(0, "/**");
     emit(0, " * Release resources allocated by %s_decode()", tn_);
     emit(0, " * @return 0");
     emit(0, " */");
-    emit(0,"int %s_decode_cleanup(%s *p);", tn_, tn_);
+    emit(0,"%sint %s_decode_cleanup(%s *p);", xd_, tn_, tn_);
     emit(0, "");
     emit(0, "/**");
     emit(0, " * Check how many bytes are required to encode a message of type %s", tn_);
     emit(0, " */");
-    emit(0,"int %s_encoded_size(const %s *p);", tn_, tn_);
+    emit(0,"%sint %s_encoded_size(const %s *p);", xd_, tn_, tn_);
     if(getopt_get_bool(lcmgen->gopt, "c-typeinfo")) {
-        emit(0,"size_t %s_struct_size(void);", tn_);
-        emit(0,"int  %s_num_fields(void);", tn_);
-        emit(0,"int  %s_get_field(const %s *p, int i, lcm_field_t *f);", tn_, tn_);
-        emit(0,"const lcm_type_info_t *%s_get_type_info(void);", tn_);
+        emit(0,"%ssize_t %s_struct_size(void);", xd_, tn_);
+        emit(0,"%sint %s_num_fields(void);", xd_, tn_);
+        emit(0,"%sint %s_get_field(const %s *p, int i, lcm_field_t *f);", xd_, tn_, tn_);
+        emit(0,"%sconst lcm_type_info_t *%s_get_type_info(void);", xd_, tn_);
     }
     emit(0,"");
 
     emit(0,"// LCM support functions. Users should not call these");
-    emit(0,"int64_t __%s_get_hash(void);", tn_);
-    emit(0,"uint64_t __%s_hash_recursive(const __lcm_hash_ptr *p);", tn_);
-    emit(0,"int     __%s_encode_array(void *buf, int offset, int maxlen, const %s *p, int elements);", tn_, tn_);
-    emit(0,"int     __%s_decode_array(const void *buf, int offset, int maxlen, %s *p, int elements);", tn_, tn_);
-    emit(0,"int     __%s_decode_array_cleanup(%s *p, int elements);", tn_, tn_);
-    emit(0,"int     __%s_encoded_array_size(const %s *p, int elements);", tn_, tn_);
-    emit(0,"int     __%s_clone_array(const %s *p, %s *q, int elements);", tn_, tn_, tn_);
+    emit(0,"%sint64_t __%s_get_hash(void);", xd_, tn_);
+    emit(0,"%suint64_t __%s_hash_recursive(const __lcm_hash_ptr *p);", xd_, tn_);
+    emit(0,"%sint __%s_encode_array(void *buf, int offset, int maxlen, const %s *p, int elements);", xd_, tn_, tn_);
+    emit(0,"%sint __%s_decode_array(const void *buf, int offset, int maxlen, %s *p, int elements);", xd_, tn_, tn_);
+    emit(0,"%sint __%s_decode_array_cleanup(%s *p, int elements);", xd_, tn_, tn_);
+    emit(0,"%sint __%s_encoded_array_size(const %s *p, int elements);", xd_, tn_, tn_);
+    emit(0,"%sint __%s_clone_array(const %s *p, %s *q, int elements);", xd_, tn_, tn_, tn_);
     emit(0,"");
 
 }

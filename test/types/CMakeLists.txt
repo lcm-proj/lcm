@@ -11,6 +11,7 @@ if(LCM_ENABLE_LUA)
 endif()
 
 lcm_wrap_types(
+  C_EXPORT lcmtest
   C_SOURCES sources
   C_HEADERS c_headers
   CPP_HEADERS cpp_headers
@@ -35,6 +36,8 @@ set_target_properties(lcm-test-types-c PROPERTIES OUTPUT_NAME lcm-test-types)
 target_link_libraries(lcm-test-types-c PRIVATE lcm PUBLIC lcm-coretypes)
 target_include_directories(lcm-test-types-c INTERFACE
   ${CMAKE_CURRENT_BINARY_DIR})
+
+generate_export_header(lcm-test-types-c BASE_NAME lcmtest)
 
 add_custom_target(lcm-test-types-generate-cpp DEPENDS ${cpp_headers})
 
