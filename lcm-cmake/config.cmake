@@ -46,8 +46,13 @@ endfunction()
 option(BUILD_SHARED_LIBS "Build shared libraries" ON)
 
 # Enable ELF hidden visibility
+set(CMAKE_C_VISIBILITY_PRESET "hidden")
 set(CMAKE_CXX_VISIBILITY_PRESET "hidden")
 set(CMAKE_VISIBILITY_INLINES_HIDDEN 1)
+
+if(POLICY CMP0063)
+  cmake_policy(SET CMP0063 NEW)
+endif()
 
 # Set extra compiler flags
 if(NOT MSVC)
