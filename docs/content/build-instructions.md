@@ -17,6 +17,12 @@ Regardless of platform, CMake 3.1 or later is required. Binaries may be
 obtained from https://cmake.org/download/. Sufficiently recent Linux
 distributions may provide a new enough CMake via their package managers.
 
+Please note that these instructions refer to the latest release of LCM. As the
+build procedure may vary from release to release, if you are building an old
+release or the latest `master`, we recommend referring to the copy of this
+document (`docs/content/build-instructions.md`) found in your source
+distribution.
+
 # CMake Overview {#build_cmake}
 
 These instructions assume that you will build in a directory named `build` as
