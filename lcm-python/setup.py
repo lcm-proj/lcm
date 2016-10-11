@@ -34,7 +34,7 @@ lcm_version = \
     '%(LCM_VERSION_MAJOR)s.%(LCM_VERSION_MINOR)s.%(LCM_VERSION_PATCH)s' \
     % lcm_version_info
 
-include_dirs = []
+include_dirs = [".."]
 define_macros = [('LCM_PYTHON','')]
 library_dirs = []
 libraries = []
@@ -46,8 +46,7 @@ if os.name == 'nt':
     if not glibPath:
         sys.exit('GLIB_PATH environment variable not set.')
 
-    include_dirs = [ \
-            "..",
+    include_dirs += [ \
             os.path.join("..", "WinSpecific\include"),
             os.path.join("..", "WinSpecific"),
             os.path.join(glibPath, "include", "glib-2.0"),
@@ -77,7 +76,7 @@ else:
 
     # include path
     pkgconfig_include_flags = subprocess.check_output( ["pkg-config", "--cflags-only-I", pkg_deps] ).decode(sys.stdout.encoding)
-    include_dirs = [ t[2:] for t in pkgconfig_include_flags.split() ]
+    include_dirs += [ t[2:] for t in pkgconfig_include_flags.split() ]
 
     # libraries
     pkgconfig_lflags = subprocess.check_output( ["pkg-config", "--libs-only-l", pkg_deps] ).decode(sys.stdout.encoding)
