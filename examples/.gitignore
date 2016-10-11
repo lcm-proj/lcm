@@ -1,0 +1,12 @@
+# Ignore files generated from the examples
+/**/exlcm/
+/**/*.o
+/**/*.class
+/**/*.jar
+/**/listener
+/**/read-log
+/**/send-message
+/c/exlcm_example_t.c
+/c/exlcm_example_t.h
+/c/listener-async
+/java/temperature_demo_java/lcmtypes/
