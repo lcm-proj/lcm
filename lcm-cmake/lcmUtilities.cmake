@@ -440,8 +440,12 @@ function(lcm_install_python)
         " and no Python interpreter found (required to guess DESTINATION)")
       return()
     endif()
-    set(_pyshort python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-    set(_DESTINATION lib${LIB_SUFFIX}/${_pyshort}/site-packages)
+    execute_process(
+      COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
+        from distutils import sysconfig as sc
+        print(sc.get_python_lib(prefix='', plat_specific=True))"
+      OUTPUT_VARIABLE _DESTINATION
+      OUTPUT_STRIP_TRAILING_WHITESPACE)
   endif()
   if(NOT DEFINED _RELATIVE_PATH)
     set(_RELATIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}")

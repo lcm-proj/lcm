@@ -1,5 +1,9 @@
-set(PYTHON_SHORT python${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR})
-set(PYTHON_SITE lib${LIB_SUFFIX}/${PYTHON_SHORT}/site-packages)
+execute_process(
+  COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
+    from distutils import sysconfig as sc
+    print(sc.get_python_lib(prefix='', plat_specific=True))"
+  OUTPUT_VARIABLE PYTHON_SITE
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 set(lcm_python_sources
   module.c
