@@ -31,6 +31,9 @@ PyDoc_STRVAR (lcmmod_doc, "LCM python extension modules");
         ob = Py_InitModule3(name, methods, doc);
 #endif
 
+#if __GNUC__ >= 4 || defined(__clang__)
+__attribute__((visibility ("default")))
+#endif
 PyMODINIT_FUNC
 #if PY_MAJOR_VERSION >=3
 PyInit__lcm (void)
