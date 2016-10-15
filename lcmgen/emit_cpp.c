@@ -6,6 +6,8 @@
 #include <ctype.h>
 #ifdef WIN32
 #define __STDC_FORMAT_MACROS			// Enable integer types
+#else
+#include <unistd.h> /* _exit */
 #endif
 #include <inttypes.h>
 
