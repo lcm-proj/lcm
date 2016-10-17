@@ -37,6 +37,10 @@ set(lcm_java_sources
   lcm/lcm/TCPService.java
 )
 
+set(CMAKE_JAVA_COMPILE_FLAGS
+  -source 1.6 -target 1.6
+  CACHE INTERNAL "")
+
 add_jar(lcm-java
   INCLUDE_JARS jchart2d
   SOURCES ${lcm_java_sources}
