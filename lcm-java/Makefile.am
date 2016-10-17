@@ -6,7 +6,7 @@ xmlgraphics_jar = $(srcdir)/jchart2d-code/ext/xmlgraphics-commons-1.3.1.jar
 abs_jchart2d_src_dir = $(abs_srcdir)/jchart2d-code/src
 abs_jide_jar = $(abs_srcdir)/jchart2d-code/ext/jide-oss-2.9.7.jar
 abs_xmlgraphics_jar = $(abs_srcdir)/jchart2d-code/ext/xmlgraphics-commons-1.3.1.jar
-JAVACFLAGS = -source 1.5 -target 1.5 -classpath $(abs_jide_jar):$(abs_xmlgraphics_jar):$(abs_jchart2d_src_dir)
+JAVACFLAGS = -source 1.6 -target 1.6 -classpath $(abs_jide_jar):$(abs_xmlgraphics_jar):$(abs_jchart2d_src_dir)
 
 .PHONY classfiles: classdist_noinst.stamp classnoinst.stamp
 
