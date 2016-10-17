@@ -86,6 +86,8 @@ Building:
   2. Use the CMake GUI to configure LCM.
   3. Open the VS Solution created by CMake and build it.
 
+LCM is officially supported on MSVC 2015.
+
 # Other / General {#build_other}
 
 On other POSIX.1-2001 systems (e.g., other GNU/Linux distributions, FreeBSD,
