@@ -1,3 +1,7 @@
+NOTE: This file documents some of the history of the LCM Windows port. It is
+retained for acheological purposes and IS NOT UP TO DATE. Refer instead to the
+Build Instructions in the LCM docmuentation.
+
 LCM port to Windows changes:
 ----------------------------
 
