@@ -30,6 +30,11 @@ int luaopen_lcm__pack(lua_State* L) {
   return 1;
 }
 
+#if defined(_WIN32)
+__declspec(dllexport)
+#elif __GNUC__ >= 4 || defined(__clang__)
+__attribute__((visibility ("default")))
+#endif
 int luaopen_lcm(lua_State* L) {
   lua_newtable(L);
 
