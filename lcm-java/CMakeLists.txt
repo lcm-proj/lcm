@@ -1,5 +1,9 @@
 include(UseJava)
 
+set(CMAKE_JAVA_COMPILE_FLAGS
+  -source 1.6 -target 1.6
+  CACHE INTERNAL "")
+
 add_subdirectory(jchart2d-code)
 
 set(lcm_java_sources
