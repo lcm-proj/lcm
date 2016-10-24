@@ -248,3 +248,19 @@ add_jar(jchart2d
 )
 
 install_jar(jchart2d share/java)
+
+lcm_copy_file_target(lcm-ext-xmlgraphics-commons-jar
+  ${CMAKE_CURRENT_SOURCE_DIR}/ext/xmlgraphics-commons-1.3.1.jar
+  ${CMAKE_CURRENT_BINARY_DIR}/ext/xmlgraphics-commons-1.3.1.jar
+)
+
+lcm_copy_file_target(lcm-ext-jide-oss-jar
+  ${CMAKE_CURRENT_SOURCE_DIR}/ext/jide-oss-2.9.7.jar
+  ${CMAKE_CURRENT_BINARY_DIR}/ext/jide-oss-2.9.7.jar
+)
+
+install(FILES
+  ext/xmlgraphics-commons-1.3.1.jar
+  ext/jide-oss-2.9.7.jar
+  DESTINATION share/java
+)
