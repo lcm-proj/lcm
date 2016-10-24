@@ -1,5 +1,15 @@
 include(UseJava)
 
+set(LCM_JAVA_TARGET_VERSION "1.6" CACHE STRING
+  "Java version to target when building Java components (leave empty to use default)"
+)
+if(NOT LCM_JAVA_TARGET_VERSION STREQUAL "")
+  set(CMAKE_JAVA_COMPILE_FLAGS
+    -source ${LCM_JAVA_TARGET_VERSION}
+    -target ${LCM_JAVA_TARGET_VERSION}
+  )
+endif()
+
 add_subdirectory(jchart2d-code)
 
 set(lcm_java_sources
