@@ -1,8 +1,12 @@
 #!/bin/sh
+
+# Determine our canonical location
 if (perl -e '' 2>/dev/null)
   then mydir="$(dirname "$(perl -MCwd -le 'print Cwd::abs_path(shift)' "$0")")"
   else mydir="$(dirname "$0")"
 fi
+
+# Find our JAR
 if [ -e "$mydir/lcm.jar" ]
   then jardir="$mydir"
 elif [ -e "$mydir/../share/java/lcm.jar" ]
@@ -12,4 +16,5 @@ else
   exit 1
 fi
 
+# Launch the applet
 exec java -server -Xincgc -Xmx64m -Xms32m -ea -cp $jardir/lcm.jar lcm.logging.LogPlayer "$@"
