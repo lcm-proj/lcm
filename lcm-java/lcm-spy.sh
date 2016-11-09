@@ -22,5 +22,8 @@ else
   exit 1
 fi
 
+# Add user's CLASSPATH, if set
+[ -n "$CLASSPATH" ] && jars+=":$CLASSPATH"
+
 # Launch the applet
 exec java -server -Djava.net.preferIPv4Stack=true -Xincgc -Xmx128m -Xms64m -ea -cp "$jars" lcm.spy.Spy "$@"
