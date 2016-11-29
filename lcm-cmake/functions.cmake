@@ -36,9 +36,11 @@ endmacro()
 
 #------------------------------------------------------------------------------
 function(lcm_copy_file_target TARGET INPUT OUTPUT)
+  get_filename_component(DESTINATION ${OUTPUT} PATH)
   add_custom_command(
     OUTPUT ${OUTPUT}
     DEPENDS ${INPUT}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${DESTINATION}
     COMMAND ${CMAKE_COMMAND} -E copy ${INPUT} ${OUTPUT}
   )
 
