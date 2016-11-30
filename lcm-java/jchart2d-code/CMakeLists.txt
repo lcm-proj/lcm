@@ -5,9 +5,37 @@ set(jchart2d_depends
   ext/build/junit-4.8.1.jar
   ext/build/proguard-4.5.1.jar
   ext/build/jipViewer.jar
-  ext/xmlgraphics-commons-1.3.1.jar
-  ext/jide-oss-2.9.7.jar
 )
+
+macro(find_ext_jar VAR NAME)
+  option(USE_SYSTEM_${VAR} "Use system-provided ${NAME}, if available" ON)
+  if(USE_SYSTEM_${VAR})
+    find_jar(${VAR}_JAR ${NAME})
+  endif()
+
+  if(USE_SYSTEM_${VAR} AND ${VAR}_JAR)
+    list(APPEND jchart2d_depends ${${VAR}_JAR})
+    set(LCM_EXT_${VAR}_JAR "${${VAR}_JAR}" PARENT_SCOPE)
+  else()
+    file(GLOB _ext_jar
+      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}/ext
+      ext/${NAME}-*.jar)
+    list(APPEND jchart2d_depends ext/${_ext_jar})
+    set(LCM_EXT_${VAR}_JAR "\$ext/${_ext_jar}" PARENT_SCOPE)
+
+    lcm_copy_file_target(lcm-ext-${NAME}-jar
+      ${CMAKE_CURRENT_SOURCE_DIR}/ext/${_ext_jar}
+      ${CMAKE_CURRENT_BINARY_DIR}/ext/${_ext_jar}
+    )
+
+    install(FILES ext/${_ext_jar} DESTINATION share/java)
+
+    unset(_ext_jar)
+  endif()
+endmacro()
+
+find_ext_jar(XMLGRAPHICS_COMMONS xmlgraphics-commons)
+find_ext_jar(JIDE_OSS jide-oss)
 
 set(jchart2d_sources
   src/info/monitorenter/reflection/ObjRecorder2Trace2DAdapter.java
@@ -248,19 +276,3 @@ add_jar(jchart2d
 )
 
 install_jar(jchart2d share/java)
-
-lcm_copy_file_target(lcm-ext-xmlgraphics-commons-jar
-  ${CMAKE_CURRENT_SOURCE_DIR}/ext/xmlgraphics-commons-1.3.1.jar
-  ${CMAKE_CURRENT_BINARY_DIR}/ext/xmlgraphics-commons-1.3.1.jar
-)
-
-lcm_copy_file_target(lcm-ext-jide-oss-jar
-  ${CMAKE_CURRENT_SOURCE_DIR}/ext/jide-oss-2.9.7.jar
-  ${CMAKE_CURRENT_BINARY_DIR}/ext/jide-oss-2.9.7.jar
-)
-
-install(FILES
-  ext/xmlgraphics-commons-1.3.1.jar
-  ext/jide-oss-2.9.7.jar
-  DESTINATION share/java
-)
