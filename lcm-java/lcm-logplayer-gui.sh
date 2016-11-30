@@ -17,7 +17,7 @@ else
 fi
 
 # Add user's CLASSPATH, if set
-[ -n "$CLASSPATH" ] && jars+=":$CLASSPATH"
+[ -n "$CLASSPATH" ] && jars="$jars:$CLASSPATH"
 
 # Launch the applet
 exec java -server -Xincgc -Xmx64m -Xms32m -ea -cp "$jars" lcm.logging.LogPlayer "$@"
