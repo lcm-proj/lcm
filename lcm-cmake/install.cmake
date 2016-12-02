@@ -38,10 +38,7 @@ write_basic_package_version_file(
 )
 
 # Exported targets for build directory
-export(TARGETS
-  lcm-coretypes
-  lcm
-  lcm-gen
+export(EXPORT ${PROJECT_NAME}Targets
   FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Targets.cmake
 )
 

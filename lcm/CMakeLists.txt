@@ -69,6 +69,9 @@ endforeach()
 generate_export_header(lcm STATIC_DEFINE LCM_STATIC)
 
 target_compile_definitions(lcm-static PUBLIC LCM_STATIC)
+if(NOT WIN32)
+  set_target_properties(lcm-static PROPERTIES OUTPUT_NAME lcm)
+endif()
 
 target_include_directories(lcm-coretypes INTERFACE
   $<BUILD_INTERFACE:${lcm_SOURCE_DIR}>
