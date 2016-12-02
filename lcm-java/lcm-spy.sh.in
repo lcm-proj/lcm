@@ -9,21 +9,22 @@ fi
 # Find dependency JARs
 if [ -e "$mydir/lcm.jar" ]; then
   jars="$mydir/lcm.jar"
-  jars+=":$mydir/jchart2d-code/jchart2d-3.2.2.jar"
-  jars+=":$mydir/jchart2d-code/ext/xmlgraphics-commons-1.3.1.jar"
-  jars+=":$mydir/jchart2d-code/ext/jide-oss-2.9.7.jar"
+  jars="$jars:$mydir/jchart2d-code/jchart2d-3.2.2.jar"
+  ext="$mydir/jchart2d-code/ext"
 elif [ -e "$mydir/../share/java/lcm.jar" ]; then
   jars="$mydir/../share/java/lcm.jar"
-  jars+=":$mydir/../share/java/jchart2d-3.2.2.jar"
-  jars+=":$mydir/../share/java/xmlgraphics-commons-1.3.1.jar"
-  jars+=":$mydir/../share/java/jide-oss-2.9.7.jar"
+  jars="$jars:$mydir/../share/java/jchart2d-3.2.2.jar"
+  ext="$mydir/../share/java"
 else
   echo "Unable to find 'lcm.jar'; please check your installation" >&2
   exit 1
 fi
 
+jars="$jars:@LCM_EXT_XMLGRAPHICS_COMMONS_JAR@"
+jars="$jars:@LCM_EXT_JIDE_OSS_JAR@"
+
 # Add user's CLASSPATH, if set
-[ -n "$CLASSPATH" ] && jars+=":$CLASSPATH"
+[ -n "$CLASSPATH" ] && jars="$jars:$CLASSPATH"
 
 # Launch the applet
 exec java -server -Djava.net.preferIPv4Stack=true -Xincgc -Xmx128m -Xms64m -ea -cp "$jars" lcm.spy.Spy "$@"
