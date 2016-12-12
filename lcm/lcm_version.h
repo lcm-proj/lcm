@@ -5,7 +5,7 @@
 #define LCM_VERSION_MINOR 3
 
 /// LCM release patch version - the Z in version X.Y.Z
-#define LCM_VERSION_PATCH 1
+#define LCM_VERSION_PATCH 95
 
 /// LCM ABI version
 #define LCM_ABI_VERSION 1
