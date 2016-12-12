@@ -198,6 +198,7 @@ lcm_destroy (lcm_t * lcm)
     }
     g_ptr_array_free(lcm->handlers_all, TRUE);
 
+    g_static_rec_mutex_free (&lcm->handle_mutex);
     g_static_rec_mutex_free (&lcm->mutex);
     free(lcm);
 #ifdef WIN32
