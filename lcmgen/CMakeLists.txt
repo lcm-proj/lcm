@@ -14,11 +14,15 @@ set(lcm-gen_sources
   tokenize.h
 )
 
+# Errors from sanitizers cause lcm-gen to fail when executed, which in turn
+# causes users' builds to fail. To work around this, strip sanitize flags when
+# building lcm-gen. Developers working on lcm-gen may wish to disable this
+# logic.
 macro(strip_flag FLAG VAR)
   string(REGEX REPLACE "${FLAG}" "" ${VAR} "${${VAR}}")
 endmacro()
-strip_flag("-fsanitize=(address|memory)" CMAKE_C_FLAGS)
-strip_flag("-fsanitize=(address|memory)" CMAKE_EXE_LINKER_FLAGS)
+strip_flag("-fsanitize[=-][^ ;]*" CMAKE_C_FLAGS)
+strip_flag("-fsanitize[=-][^ ;]*" CMAKE_EXE_LINKER_FLAGS)
 
 add_executable(lcm-gen ${lcm-gen_sources})
 target_link_libraries(lcm-gen PRIVATE GLib2::glib)
