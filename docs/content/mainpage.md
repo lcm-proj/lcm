@@ -40,9 +40,14 @@ variety of programming languages.
   * MATLAB
   * Python
 
-## Forks / clones
+## Forks
+
+These are community-maintained forks of LCM that add extra functionality. While
+they're not part of the official LCM distribution, they're linked to here in
+case people find them useful.
 
  - https://github.com/vooon/lcm-vala - Vala language support
+ - https://github.com/adeschamps/lcm - Rust language support
 
 # API Reference {#main_api_ref}
 
