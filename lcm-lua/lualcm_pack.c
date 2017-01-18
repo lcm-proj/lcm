@@ -472,7 +472,7 @@ static int impl_get_required_stack_size(impl_pack_op_t *ops, size_t num_ops) {
         num_values += ops[i].repeat;
         break;
       case DATATYPE_BYTE:
-        num_values += ops[i].repeat;
+        num_values += 1;
         break;
       case DATATYPE_HASH:
         num_values += ops[i].repeat;
@@ -647,7 +647,6 @@ static void impl_unpack_int8_t(lua_State *L, const uint8_t *buf, size_t *offset,
                                size_t repeat, bool swap) {
   while (repeat-- > 0) {
     int8_t n = *((int8_t *)(buf + *offset));
-    // if(swap) swap_bytes((uint8_t *) &n, sizeof(int8_t));
     lua_pushnumber(L, n);
     *offset += sizeof(int8_t);
   }
@@ -734,20 +733,17 @@ static void impl_unpack_boolean(lua_State *L, const uint8_t *buf,
                                 size_t *offset, size_t repeat, bool swap) {
   while (repeat-- > 0) {
     uint8_t n = *((uint8_t *)(buf + *offset));
-    // if(swap) swap_bytes((uint8_t *) &n, sizeof(uint8_t));
     lua_pushboolean(L, (int)n);
     *offset += sizeof(uint8_t);
   }
 }
 
 static void impl_unpack_byte(lua_State *L, const uint8_t *buf, size_t *offset,
-                             size_t repeat, bool swap) {
-  while (repeat-- > 0) {
-    uint8_t n = *((uint8_t *)(buf + *offset));
-    // if(swap) swap_bytes((uint8_t *) &n, sizeof(uint8_t));
-    lua_pushnumber(L, n);
-    *offset += sizeof(uint8_t);
-  }
+                             size_t bytes_size, bool swap) {
+  /* unpack as a Lua "byte string" which is really just a string */
+  const uint8_t *bytes = (const uint8_t *)(buf + *offset);
+  lua_pushlstring(L, bytes, bytes_size);
+  *offset += bytes_size * sizeof(uint8_t);
 }
 
 static void impl_unpack_hash(lua_State *L, const uint8_t *buf, size_t *offset,
@@ -765,7 +761,6 @@ static void impl_pack_int8_t(lua_State *L, uint8_t *buf, size_t *offset,
   while (repeat-- > 0) {
     int8_t n = (int8_t)luaL_checknumber(L, *stack_pos);
     *((int8_t *)(buf + *offset)) = n;
-    // if(swap) swap_bytes(buf + *offset, sizeof(int8_t));
     *offset += sizeof(int8_t);
     *stack_pos += 1;
   }
@@ -864,21 +859,30 @@ static void impl_pack_boolean(lua_State *L, uint8_t *buf, size_t *offset,
                                      invalid stack index */
     uint8_t n = (uint8_t)lua_toboolean(L, *stack_pos);
     *((uint8_t *)(buf + *offset)) = n;
-    // if(swap) swap_bytes(buf + *offset, sizeof(uint8_t));
     *offset += sizeof(uint8_t);
     *stack_pos += 1;
   }
 }
 
 static void impl_pack_byte(lua_State *L, uint8_t *buf, size_t *offset,
-                           int *stack_pos, size_t repeat, bool swap) {
-  while (repeat-- > 0) {
-    uint8_t n = (uint8_t)luaL_checknumber(L, *stack_pos);
-    *((uint8_t *)(buf + *offset)) = n;
-    // if(swap) swap_bytes(buf + *offset, sizeof(uint8_t));
-    *offset += sizeof(uint8_t);
-    *stack_pos += 1;
+                           int *stack_pos, size_t bytes_size, bool swap) {
+  size_t other_bytes_size;
+  const uint8_t *other_bytes =
+      luaL_checklstring(L, *stack_pos, &other_bytes_size);
+  uint8_t *bytes = (uint8_t *)(buf + *offset);
+
+  int i;
+  for (i = 0; i < bytes_size; i++) {
+    if (i < other_bytes_size) {
+      bytes[i] = other_bytes[i];
+    } else {
+      /* pad end of bytes with zeros */
+      bytes[i] = 0;
+    }
   }
+
+  *offset += bytes_size * sizeof(uint8_t);
+  *stack_pos += 1;
 }
 
 static void impl_pack_hash(lua_State *L, uint8_t *buf, size_t *offset,
