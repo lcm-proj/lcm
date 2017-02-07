@@ -687,11 +687,15 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
         lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
 
         if(!lcm_is_constant_size_array(lm)) {
-            emit_start(1+depth, "this->%s", lm->membername);
+            emit(1+depth, "try {");
+            emit_start(2+depth, "this->%s", lm->membername);
             for(int i=0; i<depth; i++) {
                 emit_continue("[a%d]", i);
             }
             emit_end(".resize(%s%s);", dim_size_prefix(dim->size), dim->size);
+            emit(1+depth, "} catch (...) {");
+            emit(2+depth, "return -1;");
+            emit(1+depth, "}");
         }
         emit(1+depth, "for (int a%d = 0; a%d < %s%s; a%d++) {",
                 depth, depth, dim_size_prefix(dim->size), dim->size, depth);
