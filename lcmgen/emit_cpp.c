@@ -452,7 +452,7 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         emit(0, "{");
         emit(1,     "const __lcm_hash_ptr *fp;");
         emit(1,     "for(fp = p; fp != NULL; fp = fp->parent)");
-        emit(2,         "if(fp->v == %s::getHash)", sn);
+        emit(2,         "if(fp->v == reinterpret_cast<void*>(%s::getHash))", sn);
         emit(3,              "return 0;");
         if(g_ptr_array_size(ls->members)) {
             emit(1, "const __lcm_hash_ptr cp = { p, (void*)%s::getHash };", sn);
