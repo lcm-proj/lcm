@@ -26,7 +26,7 @@ typedef struct ___lcm_hash_ptr __lcm_hash_ptr;
 struct ___lcm_hash_ptr
 {
     const __lcm_hash_ptr *parent;
-    void *v;
+    int64_t (*v)(void);
 };
 
 /**
