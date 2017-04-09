@@ -199,10 +199,10 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
 
     emit_auto_generated_warning(f);
 
-    fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
-    fprintf(f, "\n");
     fprintf(f, "#ifndef __%s_hpp__\n", tn_);
     fprintf(f, "#define __%s_hpp__\n", tn_);
+    fprintf(f, "\n");
+    fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
     fprintf(f, "\n");
 
     // do we need to #include <vector> and/or <string>?

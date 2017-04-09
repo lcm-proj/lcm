@@ -98,6 +98,10 @@ static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
 {
     emit_auto_generated_warning(f);
 
+    fprintf(f, "#ifndef _%s_h\n", name);
+    fprintf(f, "#define _%s_h\n", name);
+    fprintf(f, "\n");
+
     fprintf(f, "#include <stdint.h>\n");
     fprintf(f, "#include <stdlib.h>\n");
     fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
@@ -114,10 +118,6 @@ static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
                 strlen(getopt_get_string(lcm->gopt, "cinclude"))>0 ? "/" : "",
                 getopt_get_string(lcm->gopt, "c-export-include"));
     }
-    fprintf(f, "\n");
-
-    fprintf(f, "#ifndef _%s_h\n", name);
-    fprintf(f, "#define _%s_h\n", name);
     fprintf(f, "\n");
 
     fprintf(f, "#ifdef __cplusplus\n");
