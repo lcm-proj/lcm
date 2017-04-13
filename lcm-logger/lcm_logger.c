@@ -229,7 +229,7 @@ write_thread(void *user_data)
 
         // Should the write thread exit?
         g_mutex_lock(logger->mutex);
-        if(logger->write_thread_exit_flag) {
+        if(msg == &logger->write_thread_exit_flag) {
             g_mutex_unlock(logger->mutex);
             return NULL;
         }
