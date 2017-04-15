@@ -347,7 +347,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(2, " *");
     emit(2, " * @param buf The buffer containing the encoded message.");
     emit(2, " * @param offset The byte offset into @p buf where the encoded message starts.");
-    emit(2, " * @param maxlen The maximum number of bytes to reqad while decoding.");
+    emit(2, " * @param maxlen The maximum number of bytes to read while decoding.");
     emit(2, " * @return The number of bytes decoded, or <0 if an error occured.");
     emit(2, " */");
     emit(2, "inline int decode(const void *buf, int offset, int maxlen);");
@@ -687,11 +687,15 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
         lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
 
         if(!lcm_is_constant_size_array(lm)) {
-            emit_start(1+depth, "this->%s", lm->membername);
+            emit(1+depth, "try {");
+            emit_start(2+depth, "this->%s", lm->membername);
             for(int i=0; i<depth; i++) {
                 emit_continue("[a%d]", i);
             }
             emit_end(".resize(%s%s);", dim_size_prefix(dim->size), dim->size);
+            emit(1+depth, "} catch (...) {");
+            emit(2+depth, "return -1;");
+            emit(1+depth, "}");
         }
         emit(1+depth, "for (int a%d = 0; a%d < %s%s; a%d++) {",
                 depth, depth, dim_size_prefix(dim->size), dim->size, depth);
