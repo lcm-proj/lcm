@@ -42,7 +42,9 @@ static guint
 _lcm_frag_key_hash (const void * key)
 {
     lcm_frag_key_t *frag_key = (lcm_frag_key_t *) key;
-    int v = frag_key->from->sin_port * frag_key->from->sin_addr.s_addr * frag_key->msg_seqno;
+    //try to combine 3 ints to create a unique into using bit shifting 
+    //ints are not completely unique, but old mult method also had collisions
+    int v = (((int) frag_key->from->sin_addr.s_addr ^  frag_key->from->sin_port) << 16) | (0x0000FFFF & frag_key->msg_seqno);
     return g_int_hash (&v);
 }
 
