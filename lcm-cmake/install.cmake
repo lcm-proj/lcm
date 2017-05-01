@@ -62,5 +62,5 @@ lcm_copy_file_target(lcm_use_file
   ${PROJECT_BINARY_DIR}/${PROJECT_NAME}Utilities.cmake
 )
 
-# add to CMake package register
+# Add to CMake package registry
 export(PACKAGE ${PROJECT_NAME})
