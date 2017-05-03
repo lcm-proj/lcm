@@ -153,12 +153,25 @@ lcm_memq_publish (lcm_memq_t *self, const char *channel, const void *data,
     return 0;
 }
 
+#ifdef WIN32
 static lcm_provider_vtable_t memq_vtable;
+#else
+static lcm_provider_vtable_t memq_vtable = {
+    .create      = lcm_memq_create,
+    .destroy     = lcm_memq_destroy,
+    .subscribe   = NULL,
+    .unsubscribe = NULL,
+    .publish     = lcm_memq_publish,
+    .handle      = lcm_memq_handle,
+    .get_fileno  = lcm_memq_get_fileno
+};
+#endif
 static lcm_provider_info_t memq_info;
 
 void
 lcm_memq_provider_init (GPtrArray * providers)
 {
+#ifdef WIN32
     memq_vtable.create      = lcm_memq_create;
     memq_vtable.destroy     = lcm_memq_destroy;
     memq_vtable.subscribe   = NULL;
@@ -166,7 +179,7 @@ lcm_memq_provider_init (GPtrArray * providers)
     memq_vtable.publish     = lcm_memq_publish;
     memq_vtable.handle      = lcm_memq_handle;
     memq_vtable.get_fileno  = lcm_memq_get_fileno;
-
+#endif
     memq_info.name = "memq";
     memq_info.vtable = &memq_vtable;
 

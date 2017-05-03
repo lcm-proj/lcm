@@ -1214,12 +1214,26 @@ lcm_udpm_create (lcm_t * parent, const char *network, const GHashTable *args)
     return lcm;
 }
 
+#ifdef WIN32
 static lcm_provider_vtable_t udpm_vtable;
+#else
+static lcm_provider_vtable_t udpm_vtable = {
+    .create      = lcm_udpm_create,
+    .destroy     = lcm_udpm_destroy,
+    .subscribe   = lcm_udpm_subscribe,
+    .unsubscribe = NULL,
+    .publish     = lcm_udpm_publish,
+    .handle      = lcm_udpm_handle,
+    .get_fileno  = lcm_udpm_get_fileno,
+};
+#endif
+
 static lcm_provider_info_t udpm_info;
 
 void
 lcm_udpm_provider_init (GPtrArray * providers)
 {
+#ifdef WIN32
 // Because of Microsoft Visual Studio compiler
 // difficulties, do this now, not statically
     udpm_vtable.create      = lcm_udpm_create;
@@ -1229,7 +1243,7 @@ lcm_udpm_provider_init (GPtrArray * providers)
     udpm_vtable.publish     = lcm_udpm_publish;
     udpm_vtable.handle      = lcm_udpm_handle;
     udpm_vtable.get_fileno  = lcm_udpm_get_fileno;
-
+#endif
     udpm_info.name = "udpm";
     udpm_info.vtable = &udpm_vtable;
 

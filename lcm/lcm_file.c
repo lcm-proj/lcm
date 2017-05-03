@@ -355,13 +355,26 @@ lcm_logprov_publish (lcm_logprov_t *lcm, const char *channel, const void *data,
     return 0;
 }
 
+#ifdef WIN32
 static lcm_provider_vtable_t logprov_vtable;
-static lcm_provider_info_t logprov_info;
+#else
+static lcm_provider_vtable_t logprov_vtable = {
+    .create      = lcm_logprov_create,
+    .destroy     = lcm_logprov_destroy,
+    .subscribe   = NULL,
+    .unsubscribe = NULL,
+    .publish     = lcm_logprov_publish,
+    .handle      = lcm_logprov_handle,
+    .get_fileno  = lcm_logprov_get_fileno
+};
+#endif
 
+static lcm_provider_info_t logprov_info;
 
 void
 lcm_logprov_provider_init (GPtrArray * providers)
 {
+#ifdef WIN32
 // Microsoft VS compiler issues. Can't do this statically
     logprov_vtable.create      = lcm_logprov_create;
     logprov_vtable.destroy     = lcm_logprov_destroy;
@@ -370,6 +383,7 @@ lcm_logprov_provider_init (GPtrArray * providers)
     logprov_vtable.publish     = lcm_logprov_publish;
     logprov_vtable.handle      = lcm_logprov_handle;
     logprov_vtable.get_fileno  = lcm_logprov_get_fileno;
+#endif
 
     logprov_info.name = "file";
     logprov_info.vtable = &logprov_vtable;
