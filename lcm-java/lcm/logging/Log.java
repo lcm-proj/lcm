@@ -1,9 +1,6 @@
 package lcm.logging;
 
-import java.awt.*;
-import java.awt.event.*;
 import java.io.*;
-import java.util.*;
 
 import lcm.util.*;
 import lcm.lcm.*;
