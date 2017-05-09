@@ -49,22 +49,14 @@ void lcm_eventlog_destroy(lcm_eventlog_t *l)
     free(l);
 }
 
-lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
+/*
+ * Helper for read_next_event and read_prev_event, to get the next
+ * event that an event log points at.
+ */
+static lcm_eventlog_event_t *read_event_helper (lcm_eventlog_t *l)
 {
     lcm_eventlog_event_t *le =
-        (lcm_eventlog_event_t*) calloc(1, sizeof(lcm_eventlog_event_t));
-
-    int32_t magic = 0;
-    int r;
-
-    do {
-        r = fgetc(l->f);
-        if (r < 0) {
-            free(le);
-            return NULL;
-        }
-        magic = (magic << 8) | r;
-    } while( magic != MAGIC );
+        (lcm_eventlog_event_t *) calloc (1, sizeof (lcm_eventlog_event_t));
 
     if (0 != fread64(l->f, &le->eventnum) ||
         0 != fread64(l->f, &le->timestamp) ||
@@ -89,7 +81,6 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
     le->channel = (char *) calloc(1, le->channellen+1);
     if (fread(le->channel, 1, le->channellen, l->f) != (size_t) le->channellen) {
         free(le->channel);
-        free(le->data);
         free(le);
         return NULL;
     }
@@ -100,7 +91,27 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
         free(le->data);
         free(le);
         return NULL;
+    }
+    return le;
+}
+
+lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
+{
+    int32_t magic = 0;
+    int r;
+
+    do {
+        r = fgetc(l->f);
+        if (r < 0) {
+            return NULL;
         }
+        magic = (magic << 8) | r;
+    } while( magic != MAGIC );
+
+    lcm_eventlog_event_t *le = read_event_helper (l);
+    if (!le) {
+        return NULL;
+    }
 
     // Check that there's a valid event or the EOF after this event.
     int32_t next_magic;
@@ -114,6 +125,38 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
         }
         fseeko (l->f, -4, SEEK_CUR);
     }
+    return le;
+}
+
+lcm_eventlog_event_t *lcm_eventlog_read_prev_event(lcm_eventlog_t *l)
+{
+    int32_t magic = 0;
+    int r;
+
+    // find magic number twice: once for current event, then for one before
+    for (int i = 0; i < 2; ++i) {
+        do {
+            r = fgetc(l->f);
+            if (r < 0) {
+                return NULL;
+            }
+            magic = ((magic >> 8) & 0x00FFFFFF) | (r << 24);
+            if (magic == MAGIC) {
+                break;
+            }
+            if (r == '\n' || r == '\r')
+                fseek (l->f, -3, SEEK_CUR);
+            else
+                fseek (l->f, -2, SEEK_CUR);
+        } while( magic != MAGIC );
+    }
+
+    // seek to just after magic
+    if (0 != fseek (l->f, 3, SEEK_CUR)) {
+        return NULL;
+    }
+
+    lcm_eventlog_event_t *le = read_event_helper (l);
     return le;
 }
 

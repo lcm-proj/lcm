@@ -100,6 +100,18 @@ LCM_EXPORT
 lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *eventlog);
 
 /**
+ * Read the previous event in the log file.  Valid in read mode only.  Free the
+ * returned structure with lcm_eventlog_free_event() after use.
+ *
+ * @param eventlog The log file object
+ *
+ * @return the previous event in the log file.  Returns NULL if currently pointing at
+ * first event of the log,  or when invalid data is read.
+ */
+LCM_API_FUNCTION
+lcm_eventlog_event_t *lcm_eventlog_read_prev_event(lcm_eventlog_t *eventlog);
+
+/**
  * Free a structure returned by lcm_eventlog_read_next_event().
  *
  * @param event A structure returned by lcm_eventlog_read_next_event()
