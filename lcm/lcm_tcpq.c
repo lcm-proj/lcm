@@ -417,12 +417,25 @@ lcm_tcpq_publish(lcm_tcpq_t *self, const char *channel, const void *data,
     return 0;
 }
 
+#ifdef WIN32
 static lcm_provider_vtable_t tcpq_vtable;
+#else
+static lcm_provider_vtable_t tcpq_vtable = {
+    .create      = lcm_tcpq_create,
+    .destroy     = lcm_tcpq_destroy,
+    .subscribe   = lcm_tcpq_subscribe,
+    .unsubscribe = lcm_tcpq_unsubscribe,
+    .publish     = lcm_tcpq_publish,
+    .handle      = lcm_tcpq_handle,
+    .get_fileno  = lcm_tcpq_get_fileno
+};
+#endif
 static lcm_provider_info_t tcpq_info;
 
 void
 lcm_tcpq_provider_init (GPtrArray * providers)
 {
+#ifdef WIN32
     tcpq_vtable.create      = lcm_tcpq_create;
     tcpq_vtable.destroy     = lcm_tcpq_destroy;
     tcpq_vtable.subscribe   = lcm_tcpq_subscribe;
@@ -430,7 +443,7 @@ lcm_tcpq_provider_init (GPtrArray * providers)
     tcpq_vtable.publish     = lcm_tcpq_publish;
     tcpq_vtable.handle      = lcm_tcpq_handle;
     tcpq_vtable.get_fileno  = lcm_tcpq_get_fileno;
-
+#endif
     tcpq_info.name = "tcpq";
     tcpq_info.vtable = &tcpq_vtable;
 
