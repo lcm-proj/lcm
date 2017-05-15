@@ -310,13 +310,13 @@ function(lcm_wrap_types)
       add_custom_command(
         OUTPUT ${_outputs}
         COMMAND ${CMAKE_COMMAND} -E env "PATH=${LCM_LCMGEN_PATH}"
-          $<TARGET_FILE:lcm-gen> ${_args} ${_lcmtype_full}
+          $<TARGET_FILE:${LCM_NAMESPACE}lcm-gen> ${_args} ${_lcmtype_full}
         DEPENDS ${_lcmtype}
       )
     else()
       add_custom_command(
         OUTPUT ${_outputs}
-        COMMAND lcm-gen ${_args} ${_lcmtype_full}
+        COMMAND ${LCM_NAMESPACE}lcm-gen ${_args} ${_lcmtype_full}
         DEPENDS ${_lcmtype}
       )
     endif()
@@ -357,7 +357,9 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.1)
       # Add library
       add_library(${NAME} ${_type} ${ARGN})
       add_dependencies(${NAME} ${NAME}.sources)
-      target_link_libraries(${NAME} PRIVATE lcm PUBLIC lcm-coretypes)
+      target_link_libraries(${NAME}
+        PRIVATE ${LCM_NAMESPACE}lcm
+        PUBLIC ${LCM_NAMESPACE}lcm-coretypes)
 
     # C++ library
     elseif(LANGUAGE MATCHES "CXX|CPP|C\\+\\+")
@@ -367,7 +369,7 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.1)
 
       # Add library
       add_library(${NAME} INTERFACE)
-      target_link_libraries(${NAME} INTERFACE lcm-coretypes)
+      target_link_libraries(${NAME} INTERFACE ${LCM_NAMESPACE}lcm-coretypes)
 
       # Add dependency on generated sources
       # NOTE: dependencies on INTERFACE targets not supported before CMake 3.3
