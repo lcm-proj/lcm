@@ -99,3 +99,6 @@ add_custom_target(dist
     -DOUTPUT_DIR=${lcm_BINARY_DIR}
     -DVERSION=${LCM_VERSION}
     -P ${lcm_SOURCE_DIR}/lcm-cmake/mkdist.cmake)
+
+# CPack packaging rules
+include(lcm-cmake/cpack.cmake)
