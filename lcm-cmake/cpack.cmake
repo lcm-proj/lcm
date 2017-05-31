@@ -27,8 +27,12 @@ if(UNIX)
 
     # Set OS type and ARCH suffix
     set(OS_TYPE_ARCH_SUFFIX ${OS_TYPE}-${MACHINE_ARCH})
-elseif(WIN32)
-    set(OS_TYPE Win)
+else()
+    if(WIN32)
+        set(OS_TYPE Win)
+    elseif(APPLE)
+        set(OS_TYPE MacOSX)
+    endif()
 
     # Determine architecture
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
