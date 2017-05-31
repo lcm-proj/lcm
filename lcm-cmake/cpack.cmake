@@ -2,23 +2,43 @@
 set(PACKAGE_RELEASE_VERSION 1)
 
 # Default CPack generators
-set(CPACK_GENERATOR "TGZ;STGZ")
+set(CPACK_GENERATOR TGZ STGZ)
 
-# Determine distribution
-execute_process(COMMAND lsb_release -si
-	OUTPUT_VARIABLE LINUX_DISTRO
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+# Detect OS type, OS variant and target architecture
+if(UNIX)
+    set(OS_TYPE Linux)
 
-# Determine architecture
-execute_process(COMMAND uname -m
-	OUTPUT_VARIABLE	MACHINE_ARCH
-	OUTPUT_STRIP_TRAILING_WHITESPACE
-)
+    # Determine distribution
+    execute_process(COMMAND lsb_release -si
+        OUTPUT_VARIABLE LINUX_DISTRO
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
 
-# Add CPack generator according to detected distribution
-if(LINUX_DISTRO STREQUAL "Debian" OR LINUX_DISTRO STREQUAL "Ubuntu" OR LINUX_DISTRO STREQUAL "LinuxMint")
-    set(CPACK_GENERATOR "${CPACK_GENERATOR};DEB")
+    # Determine architecture
+    execute_process(COMMAND uname -m
+        OUTPUT_VARIABLE MACHINE_ARCH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+
+    # Add CPack generator according to detected distribution
+    if(LINUX_DISTRO STREQUAL "Debian" OR LINUX_DISTRO STREQUAL "Ubuntu" OR LINUX_DISTRO STREQUAL "LinuxMint")
+        list(APPEND CPACK_GENERATOR DEB)
+    endif()
+
+    # Set OS type and ARCH suffix
+    set(OS_TYPE_ARCH_SUFFIX ${OS_TYPE}-${MACHINE_ARCH})
+elseif(WIN32)
+    set(OS_TYPE Win)
+
+    # Determine architecture
+    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        set(MACHINE_ARCH 64)
+    else()
+        set(MACHINE_ARCH "")
+    endif()
+
+    # Set OS type and ARCH suffix
+    set(OS_TYPE_ARCH_SUFFIX ${OS_TYPE}${MACHINE_ARCH})
 endif()
 
 # General CPack config
@@ -29,7 +49,7 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "LCM is a set of libraries and tools for m
 set(CPACK_PACKAGE_VENDOR "LCM Project")
 set(CPACK_PACKAGE_CONTACT "a.antonana@gmail.com")
 set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/COPYING")
-set(CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}-${PACKAGE_RELEASE_VERSION}_Linux-${MACHINE_ARCH})
+set(CPACK_PACKAGE_FILE_NAME ${CPACK_PACKAGE_NAME}_${CPACK_PACKAGE_VERSION}-${PACKAGE_RELEASE_VERSION}_${OS_TYPE_ARCH_SUFFIX})
 set(CPACK_STRIP_FILES ON)
 
 # DEB specific CPack config
