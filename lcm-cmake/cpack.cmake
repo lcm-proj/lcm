@@ -6,13 +6,22 @@ set(CPACK_GENERATOR TGZ STGZ)
 
 # Detect OS type, OS variant and target architecture
 if(UNIX)
-    set(OS_TYPE Linux)
+    if(APPLE)
+        set(OS_TYPE macos)
+    else()
+        set(OS_TYPE linux)
 
-    # Determine distribution
-    execute_process(COMMAND lsb_release -si
-        OUTPUT_VARIABLE LINUX_DISTRO
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+        # Determine distribution
+        execute_process(COMMAND lsb_release -si
+            OUTPUT_VARIABLE LINUX_DISTRO
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+
+        # Add CPack generator according to detected distribution
+        if(LINUX_DISTRO STREQUAL "Debian" OR LINUX_DISTRO STREQUAL "Ubuntu" OR LINUX_DISTRO STREQUAL "LinuxMint")
+            list(APPEND CPACK_GENERATOR DEB)
+        endif()
+    endif()
 
     # Determine architecture
     execute_process(COMMAND uname -m
@@ -20,19 +29,10 @@ if(UNIX)
         OUTPUT_STRIP_TRAILING_WHITESPACE
     )
 
-    # Add CPack generator according to detected distribution
-    if(LINUX_DISTRO STREQUAL "Debian" OR LINUX_DISTRO STREQUAL "Ubuntu" OR LINUX_DISTRO STREQUAL "LinuxMint")
-        list(APPEND CPACK_GENERATOR DEB)
-    endif()
-
     # Set OS type and ARCH suffix
     set(OS_TYPE_ARCH_SUFFIX ${OS_TYPE}-${MACHINE_ARCH})
-else()
-    if(WIN32)
-        set(OS_TYPE Win)
-    elseif(APPLE)
-        set(OS_TYPE MacOSX)
-    endif()
+elseif(WIN32)
+    set(OS_TYPE win)
 
     # Determine architecture
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
