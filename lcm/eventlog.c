@@ -54,7 +54,7 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
     lcm_eventlog_event_t *le =
         (lcm_eventlog_event_t*) calloc(1, sizeof(lcm_eventlog_event_t));
 
-    int32_t magic = 0;
+    uint32_t magic = 0;
     int r;
 
     do {
@@ -63,7 +63,7 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
             free(le);
             return NULL;
         }
-        magic = (magic << 8) | r;
+        magic = (magic << 8) | (uint32_t) r;
     } while( magic != MAGIC );
 
     if (0 != fread64(l->f, &le->eventnum) ||
@@ -150,13 +150,13 @@ void lcm_eventlog_free_event(lcm_eventlog_event_t *le)
 
 static int64_t get_event_time(lcm_eventlog_t *l)
 {
-    int32_t magic = 0;
+    uint32_t magic = 0;
     int r;
 
     do {
         r = fgetc(l->f);
         if (r < 0) goto eof;
-        magic = (magic << 8) | r;
+        magic = (magic << 8) | (uint32_t) r;
     } while( magic != MAGIC );
 
     int64_t event_num;
