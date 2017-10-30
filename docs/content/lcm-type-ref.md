@@ -93,21 +93,18 @@ LCM supports a number of primitive types:
 The integer types are all signed (as is necessary to ensure easy
 inter-operation with Java, which lacks unsigned types) and are encoded in
 network byte order.
-      
-The type \c byte is encoded the same way as \c int8_t. However,
-there are instances in which buffers of data (such as a JPEG image) must be
-sent across the network. These buffers of data must be decoded by some
-additional software. The type \c byte can be used by a type designer to help
-convey the notion that the data is opaque, and should not be interpreted
-(literally) as an array of 8 bit integers.
-      
+
+The type \c byte is represented in C/C++ as `uint8_t`. Languages with a native
+`byte` representation use their respective native byte representations (e.g.,
+type `byte` in Java).
+
 Floating point types are encoded using the IEEE 32 and 64 bit formats. An LCM
 implementation may not use any other encoding. The 32 and 64 bit quantities
 are transmitted in network byte order.
-      
+
 The \c boolean type is encoded as a single byte whose value is either 0 or 1.
 An array of N booleans will require N bytes.
-      
+
 The \c string type encodes a NULL-terminated UTF-8 string. The string is sent
 as a 32 bit integer comprising the total length of string in bytes (including
 terminating NULL character) followed by the bytes of the string (again,
