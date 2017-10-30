@@ -42,7 +42,7 @@ Required packages:
   - libglib2.0-dev
 
 Strongly recommended packages:
-  - openjdk-6-jdk
+  - default-jdk (or openjdk-9-jdk)
   - python-dev
 
 From a terminal, run the following commands.
