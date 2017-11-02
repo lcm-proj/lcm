@@ -674,7 +674,7 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
             emit_start(1 + depth, "this->%s", lm->membername);
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
-            emit_end(".assign(((const char*)buf) + offset + pos, __elem_len -  1);");
+            emit_end(".assign(static_cast<const char*>(buf) + offset + pos, __elem_len -  1);");
             emit(1 + depth, "pos += __elem_len;");
         } else {
             emit_start(1 + depth, "tlen = this->%s", lm->membername);
@@ -730,7 +730,7 @@ static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 emit(1, "tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__%s_len__, 1);", lm->membername);
                 emit(1, "if(tlen < 0) return tlen; else pos += tlen;");
                 emit(1, "if(__%s_len__ > maxlen - pos) return -1;", lm->membername);
-                emit(1, "this->%s.assign(((const char*)buf) + offset + pos, __%s_len__ - 1);", lm->membername, lm->membername);
+                emit(1, "this->%s.assign(static_cast<const char*>(buf) + offset + pos, __%s_len__ - 1);", lm->membername, lm->membername);
                 emit(1, "pos += __%s_len__;", lm->membername);
             } else {
                 emit(1, "tlen = __%s_decode_array(buf, offset + pos, maxlen - pos, &this->%s, 1);", lm->type->lctypename, lm->membername);
