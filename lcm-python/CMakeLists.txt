@@ -30,8 +30,15 @@ target_include_directories(lcm-python PRIVATE
 
 target_link_libraries(lcm-python PRIVATE
   lcm-static
-  ${PYTHON_LIBRARY}
 )
+
+if(APPLE)
+  set_target_properties(lcm-python PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+else()
+  target_link_libraries(lcm-python PRIVATE
+    ${PYTHON_LIBRARY}
+  )
+endif()
 
 install(TARGETS lcm-python
   RUNTIME DESTINATION ${PYTHON_SITE}/lcm
