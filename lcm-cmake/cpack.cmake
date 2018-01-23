@@ -6,24 +6,23 @@ set(CPACK_GENERATOR TGZ STGZ)
 
 # Detect OS type, OS variant and target architecture
 if(UNIX)
-    if(APPLE)
-        set(OS_TYPE macos)
-    else()
-        set(OS_TYPE linux)
+  if(APPLE)
+    set(OS_TYPE macos)
+  else()
+    set(OS_TYPE linux)
+    find_program(DPKG_EXECUTABLE dpkg)
+  endif()
 
-        # Determine distribution
-        execute_process(COMMAND lsb_release -si
-            OUTPUT_VARIABLE LINUX_DISTRO
-            OUTPUT_STRIP_TRAILING_WHITESPACE
-        )
+  # Determine architecture
+  if(DEFINED DPKG_EXECUTABLE AND DPKG_EXECUTABLE)
+    list(APPEND CPACK_GENERATOR DEB)
+    execute_process(COMMAND dpkg --print-architecture
+      OUTPUT_VARIABLE MACHINE_ARCH
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
 
-        # Add CPack generator according to detected distribution
-        if(LINUX_DISTRO STREQUAL "Debian" OR LINUX_DISTRO STREQUAL "Ubuntu" OR LINUX_DISTRO STREQUAL "LinuxMint")
-            list(APPEND CPACK_GENERATOR DEB)
-        endif()
-    endif()
-
-    # Determine architecture
+    set(OS_TYPE_ARCH_SUFFIX ${MACHINE_ARCH})
+  else()
     execute_process(COMMAND uname -m
         OUTPUT_VARIABLE MACHINE_ARCH
         OUTPUT_STRIP_TRAILING_WHITESPACE
@@ -31,6 +30,7 @@ if(UNIX)
 
     # Set OS type and ARCH suffix
     set(OS_TYPE_ARCH_SUFFIX ${OS_TYPE}-${MACHINE_ARCH})
+  endif()
 elseif(WIN32)
     set(OS_TYPE win)
 
@@ -62,6 +62,7 @@ set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
 set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "https://github.com/lcm-proj/lcm")
 set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "libglib2.0-0, libpcre3")
 
 message(STATUS "CPack: Packages will be placed under ${CPACK_PACKAGE_DIRECTORY}")
 
