@@ -934,6 +934,36 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         }
         fprintf (f, "]\n\n");
 
+        fprintf (f,"    __typenames__ = [");
+        for (unsigned int member = 0; member < ls->members->len; member++) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index (ls->members, member);
+            fprintf (f, "\"%s\"%s", lm->type->lctypename,
+                    member < ls->members->len-1 ? ", " : "");
+        }
+        fprintf (f, "]\n\n");
+
+        fprintf (f,"    __dimensions__ = [");
+        for (unsigned int member = 0; member < ls->members->len; member++) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index (ls->members, member);
+            if (!lm->dimensions->len) {
+              fprintf (f, "None");
+            } else {
+              fprintf (f, "[");
+              for (int n=0; n<lm->dimensions->len; n++) {
+                lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index (lm->dimensions, n);
+                if (dim->mode == LCM_CONST) {
+                  fprintf (f, "%s", dim->size);
+                } else {
+                  fprintf (f, "\"%s\"", dim->size);
+                }
+                fprintf (f, "%s", (n < lm->dimensions->len-1) ? ", " : "");
+              }
+              fprintf (f, "]");
+            }
+            fprintf (f, "%s", (member < ls->members->len-1) ? ", " : "");
+        }
+        fprintf (f, "]\n\n");
+
         // CONSTANTS
         for (unsigned int cn = 0; cn < g_ptr_array_size(ls->constants); cn++) {
             lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, cn);
