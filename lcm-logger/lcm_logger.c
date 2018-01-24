@@ -410,6 +410,11 @@ static void usage ()
             "\n");
 }
 
+void my_invalid_parameter(const wchar_t * expression, const wchar_t * function, 
+	const wchar_t * file, unsigned int line, uintptr_t pReserved)
+{
+}
+
 int main(int argc, char *argv[])
 {
 #ifndef WIN32
@@ -585,6 +590,10 @@ int main(int argc, char *argv[])
 
     free(chan_regex);
 
+    // just to disable "Parameter Validation" Windows runtime 
+	_set_invalid_parameter_handler(my_invalid_parameter);
+	_set_thread_local_invalid_parameter_handler(my_invalid_parameter);
+    
     _mainloop = g_main_loop_new (NULL, FALSE);
     signal_pipe_glib_quit_on_kill ();
     glib_mainloop_attach_lcm (logger.lcm);
