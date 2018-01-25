@@ -74,20 +74,23 @@ if os.name == 'nt':
 else:
     pkg_deps = "glib-2.0"
 
+    # detect terminal encoding. If the encoding is not detected, default to UTF-8
+    encoding = sys.stdout.encoding or 'UTF-8'
+
     # include path
-    pkgconfig_include_flags = subprocess.check_output( ["pkg-config", "--cflags-only-I", pkg_deps] ).decode(sys.stdout.encoding)
+    pkgconfig_include_flags = subprocess.check_output( ["pkg-config", "--cflags-only-I", pkg_deps] ).decode(encoding)
     include_dirs += [ t[2:] for t in pkgconfig_include_flags.split() ]
 
     # libraries
-    pkgconfig_lflags = subprocess.check_output( ["pkg-config", "--libs-only-l", pkg_deps] ).decode(sys.stdout.encoding)
+    pkgconfig_lflags = subprocess.check_output( ["pkg-config", "--libs-only-l", pkg_deps] ).decode(encoding)
     libraries = [ t[2:] for t in pkgconfig_lflags.split() ]
 
     # link directories
-    pkgconfig_biglflags = subprocess.check_output( ["pkg-config", "--libs-only-L", pkg_deps ] ).decode(sys.stdout.encoding)
+    pkgconfig_biglflags = subprocess.check_output( ["pkg-config", "--libs-only-L", pkg_deps ] ).decode(encoding)
     library_dirs = [ t[2:] for t in pkgconfig_biglflags.split() ]
 
     # other compiler flags
-    pkgconfig_cflags = subprocess.check_output( ["pkg-config", "--cflags", pkg_deps] ).decode(sys.stdout.encoding).split()
+    pkgconfig_cflags = subprocess.check_output( ["pkg-config", "--cflags", pkg_deps] ).decode(encoding).split()
     extra_compile_args = [ \
         '-Wno-strict-prototypes',
         "-D_FILE_OFFSET_BITS=64",
