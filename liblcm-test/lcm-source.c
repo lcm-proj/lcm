@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 //    memset (data, 0, sizeof(data));
 
     char *optstring = "hm:p:s:v";
-    char c;
+    int c;
 
 #ifndef WIN32
     signal(SIGINT, on_signal);
