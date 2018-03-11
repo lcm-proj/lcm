@@ -36,6 +36,9 @@ int emit_lua(lcmgen_t *lcm);
 void setup_csharp_options(getopt_t *gopt);
 int emit_csharp(lcmgen_t *lcm);
 
+void setup_go_options(getopt_t *gopt);
+int emit_go(lcmgen_t *lcm);
+
 void setup_cpp_options(getopt_t *gopt);
 int emit_cpp(lcmgen_t *lcm);
 
@@ -78,6 +81,10 @@ int main(int argc, char *argv[])
     getopt_add_spacer(gopt, "**** C#.NET options ****");
     getopt_add_bool  (gopt, 0, "csharp",      0,     "Emit C#.NET code");
     setup_csharp_options(gopt);
+
+    getopt_add_spacer(gopt, "**** Go options ****");
+    getopt_add_bool  (gopt, 'g', "go",      0,     "Emit Go code");
+    setup_go_options(gopt);
 
     if (!getopt_parse(gopt, argc, argv, 1) || getopt_get_bool(gopt,"help")) {
         printf("Usage: %s [options] <input files>\n\n", argv[0]);
@@ -160,6 +167,14 @@ int main(int argc, char *argv[])
         did_something = 1;
         if (emit_csharp(lcm)) {
             printf("An error occurred while emitting C#.NET code.\n");
+            res = -1;
+        }
+    }
+
+    if (getopt_get_bool(gopt, "go")) {
+        did_something = 1;
+        if (emit_go(lcm)) {
+            printf("An error occurred while emitting Go code.\n");
             res = -1;
         }
     }

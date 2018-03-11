@@ -2,6 +2,7 @@ set(lcm-gen_sources
   emit_c.c
   emit_csharp.c
   emit_cpp.c
+  emit_go.c
   emit_java.c
   emit_lua.c
   emit_python.c

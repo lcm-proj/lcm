@@ -611,7 +611,7 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
                         lcm_member_t *thislm = (lcm_member_t*) g_ptr_array_index(lr->members, i);
                         if (!strcmp(thislm->membername, t->token)) {
                             if (g_ptr_array_size(thislm->dimensions) != 0)
-                                semantic_error(t, "Array dimension '%s' must be not be an array type.", t->token);
+                                semantic_error(t, "Array dimension '%s' must not be an array type.", t->token);
                             if (!lcm_is_array_dimension_type(thislm->type->lctypename))
                                 semantic_error(t, "Array dimension '%s' must be an integer type.", t->token);
                             okay = 1;
