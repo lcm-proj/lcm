@@ -16,6 +16,7 @@
 #include <inttypes.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <linux/limits.h> /* PATH_MAX */
 #endif
 
 #include <glib.h>
@@ -254,6 +255,7 @@ _flush_read_struct_fmt (const lcmgen_t *lcm, FILE *f,
 static void
 emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
+    emit(1, "@staticmethod");
     emit(1, "def _decode_one(buf):");
     emit (2, "self = %s()", ls->structname->shortname);
 
@@ -346,13 +348,13 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 
     g_queue_free (struct_fmt);
     g_queue_free (struct_members);
-    emit (1, "_decode_one = staticmethod(_decode_one)");
     fprintf (f, "\n");
 }
 
 static void
 emit_python_decode (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
+    emit (1, "@staticmethod");
     emit (1, "def decode(data):");
     emit (2, "if hasattr(data, 'read'):");
     emit (3,     "buf = data");
@@ -362,7 +364,6 @@ emit_python_decode (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             ls->structname->shortname);
     emit (3,     "raise ValueError(\"Decode error\")");
     emit (2, "return %s._decode_one(buf)", ls->structname->shortname);
-    emit (1, "decode = staticmethod(decode)");
     fprintf (f, "\n");
 }
 
@@ -374,7 +375,7 @@ _emit_encode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls,
     const char *mn = lm->membername;
     if (!strcmp ("string", tn)) {
         emit (indent, "__%s_encoded = %s.encode('utf-8')", mn, accessor);
-        emit (indent, "buf.write(struct.pack('>I', len(__%s_encoded)+1))", mn);
+        emit (indent, "buf.write(struct.pack('>I', len(__%s_encoded) + 1))", mn);
         emit (indent, "buf.write(__%s_encoded)", mn);
         emit (indent, "buf.write(b\"\\0\")");
     } else if (!strcmp ("byte", tn)) {
@@ -575,9 +576,9 @@ emit_member_initializer(const lcmgen_t* lcm, FILE *f, lcm_member_t* lm,
     if(dim->mode == LCM_VAR) {
         fprintf(f, "[]");
     } else {
-        fprintf(f, "[ ");
+        fprintf(f, "[");
         emit_member_initializer(lcm, f, lm, dim_num+1);
-        fprintf(f, " for dim%d in range(%s) ]", dim_num, dim->size);
+        fprintf(f, " for _ in range(%s)]", dim->size);
     }
 }
 
@@ -603,6 +604,7 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     const char *sn = ls->structname->shortname;
     emit (1, "_hash = None");
 
+    emit (1, "@staticmethod");
     emit (1, "def _get_hash_recursive(parents):");
     emit (2,     "if %s in parents: return 0", sn);
     for (unsigned int m = 0; m < ls->members->len; m++) {
@@ -626,11 +628,11 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         }
     }
     emit_end (") & 0xffffffffffffffff");
-    emit (2, "tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + "
+    emit (2, "tmphash  = (((tmphash << 1) & 0xffffffffffffffff)  + "
             "(tmphash>>63)) & 0xffffffffffffffff");
     emit (2,     "return tmphash");
-    emit (1, "_get_hash_recursive = staticmethod(_get_hash_recursive)");
 
+    emit (1, "@staticmethod");
     emit (1, "_packed_fingerprint = None");
     emit (0, "");
     emit (1, "def _get_packed_fingerprint():");
@@ -638,7 +640,6 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit (3,         "%s._packed_fingerprint = struct.pack(\">Q\", "
             "%s._get_hash_recursive([]))", sn, sn);
     emit (2,     "return %s._packed_fingerprint", sn);
-    emit (1, "_get_packed_fingerprint = staticmethod(_get_packed_fingerprint)");
     fprintf (f, "\n");
 
 }
@@ -840,6 +841,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                 "import struct\n\n");
 
         // enums always encoded as int32
+        fprintf (f, "\n");
         emit (0, "class %s(object):", le->enumname->shortname);
         emit (1, "__slots__ = [ \"value\" ]");
         for (unsigned int v = 0; v < le->values->len; v++) {
@@ -855,12 +857,13 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         emit (2,     "self.value = value");
         fprintf (f, "\n");
 
+        emit (1, "@staticmethod");
         emit (1, "def _get_hash_recursive(parents):");
         emit (2,     "return 0x%"PRIx64, le->hash);
-        emit (1, "_get_hash_recursive=staticmethod(_get_hash_recursive)");
+        fprintf (f, "\n");
+        emit (1, "@staticmethod");
         emit (1, "def _get_packed_fingerprint():");
         emit (2,     "return %s._packed_fingerprint", le->enumname->shortname);
-        emit (1, "_get_packed_fingerprint = staticmethod(_get_packed_fingerprint)");
         fprintf (f, "\n");
 
         emit (1, "def encode(self):");
@@ -871,6 +874,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         emit (2,     "buf.write (struct.pack(\">i\", self.value))");
         fprintf (f, "\n");
 
+        emit (1, "@staticmethod");
         emit (1, "def decode(data):");
         emit (2,     "if hasattr (data, 'read'):");
         emit (3,         "buf = data");
@@ -881,13 +885,11 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         emit (3,         "raise ValueError(\"Decode error\")");
         emit (2,     "return %s(struct.unpack(\">i\", buf.read(4))[0])",
                 le->enumname->shortname);
-        emit (1, "decode = staticmethod(decode)");
 
+        emit (1, "@staticmethod");
         emit (1, "def _decode_one(buf):");
         emit (2,     "return %s(struct.unpack(\">i\", buf.read(4))[0])",
                 le->enumname->shortname);
-        emit (1, "_decode_one = staticmethod(_decode_one)");
-
         fprintf (f, "\n");
         fclose (f);
     }
