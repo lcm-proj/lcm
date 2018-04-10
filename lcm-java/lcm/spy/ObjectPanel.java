@@ -379,13 +379,13 @@ public class ObjectPanel extends JPanel
         {
             Section cs = sections.get(section);
 
+            if (collapse_depth == 0) {
+                unindent();
+            }
+
             // if this section is collapsed, resume drawing.
             if (sections.get(section).collapsed) {
                 collapse_depth --;
-            }
-
-            if (collapse_depth == 0) {
-                unindent();
             }
 
             spacer();
