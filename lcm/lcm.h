@@ -347,6 +347,12 @@ LCM_EXPORT
 int lcm_subscription_set_queue_capacity(lcm_subscription_t* handler, int num_messages);
 
 /**
+ * @brief Query the current number of unhandled messages queued up for a subscription.
+ */
+LCM_EXPORT
+int lcm_subscription_get_queue_size(lcm_subscription_t* handler);
+
+/**
  * @}
  */
 

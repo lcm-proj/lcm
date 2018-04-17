@@ -443,6 +443,12 @@ class Subscription {
          */
         inline int setQueueCapacity(int num_messages);
 
+        /**
+         * @brief Query the current number of unhandled messages queued up for
+         * this subscription.
+         */
+        inline int getQueueSize() const;
+
     friend class LCM;
     protected:
         Subscription() {};

@@ -12,6 +12,12 @@ Subscription::setQueueCapacity(int num_messages)
     return lcm_subscription_set_queue_capacity(c_subs, num_messages);
 }
 
+int
+Subscription::getQueueSize() const
+{
+    return lcm_subscription_get_queue_size(c_subs);
+}
+
 template <class MessageType, class ContextClass>
 class LCMTypedSubscription : public Subscription {
     friend class LCM;

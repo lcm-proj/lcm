@@ -400,7 +400,7 @@ lcm_try_enqueue_message(lcm_t* lcm, const char* channel)
     int num_keepers = 0;
     for(unsigned int i=0; i<handlers->len; i++) {
         lcm_subscription_t* h = (lcm_subscription_t*) g_ptr_array_index(handlers, i);
-        if(h->num_queued_messages <= h->max_num_queued_messages ||
+        if(h->num_queued_messages < h->max_num_queued_messages ||
                 h->max_num_queued_messages <= 0) {
             h->num_queued_messages++;
             num_keepers++;
@@ -526,4 +526,12 @@ lcm_subscription_set_queue_capacity(lcm_subscription_t* subs, int num_messages)
     subs->max_num_queued_messages = num_messages;
     g_static_rec_mutex_unlock(&subs->lcm->mutex);
     return 0;
+}
+
+int lcm_subscription_get_queue_size(lcm_subscription_t* subs)
+{
+    g_static_rec_mutex_lock(&subs->lcm->mutex);
+    int result = subs->num_queued_messages;
+    g_static_rec_mutex_unlock(&subs->lcm->mutex);
+    return result;
 }
