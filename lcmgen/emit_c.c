@@ -104,13 +104,21 @@ static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
 
     fprintf(f, "#include <stdint.h>\n");
     fprintf(f, "#include <stdlib.h>\n");
-    fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
+    if(getopt_get_bool(lcm->gopt, "use-quotes-for-includes"))
+        fprintf(f, "#include \"lcm/lcm_coretypes.h\"\n");
+    else
+        fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
+
 //    fprintf(f, "#include \"%s%slcm_lib.h\"\n",
 //            getopt_get_string(lcm->gopt, "cinclude"),
 //            strlen(getopt_get_string(lcm->gopt, "cinclude"))>0 ? "/" : "");
 
     if(!getopt_get_bool(lcm->gopt, "c-no-pubsub")) {
-        fprintf(f, "#include <lcm/lcm.h>\n");
+        if(getopt_get_bool(lcm->gopt, "use-quotes-for-includes"))
+            fprintf(f, "#include \"lcm/lcm.h\"\n");
+        else
+            fprintf(f, "#include <lcm/lcm.h>\n");
+
     }
     if(strlen(getopt_get_string(lcm->gopt, "c-export-include"))) {
         fprintf(f, "#include \"%s%s%s\"\n",

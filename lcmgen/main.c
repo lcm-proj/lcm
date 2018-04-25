@@ -47,6 +47,7 @@ int main(int argc, char *argv[])
     getopt_add_bool  (gopt, 't',  "tokenize", 0,    "Show tokenization");
     getopt_add_bool  (gopt, 'd',  "debug",    0,    "Show parsed file");
     getopt_add_bool  (gopt, 0,    "lazy",     0,    "Generate output file only if .lcm is newer");
+    getopt_add_bool  (gopt, 0,    "use-quotes-for-includes",     0,    "Use quotes instead of angular brackets for including header files");
     getopt_add_string(gopt, 0,    "package-prefix",     "",
                       "Add this package name as a prefix to the declared package");
     getopt_add_bool  (gopt, 0,  "version",    0,    "Show version information and exit");
