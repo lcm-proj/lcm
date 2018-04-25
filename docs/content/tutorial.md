@@ -14,13 +14,13 @@ Each message is sent on a <em>channel</em>, which is identified by a
 human-readable name. For example, messages containing information about the
 temperature in the hallway might be published on the "HALLWAY_TEMPERATURE"
 channel. By convention, all messages on a channel have the same type.
-  
+
 Any application can publish on any channel, although it is common for
 a single application serves as the sole source of data on a channel. Any
 application can receive data on any channel--- for example, both a thermostat
 application and data logger might subscribe to the "HALLWAY_TEMPERATURE"
 channel.
-  
+
 This tutorial will walk you through the main tasks for exchange messages
 between two applications:
 
@@ -44,6 +44,7 @@ languages, consult the following sections for language-specific tutorials.
  - \ref tut_matlab "Steps 2-4: MATLAB"
  - \ref tut_python "Steps 2-4: Python"
  - \ref tut_lua "Steps 2-4: Lua"
+ - \ref tut_go "Steps 2-4: Go"
 
 Note that C and C++ are considered to be separate programming languages.  It is
 possible to use the C bindings from C++, but there are also LCM bindings
@@ -75,3 +76,4 @@ Java     | [MySubscriber.java](https://github.com/lcm-proj/lcm/blob/master/examp
 Lua      | [listener.lua](https://github.com/lcm-proj/lcm/blob/master/examples/lua/listener.lua) | [send-message.lua](https://github.com/lcm-proj/lcm/blob/master/examples/lua/send-message.lua)
 MATLAB   | [listener.m](https://github.com/lcm-proj/lcm/blob/master/examples/matlab/listener.m) | [sendmessage.m](https://github.com/lcm-proj/lcm/blob/master/examples/matlab/sendmessage.m)
 Python   | [listener.py](https://github.com/lcm-proj/lcm/blob/master/examples/python/listener.py) | [send-message.py](https://github.com/lcm-proj/lcm/blob/master/examples/python/send-message.py)
+Go       | [listener/main.go](https://github.com/lcm-proj/lcm/blob/master/examples/go/listener/main.go) | [sender/main.go](https://github.com/lcm-proj/lcm/blob/master/examples/go/sender/main.go)

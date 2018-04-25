@@ -54,6 +54,7 @@ case people find them useful.
  - [C](\ref LcmC)
  - [C++](\ref LcmCpp)
  - [C# / .NET](lcm-dotnet/index.html)
+ - [Go](https://godoc.org/github.com/lcm-proj/lcm/lcm-go/lcm)
  - [Java](javadocs/index.html)
  - [Lua](\ref lua_api)
  - [Python](python/index.html)

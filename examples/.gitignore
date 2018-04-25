@@ -10,3 +10,4 @@
 /c/exlcm_example_t.h
 /c/listener-async
 /java/temperature_demo_java/lcmtypes/
+!/go/listener/
