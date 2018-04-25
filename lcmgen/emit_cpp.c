@@ -202,7 +202,10 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     fprintf(f, "#ifndef __%s_hpp__\n", tn_);
     fprintf(f, "#define __%s_hpp__\n", tn_);
     fprintf(f, "\n");
-    fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
+    if(getopt_get_bool(lcmgen->gopt, "use-quotes-for-includes"))
+        fprintf(f, "#include \"lcm/lcm_coretypes.h\"\n");
+    else
+        fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
     fprintf(f, "\n");
 
     // do we need to #include <vector> and/or <string>?
