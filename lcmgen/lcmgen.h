@@ -78,6 +78,7 @@ struct lcm_struct
   GPtrArray *constants; // lcm_constant_t
 
   char *lcmfile;       // file/path of function that declared it
+  char *package;       // package in which this struct is defined
   int64_t hash;
 
   // Comments in the LCM type defition immediately before a struct is declared

@@ -192,6 +192,7 @@ lcm_struct_t *lcm_struct_create(lcmgen_t *lcmgen, const char *lcmfile, const cha
 {
     lcm_struct_t *lr = (lcm_struct_t*) calloc(1, sizeof(lcm_struct_t));
     lr->lcmfile    = strdup(lcmfile);
+    lr->package    = strdup(lcmgen->package);
     lr->structname = lcm_typename_create(lcmgen, structname);
     lr->members    = g_ptr_array_new();
     lr->constants  = g_ptr_array_new();
