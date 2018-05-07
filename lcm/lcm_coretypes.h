@@ -7,6 +7,17 @@
 #include <stdlib.h>
 
 #ifdef __cplusplus
+
+// Suppress warnings about C-style casts, since this code needs to build in
+// both C and C++ modes
+#if defined(__GNUC__) && defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wold-style-cast"
+#endif
+
 extern "C" {
 #endif
 
@@ -554,6 +565,11 @@ struct _lcm_type_info_t
 
 #ifdef __cplusplus
 }
+#if defined(__GNUC__) && defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 #endif
 
 #endif
