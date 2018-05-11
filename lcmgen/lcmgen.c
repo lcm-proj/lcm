@@ -377,9 +377,10 @@ void parse_try_consume_comment(lcmgen_t* lcmgen, tokenize_t* t,
 
 // If the next non-comment token is "tok", consume it and return 1. Else,
 // return 0
-int parse_try_consume(tokenize_t *t, const char *tok)
+int parse_try_consume(lcmgen_t *lcmgen, tokenize_t *t, const char *tok,
+    int store_comment_doc)
 {
-    parse_try_consume_comment(NULL, t, 0);
+    parse_try_consume_comment(lcmgen, t, store_comment_doc);
     int res = tokenize_peek(t);
     if (res == EOF)
         parse_error(t, "End of file while looking for %s.", tok);
@@ -503,7 +504,7 @@ another_constant:
 
     free(membername);
 
-    if (parse_try_consume(t, ",")) {
+    if (parse_try_consume(lcmgen, t, ",", FALSE)) {
         goto another_constant;
     }
 
@@ -524,11 +525,11 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
     // different array dimensionalities.
 
     // inline type declaration?
-    if (parse_try_consume(t, "struct")) {
+    if (parse_try_consume(lcmgen, t, "struct", FALSE)) {
         parse_error(t, "recursive structs not implemented.");
-    } else if (parse_try_consume(t, "enum")) {
+    } else if (parse_try_consume(lcmgen, t, "enum", FALSE)) {
         parse_error(t, "recursive enums not implemented.");
-    } else if (parse_try_consume(t, "const")) {
+    } else if (parse_try_consume(lcmgen, t, "const", FALSE)) {
         return parse_const(lcmgen, lr, t);
     }
 
@@ -571,7 +572,7 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
         g_ptr_array_add(lr->members, lm);
 
         // (multi-dimensional) array declaration?
-        while (parse_try_consume(t, "[")) {
+        while (parse_try_consume(lcmgen, t, "[", FALSE)) {
 
             // pull out the size of the dimension, either a number or a variable name.
             parse_try_consume_comment(lcmgen, t, 0);
@@ -631,7 +632,7 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
             g_ptr_array_add(lm->dimensions, dim);
         }
 
-        if (!parse_try_consume(t, ","))
+        if (!parse_try_consume(lcmgen, t, ",", FALSE))
             break;
     }
 
@@ -640,13 +641,13 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
     return 0;
 }
 
-int parse_enum_value(lcm_enum_t *le, tokenize_t *t)
+int parse_enum_value(lcmgen_t *lcmgen, lcm_enum_t *le, tokenize_t *t)
 {
     tokenize_next_or_fail(t, "enum name");
 
     lcm_enum_value_t *lev = lcm_enum_value_create(t->token);
 
-    if (parse_try_consume(t, "=")) {
+    if (parse_try_consume(lcmgen, t, "=", FALSE)) {
         tokenize_next_or_fail(t, "enum value literal");
 
         lev->value = strtol(t->token, NULL, 0);
@@ -694,13 +695,8 @@ lcm_struct_t *parse_struct(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
 
     parse_require(t, "{");
 
-    while (!parse_try_consume(t, "}")) {
-        // Check for leading comments that will be used to document the member.
-        parse_try_consume_comment(lcmgen, t, 1);
-
-        if (parse_try_consume(t, "}")) {
-            break;
-        }
+    // Store any leading comments that will be used to document the member.
+    while (!parse_try_consume(lcmgen, t, "}", TRUE)) {
         parse_member(lcmgen, lr, t);
     }
 
@@ -721,11 +717,11 @@ lcm_enum_t *parse_enum(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
     lcm_enum_t *le = lcm_enum_create(lcmgen, lcmfile, name);
     parse_require(t, "{");
 
-    while (!parse_try_consume(t, "}")) {
-        parse_enum_value(le, t);
+    while (!parse_try_consume(lcmgen, t, "}", FALSE)) {
+        parse_enum_value(lcmgen, le, t);
 
-        parse_try_consume(t, ",");
-        parse_try_consume(t, ";");
+        parse_try_consume(lcmgen, t, ",", FALSE);
+        parse_try_consume(lcmgen, t, ";", FALSE);
     }
 
     le->hash = lcm_enum_hash(le);
