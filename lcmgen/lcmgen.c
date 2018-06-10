@@ -694,14 +694,14 @@ lcm_struct_t *parse_struct(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
 
     parse_require(t, "{");
 
-    while (!parse_try_consume(t, "}")) {
-        // Check for leading comments that will be used to document the member.
-        parse_try_consume_comment(lcmgen, t, 1);
+    while (1) {
+      // Check for leading comments that will be used to document the next member.
+      parse_try_consume_comment(lcmgen, t, 1);
 
-        if (parse_try_consume(t, "}")) {
-            break;
-        }
-        parse_member(lcmgen, lr, t);
+      if (parse_try_consume(t, "}")) {
+        break;
+      }
+      parse_member(lcmgen, lr, t);
     }
 
     lr->hash = lcm_struct_hash(lr);
