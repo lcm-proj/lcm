@@ -1,0 +1,6 @@
+# Clang-Format configuration file for automatically formatting source code
+---
+BasedOnStyle: Google
+IndentWidth: 4
+TabWidth: 4
+...
