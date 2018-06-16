@@ -403,35 +403,35 @@ udp_read_packet (lcm_udpm_t *lcm)
 
     // TODO warn about message loss somewhere else.
 
-//    g_static_rec_mutex_lock (&lcm->mutex);
-//    unsigned int ring_capacity = lcm_ringbuf_capacity(lcm->ringbuf);
-//    unsigned int ring_used = lcm_ringbuf_used(lcm->ringbuf);
-//    double buf_avail = ((double)(ring_capacity - ring_used)) / ring_capacity;
-//    g_static_rec_mutex_unlock (&lcm->mutex);
-//    if (buf_avail < lcm->udp_low_watermark)
-//        lcm->udp_low_watermark = buf_avail;
-//
-//    GTimeVal tv;
-//    g_get_current_time(&tv);
-//    int elapsedsecs = tv.tv_sec - lcm->udp_last_report_secs;
-//    if (elapsedsecs > 2) {
-//        uint32_t total_bad = lcm->udp_discarded_bad;
-//        if (total_bad > 0 || lcm->udp_low_watermark < 0.5) {
-//            fprintf(stderr, 
-//                    "%d.%03d LCM loss %4.1f%% : %5d err, "
-//                    "buf avail %4.1f%%\n", 
-//                   (int) tv.tv_sec, (int) tv.tv_usec/1000,
-//                   total_bad * 100.0 / (lcm->udp_rx + total_bad),
-//                   lcm->udp_discarded_bad,
-//                   100.0 * lcm->udp_low_watermark);
-//            
-//            lcm->udp_rx = 0;
-//            lcm->udp_discarded_bad = 0;
-//            lcm->udp_last_report_secs = tv.tv_sec;
-//            lcm->udp_low_watermark = HUGE;
-//        }
-//    }
-    
+    /*
+    g_static_rec_mutex_lock(&lcm->mutex);
+    unsigned int ring_capacity = lcm_ringbuf_capacity(lcm->ringbuf);
+    unsigned int ring_used = lcm_ringbuf_used(lcm->ringbuf);
+    double buf_avail = ((double) (ring_capacity - ring_used)) / ring_capacity;
+    g_static_rec_mutex_unlock(&lcm->mutex);
+    if (buf_avail < lcm->udp_low_watermark)
+        lcm->udp_low_watermark = buf_avail;
+
+    GTimeVal tv;
+    g_get_current_time(&tv);
+    int elapsedsecs = tv.tv_sec - lcm->udp_last_report_secs;
+    if (elapsedsecs > 2) {
+        uint32_t total_bad = lcm->udp_discarded_bad;
+        if (total_bad > 0 || lcm->udp_low_watermark < 0.5) {
+            fprintf(stderr,
+                    "%d.%03d LCM loss %4.1f%% : %5d err, "
+                    "buf avail %4.1f%%\n",
+                    (int) tv.tv_sec, (int) tv.tv_usec / 1000,
+                    total_bad * 100.0 / (lcm->udp_rx + total_bad), lcm->udp_discarded_bad,
+                    100.0 * lcm->udp_low_watermark);
+            lcm->udp_rx = 0;
+            lcm->udp_discarded_bad = 0;
+            lcm->udp_last_report_secs = tv.tv_sec;
+            lcm->udp_low_watermark = HUGE;
+        }
+    }
+    */
+
     int got_complete_message = 0;
 
     while (!got_complete_message) {
