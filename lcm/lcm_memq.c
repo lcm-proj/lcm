@@ -163,7 +163,7 @@ static lcm_provider_vtable_t memq_vtable = {
     .unsubscribe = NULL,
     .publish     = lcm_memq_publish,
     .handle      = lcm_memq_handle,
-    .get_fileno  = lcm_memq_get_fileno
+    .get_fileno  = lcm_memq_get_fileno,
 };
 #endif
 static lcm_provider_info_t memq_info;

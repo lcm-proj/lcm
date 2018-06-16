@@ -1889,7 +1889,7 @@ static lcm_provider_vtable_t mpudpm_vtable = {
     .unsubscribe = lcm_mpudpm_unsubscribe,
     .publish     = lcm_mpudpm_publish,
     .handle      = lcm_mpudpm_handle,
-    .get_fileno  = lcm_mpudpm_get_fileno
+    .get_fileno  = lcm_mpudpm_get_fileno,
 };
 #endif
 static lcm_provider_info_t mpudpm_info;
