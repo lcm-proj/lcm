@@ -28,7 +28,7 @@ function format_c_cpp_dir_r {
     find "$1" -regex '.*\.\(c\|h\)\(pp\)?' -print0 | xargs -0 clang-format -i
 }
 
-#format_c_cpp_dir_r "${LCM_ROOT}/lcm"
+format_c_cpp_dir_r "${LCM_ROOT}/lcm"
 #format_c_cpp_dir_r "${LCM_ROOT}/lcmgen"
 #format_c_cpp_dir_r "${LCM_ROOT}/lcm-examples"
 #format_c_cpp_dir_r "${LCM_ROOT}/lcm-test"
