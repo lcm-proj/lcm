@@ -5,10 +5,10 @@
 extern "C" {
 #endif
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdarg.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 // clang-format off
 #define _NORMAL_    "\x1b[0m"
