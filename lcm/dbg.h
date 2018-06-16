@@ -10,6 +10,7 @@ extern "C" {
 #include <stdlib.h>
 #include <stdarg.h>
 
+// clang-format off
 #define _NORMAL_    "\x1b[0m"
 #define _BLACK_     "\x1b[30;47m"
 #define _RED_       "\x1b[31;40m"
@@ -19,7 +20,9 @@ extern "C" {
 #define _MAGENTA_   "\x1b[35;40m"
 #define _CYAN_      "\x1b[36;40m"
 #define _WHITE_     "\x1b[37;40m"
+// clang-format on
 
+// clang-format off
 #define _BRED_      "\x1b[1;31;40m"
 #define _BGREEN_    "\x1b[1;32;40m"
 #define _BYELLOW_   "\x1b[1;33;40m"
@@ -27,15 +30,19 @@ extern "C" {
 #define _BMAGENTA_  "\x1b[1;35;40m"
 #define _BCYAN_     "\x1b[1;36;40m"
 #define _BWHITE_    "\x1b[1;37;40m"
+// clang-format on
 
 #define DBG_MODE(x) (1ULL << (x))
 
+// clang-format off
 #define DBG_ALL     (~0ULL)
 #define DBG_ERROR   DBG_MODE(0)
 #define DBG_DEFAULT DBG_ERROR
+// clang-format on
 
 // ================== add debugging modes here ======================
 
+// clang-format off
 #define DBG_TEST    DBG_MODE(1) /* foo */
 #define DBG_LCM     DBG_MODE(2)
 #define DBG_LCM_MSG DBG_MODE(3)
@@ -52,9 +59,11 @@ extern "C" {
 #define DBG_14      DBG_MODE(14)
 #define DBG_15      DBG_MODE(15)
 #define DBG_16      DBG_MODE(16)
+// clang-format on
 
 /// There can be no white space in these strings
 
+// clang-format off
 #define DBG_NAMETAB \
 { "all", DBG_ALL }, \
 { "error", DBG_ERROR }, \
@@ -74,8 +83,10 @@ extern "C" {
 { "14", DBG_14 }, \
 { "15", DBG_15 }, \
 { "16", DBG_16 }, \
-{ NULL,     0 } 
+{ NULL,     0 }
+// clang-format on
 
+// clang-format off
 #define DBG_COLORTAB \
 { DBG_TEST, _CYAN_ }, \
 { DBG_LCM, _RED_ }, \
@@ -93,6 +104,7 @@ extern "C" {
 { DBG_14, _BBLUE_ }, \
 { DBG_15, _BMAGENTA_ }, \
 { DBG_16, _BWHITE_ } \
+// clang-format on
 
 #define DBG_ENV     "LCM_DBG"
 
