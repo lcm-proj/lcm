@@ -13,4 +13,5 @@ BraceWrapping:
   AfterFunction: true
 AllowShortFunctionsOnASingleLine: Inline
 AllowShortIfStatementsOnASingleLine: false
+IndentCaseLabels: false
 ...
