@@ -10,7 +10,6 @@
 /// LCM ABI version
 #define LCM_ABI_VERSION 1
 
-
 // Old symbols provided for compatibility
 #define LCM_MAJOR_VERSION LCM_VERSION_MAJOR
 #define LCM_MINOR_VERSION LCM_VERSION_MINOR

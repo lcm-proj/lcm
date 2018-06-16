@@ -5,16 +5,16 @@
 #include "lcm.h"
 
 // GRegex was new in GLib 2.14.0
-#if GLIB_CHECK_VERSION(2,14,0)
+#if GLIB_CHECK_VERSION(2, 14, 0)
 #else
 #error "LCM requires a glib version >= 2.14.0"
 #endif
 
 #ifdef WIN32
-#include "windows/WinPorting.h"
 #include <winsock2.h>
+#include "windows/WinPorting.h"
 #else
-// in POSIX systems, the normal read/write/close/pipe functions are fine for 
+// in POSIX systems, the normal read/write/close/pipe functions are fine for
 // inter-thread signaling via file descriptors.
 #include <unistd.h>
 #define lcm_internal_pipe_write write
@@ -28,38 +28,31 @@ typedef struct _lcm_provider_info_t lcm_provider_info_t;
 typedef struct _lcm_provider_vtable_t lcm_provider_vtable_t;
 
 struct _lcm_provider_info_t {
-    char * name;
-    lcm_provider_vtable_t * vtable;
+    char *name;
+    lcm_provider_vtable_t *vtable;
 };
 
 struct _lcm_provider_vtable_t {
-    lcm_provider_t * (*create)(lcm_t *, const char *target,
-            const GHashTable *args);
+    lcm_provider_t *(*create)(lcm_t *, const char *target, const GHashTable *args);
     void (*destroy)(lcm_provider_t *);
     int (*subscribe)(lcm_provider_t *, const char *channel);
     int (*unsubscribe)(lcm_provider_t *, const char *channel);
-    int (*publish)(lcm_provider_t *, const char *, const void *, 
-            unsigned int);
+    int (*publish)(lcm_provider_t *, const char *, const void *, unsigned int);
     int (*handle)(lcm_provider_t *);
     int (*get_fileno)(lcm_provider_t *);
 };
 
-int
-lcm_parse_url (const char * url, char ** provider, char ** target,
-        GHashTable * args);
+int lcm_parse_url(const char *url, char **provider, char **target, GHashTable *args);
 
 /**
  * Try to enqueue a message.  This may fail if there are no subscribers, or if
  * all the subscribers' queues are full.  The actual message contents are not
  * enqueued here, only a placeholder for the message.
  */
-int
-lcm_try_enqueue_message (lcm_t * lcm, const char * channel);
+int lcm_try_enqueue_message(lcm_t *lcm, const char *channel);
 
-int
-lcm_has_handlers (lcm_t * lcm, const char * channel);
+int lcm_has_handlers(lcm_t *lcm, const char *channel);
 
-int
-lcm_dispatch_handlers (lcm_t * lcm, lcm_recv_buf_t * buf, const char *channel);
+int lcm_dispatch_handlers(lcm_t *lcm, lcm_recv_buf_t *buf, const char *channel);
 
 #endif
