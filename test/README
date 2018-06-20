@@ -14,7 +14,7 @@ of requests to the server, and checks the replies it receives.
 
 This tests basic message transmission, without any marshalling.
 
-Client publishes a random set of mmessages to the "TEST_ECHO" channel and
+Client publishes a random set of messages to the "TEST_ECHO" channel and
 listens for replies on "TEST_ECHO_REPLY".  The replies should be identical to
 the transmitted messages, and should be received within 1 s of transmission.
 
@@ -57,22 +57,22 @@ follows:
   .orientation[2] = n + 1
   .orientation[3] = n + 1
   .num_ranges     = n + 1
-  .ranges[i]      = i         (i = 0 ... n-1)
+  .ranges[i]      = i         (i = 0 ... n)
   .name           = <string representation of n+1>
   .enabled        = (n+1) % 2
 
 
-3. example_list_t
+3. primitives_list_t
 =================
 
 This tests nested datatypes.
 
-Client publishes 100 lcmtest.example_list_t messages to channel
-"test_lcmtest_example_list_t".  Message number n should be populated as
+Client publishes 100 lcmtest.primitives_list_t messages to channel
+"test_lcmtest_primitives_list_t".  Message number n should be populated as
 follows, for n from 0 to 99:
 
-  .n = n
-  .examples[i] = {            (i = 0 ... n-1)
+  .num_items = n
+  .items[i] = {               (i = 0 ... n-1)
     .i8             = -(i % 100)
     .i16            = -(i * 10)
     .i64            = -(i * 10000)
@@ -166,7 +166,7 @@ The server should reply to each message with an lcmtest.multidim_array_t
 message on channel "test_lcmtest_multidim_array_t_reply".  The reply should be
 similar to the client message, but with as if the client was on message (n+1).
 
-5. cross_package_t
+6. cross_package_t
 ===================
 
 This tests nested datatypes crossing package boundaries.
@@ -192,7 +192,7 @@ n from 0 to 999:
   .another.val               = n
 
 The server should reply to each message with an lcmtest2.cross_package_t message on
-channel "test_lcmtest2_cross_package_t".  The reply should be populated as
+channel "test_lcmtest2_cross_package_t_reply".  The reply should be populated as
 follows:
   .primitives.i8             = (n + 1) % 100
   .primitives.i16            = (n + 1) * 10
@@ -210,4 +210,3 @@ follows:
   .primitives.enabled        = (n+1) % 2
 
   .another.val               = n + 1
-

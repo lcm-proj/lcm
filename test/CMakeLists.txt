@@ -16,3 +16,7 @@ endif()
 if(LCM_ENABLE_LUA)
   add_subdirectory(lua)
 endif()
+
+if(LCM_ENABLE_GO)
+  add_subdirectory(go)
+endif()

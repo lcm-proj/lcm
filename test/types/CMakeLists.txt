@@ -9,6 +9,9 @@ endif()
 if(LCM_ENABLE_LUA)
   set(lua_args LUA_SOURCES lua_sources)
 endif()
+if(LCM_ENABLE_GO)
+  set(go_args GO_SOURCES go_sources)
+endif()
 
 lcm_wrap_types(
   C_EXPORT lcmtest
@@ -18,6 +21,7 @@ lcm_wrap_types(
   ${python_args}
   ${java_args}
   ${lua_args}
+  ${go_args}
   lcmtest/bools_t.lcm
   lcmtest/byte_array_t.lcm
   lcmtest/comments_t.lcm
