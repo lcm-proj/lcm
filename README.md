@@ -32,6 +32,7 @@ variety of programming languages.
   * C
   * C++
   * C#
+  * Go
   * Java
   * Lua
   * MATLAB

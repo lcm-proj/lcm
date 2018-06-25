@@ -7,7 +7,9 @@
 #                  [JAVA_SOURCES <VARIABLE_NAME>]
 #                  [PYTHON_SOURCES <VARIABLE_NAME>]
 #                  [LUA_SOURCES <VARIABLE_NAME>]
+#                  [GO_SOURCES <VARIABLE_NAME>]
 #                  [DESTINATION <PATH>]
+#                  [GO_DESTINATION <PATH>]
 #                  <FILE> [<FILE>...])
 #     generate bindings for specified LCM type definition files
 #
@@ -45,6 +47,14 @@ macro(_lcm_add_outputs VAR)
   foreach(_file ${ARGN})
     list(APPEND ${${VAR}} ${_DESTINATION}/${_file})
     list(APPEND _outputs ${_DESTINATION}/${_file})
+  endforeach()
+endmacro()
+
+#------------------------------------------------------------------------------
+macro(_lcm_add_go_outputs VAR)
+  foreach(_file ${ARGN})
+    list(APPEND ${${VAR}} ${_GO_DESTINATION}/${_file})
+    list(APPEND _outputs ${_GO_DESTINATION}/${_file})
   endforeach()
 endmacro()
 
@@ -168,7 +178,9 @@ function(lcm_wrap_types)
     JAVA_SOURCES
     PYTHON_SOURCES
     LUA_SOURCES
+    GO_SOURCES
     DESTINATION
+    GO_DESTINATION
     PACKAGE_PREFIX
   )
   set(_mv_opts "")
@@ -191,16 +203,20 @@ function(lcm_wrap_types)
      NOT DEFINED _CPP_HEADERS AND
      NOT DEFINED _JAVA_SOURCES AND
      NOT DEFINED _PYTHON_SOURCES AND
-     NOT DEFINED _LUA_SOURCES)
+     NOT DEFINED _LUA_SOURCES AND
+     NOT DEFINED _GO_SOURCES)
     message(SEND_ERROR
       "lcm_wrap_types: at least one of C_HEADERS, CPP_HEADERS, JAVA_SOURCES,"
-      " PYTHON_SOURCES or LUA_SOURCES is required")
+      " PYTHON_SOURCES, LUA_SOURCES or GO_SOURCES is required")
     return()
   endif()
 
   # Set default destination, if none given
   if(NOT DEFINED _DESTINATION)
     set(_DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
+  endif()
+  if(NOT DEFINED _GO_DESTINATION)
+    set(_GO_DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/go/src")
   endif()
 
   # Set up arguments for invoking lcm-gen
@@ -239,6 +255,9 @@ function(lcm_wrap_types)
   endif()
   if(DEFINED _LUA_SOURCES)
     list(APPEND _args --lua --lua-no-init --lpath ${_DESTINATION})
+  endif()
+  if(DEFINED _GO_SOURCES)
+    list(APPEND _args --go --go-path ${_GO_DESTINATION})
   endif()
   if(DEFINED _PACKAGE_PREFIX)
     list(APPEND _args --package-prefix ${_PACKAGE_PREFIX})
@@ -306,6 +325,9 @@ function(lcm_wrap_types)
           _lcm_add_lua_type(${_package_dir} ${_type})
           _lcm_add_outputs(_LUA_SOURCES ${_package_dir}/${_type}.lua)
         endif()
+        if(DEFINED _GO_SOURCES)
+          _lcm_add_go_outputs(_GO_SOURCES ${_package_dir}/${_type}.go)
+        endif()
         if(DEFINED _JAVA_SOURCES)
           _lcm_add_outputs(_JAVA_SOURCES ${_package_dir}/${_type}.java)
         endif()
@@ -341,6 +363,7 @@ function(lcm_wrap_types)
   _lcm_export(_JAVA_SOURCES)
   _lcm_export(_PYTHON_SOURCES)
   _lcm_export(_LUA_SOURCES)
+  _lcm_export(_GO_SOURCES)
 endfunction()
 
 #------------------------------------------------------------------------------

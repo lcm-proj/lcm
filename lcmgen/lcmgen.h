@@ -130,7 +130,7 @@ typedef struct lcm_enum lcm_enum_t;
 struct lcm_enum
 {
     lcm_typename_t *enumname; // name of the enum
-	
+
 	GPtrArray *values;   // legal values for the enum
 	char *lcmfile;      // file/path of function that declared it
 
@@ -163,6 +163,9 @@ struct lcmgen
 
 // Returns 1 if the argument is a built-in type (e.g., "int64_t", "float").
 int lcm_is_primitive_type(const char *t);
+
+// Returns 1 if the argument is an array dimension type (e.g., "int*_t").
+int lcm_is_array_dimension_type(const char *t);
 
 // Returns 1 if the argument is a legal constant type (e.g., "int64_t", "float").
 int lcm_is_legal_const_type(const char *t);

@@ -8,7 +8,7 @@ fields, each with its own type and name.  Some of these fields may be
 structs themselves, or arrays.  LCM supports multiple languages and, types are
 defined in a language-neutral specification that looks very similar to C.
 
-Let's define an example type called <tt>example_t</tt>.  Create 
+Let's define an example type called <tt>example_t</tt>.  Create
 a file called <tt>example_t.lcm</tt> with the following contents.  
 
 \include types/example_t.lcm
@@ -56,6 +56,7 @@ table to generate bindings for the programming language of your choice.
 <tr><td>Python</td><td><tt>lcm-gen -p example_t.lcm</tt></tr>
 <tr><td>C#</td><td><tt>lcm-gen --csharp example_t.lcm</tt></tr>
 <tr><td>MATLAB</td><td>Generate Java code</tr>
+<tr><td>Go</td><td>lcm-gen -g example_t.lcm</td></tr>
 </table>
 
 You can pass additional arguments to <tt>lcm-gen</tt> to adjust its behavior
