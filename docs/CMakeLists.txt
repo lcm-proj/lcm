@@ -1,4 +1,11 @@
-add_custom_target(doc)
+if(LCM_ENABLE_DOC)
+  add_custom_target(doc ALL)
+  install(
+    DIRECTORY ${lcm_BINARY_DIR}/docs/html
+    DESTINATION /usr/share/doc/lcm-${LCM_VERSION})
+else()
+  add_custom_target(doc)
+endif()
 
 find_program(DOXYGEN_EXECUTABLE doxygen)
 if(NOT DOXYGEN_EXECUTABLE)
