@@ -315,12 +315,12 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
                 emit(2, "static constexpr %-8s %s = %s%s;", mapped_typename,
                   lc->membername, lc->val_str, suffix);
               } else {
-                emit(2, "// If you're using C++11 and are getting compiler errors saying things like");
-                emit(2, "// ‘constexpr’ needed for in-class initialization of static data member");
-                emit(2, "// then re-run lcm-gen with '--cpp-std=c++11' to generate code that is");
-                emit(2, "// compliant with C++11");
-                emit(2, "static const %-8s %s = %s%s;", mapped_typename,
-                lc->membername, lc->val_str, suffix);
+                  emit(2, "// If you're using C++11 and are getting compiler errors saying");
+                  emit(2, "// things like ‘constexpr’ needed for in-class initialization of");
+                  emit(2, "// static data member then re-run lcm-gen with '--cpp-std=c++11'");
+                  emit(2, "// to generate code that is compliant with C++11");
+                  emit(2, "static const %-8s %s = %s%s;", mapped_typename, lc->membername,
+                       lc->val_str, suffix);
               }
               free(mapped_typename);
             }
@@ -383,6 +383,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
 static void emit_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char* sn = ls->structname->shortname;
+    // clang-format off
     emit(0, "int %s::encode(void *buf, int offset, int maxlen) const", sn);
     emit(0, "{");
     emit(1,     "int pos = 0, tlen;");
@@ -397,21 +398,25 @@ static void emit_encode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(1,     "return pos;");
     emit(0, "}");
     emit(0, "");
+    // clang-format on
 }
 
 static void emit_encoded_size(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char *sn = ls->structname->shortname;
-    emit(0,"int %s::getEncodedSize() const", sn);
-    emit(0,"{");
-    emit(1, "return 8 + _getEncodedSizeNoHash();");
-    emit(0,"}");
-    emit(0,"");
+    // clang-format off
+    emit(0, "int %s::getEncodedSize() const", sn);
+    emit(0, "{");
+    emit(1,     "return 8 + _getEncodedSizeNoHash();");
+    emit(0, "}");
+    emit(0, "");
+    // clang-format on
 }
 
 static void emit_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char* sn = ls->structname->shortname;
+    // clang-format off
     emit(0, "int %s::decode(const void *buf, int offset, int maxlen)", sn);
     emit(0, "{");
     emit(1,     "int pos = 0, thislen;");
@@ -427,17 +432,20 @@ static void emit_decode(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(1,  "return pos;");
     emit(0, "}");
     emit(0, "");
+    // clang-format on
 }
 
 static void emit_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char *sn  = ls->structname->shortname;
+    // clang-format off
     emit(0, "int64_t %s::getHash()", sn);
     emit(0, "{");
     emit(1,     "static int64_t hash = static_cast<int64_t>(_computeHash(NULL));");
     emit(1,     "return hash;");
     emit(0, "}");
     emit(0, "");
+    // clang-format off
 }
 
 static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -451,12 +459,14 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     }
 
     if(last_complex_member >= 0) {
+        // clang-format off
         emit(0, "uint64_t %s::_computeHash(const __lcm_hash_ptr *p)", sn);
         emit(0, "{");
         emit(1,     "const __lcm_hash_ptr *fp;");
         emit(1,     "for(fp = p; fp != NULL; fp = fp->parent)");
         emit(2,         "if(fp->v == %s::getHash)", sn);
         emit(3,              "return 0;");
+        // clang-format on
         if(g_ptr_array_size(ls->members)) {
             emit(1, "const __lcm_hash_ptr cp = { p, %s::getHash };", sn);
         }
@@ -475,14 +485,18 @@ static void emit_compute_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         }
         emit(0, "");
     } else {
+        // clang-format off
         emit(0, "uint64_t %s::_computeHash(const __lcm_hash_ptr *)", sn);
         emit(0, "{");
         emit(1,     "uint64_t hash = 0x%016"PRIx64"LL;", ls->hash);
+        // clang-format on
     }
 
-    emit(1, "return (hash<<1) + ((hash>>63)&1);");
+    // clang-format off
+    emit(1,     "return (hash<<1) + ((hash>>63)&1);");
     emit(0, "}");
     emit(0, "");
+    // clang-format on
 }
 
 static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int depth, int extra_indent)
@@ -509,7 +523,8 @@ static void _encode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
             for(int i=0; i<depth; i++)
                 emit_continue("[a%d]", i);
             emit_end(".c_str());");
-            emit(indent, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &__cstr, 1);");
+            emit(indent, "tlen = __string_encode_array(");
+            emit(indent, "    buf, offset + pos, maxlen - pos, &__cstr, 1);");
         } else {
             emit_start(indent, "tlen = this->%s", lm->membername);
             for(int i=0; i<depth; i++)
@@ -534,17 +549,22 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char* sn = ls->structname->shortname;
     if(0 == g_ptr_array_size(ls->members)) {
+        // clang-format off
         emit(0, "int %s::_encodeNoHash(void *, int, int) const", sn);
         emit(0, "{");
         emit(1,     "return 0;");
         emit(0, "}");
         emit(0, "");
+        // clang-format on
         return;
     }
+
+    // clang-format off
     emit(0, "int %s::_encodeNoHash(void *buf, int offset, int maxlen) const", sn);
     emit(0, "{");
     emit(1,     "int pos = 0, tlen;");
     emit(0, "");
+    // clang-format on
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
         int num_dims = g_ptr_array_size(lm->dimensions);
@@ -552,9 +572,11 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         if (0 == num_dims) {
             if (lcm_is_primitive_type(lm->type->lctypename)) {
                 if(!strcmp(lm->type->lctypename, "string")) {
-                    emit(1, "char* %s_cstr = const_cast<char*>(this->%s.c_str());", lm->membername, lm->membername);
-                    emit(1, "tlen = __string_encode_array(buf, offset + pos, maxlen - pos, &%s_cstr, 1);",
-                            lm->membername);
+                    emit(1, "char* %s_cstr = const_cast<char*>(this->%s.c_str());", lm->membername,
+                         lm->membername);
+                    emit(1, "tlen = __string_encode_array(");
+                    emit(1, "    buf, offset + pos, maxlen - pos, &%s_cstr, 1);",
+                         lm->membername);
                 } else {
                 emit(1, "tlen = __%s_encode_array(buf, offset + pos, maxlen - pos, &this->%s, 1);",
                     lm->type->lctypename, lm->membername);
@@ -583,8 +605,8 @@ static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         emit(0,"");
     }
     emit(1, "return pos;");
-    emit(0,"}");
-    emit(0,"");
+    emit(0, "}");
+    emit(0, "");
 }
 
 static void emit_encoded_size_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -671,7 +693,8 @@ static void _decode_recursive(lcmgen_t* lcm, FILE* f, lcm_member_t* lm, int dept
     } else if(depth == g_ptr_array_size(lm->dimensions)) {
         if(!strcmp(lm->type->lctypename, "string")) {
             emit(1 + depth, "int32_t __elem_len;");
-            emit(1 + depth, "tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__elem_len, 1);");
+            emit(1 + depth, "tlen = __int32_t_decode_array(");
+            emit(1 + depth, "    buf, offset + pos, maxlen - pos, &__elem_len, 1);");
             emit(1 + depth, "if(tlen < 0) return tlen; else pos += tlen;");
             emit(1 + depth, "if(__elem_len > maxlen - pos) return -1;");
             emit_start(1 + depth, "this->%s", lm->membername);
@@ -713,30 +736,39 @@ static void emit_decode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char* sn = ls->structname->shortname;
     if(0 == g_ptr_array_size(ls->members)) {
+        // clang-format off
         emit(0, "int %s::_decodeNoHash(const void *, int, int)", sn);
         emit(0, "{");
         emit(1,     "return 0;");
         emit(0, "}");
         emit(0, "");
+        // clang-format on
         return;
     }
+
+    // clang-format off
     emit(0, "int %s::_decodeNoHash(const void *buf, int offset, int maxlen)", sn);
     emit(0, "{");
     emit(1,     "int pos = 0, tlen;");
     emit(0, "");
+    // clang-format on
     for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
 
         if (0 == g_ptr_array_size(lm->dimensions) && lcm_is_primitive_type(lm->type->lctypename)) {
             if(!strcmp(lm->type->lctypename, "string")) {
                 emit(1, "int32_t __%s_len__;", lm->membername);
-                emit(1, "tlen = __int32_t_decode_array(buf, offset + pos, maxlen - pos, &__%s_len__, 1);", lm->membername);
+                emit(1, "tlen = __int32_t_decode_array(");
+                emit(1, "    buf, offset + pos, maxlen - pos, &__%s_len__, 1);", lm->membername);
                 emit(1, "if(tlen < 0) return tlen; else pos += tlen;");
                 emit(1, "if(__%s_len__ > maxlen - pos) return -1;", lm->membername);
-                emit(1, "this->%s.assign(static_cast<const char*>(buf) + offset + pos, __%s_len__ - 1);", lm->membername, lm->membername);
+                emit(1, "this->%s.assign(", lm->membername);
+                emit(1, "    static_cast<const char*>(buf) + offset + pos, __%s_len__ - 1);",
+                     lm->membername);
                 emit(1, "pos += __%s_len__;", lm->membername);
             } else {
-                emit(1, "tlen = __%s_decode_array(buf, offset + pos, maxlen - pos, &this->%s, 1);", lm->type->lctypename, lm->membername);
+                emit(1, "tlen = __%s_decode_array(buf, offset + pos, maxlen - pos, &this->%s, 1);",
+                     lm->type->lctypename, lm->membername);
                 emit(1, "if(tlen < 0) return tlen; else pos += tlen;");
             }
         } else {
@@ -778,11 +810,14 @@ int emit_cpp(lcmgen_t *lcmgen)
             emit_decode(lcmgen, f, lr);
             emit_encoded_size(lcmgen, f, lr);
             emit_get_hash(lcmgen, f, lr);
+
+            // clang-format off
             emit(0, "const char* %s::getTypeName()", lr->structname->shortname);
             emit(0, "{");
             emit(1,     "return \"%s\";", lr->structname->shortname);
             emit(0, "}");
             emit(0, "");
+            // clang-format on
 
             emit_encode_nohash(lcmgen, f, lr);
             emit_decode_nohash(lcmgen, f, lr);
