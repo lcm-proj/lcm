@@ -255,7 +255,7 @@ static void
 emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     emit(1, "def _decode_one(buf):");
-    emit (2, "self = %s()", ls->structname->shortname);
+    emit(2, "self = %s()", ls->structname->shortname);
 
     GQueue *struct_fmt = g_queue_new ();
     GQueue *struct_members = g_queue_new ();
@@ -353,17 +353,18 @@ emit_python_decode_one (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 static void
 emit_python_decode (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
-    emit (1, "def decode(data):");
-    emit (2, "if hasattr(data, 'read'):");
-    emit (3,     "buf = data");
-    emit (2, "else:");
-    emit (3,     "buf = BytesIO(data)");
-    emit (2, "if buf.read(8) != %s._get_packed_fingerprint():", 
-            ls->structname->shortname);
-    emit (3,     "raise ValueError(\"Decode error\")");
-    emit (2, "return %s._decode_one(buf)", ls->structname->shortname);
-    emit (1, "decode = staticmethod(decode)");
+    // clang-format off
+    emit(1, "def decode(data):");
+    emit(2,     "if hasattr(data, 'read'):");
+    emit(3,         "buf = data");
+    emit(2,     "else:");
+    emit(3,         "buf = BytesIO(data)");
+    emit(2,     "if buf.read(8) != %s._get_packed_fingerprint():", ls->structname->shortname);
+    emit(3,         "raise ValueError(\"Decode error\")");
+    emit(2,     "return %s._decode_one(buf)", ls->structname->shortname);
+    emit(1, "decode = staticmethod(decode)");
     fprintf (f, "\n");
+    // clang-format on
 }
 
 static void
@@ -603,8 +604,8 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     const char *sn = ls->structname->shortname;
     emit (1, "_hash = None");
 
-    emit (1, "def _get_hash_recursive(parents):");
-    emit (2,     "if %s in parents: return 0", sn);
+    emit(1, "def _get_hash_recursive(parents):");
+    emit(2, "if %s in parents: return 0", sn);
     for (unsigned int m = 0; m < ls->members->len; m++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
         if (! lcm_is_primitive_type (lm->type->lctypename)) {
@@ -626,21 +627,21 @@ emit_python_fingerprint (const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
         }
     }
     emit_end (") & 0xffffffffffffffff");
-    emit (2, "tmphash  = (((tmphash<<1)&0xffffffffffffffff)  + "
-            "(tmphash>>63)) & 0xffffffffffffffff");
-    emit (2,     "return tmphash");
-    emit (1, "_get_hash_recursive = staticmethod(_get_hash_recursive)");
-
-    emit (1, "_packed_fingerprint = None");
-    emit (0, "");
-    emit (1, "def _get_packed_fingerprint():");
-    emit (2,     "if %s._packed_fingerprint is None:", sn);
-    emit (3,         "%s._packed_fingerprint = struct.pack(\">Q\", "
-            "%s._get_hash_recursive([]))", sn, sn);
-    emit (2,     "return %s._packed_fingerprint", sn);
-    emit (1, "_get_packed_fingerprint = staticmethod(_get_packed_fingerprint)");
+    // clang-format off
+    emit(2,     "tmphash  = (((tmphash<<1)&0xffffffffffffffff) + "
+                             "(tmphash>>63)) & 0xffffffffffffffff");
+    emit(2,     "return tmphash");
+    emit(1, "_get_hash_recursive = staticmethod(_get_hash_recursive)");
+    emit(1, "_packed_fingerprint = None");
+    emit(0, "");
+    emit(1, "def _get_packed_fingerprint():");
+    emit(2,     "if %s._packed_fingerprint is None:", sn);
+    emit(3,         "%s._packed_fingerprint = struct.pack("
+                             "\">Q\", %s._get_hash_recursive([]))", sn, sn);
+    emit(2,     "return %s._packed_fingerprint", sn);
+    emit(1, "_get_packed_fingerprint = staticmethod(_get_packed_fingerprint)");
+    // clang-format off
     fprintf (f, "\n");
-
 }
 
 static void
@@ -847,46 +848,43 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
             emit(1, "%s = %i", lev->valuename, lev->value);
         }
 
-        emit (1, "_packed_fingerprint = struct.pack(\">Q\", 0x%"PRIx64")",
-                le->hash);
-        fprintf (f, "\n");
+        // clang-format off
+        emit(1, "_packed_fingerprint = struct.pack(\">Q\", 0x%"PRIx64")", le->hash);
+        fprintf(f, "\n");
 
-        emit (1, "def __init__ (self, value):");
-        emit (2,     "self.value = value");
-        fprintf (f, "\n");
+        emit(1, "def __init__ (self, value):");
+        emit(2,     "self.value = value");
+        fprintf(f, "\n");
 
-        emit (1, "def _get_hash_recursive(parents):");
-        emit (2,     "return 0x%"PRIx64, le->hash);
-        emit (1, "_get_hash_recursive=staticmethod(_get_hash_recursive)");
-        emit (1, "def _get_packed_fingerprint():");
-        emit (2,     "return %s._packed_fingerprint", le->enumname->shortname);
-        emit (1, "_get_packed_fingerprint = staticmethod(_get_packed_fingerprint)");
-        fprintf (f, "\n");
+        emit(1, "def _get_hash_recursive(parents):");
+        emit(2,     "return 0x%"PRIx64, le->hash);
+        emit(1, "_get_hash_recursive=staticmethod(_get_hash_recursive)");
+        emit(1, "def _get_packed_fingerprint():");
+        emit(2,     "return %s._packed_fingerprint", le->enumname->shortname);
+        emit(1, "_get_packed_fingerprint = staticmethod(_get_packed_fingerprint)");
+        fprintf(f, "\n");
 
-        emit (1, "def encode(self):");
-        emit (2,     "return struct.pack(\">Qi\", 0x%"PRIx64", self.value)",
-                le->hash);
+        emit(1, "def encode(self):");
+        emit(2,     "return struct.pack(\">Qi\", 0x%"PRIx64", self.value)", le->hash);
 
-        emit (1, "def _encode_one(self, buf):");
-        emit (2,     "buf.write (struct.pack(\">i\", self.value))");
-        fprintf (f, "\n");
+        emit(1, "def _encode_one(self, buf):");
+        emit(2,     "buf.write (struct.pack(\">i\", self.value))");
+        fprintf(f, "\n");
 
-        emit (1, "def decode(data):");
-        emit (2,     "if hasattr (data, 'read'):");
-        emit (3,         "buf = data");
-        emit (2,     "else:");
-        emit (3,         "buf = BytesIO(data)");
-        emit (2,     "if buf.read(8) != %s._packed_fingerprint:", 
-                le->enumname->shortname);
-        emit (3,         "raise ValueError(\"Decode error\")");
-        emit (2,     "return %s(struct.unpack(\">i\", buf.read(4))[0])",
-                le->enumname->shortname);
-        emit (1, "decode = staticmethod(decode)");
+        emit(1, "def decode(data):");
+        emit(2,     "if hasattr (data, 'read'):");
+        emit(3,         "buf = data");
+        emit(2,     "else:");
+        emit(3,         "buf = BytesIO(data)");
+        emit(2,     "if buf.read(8) != %s._packed_fingerprint:", le->enumname->shortname);
+        emit(3,         "raise ValueError(\"Decode error\")");
+        emit(2,     "return %s(struct.unpack(\">i\", buf.read(4))[0])", le->enumname->shortname);
+        emit(1, "decode = staticmethod(decode)");
 
-        emit (1, "def _decode_one(buf):");
-        emit (2,     "return %s(struct.unpack(\">i\", buf.read(4))[0])",
-                le->enumname->shortname);
-        emit (1, "_decode_one = staticmethod(_decode_one)");
+        emit(1, "def _decode_one(buf):");
+        emit(2,     "return %s(struct.unpack(\">i\", buf.read(4))[0])", le->enumname->shortname);
+        emit(1, "_decode_one = staticmethod(_decode_one)");
+        // clang-format on
 
         fprintf (f, "\n");
         fclose (f);
