@@ -8,23 +8,36 @@
 #include <string.h>
 #include <unistd.h>
 #ifdef WIN32
-#define __STDC_FORMAT_MACROS // Enable integer types
+#define __STDC_FORMAT_MACROS  // Enable integer types
 #endif
 
 #include "lcmgen.h"
 
 #define TABS "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"
-#define emit_start(n, ...) \
-    do { fprintf(f, "%.*s", n, TABS); fprintf(f, __VA_ARGS__); } while (0)
-#define emit_continue(...) \
-    do { fprintf(f, __VA_ARGS__); } while (0)
-#define emit_end(...) \
-    do { fprintf(f, __VA_ARGS__); fprintf(f, "\n"); } while (0)
-#define emit(n, ...) \
-    do { fprintf(f, "%.*s", n, TABS); fprintf(f, __VA_ARGS__); \
-        fprintf(f, "\n"); } while (0)
-#define emit_nl() \
-    do { fprintf(f, "\n"); } while (0)
+#define emit_start(n, ...)           \
+    do {                             \
+        fprintf(f, "%.*s", n, TABS); \
+        fprintf(f, __VA_ARGS__);     \
+    } while (0)
+#define emit_continue(...)       \
+    do {                         \
+        fprintf(f, __VA_ARGS__); \
+    } while (0)
+#define emit_end(...)            \
+    do {                         \
+        fprintf(f, __VA_ARGS__); \
+        fprintf(f, "\n");        \
+    } while (0)
+#define emit(n, ...)                 \
+    do {                             \
+        fprintf(f, "%.*s", n, TABS); \
+        fprintf(f, __VA_ARGS__);     \
+        fprintf(f, "\n");            \
+    } while (0)
+#define emit_nl()         \
+    do {                  \
+        fprintf(f, "\n"); \
+    } while (0)
 
 /*
  * Simple function that takes a string like this.is.a.string and turns it into
@@ -68,7 +81,7 @@ static char *dots_to_path(const char *const s)
  */
 static char *strip_dots(const char *const s)
 {
-    char *p = (char *)s;
+    char *p = (char *) s;
 
     for (char *t = p; *t != 0; t++)
         if (*t == '.')
@@ -98,27 +111,27 @@ static char *first_to_upper(const char *const str)
  */
 static char *go_name(const char *const str)
 {
-    char *ret = malloc(strlen(str)+1);
+    char *ret = malloc(strlen(str) + 1);
 
     char *t = ret;
     int upper = FALSE;
     for (const char *p = str; *p != 0; p++) {
         switch (*p) {
-            case '.':
-                upper = TRUE;
-                break;
-            case '_':
-                upper = TRUE;
-                break;
-            default:
-                if (upper) {
-                    *t = toupper(*p);
-                    upper = FALSE;
-                } else {
-                    *t = *p;
-                }
-                t++;
-                break;
+        case '.':
+            upper = TRUE;
+            break;
+        case '_':
+            upper = TRUE;
+            break;
+        default:
+            if (upper) {
+                *t = toupper(*p);
+                upper = FALSE;
+            } else {
+                *t = *p;
+            }
+            t++;
+            break;
         }
     }
     *t = '\0';
@@ -131,15 +144,24 @@ static char *go_name(const char *const str)
  */
 static const char *const map_builtintype_name(const char *const type)
 {
-    if (strcmp(type, "boolean") == 0) return "bool";
-    if (strcmp(type, "byte") == 0) return "byte";
-    if (strcmp(type, "int8_t") == 0) return "int8";
-    if (strcmp(type, "int16_t") == 0) return "int16";
-    if (strcmp(type, "int32_t") == 0) return "int32";
-    if (strcmp(type, "int64_t") == 0) return "int64";
-    if (strcmp(type, "float") == 0) return "float32";
-    if (strcmp(type, "double") == 0) return "float64";
-    if (strcmp(type, "string") == 0) return "string";
+    if (strcmp(type, "boolean") == 0)
+        return "bool";
+    if (strcmp(type, "byte") == 0)
+        return "byte";
+    if (strcmp(type, "int8_t") == 0)
+        return "int8";
+    if (strcmp(type, "int16_t") == 0)
+        return "int16";
+    if (strcmp(type, "int32_t") == 0)
+        return "int32";
+    if (strcmp(type, "int64_t") == 0)
+        return "int64";
+    if (strcmp(type, "float") == 0)
+        return "float32";
+    if (strcmp(type, "double") == 0)
+        return "float64";
+    if (strcmp(type, "string") == 0)
+        return "string";
     assert(0);
     return NULL;
 }
@@ -147,17 +169,25 @@ static const char *const map_builtintype_name(const char *const type)
 /*
  * Returns the size of a primitive type (string excluded) in bytes.
  */
-static int primitive_type_size (const char *const type)
+static int primitive_type_size(const char *const type)
 {
-    if (strcmp(type, "byte") == 0) return 1;
-    if (strcmp(type, "boolean") == 0) return 1;
-    if (strcmp(type, "int8_t") == 0) return 1;
-    if (strcmp(type, "int16_t") == 0) return 2;
-    if (strcmp(type, "int32_t") == 0) return 4;
-    if (strcmp(type, "int64_t") == 0) return 8;
-    if (strcmp(type, "float") == 0) return 4;
-    if (strcmp(type, "double") == 0) return 8;
-    assert (0);
+    if (strcmp(type, "byte") == 0)
+        return 1;
+    if (strcmp(type, "boolean") == 0)
+        return 1;
+    if (strcmp(type, "int8_t") == 0)
+        return 1;
+    if (strcmp(type, "int16_t") == 0)
+        return 2;
+    if (strcmp(type, "int32_t") == 0)
+        return 4;
+    if (strcmp(type, "int64_t") == 0)
+        return 8;
+    if (strcmp(type, "float") == 0)
+        return 4;
+    if (strcmp(type, "double") == 0)
+        return 8;
+    assert(0);
     return 0;
 }
 
@@ -166,15 +196,13 @@ static int primitive_type_size (const char *const type)
  * dimension or members->len if not found.
  * Starts at given index.
  */
-unsigned int lcm_find_member_with_named_dimension(lcm_struct_t *ls,
-    const char *const name, unsigned int start)
+unsigned int lcm_find_member_with_named_dimension(lcm_struct_t *ls, const char *const name,
+                                                  unsigned int start)
 {
-
     for (unsigned int i = start; i < ls->members->len; i++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, i);
         for (unsigned int j = 0; j < lm->dimensions->len; j++) {
-            lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(
-                lm->dimensions, j);
+            lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, j);
             if (dim->mode == LCM_VAR) {
                 if (strcmp(name, dim->size) == 0) {
                     return i;
@@ -188,15 +216,15 @@ unsigned int lcm_find_member_with_named_dimension(lcm_struct_t *ls,
 /*
  * Locate the lcm_struct_t of given lcm_member_t from lcmgen_t
  */
-lcm_struct_t *lcm_find_struct(lcmgen_t *lcm, lcm_member_t *lm) {
+lcm_struct_t *lcm_find_struct(lcmgen_t *lcm, lcm_member_t *lm)
+{
     int found = FALSE;
     lcm_struct_t *ls = NULL;
 
     for (unsigned int s = 0; s < lcm->structs->len; s++) {
         ls = (lcm_struct_t *) g_ptr_array_index(lcm->structs, s);
 
-        if (strcmp(lm->type->lctypename, ls->structname->lctypename)
-            == 0) {
+        if (strcmp(lm->type->lctypename, ls->structname->lctypename) == 0) {
             found = TRUE;
             break;
         }
@@ -217,14 +245,13 @@ lcm_struct_t *lcm_find_struct(lcmgen_t *lcm, lcm_member_t *lm) {
  *
  * Returns calculated fingerprint or 0 on error
  */
-struct __fingerprints
-{
+struct __fingerprints {
     const struct __fingerprints *parent;
     uint64_t fingerprint;
 };
 
 uint64_t __lcm_recursive_fingerprint(lcmgen_t *lcm, lcm_struct_t *ls,
-    const struct __fingerprints *fs)
+                                     const struct __fingerprints *fs)
 {
     uint64_t fingerprint = ls->hash;
 
@@ -240,7 +267,7 @@ uint64_t __lcm_recursive_fingerprint(lcmgen_t *lcm, lcm_struct_t *ls,
 
     // Compute hash for all members
     for (unsigned int m = 0; m < ls->members->len; m++) {
-        lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, m);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
 
         if (!lcm_is_primitive_type(lm->type->lctypename)) {
             lcm_struct_t *ls_ = lcm_find_struct(lcm, lm);
@@ -249,7 +276,7 @@ uint64_t __lcm_recursive_fingerprint(lcmgen_t *lcm, lcm_struct_t *ls,
                 fingerprint += __lcm_recursive_fingerprint(lcm, ls_, &fp);
             } else {
                 fprintf(stderr, "Unable to locate fingerprint for member '%s' of '%s'\n",
-                    lm->membername, ls->structname->shortname);
+                        lm->membername, ls->structname->shortname);
                 return 0;
             }
         }
@@ -267,13 +294,11 @@ uint64_t lcm_get_fingerprint(lcmgen_t *lcm, lcm_struct_t *ls)
  * not found.
  * Starts at given index.
  */
-unsigned int lcm_find_named_dimension(FILE *f, lcm_struct_t *ls,
-    lcm_member_t *lm, const char *const name, unsigned int start)
+unsigned int lcm_find_named_dimension(FILE *f, lcm_struct_t *ls, lcm_member_t *lm,
+                                      const char *const name, unsigned int start)
 {
-
     for (unsigned int i = start; i < lm->dimensions->len; i++) {
-        lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(
-            lm->dimensions, i);
+        lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, i);
         if (dim->mode == LCM_VAR) {
             if (strcmp(name, dim->size) == 0) {
                 return i;
@@ -289,8 +314,7 @@ unsigned int lcm_find_named_dimension(FILE *f, lcm_struct_t *ls,
  *
  * CAUTION: memory has to be freed manually.
  */
-static char *go_membername(lcm_struct_t *ls, const char *const str,
-    int method)
+static char *go_membername(lcm_struct_t *ls, const char *const str, int method)
 {
     char *membername = go_name(str);
 
@@ -320,9 +344,8 @@ static char *go_membername(lcm_struct_t *ls, const char *const str,
  *
  * CAUTION: memory has to be freed manually.
  */
-static char *go_typename(const char *const package,
-    const char *const typepackage, const char *const type,
-    const int64_t fingerprint)
+static char *go_typename(const char *const package, const char *const typepackage,
+                         const char *const type, const int64_t fingerprint)
 {
     if (lcm_is_primitive_type(type)) {
         return strdup(map_builtintype_name(type));
@@ -347,7 +370,7 @@ static char *go_typename(const char *const package,
 
     // Add fingerprint suffix
     if (fingerprint != 0) {
-        g_string_append_printf(name, "_%lx", (uint64_t)fingerprint);
+        g_string_append_printf(name, "_%lx", (uint64_t) fingerprint);
     }
 
     char *ret = name->str;
@@ -361,19 +384,12 @@ static char *go_typename(const char *const package,
  * CAUTION: memory has to be freed manually.
  */
 char *go_filename(lcmgen_t *lcm, const char *const dir, const char *const name,
-    uint64_t fingerprint, const char *const suffix)
+                  uint64_t fingerprint, const char *const suffix)
 {
     if (fingerprint != 0)
-        return g_strdup_printf("%s/%s_%lx%s.go",
-            dir,
-            name,
-            fingerprint,
-            suffix);
+        return g_strdup_printf("%s/%s_%lx%s.go", dir, name, fingerprint, suffix);
     else
-        return g_strdup_printf("%s/%s%s.go",
-            dir,
-            name,
-            suffix);
+        return g_strdup_printf("%s/%s%s.go", dir, name, suffix);
 }
 
 /*
@@ -404,8 +420,7 @@ static void emit_auto_generated_warning(FILE *f)
 /*
  * Emits the decoding function for primitive types.
  */
-static void emit_encode_function(FILE *f, const char *const type,
-    const char *const src, int indent)
+static void emit_encode_function(FILE *f, const char *const type, const char *const src, int indent)
 {
     if (!strcmp(type, "boolean")) {
         emit(indent, "if p.%s {", src);
@@ -458,8 +473,7 @@ static void emit_encode_function(FILE *f, const char *const type,
 /*
  * Emits the encoding function for primitive types.
  */
-static void emit_decode_function(FILE *f, const char *const type,
-    const char *const dst, int indent)
+static void emit_decode_function(FILE *f, const char *const type, const char *const dst, int indent)
 {
     if (!strcmp(type, "boolean")) {
         emit(indent, "if data[offset] != 0 {");
@@ -475,16 +489,13 @@ static void emit_decode_function(FILE *f, const char *const type,
         emit(indent, "p.%s = int8(data[offset])", dst);
         emit(indent, "offset += 1");
     } else if (!strcmp(type, "int16_t")) {
-        emit(indent, "p.%s = int16(binary.BigEndian.Uint16(data[offset:]))",
-            dst);
+        emit(indent, "p.%s = int16(binary.BigEndian.Uint16(data[offset:]))", dst);
         emit(indent, "offset += 2");
     } else if (!strcmp(type, "int32_t")) {
-        emit(indent, "p.%s = int32(binary.BigEndian.Uint32(data[offset:]))",
-            dst);
+        emit(indent, "p.%s = int32(binary.BigEndian.Uint32(data[offset:]))", dst);
         emit(indent, "offset += 4");
     } else if (!strcmp(type, "int64_t")) {
-        emit(indent, "p.%s = int64(binary.BigEndian.Uint64(data[offset:]))",
-            dst);
+        emit(indent, "p.%s = int64(binary.BigEndian.Uint64(data[offset:]))", dst);
         emit(indent, "offset += 8");
     } else if (!strcmp(type, "float")) {
         emit(indent, "p.%s = math.Float32frombits(binary.BigEndian.Uint32(data[offset:]))", dst);
@@ -510,16 +521,14 @@ static void emit_decode_function(FILE *f, const char *const type,
  * the necessary Go code when called. As more than one slice has to be created
  * when they are nested, this function takes start_dim as an argument.
  */
-static void emit_go_slice_make(FILE *f, int indent, const char *const package,
-    lcm_member_t *lm, unsigned int start_dim, const char *const name,
-    const char *const size, const int64_t fingerprint)
+static void emit_go_slice_make(FILE *f, int indent, const char *const package, lcm_member_t *lm,
+                               unsigned int start_dim, const char *const name,
+                               const char *const size, const int64_t fingerprint)
 {
-
     emit_start(indent, "p.%s = make(", name);
 
     for (unsigned int i = start_dim; i < lm->dimensions->len; i++) {
-        lcm_dimension_t *dim =
-            (lcm_dimension_t*)g_ptr_array_index(lm->dimensions, i);
+        lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, i);
 
         if (dim->mode == LCM_VAR) {
             emit_continue("[]");
@@ -528,8 +537,7 @@ static void emit_go_slice_make(FILE *f, int indent, const char *const package,
         }
     }
 
-    char *type = go_typename(package, lm->type->package,
-        lm->type->lctypename, fingerprint);
+    char *type = go_typename(package, lm->type->package, lm->type->lctypename, fingerprint);
     emit_end("%s, p.%s)", type, size);
     free(type);
 }
@@ -538,16 +546,15 @@ static void emit_go_slice_make(FILE *f, int indent, const char *const package,
  * Function to emit (nested) for loop(s), as this has to happen quite often in
  * case of multi-dimensional arrays.
  */
-static unsigned int emit_go_array_loops(FILE *f, lcmgen_t *lcm,
-    lcm_struct_t *ls, lcm_member_t *lm, GString *arraystr, int slice_emit,
-    unsigned int end, const uint64_t fingerprint)
+static unsigned int emit_go_array_loops(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls, lcm_member_t *lm,
+                                        GString *arraystr, int slice_emit, unsigned int end,
+                                        const uint64_t fingerprint)
 {
     unsigned int n;
     GString *slicestr = g_string_new(NULL);
 
     for (n = 0; n < end; n++) {
-        lcm_dimension_t *dim =
-            (lcm_dimension_t*)g_ptr_array_index(lm->dimensions, n);
+        lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, n);
 
         if (slice_emit)
             g_string_assign(slicestr, arraystr->str);
@@ -556,15 +563,14 @@ static unsigned int emit_go_array_loops(FILE *f, lcmgen_t *lcm,
 
         if (dim->mode == LCM_VAR) {
             char *size = go_membername(ls, dim->size, FALSE);
-            const char *type = map_builtintype_name(
-                lcm_find_member(ls, dim->size)->type->lctypename);
+            const char *type =
+                map_builtintype_name(lcm_find_member(ls, dim->size)->type->lctypename);
 
             if (slice_emit)
-                emit_go_slice_make(f, n + 1, ls->structname->package, lm, n,
-                    slicestr->str, size, fingerprint);
+                emit_go_slice_make(f, n + 1, ls->structname->package, lm, n, slicestr->str, size,
+                                   fingerprint);
 
-            emit(1 + n, "for i%d := %s(0); i%d < p.%s; i%d++ {",
-                n, type, n, size, n);
+            emit(1 + n, "for i%d := %s(0); i%d < p.%s; i%d++ {", n, type, n, size, n);
 
             free(size);
         } else {
@@ -607,23 +613,21 @@ static void emit_go_lcm_imports(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls)
     emit(1, "\"math\"");
     emit(1, "\"math/bits\"");
     for (int i = 0; i < ls->members->len; i++) {
-        lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, i);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, i);
 
         if (lcm_is_primitive_type(lm->type->lctypename))
-                continue;
+            continue;
 
         int imported = FALSE;
         for (int j = i - 1; j > 0; j--) {
-            lcm_member_t *lm_ =
-                (lcm_member_t *)g_ptr_array_index(ls->members, j);
+            lcm_member_t *lm_ = (lcm_member_t *) g_ptr_array_index(ls->members, j);
 
             if (strcmp(lm->type->package, lm_->type->package) == 0)
                 imported = TRUE;
         }
 
         // Import if not already imported and not our own package
-        if (!imported &&
-                strcmp(ls->structname->package, lm->type->package) != 0) {
+        if (!imported && strcmp(ls->structname->package, lm->type->package) != 0) {
             char *package = dots_to_path(lm->type->package);
             char *prefix = getopt_get_string(lcm->gopt, "go-import-prefix");
             emit(1, "\"%s%s\"", prefix, package);
@@ -642,18 +646,16 @@ static void emit_go_lcm_imports(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls)
 /*
  * Emits the fingerprint of this particular struct as a constant.
  */
-static void emit_go_lcm_fingerprint_const(FILE *f, uint64_t hash,
-    const char *const type)
+static void emit_go_lcm_fingerprint_const(FILE *f, uint64_t hash, const char *const type)
 {
-    emit(0, "const %s_Fingerprint uint64 = 0x%016"PRIx64, type, hash);
+    emit(0, "const %s_Fingerprint uint64 = 0x%016" PRIx64, type, hash);
     emit_nl();
 }
 
 /*
  * Emits the fingerprint function or constant if pre-calculated.
  */
-static void emit_continue_go_fingerprint_string(FILE *f, lcmgen_t *lcm,
-    const char *const type)
+static void emit_continue_go_fingerprint_string(FILE *f, lcmgen_t *lcm, const char *const type)
 {
     emit_continue("%s_Fingerprint", type);
     if (!getopt_get_bool(lcm->gopt, "go-fingerprint")) {
@@ -664,8 +666,8 @@ static void emit_continue_go_fingerprint_string(FILE *f, lcmgen_t *lcm,
 /*
  * Emits the const defintions.
  */
-static void emit_go_lcm_const_definitions(FILE *f, lcmgen_t *lcm,
-    lcm_struct_t *ls, const char *const gotype, const uint64_t fingerprint)
+static void emit_go_lcm_const_definitions(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
+                                          const char *const gotype, const uint64_t fingerprint)
 {
     if (!ls->constants->len) {
         return;
@@ -673,8 +675,7 @@ static void emit_go_lcm_const_definitions(FILE *f, lcmgen_t *lcm,
 
     unsigned int mlen = 0, tlen = 0;
     for (unsigned int i = 0; i < ls->constants->len; i++) {
-        lcm_constant_t *lc =
-            (lcm_constant_t *)g_ptr_array_index(ls->constants, i);
+        lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
 
         char *constname = go_membername(ls, lc->membername, FALSE);
         // Constants can only be in our own package, use "" to skip package
@@ -694,8 +695,7 @@ static void emit_go_lcm_const_definitions(FILE *f, lcmgen_t *lcm,
     emit(0, "// LCM constants");
     emit(0, "const (");
     for (unsigned int i = 0; i < ls->constants->len; i++) {
-        lcm_constant_t *lc =
-            (lcm_constant_t *)g_ptr_array_index(ls->constants, i);
+        lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
 
         emit_comment(f, 1, lc->comment);
 
@@ -703,16 +703,15 @@ static void emit_go_lcm_const_definitions(FILE *f, lcmgen_t *lcm,
         // Constants can only be in our own package, use "" to skip package
         // prefix
         char *consttype = go_typename("", "", lc->lctypename, fingerprint);
-        char *structtype = go_typename("", "", ls->structname->lctypename,
-            fingerprint);
+        char *structtype = go_typename("", "", ls->structname->lctypename, fingerprint);
 
         int mspaces = mlen - strlen(constname) + 1;
         int tspaces = tlen - strlen(consttype) + 1;
         // Always prepend with typename otherwise we might have collisions
         // with other types constants
 
-        emit(1, "%s_%s%*s%s%*s= %s", structtype, constname, mspaces, "",
-            consttype, tspaces, "", lc->val_str);
+        emit(1, "%s_%s%*s%s%*s= %s", structtype, constname, mspaces, "", consttype, tspaces, "",
+             lc->val_str);
 
         free(structtype);
         free(consttype);
@@ -725,14 +724,14 @@ static void emit_go_lcm_const_definitions(FILE *f, lcmgen_t *lcm,
 /*
  * Emits the struct's defintion.
  */
-static int emit_go_lcm_struct_definition(FILE *f, lcmgen_t *lcm,
-    lcm_struct_t *ls, const char *const gotype, const uint64_t fingerprint)
+static int emit_go_lcm_struct_definition(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
+                                         const char *const gotype, const uint64_t fingerprint)
 {
     unsigned int max_member_len = 0;
     unsigned int max_type_len = 0;
 
     for (unsigned int i = 0; i < ls->members->len; i++) {
-        lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, i);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, i);
 
         char *membername = go_membername(ls, lm->membername, FALSE);
         if (strlen(membername) > max_member_len)
@@ -753,15 +752,13 @@ static int emit_go_lcm_struct_definition(FILE *f, lcmgen_t *lcm,
                 lm_fingerprint = lcm_get_fingerprint(lcm, ls_lm);
             }
 
-            membertype = go_typename(ls->structname->package,
-                lm->type->package, lm->type->lctypename,
-                lm_fingerprint);
+            membertype = go_typename(ls->structname->package, lm->type->package,
+                                     lm->type->lctypename, lm_fingerprint);
         }
 
         GString *arraystr = g_string_new(NULL);
         for (unsigned int d = 0; d < lm->dimensions->len; d++) {
-            lcm_dimension_t *dim =
-                (lcm_dimension_t *)g_ptr_array_index(lm->dimensions, d);
+            lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
             if (dim->mode == LCM_CONST) {
                 g_string_append_printf(arraystr, "[%s]", dim->size);
             } else {
@@ -780,7 +777,7 @@ static int emit_go_lcm_struct_definition(FILE *f, lcmgen_t *lcm,
     emit(0, "type %s struct {", gotype);
 
     for (unsigned int i = 0; i < ls->members->len; i++) {
-        lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, i);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, i);
 
         emit_comment(f, 1, lm->comment);
 
@@ -800,15 +797,13 @@ static int emit_go_lcm_struct_definition(FILE *f, lcmgen_t *lcm,
 
                 member_fp = lcm_get_fingerprint(lcm, ls_lm);
             }
-            membertype = go_typename(ls->structname->package,
-                lm->type->package, lm->type->lctypename,
-                member_fp);
+            membertype = go_typename(ls->structname->package, lm->type->package,
+                                     lm->type->lctypename, member_fp);
         }
 
         GString *arraystr = g_string_new(NULL);
         for (unsigned int d = 0; d < lm->dimensions->len; d++) {
-            lcm_dimension_t *dim =
-                (lcm_dimension_t *)g_ptr_array_index(lm->dimensions, d);
+            lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
             if (dim->mode == LCM_CONST) {
                 g_string_append_printf(arraystr, "[%s]", dim->size);
             } else {
@@ -825,8 +820,8 @@ static int emit_go_lcm_struct_definition(FILE *f, lcmgen_t *lcm,
 
         int type_spaces = max_member_len - strlen(membername) + 1;
         int tag_spaces = max_type_len - strlen(membertype) - arraystr->len + 1;
-        emit(1, "%s%*s%s%s%*s`%s`", membername, type_spaces, "", arraystr->str,
-            membertype, tag_spaces, "", gotag->str);
+        emit(1, "%s%*s%s%s%*s`%s`", membername, type_spaces, "", arraystr->str, membertype,
+             tag_spaces, "", gotag->str);
 
         free(membername);
         free(membertype);
@@ -844,25 +839,24 @@ static int emit_go_lcm_struct_definition(FILE *f, lcmgen_t *lcm,
  * This function emits code that will create an exact copy of the struct.
  */
 static void emit_go_lcm_deep_copy(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
-    const char *const gotype, const uint64_t fingerprint)
+                                  const char *const gotype, const uint64_t fingerprint)
 {
     emit(0, "// Copy creates a deep copy");
     emit(0, "// TODO: fix the fugly x and p names...");
     emit(0, "func (x *%s) Copy() (p %s) {", gotype, gotype);
 
     for (unsigned int m = 0; m < ls->members->len; m++) {
-        lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, m);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
 
         char *membername = go_membername(ls, lm->membername, FALSE);
 
         if (lcm_is_primitive_type(lm->type->lctypename)) {
-
             if (!lm->dimensions->len) {
                 emit(1, "p.%s = x.%s", membername, membername);
             } else {
                 GString *arraystr = g_string_new(membername);
-                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr,
-                    TRUE, lm->dimensions->len, fingerprint);
+                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr, TRUE,
+                                                     lm->dimensions->len, fingerprint);
                 emit(n + 1, "p.%s = x.%s", arraystr->str, arraystr->str);
                 emit_go_array_loops_end(f, n);
                 g_string_free(arraystr, TRUE);
@@ -872,8 +866,8 @@ static void emit_go_lcm_deep_copy(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
                 emit(1, "p.%s = x.%s.Copy()", membername, membername);
             } else {
                 GString *arraystr = g_string_new(membername);
-                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr,
-                    TRUE, lm->dimensions->len, fingerprint);
+                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr, TRUE,
+                                                     lm->dimensions->len, fingerprint);
                 emit(n + 1, "p.%s = x.%s.Copy()", arraystr->str, arraystr->str);
                 emit_go_array_loops_end(f, n);
                 g_string_free(arraystr, TRUE);
@@ -892,8 +886,7 @@ static void emit_go_lcm_deep_copy(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
 /*
  * Emits the main decode function.
  */
-static void emit_go_lcm_encode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
-    const char *const gotype)
+static void emit_go_lcm_encode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls, const char *const gotype)
 {
     emit(0, "// Encode encodes a message (fingerprint & data) into binary form");
     emit(0, "//");
@@ -927,65 +920,51 @@ static void emit_go_lcm_encode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
  * Emits getters for read-only struct members. That is all who are used as the
  * size definition for LCM dynamic arrays.
  */
-static void emit_go_lcm_read_only_getters(FILE *f, lcmgen_t *lcm,
-    lcm_struct_t *ls, const char *const gotype, const uint64_t fingerprint)
+static void emit_go_lcm_read_only_getters(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
+                                          const char *const gotype, const uint64_t fingerprint)
 {
-
     for (unsigned int k = 0; k < ls->members->len; k++) {
-        lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, k);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, k);
 
-        unsigned int i = lcm_find_member_with_named_dimension(ls,
-            lm->membername, k);
+        unsigned int i = lcm_find_member_with_named_dimension(ls, lm->membername, k);
         if (i >= ls->members->len) {
             continue;
         }
 
         char *methodname = go_membername(ls, lm->membername, TRUE);
         char *structname = go_membername(ls, lm->membername, FALSE);
-        char *type = go_typename(ls->structname->package,
-            lm->type->package, lm->type->lctypename,
-            fingerprint);
+        char *type = go_typename(ls->structname->package, lm->type->package, lm->type->lctypename,
+                                 fingerprint);
 
-        emit(0, "// %s returns the value of dynamic array size attribute",
-            methodname);
+        emit(0, "// %s returns the value of dynamic array size attribute", methodname);
         emit(0, "// %s.%s.", gotype, lm->membername);
         emit(0, "// And validates that the size is correct for all fields in which it is used.");
         emit(0, "func (p *%s) %s (%s, error) {", gotype, methodname, type);
 
         unsigned int iteration = 0;
 
-        for (;
-            i < ls->members->len;
-            i = lcm_find_member_with_named_dimension(ls, lm->membername, i + 1)
-        ) {
-
-            lcm_member_t *lm_ = (lcm_member_t *) g_ptr_array_index(ls->members,
-                i);
+        for (; i < ls->members->len;
+             i = lcm_find_member_with_named_dimension(ls, lm->membername, i + 1)) {
+            lcm_member_t *lm_ = (lcm_member_t *) g_ptr_array_index(ls->members, i);
             char *membername = go_membername(ls, lm_->membername, TRUE);
 
-            unsigned int j = lcm_find_named_dimension(f, ls, lm_,
-                lm->membername, 0);
+            unsigned int j = lcm_find_named_dimension(f, ls, lm_, lm->membername, 0);
 
             for (; j < lm_->dimensions->len;
-                j = lcm_find_named_dimension(f, ls, lm_, lm->membername, j + 1)
-            ) {
-
+                 j = lcm_find_named_dimension(f, ls, lm_, lm->membername, j + 1)) {
                 GString *arraystr = g_string_new(NULL);
-                unsigned int n = emit_go_array_loops(f, lcm, ls, lm_, arraystr,
-                    FALSE, j, fingerprint);
-
+                unsigned int n =
+                    emit_go_array_loops(f, lcm, ls, lm_, arraystr, FALSE, j, fingerprint);
 
                 if (iteration == 0) {
                     emit(j + 1, "// Set value to first dynamic array using this size");
                     emit(j + 1, "// %s%s", membername, arraystr->str);
                     if (n == 0) {
-                        emit(j+1, "p.%s = %s(len(p.%s%s))", structname,
-                            map_builtintype_name(lm->type->lctypename),
-                            membername, arraystr->str);
+                        emit(j + 1, "p.%s = %s(len(p.%s%s))", structname,
+                             map_builtintype_name(lm->type->lctypename), membername, arraystr->str);
                     } else {
-                        emit(j+2, "p.%s = %s(len(p.%s%s))", structname,
-                            map_builtintype_name(lm->type->lctypename),
-                            membername, arraystr->str);
+                        emit(j + 2, "p.%s = %s(len(p.%s%s))", structname,
+                             map_builtintype_name(lm->type->lctypename), membername, arraystr->str);
                     }
                 }
                 if (iteration == 1 || n != 0) {
@@ -993,15 +972,14 @@ static void emit_go_lcm_read_only_getters(FILE *f, lcmgen_t *lcm,
                     emit_nl();
                 }
                 if (iteration != 0 || n != 0) {
-                    emit(j+1, "// %s%s", membername, arraystr->str);
-                    emit(j+1, "if int(p.%s) != len(p.%s%s) {", structname,
-                        membername, arraystr->str);
+                    emit(j + 1, "// %s%s", membername, arraystr->str);
+                    emit(j + 1, "if int(p.%s) != len(p.%s%s) {", structname, membername,
+                         arraystr->str);
                     emit(j + 2, "return 0, fmt.Errorf(\"Defined dynamic array size not \"+");
                     emit(j + 3, "\"matching actual array size (got %%d expected %%d for %s%s)\",",
-                        membername, arraystr->str);
-                    emit(j+3, "len(p.%s%s), p.%s)", membername, arraystr->str,
-                        structname);
-                    emit(j+1, "}");
+                         membername, arraystr->str);
+                    emit(j + 3, "len(p.%s%s), p.%s)", membername, arraystr->str, structname);
+                    emit(j + 1, "}");
                 }
 
                 g_string_free(arraystr, TRUE);
@@ -1030,11 +1008,9 @@ static void emit_go_lcm_read_only_getters(FILE *f, lcmgen_t *lcm,
  * definition for a LCM dynamic array, and populates the read-only member with
  * correct value.
  */
-static void emit_go_lcm_dynamic_array_check(FILE *f, lcm_struct_t *ls,
-    lcm_member_t *lm)
+static void emit_go_lcm_dynamic_array_check(FILE *f, lcm_struct_t *ls, lcm_member_t *lm)
 {
-    if (lcm_find_member_with_named_dimension(ls, lm->membername, 0)
-        < ls->members->len) {
+    if (lcm_find_member_with_named_dimension(ls, lm->membername, 0) < ls->members->len) {
         char *methodname = go_membername(ls, lm->membername, TRUE);
         char *typename = go_membername(ls, lm->membername, FALSE);
         emit(1, "// Validate and populate p.%s", typename);
@@ -1051,7 +1027,7 @@ static void emit_go_lcm_dynamic_array_check(FILE *f, lcm_struct_t *ls,
  * that can be send.
  */
 static void emit_go_lcm_marshal_binary(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
-    const char *const gotype, const uint64_t fingerprint)
+                                       const char *const gotype, const uint64_t fingerprint)
 {
     emit(0, "// MarshalBinary implements the BinaryMarshaller interface");
     emit(0, "func (p *%s) MarshalBinary() (data []byte, err error) {", gotype);
@@ -1067,7 +1043,7 @@ static void emit_go_lcm_marshal_binary(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
     }
 
     for (unsigned int i = 0; i < ls->members->len; i++) {
-        lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, i);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, i);
 
         emit(1, "// LCM struct name: %s", lm->membername);
 
@@ -1075,14 +1051,12 @@ static void emit_go_lcm_marshal_binary(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
 
         if (lcm_is_primitive_type(lm->type->lctypename)) {
             if (!lm->dimensions->len) {
-                emit_encode_function(f, lm->type->lctypename,
-                    membername, 1);
+                emit_encode_function(f, lm->type->lctypename, membername, 1);
             } else {
                 GString *arraystr = g_string_new(membername);
-                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr,
-                    FALSE, lm->dimensions->len, fingerprint);
-                emit_encode_function(f, lm->type->lctypename,
-                        arraystr->str, 1+n);
+                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr, FALSE,
+                                                     lm->dimensions->len, fingerprint);
+                emit_encode_function(f, lm->type->lctypename, arraystr->str, 1 + n);
                 emit_go_array_loops_end(f, n);
                 g_string_free(arraystr, TRUE);
             }
@@ -1090,19 +1064,18 @@ static void emit_go_lcm_marshal_binary(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
             if (!lm->dimensions->len) {
                 emit(1, "{");
                 emit(2, "var tmp []byte");
-                emit(2, "if tmp, err = p.%s.MarshalBinary(); err != nil {",
-                    membername);
+                emit(2, "if tmp, err = p.%s.MarshalBinary(); err != nil {", membername);
                 emit(3, "return");
                 emit(2, "}");
                 emit(2, "offset += copy(data[offset:], tmp)");
                 emit(1, "}");
             } else {
                 GString *arraystr = g_string_new(NULL);
-                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr,
-                    FALSE, lm->dimensions->len, fingerprint);
+                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr, FALSE,
+                                                     lm->dimensions->len, fingerprint);
                 emit(2, "var tmp []byte");
-                emit(2, "if tmp, err = p.%s%s.MarshalBinary(); err != nil {",
-                        membername, arraystr->str);
+                emit(2, "if tmp, err = p.%s%s.MarshalBinary(); err != nil {", membername,
+                     arraystr->str);
                 emit(3, "return");
                 emit(2, "}");
                 emit(2, "offset += copy(data[offset:], tmp)");
@@ -1123,8 +1096,7 @@ static void emit_go_lcm_marshal_binary(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
 /*
  * Emits the main decode function.
  */
-static void emit_go_lcm_decode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
-    const char *const gotype)
+static void emit_go_lcm_decode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls, const char *const gotype)
 {
     emit(0, "// Decode decodes a message (fingerprint & data) from binary form");
     emit(0, "// and verifies that the fingerprint match the expected");
@@ -1169,8 +1141,8 @@ static void emit_go_lcm_decode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
  * Emits Golang code to unmarshal data from a byte slice back into the structs
  * members.
  */
-static void emit_go_lcm_unmarshal_binary(FILE *f, lcmgen_t *lcm,
-    lcm_struct_t *ls, const char *const gotype, const uint64_t fingerprint)
+static void emit_go_lcm_unmarshal_binary(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
+                                         const char *const gotype, const uint64_t fingerprint)
 {
     int readVar = 0;
     emit(0, "// UnmarshalBinary implements the BinaryUnmarshaler interface");
@@ -1190,10 +1162,9 @@ static void emit_go_lcm_unmarshal_binary(FILE *f, lcmgen_t *lcm,
                 emit_decode_function(f, lm->type->lctypename, membername, 1);
             } else {
                 GString *arraystr = g_string_new(membername);
-                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr,
-                    TRUE, lm->dimensions->len, fingerprint);
-                emit_decode_function(f, lm->type->lctypename, arraystr->str,
-                    1+n);
+                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr, TRUE,
+                                                     lm->dimensions->len, fingerprint);
+                emit_decode_function(f, lm->type->lctypename, arraystr->str, 1 + n);
                 emit_go_array_loops_end(f, n);
                 g_string_free(arraystr, TRUE);
             }
@@ -1211,15 +1182,14 @@ static void emit_go_lcm_unmarshal_binary(FILE *f, lcmgen_t *lcm,
                 emit(1, "}");
             } else {
                 GString *arraystr = g_string_new(membername);
-                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr,
-                    TRUE, lm->dimensions->len, fingerprint);
+                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr, TRUE,
+                                                     lm->dimensions->len, fingerprint);
                 emit(n + 1, "if err = p.%s.UnmarshalBinary(data[offset:]); err != nil {",
                      arraystr->str);
                 emit(n + 2, "return");
                 emit(n + 1, "}");
                 emit(n + 1, "var size int");
-                emit(n + 1, "if size, err = p.%s.Size(); err != nil {",
-                    arraystr->str);
+                emit(n + 1, "if size, err = p.%s.Size(); err != nil {", arraystr->str);
                 emit(n + 2, "return");
                 emit(n + 1, "}");
                 emit(n + 1, "offset += size");
@@ -1244,8 +1214,8 @@ static void emit_go_lcm_unmarshal_binary(FILE *f, lcmgen_t *lcm,
  *     https://lcm-proj.github.io/type_specification.html
  */
 static void emit_go_lcm_fingerprint(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
-    const char *const typename, const char *const gotype,
-    const uint64_t fingerprint)
+                                    const char *const typename, const char *const gotype,
+                                    const uint64_t fingerprint)
 {
     emit(0, "// Fingerprint generates the LCM fingerprint value for this message");
     emit(0, "func %s_Fingerprint(path ...uint64) uint64 {", gotype);
@@ -1260,13 +1230,12 @@ static void emit_go_lcm_fingerprint(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
     emit_start(1, "return bits.RotateLeft64(%s_Fingerprint", typename);
 
     for (unsigned int m = 0; m < ls->members->len; m++) {
-        lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, m);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
 
         if (!lcm_is_primitive_type(lm->type->lctypename)) {
             emit_end("+");
-            char *lm_gotype = go_typename(ls->structname->package,
-                lm->type->package, lm->type->lctypename,
-                fingerprint);
+            char *lm_gotype = go_typename(ls->structname->package, lm->type->package,
+                                          lm->type->lctypename, fingerprint);
             emit_start(2, "%s_Fingerprint(path...)", lm_gotype);
             free(lm_gotype);
         }
@@ -1281,13 +1250,12 @@ static void emit_go_lcm_fingerprint(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
  * Emits code to calculate the size a string in bytes. This takes into account
  * that LCM will send 4 bytes prepending the string and one terminating it.
  */
-static void emit_go_lcm_string_size(FILE *f, int indent,
-    const char *const str_prefix, const char *const str_name,
-    const char *const str_postfix, const char *const rec_val)
+static void emit_go_lcm_string_size(FILE *f, int indent, const char *const str_prefix,
+                                    const char *const str_name, const char *const str_postfix,
+                                    const char *const rec_val)
 {
     emit(indent, "%s += 4 // LCM string length", rec_val);
-    emit(indent, "%s += len([]byte(%s%s%s))",rec_val, str_prefix, str_name,
-         str_postfix);
+    emit(indent, "%s += len([]byte(%s%s%s))", rec_val, str_prefix, str_name, str_postfix);
     emit(indent, "%s += 1 // LCM zero termination", rec_val);
 }
 
@@ -1295,8 +1263,8 @@ static void emit_go_lcm_string_size(FILE *f, int indent,
  * Emits codes to calculate the actual size in bytes when this message is
  * marshalled.
  */
-static void emit_go_lcm_size(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
-    const char *const gotype, const uint64_t fingerprint)
+static void emit_go_lcm_size(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls, const char *const gotype,
+                             const uint64_t fingerprint)
 {
     emit(0, "// Size returns the size of this message in bytes");
     emit(0, "func (p *%s) Size() (size int, err error) {", gotype);
@@ -1307,7 +1275,7 @@ static void emit_go_lcm_size(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
     }
 
     for (unsigned int m = 0; m < ls->members->len; m++) {
-        lcm_member_t *lm = (lcm_member_t *)g_ptr_array_index(ls->members, m);
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
 
         char *membername = go_membername(ls, lm->membername, FALSE);
 
@@ -1317,20 +1285,19 @@ static void emit_go_lcm_size(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
                     emit_go_lcm_string_size(f, 1, "p.", membername, "", "size");
                 } else {
                     emit_go_lcm_dynamic_array_check(f, ls, lm);
-                    emit(1, "size += %d // p.%s",
-                         primitive_type_size(lm->type->lctypename), membername);
+                    emit(1, "size += %d // p.%s", primitive_type_size(lm->type->lctypename),
+                         membername);
                 }
             } else {
                 GString *arraystr = g_string_new(NULL);
-                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr,
-                    FALSE, lm->dimensions->len, fingerprint);
+                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr, FALSE,
+                                                     lm->dimensions->len, fingerprint);
 
                 if (strcmp(lm->type->lctypename, "string") == 0) {
-                    emit_go_lcm_string_size(f, n + 1, "p.", membername,
-                                        arraystr->str, "size");
+                    emit_go_lcm_string_size(f, n + 1, "p.", membername, arraystr->str, "size");
                 } else {
-                    emit(n + 1, "size += %d // p.%s",
-                         primitive_type_size(lm->type->lctypename), membername);
+                    emit(n + 1, "size += %d // p.%s", primitive_type_size(lm->type->lctypename),
+                         membername);
                 }
 
                 emit_go_array_loops_end(f, n);
@@ -1347,11 +1314,10 @@ static void emit_go_lcm_size(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
                 emit(1, "}");
             } else {
                 GString *arraystr = g_string_new(NULL);
-                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr,
-                    FALSE, lm->dimensions->len, fingerprint);
+                unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr, FALSE,
+                                                     lm->dimensions->len, fingerprint);
                 emit(n + 1, "var tmp int");
-                emit(n + 1, "if tmp, err = p.%s%s.Size(); err != nil {",
-                    membername, arraystr->str);
+                emit(n + 1, "if tmp, err = p.%s%s.Size(); err != nil {", membername, arraystr->str);
                 emit(n + 2, "return");
                 emit(n + 1, "}");
                 emit(n + 1, "size += tmp");
@@ -1370,14 +1336,12 @@ ret_size:
     emit(0, "}");
 }
 
-int emit_go_lcm(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir,
-    int64_t fingerprint)
+int emit_go_lcm(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir, int64_t fingerprint)
 {
     int res = 0;
     char *typename = strip_dots(ls->structname->lctypename);
     char *gopackage = strip_dots(ls->structname->package);
-    char *gotype = go_typename("", "",
-        ls->structname->lctypename, fingerprint);
+    char *gotype = go_typename("", "", ls->structname->lctypename, fingerprint);
     char *path = go_filename(lcm, dir, typename, fingerprint, "");
 
     if (!lcm_needs_generation(lcm, ls->lcmfile, path))
@@ -1402,7 +1366,6 @@ int emit_go_lcm(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir,
         res = -1;
         goto ret_free;
     }
-
 
     // Header
     emit_go_header(f, gopackage);
@@ -1465,20 +1428,18 @@ ret_free:
     return res;
 }
 
-int emit_go_gopacket(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir,
-    int64_t fingerprint)
+int emit_go_gopacket(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir, int64_t fingerprint)
 {
     char *typename = strip_dots(ls->structname->lctypename);
     char *gopackage = strip_dots(ls->structname->package);
-    char *gotype = go_typename("", "",
-        ls->structname->lctypename, fingerprint);
+    char *gotype = go_typename("", "", ls->structname->lctypename, fingerprint);
     char *path = go_filename(lcm, dir, typename, fingerprint, "_gopacket");
 
     if (!lcm_needs_generation(lcm, ls->lcmfile, path))
         return 0;
 
     FILE *f = fopen(path, "w");
-    if (f==NULL)
+    if (f == NULL)
         return -1;
 
     // Header
@@ -1492,8 +1453,7 @@ int emit_go_gopacket(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir,
     emit_nl();
 
     // The gopacket LayerClass assigned to us
-    emit(0, "var layerClass%s = gopacket.LayerTypeZero",
-        gotype);
+    emit(0, "var layerClass%s = gopacket.LayerTypeZero", gotype);
     emit_nl();
 
     // Register our decoder
@@ -1510,10 +1470,8 @@ int emit_go_gopacket(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir,
     emit_nl();
 
     // Implement the gopacket Decoder go interface
-    emit(0,"// decodeFunc%s is the implementation of Decoder (type DecodeFunc)",
-        gotype);
-    emit(0, "func decodeFunc%s(data []byte, pb gopacket.PacketBuilder) error {",
-        gotype);
+    emit(0, "// decodeFunc%s is the implementation of Decoder (type DecodeFunc)", gotype);
+    emit(0, "func decodeFunc%s(data []byte, pb gopacket.PacketBuilder) error {", gotype);
     emit(1, "lcm := %s{}", gotype);
     emit_nl();
     emit(1, "if err := lcm.DecodeFromBytes(data, pb); err != nil {");
@@ -1643,7 +1601,6 @@ int emit_go(lcmgen_t *lcm)
     ////////////////////////////////////////////////////////////
     // STRUCTS
     for (unsigned int i = 0; i < lcm->structs->len; i++) {
-
         GString *dir = g_string_new(gopath->str);
 
         lcm_struct_t *ls = (lcm_struct_t *) g_ptr_array_index(lcm->structs, i);
@@ -1668,8 +1625,7 @@ int emit_go(lcmgen_t *lcm)
         }
 
         if (ls->structs->len) {
-            fprintf(stderr,
-                "Go generator does not (yet) support embedded structs.\n");
+            fprintf(stderr, "Go generator does not (yet) support embedded structs.\n");
             return -1;
         }
 
