@@ -487,21 +487,17 @@ static void emit_decode_function(FILE *f, const char *const type,
             dst);
         emit(indent, "offset += 8");
     } else if (!strcmp(type, "float")) {
-        emit(indent, "p.%s = math.Float32frombits(binary.BigEndian.Uint32("
-            "data[offset:]))", dst);
+        emit(indent, "p.%s = math.Float32frombits(binary.BigEndian.Uint32(data[offset:]))", dst);
         emit(indent, "offset += 4");
     } else if (!strcmp(type, "double")) {
-        emit(indent, "p.%s = math.Float64frombits(binary.BigEndian.Uint64("
-            "data[offset:]))", dst);
+        emit(indent, "p.%s = math.Float64frombits(binary.BigEndian.Uint64(data[offset:]))", dst);
         emit(indent, "offset += 8");
     } else if (!strcmp(type, "string")) {
         emit(indent, "{");
-        emit(indent + 1, "length := int(binary.BigEndian.Uint32("
-            "data[offset:]))");
+        emit(indent + 1, "length := int(binary.BigEndian.Uint32(data[offset:]))");
         emit(indent + 1, "offset += 4");
         emit(indent + 1, "if length < 1 {");
-        emit(indent + 2, "return fmt.Errorf(\"Decoded string length is "
-            "negative\")");
+        emit(indent + 2, "return fmt.Errorf(\"Decoded string length is negative\")");
         emit(indent + 1, "}");
         emit(indent + 1, "p.%s = string(data[offset : offset+length-1])", dst);
         emit(indent + 1, "offset += length");
@@ -899,8 +895,7 @@ static void emit_go_lcm_deep_copy(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
 static void emit_go_lcm_encode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
     const char *const gotype)
 {
-    emit(0, "// Encode encodes a message (fingerprint & data) into binary "
-        "form");
+    emit(0, "// Encode encodes a message (fingerprint & data) into binary form");
     emit(0, "//");
     emit(0, "// returns Encoded data or error");
     emit(0, "func (p *%s) Encode() (data []byte, err error) {", gotype);
@@ -921,8 +916,7 @@ static void emit_go_lcm_encode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
     emit_nl();
     emit(1, "if copied := copy(data[8:], d); copied != size {");
     emit(2, "return []byte{},");
-    emit(3, "fmt.Errorf(\"Encoding error, buffer not filled (%%v != %%v)\", "
-        "copied, size)");
+    emit(3, "fmt.Errorf(\"Encoding error, buffer not filled (%%v != %%v)\", copied, size)");
     emit(1, "}");
     emit(1, "return");
     emit(0, "}");
@@ -955,8 +949,7 @@ static void emit_go_lcm_read_only_getters(FILE *f, lcmgen_t *lcm,
         emit(0, "// %s returns the value of dynamic array size attribute",
             methodname);
         emit(0, "// %s.%s.", gotype, lm->membername);
-        emit(0, "// And validates that the size is correct for all fields in "
-            "which it is used.");
+        emit(0, "// And validates that the size is correct for all fields in which it is used.");
         emit(0, "func (p *%s) %s (%s, error) {", gotype, methodname, type);
 
         unsigned int iteration = 0;
@@ -983,9 +976,8 @@ static void emit_go_lcm_read_only_getters(FILE *f, lcmgen_t *lcm,
 
 
                 if (iteration == 0) {
-                    emit(j+1, "// Set value to first dynamic array using this "
-                        "size");
-                    emit(j+1, "// %s%s", membername, arraystr->str);
+                    emit(j + 1, "// Set value to first dynamic array using this size");
+                    emit(j + 1, "// %s%s", membername, arraystr->str);
                     if (n == 0) {
                         emit(j+1, "p.%s = %s(len(p.%s%s))", structname,
                             map_builtintype_name(lm->type->lctypename),
@@ -997,17 +989,15 @@ static void emit_go_lcm_read_only_getters(FILE *f, lcmgen_t *lcm,
                     }
                 }
                 if (iteration == 1 || n != 0) {
-                    emit(j+1, "// Validate size matches all other dynamic "
-                        "arrays");
+                    emit(j + 1, "// Validate size matches all other dynamic arrays");
                     emit_nl();
                 }
                 if (iteration != 0 || n != 0) {
                     emit(j+1, "// %s%s", membername, arraystr->str);
                     emit(j+1, "if int(p.%s) != len(p.%s%s) {", structname,
                         membername, arraystr->str);
-                    emit(j+2, "return 0, fmt.Errorf(\"Defined dynamic array "
-                        "size not matching actual \"+");
-                    emit(j+3, "\"array size (got %%d expected %%d for %s%s)\",",
+                    emit(j + 2, "return 0, fmt.Errorf(\"Defined dynamic array size not \"+");
+                    emit(j + 3, "\"matching actual array size (got %%d expected %%d for %s%s)\",",
                         membername, arraystr->str);
                     emit(j+3, "len(p.%s%s), p.%s)", membername, arraystr->str,
                         structname);
@@ -1136,8 +1126,7 @@ static void emit_go_lcm_marshal_binary(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
 static void emit_go_lcm_decode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
     const char *const gotype)
 {
-    emit(0, "// Decode decodes a message (fingerprint & data) from binary "
-        "form");
+    emit(0, "// Decode decodes a message (fingerprint & data) from binary form");
     emit(0, "// and verifies that the fingerprint match the expected");
     emit(0, "//");
     emit(0, "// param data The buffer containing the encoded message");
@@ -1151,8 +1140,7 @@ static void emit_go_lcm_decode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
     emit_start(1, "if fp := binary.BigEndian.Uint64(data[:8]); fp != ");
     emit_continue_go_fingerprint_string(f, lcm, gotype);
     emit_end(" {");
-    emit(2, "return fmt.Errorf(\"Fingerprints does not match (got %%x "
-        "expected %%x)\",");
+    emit(2, "return fmt.Errorf(\"Fingerprints does not match (got %%x expected %%x)\",");
     emit_start(3, "fp, ");
     emit_continue_go_fingerprint_string(f, lcm, gotype);
     emit_end(")");
@@ -1168,8 +1156,7 @@ static void emit_go_lcm_decode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
     emit(2, "return");
     emit(1, "}");
     emit(1, "if length != size {");
-    emit(2, "return fmt.Errorf(\"Missing data in buffer (size missmatch, "
-        "got %%v expected %%v)\",");
+    emit(2, "return fmt.Errorf(\"Missing data in buffer (size missmatch, got %%v expected %%v)\",");
     emit(3, "length, size)");
     emit(1, "}");
     emit_nl();
@@ -1212,8 +1199,7 @@ static void emit_go_lcm_unmarshal_binary(FILE *f, lcmgen_t *lcm,
             }
         } else {
             if (!lm->dimensions->len) {
-                emit(1, "if err = p.%s.UnmarshalBinary(data[offset:]); "
-                    "err != nil {", membername);
+                emit(1, "if err = p.%s.UnmarshalBinary(data[offset:]); err != nil {", membername);
                 emit(2, "return");
                 emit(1, "}");
                 emit(1, "{");
@@ -1227,8 +1213,8 @@ static void emit_go_lcm_unmarshal_binary(FILE *f, lcmgen_t *lcm,
                 GString *arraystr = g_string_new(membername);
                 unsigned int n = emit_go_array_loops(f, lcm, ls, lm, arraystr,
                     TRUE, lm->dimensions->len, fingerprint);
-                emit(n + 1, "if err = p.%s.UnmarshalBinary(data[offset:]); "
-                    "err != nil {", arraystr->str);
+                emit(n + 1, "if err = p.%s.UnmarshalBinary(data[offset:]); err != nil {",
+                     arraystr->str);
                 emit(n + 2, "return");
                 emit(n + 1, "}");
                 emit(n + 1, "var size int");
@@ -1261,8 +1247,7 @@ static void emit_go_lcm_fingerprint(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
     const char *const typename, const char *const gotype,
     const uint64_t fingerprint)
 {
-    emit(0, "// Fingerprint generates the LCM fingerprint value for this "
-        "message");
+    emit(0, "// Fingerprint generates the LCM fingerprint value for this message");
     emit(0, "func %s_Fingerprint(path ...uint64) uint64 {", gotype);
     emit(1, "for _, v := range path {");
     emit(2, "if v == %s_Fingerprint {", typename);
@@ -1544,8 +1529,8 @@ int emit_go_gopacket(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir,
 
     // Implement the gopacket DecodingLayer go interface
     emit(0, "// DecodeFromBytes implements DecodingLayer");
-    emit(0, "func (lcm *%s) DecodeFromBytes(data []byte, "
-            "df gopacket.DecodeFeedback) error {", gotype);
+    emit(0, "func (lcm *%s) DecodeFromBytes(data []byte, df gopacket.DecodeFeedback) error {",
+         gotype);
     emit(1, "return lcm.Decode(data)");
     emit(0, "}");
     emit_nl();
@@ -1604,7 +1589,9 @@ int emit_go_gopacket(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir,
 
 void setup_go_options(getopt_t *gopt)
 {
-    getopt_add_string(gopt, 0, "go-path", ".", "Location for .go files");
+    // clang-format off
+    getopt_add_string(gopt, 0, "go-path", ".",
+        "Location for .go files");
     getopt_add_bool(gopt, 0, "go-mkdir", TRUE,
         "Create parent directories as needed");
     getopt_add_string(gopt, 0, "go-tag-name", "",
@@ -1616,11 +1603,13 @@ void setup_go_options(getopt_t *gopt)
         "pre-calculate to const");
     getopt_add_bool(gopt, 0, "go-no-overwrite", FALSE,
         "Do not overwrite an existing target file, skip and log");
-    getopt_add_bool(gopt, 0, "go-emit-gopacket", FALSE, "Emit gopacket API");
+    getopt_add_bool(gopt, 0, "go-emit-gopacket", FALSE,
+        "Emit gopacket API");
     getopt_add_string(gopt, 0, "go-import-prefix", "",
         "Add this package prefix to all LCM type import statements");
     getopt_add_string(gopt, 0, "go-default-package", "lcmtypes",
         "Default Go package if LCM type has no package");
+    // clang-format on
 }
 
 int emit_go(lcmgen_t *lcm)
@@ -1688,8 +1677,9 @@ int emit_go(lcmgen_t *lcm)
         if (getopt_get_bool(lcm->gopt, "go-fingerprint")) {
             fingerprint = lcm_get_fingerprint(lcm, ls);
             if (fingerprint == 0) {
-                fprintf(stderr, "Unable to calculate fingerprint as requested "
-                    "(--go-fingerprint) for '%s'.\n",
+                fprintf(
+                    stderr,
+                    "Unable to calculate fingerprint as requested (--go-fingerprint) for '%s'.\n",
                     ls->structname->shortname);
                 res = -1;
                 goto ret;
