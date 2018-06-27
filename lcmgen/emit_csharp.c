@@ -681,17 +681,6 @@ int emit_csharp(lcmgen_t *lcm)
         emit(0, "}\n");
         fclose(f);
     }
- 
-/* XXX unfinished
-   
-    hashtable_iterator_t *hit = hashtable_iterator_create(type_table);
-    hashtable_entry_t *entry;
-    while ((entry = hashtable_iterator_next(hit)) != NULL) {
-        free((char*) entry->value);
-    }
-    hashtable_iterator_destroy(hit);
 
-    hashtable_destroy(type_table);
-*/
     return 0;
 }

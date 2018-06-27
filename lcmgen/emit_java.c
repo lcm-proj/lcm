@@ -353,10 +353,6 @@ int emit_java(lcmgen_t *lcm)
                                                      "__strbuf = new char[ins.readInt()-1]; for (int _i = 0; _i < __strbuf.length; _i++) __strbuf[_i] = (char) (ins.readByte()&0xff); ins.readByte(); # = new String(__strbuf);",
                                                      "__strbuf = new char[#.length()]; #.getChars(0, #.length(), __strbuf, 0); outs.writeInt(__strbuf.length+1); for (int _i = 0; _i < __strbuf.length; _i++) outs.write(__strbuf[_i]); outs.writeByte(0);"));
 
-//    g_hash_table_insert(type_table, "string",   prim("String",
-//                                               "__strbuf = new byte[ins.readInt()-1]; ins.readFully(__strbuf); ins.readByte(); # = new String(__strbuf, \"UTF-8\");",
-//                                               "__strbuf = #.getBytes(\"UTF-8\"); outs.writeInt(__strbuf.length+1); outs.write(__strbuf, 0, __strbuf.length); outs.writeByte(0);"));
-
     g_hash_table_insert(type_table, "boolean",  prim("boolean",
                                                "# = ins.readByte()!=0;",
                                                "outs.writeByte( # ? 1 : 0);"));
@@ -781,16 +777,5 @@ int emit_java(lcmgen_t *lcm)
         fclose(f);
     }
 
-/* XXX deallocate our storage. unfinished since memory leaks are non-critical for lcm-gen.
-
-    hashtable_iterator_t *hit = hashtable_iterator_create(type_table);
-    hashtable_entry_t *entry;
-    while ((entry = hashtable_iterator_next(hit)) != NULL) {
-        free((char*) entry->value);
-    }
-    hashtable_iterator_destroy(hit);
-
-    hashtable_destroy(type_table);
-*/
     return 0;
 }

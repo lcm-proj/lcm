@@ -109,10 +109,6 @@ static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
     else
         fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
 
-//    fprintf(f, "#include \"%s%slcm_lib.h\"\n",
-//            getopt_get_string(lcm->gopt, "cinclude"),
-//            strlen(getopt_get_string(lcm->gopt, "cinclude"))>0 ? "/" : "");
-
     if(!getopt_get_bool(lcm->gopt, "c-no-pubsub")) {
         if(getopt_get_bool(lcm->gopt, "use-quotes-for-includes"))
             fprintf(f, "#include \"lcm/lcm.h\"\n");
@@ -926,7 +922,6 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "struct _%s_subscription_t {\n"
             "    %s_handler_t user_handler;\n"
             "    void *userdata;\n"
-//            "    char *channel;\n"
             "    lcm_subscription_t *lc_h;\n"
             "};\n", tn_, tn_);
     fprintf(f,
@@ -955,13 +950,10 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "                    const char *channel,\n"
             "                    %s_handler_t f, void *userdata)\n"
             "{\n"
-//            "    int chan_len = strlen (channel) + 1;\n"
             "    %s_subscription_t *n = (%s_subscription_t*)\n"
             "                       malloc(sizeof(%s_subscription_t));\n"
             "    n->user_handler = f;\n"
             "    n->userdata = userdata;\n"
-//            "    n->channel = (char*) malloc (chan_len);\n"
-//            "    memcpy (n->channel, channel, chan_len);\n"
             "    n->lc_h = lcm_subscribe (lcm, channel,\n"
             "                                 %s_handler_stub, n);\n"
             "    if (n->lc_h == NULL) {\n"
@@ -989,7 +981,6 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
             "           \"couldn't unsubscribe %s_handler %%p!\\n\", hid);\n"
             "        return -1;\n"
             "    }\n"
-//            "    free (hid->channel);\n"
             "    free (hid);\n"
             "    return 0;\n"
             "}\n\n", tn_, tn_, tn_
