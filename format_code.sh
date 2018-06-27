@@ -29,7 +29,7 @@ function format_c_cpp_dir_r {
 }
 
 format_c_cpp_dir_r "${LCM_ROOT}/lcm"
-#format_c_cpp_dir_r "${LCM_ROOT}/lcmgen"
+format_c_cpp_dir_r "${LCM_ROOT}/lcmgen"
 #format_c_cpp_dir_r "${LCM_ROOT}/lcm-examples"
 #format_c_cpp_dir_r "${LCM_ROOT}/lcm-test"
 #format_c_cpp_dir_r "${LCM_ROOT}/lcm-logger"
