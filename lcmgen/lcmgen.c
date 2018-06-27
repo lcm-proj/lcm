@@ -13,6 +13,7 @@
 #include <unistd.h>
 #else					// These should be coming from stdint.h - but not working?
 #include <lcm/windows/WinPorting.h>
+// clang-format off
 #define INT8_MIN     ((int8_t)_I8_MIN)
 #define INT8_MAX     _I8_MAX
 #define INT16_MIN    ((int16_t)_I16_MIN)
@@ -24,6 +25,7 @@
 #define UINT8_MAX    _UI8_MAX
 #define UINT16_MAX   _UI16_MAX
 #define UINT32_MAX   _UI32_MAX
+// clang-format on
 #endif
 
 #include "lcmgen.h"
