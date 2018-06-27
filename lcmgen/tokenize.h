@@ -9,7 +9,7 @@ typedef enum {
     LCM_TOK_INVALID,
     LCM_TOK_EOF,
     LCM_TOK_COMMENT,
-    LCM_TOK_OTHER
+    LCM_TOK_OTHER,
 } lcm_token_type_t;
 
 /** Tokenizer incrementally tokenizes an input stream. **/

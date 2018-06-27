@@ -62,14 +62,14 @@ static const char *primitive_types[] = { "int8_t",
                                          "double",
                                          "string",
                                          "boolean",
-                                         NULL};
+                                         NULL,};
 
 // which types can be legally used as array dimensions?
 static const char *array_dimension_types[] = { "int8_t",
                                                "int16_t",
                                                "int32_t",
                                                "int64_t",
-                                               NULL};
+                                               NULL,};
 
 // which types can be legally used as const values?
 static const char *const_types[] = { "int8_t",
@@ -78,7 +78,7 @@ static const char *const_types[] = { "int8_t",
                                      "int64_t",
                                      "float",
                                      "double",
-                                     NULL };
+                                     NULL,};
 
 // Given NULL-terminated array of strings "ts", does "t" appear in it?
 static int string_in_array(const char *t, const char **ts)
