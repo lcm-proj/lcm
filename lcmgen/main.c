@@ -1,18 +1,18 @@
-#include <stdio.h>
-#include <stdint.h>
 #include <ctype.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <string.h>
 #ifndef WIN32
 #include <unistd.h>
 #endif
+#include <assert.h>
+#include <inttypes.h>
 #include <stdarg.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <inttypes.h>
-#include "lcmgen.h"
 #include "../lcm/lcm_version.h"
+#include "lcmgen.h"
 
 #ifdef WIN32
 #include <lcm/windows/WinPorting.h>
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
     setup_go_options(gopt);
     // clang-format on
 
-    if (!getopt_parse(gopt, argc, argv, 1) || getopt_get_bool(gopt,"help")) {
+    if (!getopt_parse(gopt, argc, argv, 1) || getopt_get_bool(gopt, "help")) {
         printf("Usage: %s [options] <input files>\n\n", argv[0]);
         getopt_do_usage(gopt);
         return 0;
@@ -105,9 +105,8 @@ int main(int argc, char *argv[])
 
     // If "--version" was specified, then show version information and exit.
     if (getopt_get_bool(gopt, "version")) {
-      printf("lcm-gen %d.%d.%d\n", LCM_MAJOR_VERSION, LCM_MINOR_VERSION,
-          LCM_MICRO_VERSION);
-      return 0;
+        printf("lcm-gen %d.%d.%d\n", LCM_MAJOR_VERSION, LCM_MINOR_VERSION, LCM_MICRO_VERSION);
+        return 0;
     }
 
     // If "-t" or "--tokenize" was specified, then show tokenization
@@ -156,8 +155,8 @@ int main(int argc, char *argv[])
     }
 
     if (getopt_get_bool(gopt, "lua")) {
-       did_something = 1;
-       if (emit_lua(lcm)) {
+        did_something = 1;
+        if (emit_lua(lcm)) {
             printf("An error occurred while emitting Lua code.\n");
             res = -1;
         }
