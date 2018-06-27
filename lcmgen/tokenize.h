@@ -9,19 +9,18 @@ typedef enum {
     LCM_TOK_INVALID,
     LCM_TOK_EOF,
     LCM_TOK_COMMENT,
-    LCM_TOK_OTHER
+    LCM_TOK_OTHER,
 } lcm_token_type_t;
 
 /** Tokenizer incrementally tokenizes an input stream. **/
-struct tokenize
-{
-	// current token
-	char *token;
+struct tokenize {
+    // current token
+    char *token;
 
     // bytes allocated for token.
     int token_capacity;
 
-	int token_line, token_column;
+    int token_line, token_column;
 
     // info about the last returned character from next_char.
     int current_char;
@@ -33,17 +32,17 @@ struct tokenize
     int unget_char;
     int unget_line, unget_column;
 
-	// the current line, and our position in the input stream.
+    // the current line, and our position in the input stream.
     // (ignoring the occurence of ungets.)
-	char *buffer;
+    char *buffer;
     int buffer_line, buffer_column;
     int buffer_len;
 
-	char *path;
-	FILE *f;
+    char *path;
+    FILE *f;
 
-	// do we have a token ready?
-	int hasnext;
+    // do we have a token ready?
+    int hasnext;
 
     lcm_token_type_t token_type;
 };
