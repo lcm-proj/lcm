@@ -183,7 +183,9 @@ void encode_recursive(lcmgen_t *lcm, lcm_member_t *lm, FILE *f, primitive_info_t
 
             lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
 
-            emit(2+depth, "{ ByteBuffer bbuf = ByteBuffer.allocate(%s%s*4); bbuf.order(ByteOrder.BIG_ENDIAN); ", dim_size_prefix(dim->size), dim->size);
+            emit(2+depth, "{ ByteBuffer bbuf = ByteBuffer.allocate(%s%s*4);",
+                 dim_size_prefix(dim->size), dim->size);
+            emit(2+depth, "  bbuf.order(ByteOrder.BIG_ENDIAN);");
             emit(2+depth, "  bbuf.asFloatBuffer().put(this.%s);", accessor_array);
             emit(2+depth, "  outs.write(bbuf.array()); }");
             return;
@@ -233,7 +235,10 @@ void decode_recursive(lcmgen_t *lcm, lcm_member_t *lm, FILE *f, primitive_info_t
         if (0 && !strcmp(pinfo->storage, "float")) {
             lcm_dimension_t *dim = (lcm_dimension_t*) g_ptr_array_index(lm->dimensions, depth);
 
-            emit(2+depth, "{ byte bb[] = new byte[%s%s*4]; ins.readFully(bb); ByteBuffer bbuf = ByteBuffer.wrap(bb); bbuf.order(ByteOrder.BIG_ENDIAN); ", dim_size_prefix(dim->size), dim->size);
+            emit(2+depth, "{ byte bb[] = new byte[%s%s*4]; ins.readFully(bb);",
+                 dim_size_prefix(dim->size), dim->size);
+            emit(2+depth, "  ByteBuffer bbuf = ByteBuffer.wrap(bb);");
+            emit(2+depth, "  bbuf.order(ByteOrder.BIG_ENDIAN);");
             emit(2+depth, "  bbuf.asFloatBuffer().get(this.%s); }", accessor_array);
             return;
         }
@@ -388,80 +393,88 @@ int emit_java(lcmgen_t *lcm)
         else
             emit(0, "package %s;", getopt_get_string(lcm->gopt, "jdefaultpkg"));
 
+        // clang-format off
         emit(0, " ");
         emit(0, "import java.io.*;");
         emit(0, "import java.util.*;");
         emit(0, " ");
 
-        emit(0, "public final class %s %s", le->enumname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
+        emit(0, "public final class %s %s",
+             le->enumname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
 
         emit(0, "{");
         emit(1, "public int value;");
         emit(0, " ");
+        // clang-format on
 
         for (unsigned int v = 0; v < g_ptr_array_size(le->values); v++) {
             lcm_enum_value_t *lev = (lcm_enum_value_t *) g_ptr_array_index(le->values, v);
             emit(1, "public static final int %-16s = %i;",
                     lev->valuename, lev->value);
         }
-        emit(0," ");
+        emit(0, " ");
 
-        emit(1,"public %s(int value) { this.value = value; }",
-                le->enumname->shortname);
-        emit(0," ");
+        // clang-format off
+        emit(1, "public %s(int value) { this.value = value; }",
+             le->enumname->shortname);
+        emit(0, " ");
 
-        emit(1,"public int getValue() { return value; }");
-        emit(0," ");
+        emit(1, "public int getValue() { return value; }");
+        emit(0, " ");
 
-        emit(1,"public void _encodeRecursive(DataOutput outs) throws IOException");
-        emit(1,"{");
-        emit(2,"outs.writeInt(this.value);");
-        emit(1,"}");
-        emit(0," ");
+        emit(1, "public void _encodeRecursive(DataOutput outs) throws IOException");
+        emit(1, "{");
+        emit(2,     "outs.writeInt(this.value);");
+        emit(1, "}");
+        emit(0, " ");
 
-        emit(1,"public void encode(DataOutput outs) throws IOException");
-        emit(1,"{");
-        emit(2,"outs.writeLong(LCM_FINGERPRINT);");
-        emit(2,"_encodeRecursive(outs);");
-        emit(1,"}");
-        emit(0," ");
+        emit(1, "public void encode(DataOutput outs) throws IOException");
+        emit(1, "{");
+        emit(2,     "outs.writeLong(LCM_FINGERPRINT);");
+        emit(2,     "_encodeRecursive(outs);");
+        emit(1, "}");
+        emit(0, " ");
 
-        emit(1,"public static %s _decodeRecursiveFactory(DataInput ins) throws IOException", make_fqn(lcm, le->enumname->lctypename));
-        emit(1,"{");
-        emit(2,"%s o = new %s(0);", make_fqn(lcm, le->enumname->lctypename), make_fqn(lcm, le->enumname->lctypename));
-        emit(2,"o._decodeRecursive(ins);");
-        emit(2,"return o;");
-        emit(1,"}");
-        emit(0," ");
+        emit(1, "public static %s _decodeRecursiveFactory(DataInput ins) throws IOException",
+             make_fqn(lcm, le->enumname->lctypename));
+        emit(1, "{");
+        emit(2,     "%s o = new %s(0);",
+             make_fqn(lcm, le->enumname->lctypename), make_fqn(lcm, le->enumname->lctypename));
+        emit(2,     "o._decodeRecursive(ins);");
+        emit(2,     "return o;");
+        emit(1, "}");
+        emit(0, " ");
 
-        emit(1,"public void _decodeRecursive(DataInput ins) throws IOException");
-        emit(1,"{");
-        emit(2,"this.value = ins.readInt();");
-        emit(1,"}");
-        emit(0," ");
+        emit(1, "public void _decodeRecursive(DataInput ins) throws IOException");
+        emit(1, "{");
+        emit(2,     "this.value = ins.readInt();");
+        emit(1, "}");
+        emit(0, " ");
 
-        emit(1,"public %s(DataInput ins) throws IOException", le->enumname->shortname);
-        emit(1,"{");
-        emit(2,"long hash = ins.readLong();");
-        emit(2,"if (hash != LCM_FINGERPRINT)");
-        emit(3,     "throw new IOException(\"LCM Decode error: bad fingerprint\");");
-        emit(2,"_decodeRecursive(ins);");
-        emit(1,"}");
-        emit(0," ");
+        emit(1, "public %s(DataInput ins) throws IOException", le->enumname->shortname);
+        emit(1, "{");
+        emit(2,     "long hash = ins.readLong();");
+        emit(2,     "if (hash != LCM_FINGERPRINT)");
+        emit(3,         "throw new IOException(\"LCM Decode error: bad fingerprint\");");
+        emit(2,     "_decodeRecursive(ins);");
+        emit(1, "}");
+        emit(0, " ");
 
-        emit(1,"public %s copy()", classname);
-        emit(1,"{");
-        emit(2,"return new %s(this.value);", classname);
-        emit(1,"}");
-        emit(0," ");
+        emit(1, "public %s copy()", classname);
+        emit(1, "{");
+        emit(2,     "return new %s(this.value);", classname);
+        emit(1, "}");
+        emit(0, " ");
 
-        emit(1,"public static final long _hashRecursive(ArrayList<Class<?>> clss)");
-        emit(1,"{");
-        emit(2,"return LCM_FINGERPRINT;");
-        emit(1,"}");
-        emit(0," ");
+        emit(1, "public static final long _hashRecursive(ArrayList<Class<?>> clss)");
+        emit(1, "{");
+        emit(2,     "return LCM_FINGERPRINT;");
+        emit(1, "}");
+        emit(0, " ");
         emit(1, "public static final long LCM_FINGERPRINT = 0x%016"PRIx64"L;", le->hash);
         emit(0, "}");
+        // clang-format on
+
         fclose(f);
     }
 
@@ -594,19 +607,22 @@ int emit_java(lcmgen_t *lcm)
             emit(0, "");
 
         ///////////////// compute fingerprint //////////////////
+
+        // clang-format off
         emit(1, "static {");
-        emit(2, "LCM_FINGERPRINT = _hashRecursive(new ArrayList<Class<?>>());");
+        emit(2,     "LCM_FINGERPRINT = _hashRecursive(new ArrayList<Class<?>>());");
         emit(1, "}");
         emit(0, " ");
 
         emit(1, "public static long _hashRecursive(ArrayList<Class<?>> classes)");
         emit(1, "{");
-        emit(2, "if (classes.contains(%s.class))", make_fqn(lcm, lr->structname->lctypename));
-        emit(3,     "return 0L;");
+        emit(2,     "if (classes.contains(%s.class))", make_fqn(lcm, lr->structname->lctypename));
+        emit(3,         "return 0L;");
         emit(0, " ");
-        emit(2, "classes.add(%s.class);", make_fqn(lcm, lr->structname->lctypename));
+        emit(2,     "classes.add(%s.class);", make_fqn(lcm, lr->structname->lctypename));
+        emit(2,     "long hash = LCM_FINGERPRINT_BASE");
+        // clang-format on
 
-        emit(2, "long hash = LCM_FINGERPRINT_BASE");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
             primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
@@ -618,23 +634,27 @@ int emit_java(lcmgen_t *lcm)
         }
         emit(3,";");
 
-        emit(2, "classes.remove(classes.size() - 1);");
-        emit(2, "return (hash<<1) + ((hash>>63)&1);");
-
+        // clang-format off
+        emit(2,     "classes.remove(classes.size() - 1);");
+        emit(2,     "return (hash<<1) + ((hash>>63)&1);");
         emit(1, "}");
         emit(0, " ");
+        // clang-format on
 
         ///////////////// encode //////////////////
 
-        emit(1,"public void encode(DataOutput outs) throws IOException");
-        emit(1,"{");
-        emit(2,"outs.writeLong(LCM_FINGERPRINT);");
-        emit(2,"_encodeRecursive(outs);");
-        emit(1,"}");
-        emit(0," ");
+        // clang-format off
+        emit(1, "public void encode(DataOutput outs) throws IOException");
+        emit(1, "{");
+        emit(2,     "outs.writeLong(LCM_FINGERPRINT);");
+        emit(2,     "_encodeRecursive(outs);");
+        emit(1, "}");
+        emit(0, " ");
+        // clang-format on
 
         emit(1,"public void _encodeRecursive(DataOutput outs) throws IOException");
         emit(1,"{");
+
         if(struct_has_string_member(lr))
             emit(2, "char[] __strbuf = null;");
         char accessor[1024];
@@ -647,37 +667,42 @@ int emit_java(lcmgen_t *lcm)
             encode_recursive(lcm, lm, f, pinfo, accessor, 0);
             emit(0," ");
         }
+
         emit(1,"}");
         emit(0," ");
 
         ///////////////// decode //////////////////
 
-        // decoding constructors
+        // clang-format off
         emit(1, "public %s(byte[] data) throws IOException", lr->structname->shortname);
         emit(1, "{");
-        emit(2, "this(new LCMDataInputStream(data));");
+        emit(2,     "this(new LCMDataInputStream(data));");
         emit(1, "}");
         emit(0, " ");
 
-        emit(1,"public %s(DataInput ins) throws IOException", lr->structname->shortname);
-        emit(1,"{");
-        emit(2,"if (ins.readLong() != LCM_FINGERPRINT)");
-        emit(3,     "throw new IOException(\"LCM Decode error: bad fingerprint\");");
-        emit(0," ");
-        emit(2,"_decodeRecursive(ins);");
-        emit(1,"}");
-        emit(0," ");
+        emit(1, "public %s(DataInput ins) throws IOException", lr->structname->shortname);
+        emit(1, "{");
+        emit(2,     "if (ins.readLong() != LCM_FINGERPRINT)");
+        emit(3,         "throw new IOException(\"LCM Decode error: bad fingerprint\");");
+        emit(0, " ");
+        emit(2,     "_decodeRecursive(ins);");
+        emit(1, "}");
+        emit(0, " ");
 
-        emit(1,"public static %s _decodeRecursiveFactory(DataInput ins) throws IOException", make_fqn(lcm, lr->structname->lctypename));
-        emit(1,"{");
-        emit(2,"%s o = new %s();", make_fqn(lcm, lr->structname->lctypename), make_fqn(lcm, lr->structname->lctypename));
-        emit(2,"o._decodeRecursive(ins);");
-        emit(2,"return o;");
-        emit(1,"}");
-        emit(0," ");
+        emit(1, "public static %s _decodeRecursiveFactory(DataInput ins) throws IOException",
+             make_fqn(lcm, lr->structname->lctypename));
+        emit(1, "{");
+        emit(2,     "%s o = new %s();",
+             make_fqn(lcm, lr->structname->lctypename), make_fqn(lcm, lr->structname->lctypename));
+        emit(2,     "o._decodeRecursive(ins);");
+        emit(2,     "return o;");
+        emit(1, "}");
+        emit(0, " ");
+        // clang-format on
 
-        emit(1,"public void _decodeRecursive(DataInput ins) throws IOException");
-        emit(1,"{");
+        emit(1, "public void _decodeRecursive(DataInput ins) throws IOException");
+        emit(1, "{");
+
         if(struct_has_string_member(lr))
             emit(2, "char[] __strbuf = null;");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
@@ -704,18 +729,20 @@ int emit_java(lcmgen_t *lcm)
             }
 
             decode_recursive(lcm, lm, f, pinfo, accessor, 0);
-            emit(0," ");
+            emit(0, " ");
         }
 
-        emit(1,"}");
-        emit(0," ");
+        emit(1, "}");
+        emit(0, " ");
 
 
         ///////////////// copy //////////////////
 
-        emit(1,"public %s copy()", classname);
-        emit(1,"{");
-        emit(2,"%s outobj = new %s();", classname, classname);
+        // clang-format off
+        emit(1, "public %s copy()", classname);
+        emit(1, "{");
+        emit(2,     "%s outobj = new %s();", classname, classname);
+        // clang-format on
 
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
@@ -743,9 +770,11 @@ int emit_java(lcmgen_t *lcm)
             emit(0," ");
         }
 
-        emit(2,"return outobj;");
-        emit(1,"}");
-        emit(0," ");
+        // clang-format off
+        emit(2,     "return outobj;");
+        emit(1, "}");
+        emit(0, " ");
+        // clang-format on
 
         ////////
         emit(0, "}\n");
