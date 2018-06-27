@@ -248,63 +248,69 @@ int emit_csharp(lcmgen_t *lcm)
         }
         emit(0," ");
 
-        emit(2,"public %s(int value) { this.value = value; }", 
-                le->enumname->shortname);
-        emit(0," ");
+        // clang-format off
+        emit(2, "public %s(int value) { this.value = value; }",
+             le->enumname->shortname);
+        emit(0, " ");
 
-        emit(2,"public int getValue() { return value; }");
-        emit(0," ");
+        emit(2, "public int getValue() { return value; }");
+        emit(0, " ");
 
-        emit(2,"public void _encodeRecursive(LCMDataOutputStream outs)");
-        emit(2,"{");
-        emit(3,"outs.WriteInt(this.value);");
-        emit(2,"}");
-        emit(0," ");
+        emit(2, "public void _encodeRecursive(LCMDataOutputStream outs)");
+        emit(2, "{");
+        emit(3,     "outs.WriteInt(this.value);");
+        emit(2, "}");
+        emit(0, " ");
 
-        emit(2,"public void Encode(LCMDataOutputStream outs)");
-        emit(2,"{");
-        emit(3,"outs.Write((long) LCM_FINGERPRINT);");
-        emit(3,"_encodeRecursive(outs);");
-        emit(2,"}");
-        emit(0," ");
+        emit(2, "public void Encode(LCMDataOutputStream outs)");
+        emit(2, "{");
+        emit(3,     "outs.Write((long) LCM_FINGERPRINT);");
+        emit(3,     "_encodeRecursive(outs);");
+        emit(2, "}");
+        emit(0, " ");
 
-        emit(2,"public static %s _decodeRecursiveFactory(LCMDataInputStream ins)", make_fqn_csharp(lcm, le->enumname->lctypename));
-        emit(2,"{");
-        emit(3,"%s o = new %s(0);", make_fqn_csharp(lcm, le->enumname->lctypename), make_fqn_csharp(lcm, le->enumname->lctypename));
-        emit(3,"o._decodeRecursive(ins);");
-        emit(3,"return o;");
-        emit(2,"}");
-        emit(0," ");
+        emit(2, "public static %s _decodeRecursiveFactory(LCMDataInputStream ins)",
+             make_fqn_csharp(lcm, le->enumname->lctypename));
+        emit(2, "{");
+        emit(3,     "%s o = new %s(0);",
+             make_fqn_csharp(lcm, le->enumname->lctypename),
+             make_fqn_csharp(lcm, le->enumname->lctypename));
+        emit(3,     "o._decodeRecursive(ins);");
+        emit(3,     "return o;");
+        emit(2, "}");
+        emit(0, " ");
 
-        emit(2,"public void _decodeRecursive(LCMDataInputStream ins)");
-        emit(2,"{");
-        emit(3,"this.value = ins.ReadInt();");
-        emit(2,"}");
-        emit(0," ");
+        emit(2, "public void _decodeRecursive(LCMDataInputStream ins)");
+        emit(2, "{");
+        emit(3,     "this.value = ins.ReadInt();");
+        emit(2, "}");
+        emit(0, " ");
 
-        emit(2,"public %s(LCMDataInputStream ins)", le->enumname->shortname);
-        emit(2,"{");
-        emit(3,"ulong hash = (ulong) ins.ReadInt64();");
-        emit(3,"if (hash != LCM_FINGERPRINT)");
-        emit(4,     "throw new System.IO.IOException(\"LCM Decode error: bad fingerprint\");");
-        emit(3,"_decodeRecursive(ins);");
-        emit(2,"}");
-        emit(0," ");
+        emit(2, "public %s(LCMDataInputStream ins)", le->enumname->shortname);
+        emit(2, "{");
+        emit(3,     "ulong hash = (ulong) ins.ReadInt64();");
+        emit(3,     "if (hash != LCM_FINGERPRINT)");
+        emit(4,         "throw new System.IO.IOException(\"LCM Decode error: bad fingerprint\");");
+        emit(3,     "_decodeRecursive(ins);");
+        emit(2, "}");
+        emit(0, " ");
 
-        emit(2,"public %s Copy()", classname);
-        emit(2,"{");
-        emit(3,"return new %s(this.value);", classname);
-        emit(2,"}");
-        emit(0," ");
+        emit(2, "public %s Copy()", classname);
+        emit(2, "{");
+        emit(3,     "return new %s(this.value);", classname);
+        emit(2, "}");
+        emit(0, " ");
 
-        emit(2,"public const ulong _hashRecursive(List<String> clss)");
-        emit(2,"{");
-        emit(3,"return LCM_FINGERPRINT;");
-        emit(2,"}");
-        emit(0," ");
+        emit(2, "public const ulong _hashRecursive(List<String> clss)");
+        emit(2, "{");
+        emit(3,     "return LCM_FINGERPRINT;");
+        emit(2, "}");
+        emit(0, " ");
         emit(2, "public static const ulong LCM_FINGERPRINT = 0x%016"PRIx64"L;", le->hash);
         emit(1, "}");
         emit(0, "}");
+        // clang-format on
+
         fclose(f);
     }
     
@@ -436,20 +442,24 @@ int emit_csharp(lcmgen_t *lcm)
             emit(0, "");
 
         ///////////////// encode //////////////////
+
+        // clang-format off
         emit(2, "static %s()",  lr->structname->shortname);
         emit(2, "{");
-        emit(3, "LCM_FINGERPRINT = _hashRecursive(new List<String>());");
+        emit(3,     "LCM_FINGERPRINT = _hashRecursive(new List<String>());");
         emit(2, "}");
         emit(0, " ");
 
         emit(2, "public static ulong _hashRecursive(List<String> classes)");
         emit(2, "{");
-        emit(3, "if (classes.Contains(\"%s\"))", make_fqn_csharp(lcm, lr->structname->lctypename));
-        emit(4,     "return 0L;");
+        emit(3,     "if (classes.Contains(\"%s\"))",
+             make_fqn_csharp(lcm, lr->structname->lctypename));
+        emit(4,         "return 0L;");
         emit(0, " ");
-        emit(3, "classes.Add(\"%s\");", make_fqn_csharp(lcm, lr->structname->lctypename));
+        emit(3,     "classes.Add(\"%s\");", make_fqn_csharp(lcm, lr->structname->lctypename));
+        emit(3,     "ulong hash = LCM_FINGERPRINT_BASE");
+        // clang-format on
 
-        emit(3, "ulong hash = LCM_FINGERPRINT_BASE");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
             lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
             primitive_info_t *pinfo = (primitive_info_t*) g_hash_table_lookup(type_table, lm->type->lctypename);
@@ -461,23 +471,27 @@ int emit_csharp(lcmgen_t *lcm)
         }
         emit(4,";");
 
-        emit(3, "classes.RemoveAt(classes.Count - 1);");
-        emit(3, "return (hash<<1) + ((hash>>63)&1);");
-
+        // clang-format off
+        emit(3,     "classes.RemoveAt(classes.Count - 1);");
+        emit(3,     "return (hash<<1) + ((hash>>63)&1);");
         emit(2, "}");
         emit(0, " ");
+        // clang-format on
 
         ///////////////// encode //////////////////
 
-        emit(2,"public void Encode(LCMDataOutputStream outs)");
-        emit(2,"{");
-        emit(3,"outs.Write((long) LCM_FINGERPRINT);");
-        emit(3,"_encodeRecursive(outs);");
-        emit(2,"}");
-        emit(0," ");
+        // clang-format off
+        emit(2, "public void Encode(LCMDataOutputStream outs)");
+        emit(2, "{");
+        emit(3,     "outs.Write((long) LCM_FINGERPRINT);");
+        emit(3,     "_encodeRecursive(outs);");
+        emit(2, "}");
+        emit(0, " ");
+        // clang-format on
 
         emit(2,"public void _encodeRecursive(LCMDataOutputStream outs)");
         emit(2,"{");
+
         if(struct_has_string_member(lr))
             emit(3, "byte[] __strbuf = null;");
         char accessor[1024];
@@ -505,36 +519,43 @@ int emit_csharp(lcmgen_t *lcm)
             }
             emit(0," ");
         }
+
         emit(2,"}");
         emit(0," ");
 
         ///////////////// decode //////////////////
 
-        // decoding constructors
-        emit(2, "public %s(byte[] data) : this(new LCMDataInputStream(data))", lr->structname->shortname);
+        // clang-format off
+        emit(2, "public %s(byte[] data) : this(new LCMDataInputStream(data))",
+             lr->structname->shortname);
         emit(2, "{");
         emit(2, "}");
         emit(0, " ");
 
-        emit(2,"public %s(LCMDataInputStream ins)", lr->structname->shortname);
-        emit(2,"{");
-        emit(3,"if ((ulong) ins.ReadInt64() != LCM_FINGERPRINT)");
-        emit(4,     "throw new System.IO.IOException(\"LCM Decode error: bad fingerprint\");");
-        emit(0," ");
-        emit(3,"_decodeRecursive(ins);");
-        emit(2,"}");
-        emit(0," ");
+        emit(2, "public %s(LCMDataInputStream ins)", lr->structname->shortname);
+        emit(2, "{");
+        emit(3,     "if ((ulong) ins.ReadInt64() != LCM_FINGERPRINT)");
+        emit(4,         "throw new System.IO.IOException(\"LCM Decode error: bad fingerprint\");");
+        emit(0, " ");
+        emit(3,     "_decodeRecursive(ins);");
+        emit(2, "}");
+        emit(0, " ");
 
-        emit(2,"public static %s _decodeRecursiveFactory(LCMDataInputStream ins)", make_fqn_csharp(lcm, lr->structname->lctypename));
-        emit(2,"{");
-        emit(3,"%s o = new %s();", make_fqn_csharp(lcm, lr->structname->lctypename), make_fqn_csharp(lcm, lr->structname->lctypename));
-        emit(3,"o._decodeRecursive(ins);");
-        emit(3,"return o;");
-        emit(2,"}");
-        emit(0," ");
+        emit(2, "public static %s _decodeRecursiveFactory(LCMDataInputStream ins)",
+             make_fqn_csharp(lcm, lr->structname->lctypename));
+        emit(2, "{");
+        emit(3,     "%s o = new %s();",
+             make_fqn_csharp(lcm, lr->structname->lctypename),
+             make_fqn_csharp(lcm, lr->structname->lctypename));
+        emit(3,     "o._decodeRecursive(ins);");
+        emit(3,     "return o;");
+        emit(2, "}");
+        emit(0, " ");
+        // clang-format on
 
         emit(2,"public void _decodeRecursive(LCMDataInputStream ins)");
         emit(2,"{");
+
         if(struct_has_string_member(lr))
             emit(3, "byte[] __strbuf = null;");
         for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
