@@ -12,10 +12,10 @@
 
 #include "exlcm/example_t.hpp"
 
-int main(int argc, char ** argv)
+int main(int argc, char **argv)
 {
     lcm::LCM lcm;
-    if(!lcm.good())
+    if (!lcm.good())
         return 1;
 
     exlcm::example_t my_data;
@@ -32,7 +32,7 @@ int main(int argc, char ** argv)
 
     my_data.num_ranges = 15;
     my_data.ranges.resize(my_data.num_ranges);
-    for(int i = 0; i < my_data.num_ranges; i++)
+    for (int i = 0; i < my_data.num_ranges; i++)
         my_data.ranges[i] = i;
 
     my_data.name = "example string";

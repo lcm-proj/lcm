@@ -10,49 +10,47 @@
 // On a system with pkg-config, you can also use:
 //  $ gcc -o read_log read_log.c `pkg-config --cflags --libs lcm`
 
-#include <stdio.h>
 #include <inttypes.h>
-#include <string.h>
 #include <lcm/lcm.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "exlcm_example_t.h"
 
-int main(int argc, char ** argv)
+int main(int argc, char **argv)
 {
-    lcm_eventlog_t * log;
-    if(argc < 2) {
+    lcm_eventlog_t *log;
+    if (argc < 2) {
         fprintf(stderr, "usage: read_log <logfile>\n");
         return 1;
     }
 
     log = lcm_eventlog_create(argv[1], "r");
-    if(!log) {
+    if (!log) {
         fprintf(stderr, "couldn't open log file\n");
         return 1;
     }
 
-    while(1) {
+    while (1) {
         exlcm_example_t msg;
         int i;
         lcm_eventlog_event_t *event = lcm_eventlog_read_next_event(log);
 
-        if(!event)
+        if (!event)
             break;
 
-        if(0 != strcmp(event->channel, "EXAMPLE"))
+        if (0 != strcmp(event->channel, "EXAMPLE"))
             continue;
 
         exlcm_example_t_decode(event->data, 0, event->datalen, &msg);
 
         printf("Message:\n");
-        printf("  timestamp   = %"PRId64"\n", msg.timestamp);
-        printf("  position    = (%f, %f, %f)\n",
-                msg.position[0], msg.position[1], msg.position[2]);
-        printf("  orientation = (%f, %f, %f, %f)\n",
-                msg.orientation[0], msg.orientation[1], msg.orientation[2],
-                msg.orientation[3]);
+        printf("  timestamp   = %" PRId64 "\n", msg.timestamp);
+        printf("  position    = (%f, %f, %f)\n", msg.position[0], msg.position[1], msg.position[2]);
+        printf("  orientation = (%f, %f, %f, %f)\n", msg.orientation[0], msg.orientation[1],
+               msg.orientation[2], msg.orientation[3]);
         printf("  ranges:");
-        for(i = 0; i < msg.num_ranges; i++)
+        for (i = 0; i < msg.num_ranges; i++)
             printf(" %d", msg.ranges[i]);
         printf("\n");
         printf("  name        = '%s'\n", msg.name);

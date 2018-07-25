@@ -1,10 +1,11 @@
+#include <gtest/gtest.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gtest/gtest.h>
 
 #include <lcm/lcm-cpp.hpp>
 
-TEST(LCM_CPP, MemqConstructDestroy) {
+TEST(LCM_CPP, MemqConstructDestroy)
+{
     lcm::LCM lcm("memq://");
     EXPECT_TRUE(lcm.good());
 }
@@ -14,14 +15,15 @@ struct MemqSimpleState {
     bool handled;
 };
 
-void MemqSimpleHandler(const lcm::ReceiveBuffer* rbuf,
-        const std::string& channel,
-        std::vector<uint8_t>* received_buf) {
+void MemqSimpleHandler(const lcm::ReceiveBuffer *rbuf, const std::string &channel,
+                       std::vector<uint8_t> *received_buf)
+{
     received_buf->resize(rbuf->data_size);
     memcpy(&(*received_buf)[0], rbuf->data, rbuf->data_size);
 }
 
-TEST(LCM_CPP, MemqSimple) {
+TEST(LCM_CPP, MemqSimple)
+{
     // Publish a single message, then subscribe to it and check it's read.
     lcm::LCM lcm("memq://");
     const int buf_size = 1024;
@@ -43,15 +45,16 @@ TEST(LCM_CPP, MemqSimple) {
     }
 }
 
-void MemqBufferedHandler(const lcm::ReceiveBuffer* rbuf,
-        const std::string& channel,
-        std::vector<std::vector<uint8_t> >* received_buffers) {
+void MemqBufferedHandler(const lcm::ReceiveBuffer *rbuf, const std::string &channel,
+                         std::vector<std::vector<uint8_t> > *received_buffers)
+{
     std::vector<uint8_t> buf(rbuf->data_size);
     memcpy(&buf[0], rbuf->data, rbuf->data_size);
     received_buffers->push_back(buf);
 }
 
-TEST(LCM_CPP, MemqBuffered) {
+TEST(LCM_CPP, MemqBuffered)
+{
     // Publish many messages so that they get buffered up, then read them all.
     lcm::LCM lcm("memq://");
     std::vector<std::vector<uint8_t> > received_buffers;
@@ -62,7 +65,7 @@ TEST(LCM_CPP, MemqBuffered) {
     int buf_size = 100;
     std::vector<std::vector<uint8_t> > buffers(num_bufs);
     for (int buf_num = 0; buf_num < num_bufs; ++buf_num) {
-        std::vector<uint8_t>& buf = buffers[buf_num];
+        std::vector<uint8_t> &buf = buffers[buf_num];
         buf.resize(buf_size);
         for (int byte_index = 0; byte_index < buf_size; ++byte_index) {
             buf[byte_index] = rand() % 255;
@@ -77,13 +80,14 @@ TEST(LCM_CPP, MemqBuffered) {
     EXPECT_EQ(buffers, received_buffers);
 }
 
-void MemqTimeoutHandler(const lcm::ReceiveBuffer* rbuf,
-        const std::string& channel,
-        bool* msg_handled) {
+void MemqTimeoutHandler(const lcm::ReceiveBuffer *rbuf, const std::string &channel,
+                        bool *msg_handled)
+{
     *msg_handled = true;
 }
 
-TEST(LCM_CPP, MemqTimeout) {
+TEST(LCM_CPP, MemqTimeout)
+{
     // Test various usages of lcm_handle_timeout() using the memq provider
     lcm::LCM lcm("memq://");
 
