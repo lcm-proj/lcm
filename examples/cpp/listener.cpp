@@ -49,7 +49,9 @@ int main(int argc, char** argv)
     Handler handlerObject;
     lcm.subscribe("EXAMPLE", &Handler::handleMessage, &handlerObject);
 
-    while(0 == lcm.handle());
+    while (0 == lcm.handle()) {
+        // Do nothing
+    }
 
     return 0;
 }

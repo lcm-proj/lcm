@@ -133,7 +133,9 @@ int main(int argc, char** argv)
     lcmtest2_cross_package_t_subscribe(g_lcm, "test_lcmtest2_cross_package_t",
           &lcmtest2_cross_package_t_handler, NULL);
 
-    while (lcm_handle(g_lcm) == 0 && !g_quit) {}
+    while (lcm_handle(g_lcm) == 0 && !g_quit) {
+        // Do nothing
+    }
 
     lcm_destroy(g_lcm);
     return 0;
