@@ -258,8 +258,8 @@ write_thread(void *user_data)
         if (logger->fflush_interval_ms >= 0 &&
             (le->timestamp - logger->last_fflush_time) > logger->fflush_interval_ms*1000) {
             fflush(logger->log->f);
-            // Perform a full fsync operation after flush
 #ifndef WIN32
+            // Perform a full fsync operation after flush
             fdatasync(fileno(logger->log->f));
 #endif
             logger->last_fflush_time = le->timestamp;
@@ -278,11 +278,14 @@ write_thread(void *user_data)
 
             double tps =  logger->events_since_last_report / dt;
             double kbps = (logger->logsize - logger->last_report_logsize) / dt / 1024.0;
-            printf("Summary: %s ti:%4"PRIi64"sec Events: %-9"PRIi64" ( %4"PRIi64" MB )      TPS: %8.2f       KB/s: %8.2f\n",
-                    logger->fname,
-                    timestamp_seconds(offset_utime),
-                    logger->nevents, logger->logsize/1048576,
-                    tps, kbps);
+
+            // clang-format off
+            static const char* const info_format_str =
+                "Summary: %s ti:%4" PRIi64 "sec Events: %-9" PRIi64 " ( %4"PRIi64" MB )      TPS: %8.2f       KB/s: %8.2f\n";
+            // clang-format on
+
+            printf(info_format_str, logger->fname, timestamp_seconds(offset_utime), logger->nevents,
+                   logger->logsize / 1048576, tps, kbps);
             logger->last_report_time = offset_utime;
             logger->events_since_last_report = 0;
             logger->last_report_logsize = logger->logsize;
@@ -438,19 +441,19 @@ int main(int argc, char *argv[])
     char *optstring = "fic:shm:vu:qa";
     int c;
     struct option long_opts[] = {
-        { "split-mb", required_argument, 0, 'b' },
-        { "channel", required_argument, 0, 'c' },
-        { "force", no_argument, 0, 'f' },
-        { "increment", required_argument, 0, 'i' },
-        { "lcm-url", required_argument, 0, 'l' },
-        { "max-unwritten-mb", required_argument, 0, 'm' },
-        { "rotate", required_argument, 0, 'r' },
-        { "strftime", required_argument, 0, 's' },
-        { "quiet", no_argument, 0, 'q' },
-        { "append", no_argument, 0, 'a' },
-        { "invert-channels", no_argument, 0, 'v' },
-        { "flush-interval", required_argument, 0,'u'},
-        { 0, 0, 0, 0 }
+        {"split-mb", required_argument, 0, 'b'},
+        {"channel", required_argument, 0, 'c'},
+        {"force", no_argument, 0, 'f'},
+        {"increment", required_argument, 0, 'i'},
+        {"lcm-url", required_argument, 0, 'l'},
+        {"max-unwritten-mb", required_argument, 0, 'm'},
+        {"rotate", required_argument, 0, 'r'},
+        {"strftime", required_argument, 0, 's'},
+        {"quiet", no_argument, 0, 'q'},
+        {"append", no_argument, 0, 'a'},
+        {"invert-channels", no_argument, 0, 'v'},
+        {"flush-interval", required_argument, 0, 'u'},
+        {0, 0, 0, 0},
     };
 
     while ((c = getopt_long (argc, argv, optstring, long_opts, 0)) >= 0)

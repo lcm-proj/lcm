@@ -51,12 +51,9 @@ main(int argc, char ** argv)
     int c;
     char * expression = NULL;
     struct option long_opts[] = {
-        { "help", no_argument, 0, 'h' },
-        { "speed", required_argument, 0, 's' },
-        { "lcm-url", required_argument, 0, 'l' },
-        { "verbose", no_argument, 0, 'v' },
-        { "regexp", required_argument, 0, 'e' },
-        { 0, 0, 0, 0 }
+        {"help", no_argument, 0, 'h'},          {"speed", required_argument, 0, 's'},
+        {"lcm-url", required_argument, 0, 'l'}, {"verbose", no_argument, 0, 'v'},
+        {"regexp", required_argument, 0, 'e'},  {0, 0, 0, 0},
     };
 
     char *lcmurl = NULL;
@@ -116,7 +113,9 @@ main(int argc, char ** argv)
 
     lcm_subscribe (l.lcm_in, expression, handler, &l);
 
-    while (!lcm_handle (l.lcm_in));
+    while (!lcm_handle(l.lcm_in)) {
+        // Do nothing
+    }
 
     lcm_destroy (l.lcm_in);
     lcm_destroy (l.lcm_out);
