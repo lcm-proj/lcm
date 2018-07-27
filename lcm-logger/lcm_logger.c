@@ -1,10 +1,10 @@
-#include <stdio.h>
 #include <assert.h>
+#include <errno.h>
+#include <getopt.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 #include <time.h>
-#include <getopt.h>
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -12,13 +12,13 @@
 #include <lcm/lcm.h>
 
 // GRegex was new in GLib 2.14.0
-#if GLIB_CHECK_VERSION(2,14,0)
+#if GLIB_CHECK_VERSION(2, 14, 0)
 #else
 #error "LCM requires a glib version >= 2.14.0"
 #endif
 
 #ifdef WIN32
-#define __STDC_FORMAT_MACROS            // Enable integer types
+#define __STDC_FORMAT_MACROS  // Enable integer types
 #include <lcm/windows/WinPorting.h>
 #else
 #include <unistd.h> /* fdatasync */
@@ -42,7 +42,7 @@ static int _reset_logfile = 0;
 
 static inline int64_t timestamp_seconds(int64_t v)
 {
-    return v/1000000;
+    return v / 1000000;
 }
 
 static inline int64_t timestamp_now(void)
@@ -53,14 +53,13 @@ static inline int64_t timestamp_now(void)
 }
 
 typedef struct logger logger_t;
-struct logger
-{
+struct logger {
     lcm_eventlog_t *log;
 
-    char    input_fname[PATH_MAX];
-    char    fname[PATH_MAX];
-    char    fname_prefix[PATH_MAX];
-    lcm_t    *lcm;
+    char input_fname[PATH_MAX];
+    char fname[PATH_MAX];
+    char fname_prefix[PATH_MAX];
+    lcm_t *lcm;
 
     int64_t max_write_queue_size;
     int auto_increment;
@@ -75,11 +74,11 @@ struct logger
 
     GThread *write_thread;
     GAsyncQueue *write_queue;
-    GMutex * mutex;
+    GMutex *mutex;
 
     // variables for inverted matching (e.g., logging all but some channels)
     int invert_channels;
-    GRegex * regex;
+    GRegex *regex;
 
     // these members controlled by mutex
     int64_t write_queue_size;
@@ -99,28 +98,26 @@ struct logger
     int64_t last_drop_report_count;
 };
 
-static void
-rotate_logfiles(logger_t* logger)
+static void rotate_logfiles(logger_t *logger)
 {
-    if(!logger->quiet) {
+    if (!logger->quiet) {
         printf("Rotating log files\n");
     }
     // delete log files that have fallen off the end of the rotation
-    gchar* tomove = g_strdup_printf("%s.%d", logger->fname_prefix,
-            logger->rotate-1);
-    if(g_file_test(tomove, G_FILE_TEST_EXISTS)) {
-        if(0 != g_unlink(tomove)) {
+    gchar *tomove = g_strdup_printf("%s.%d", logger->fname_prefix, logger->rotate - 1);
+    if (g_file_test(tomove, G_FILE_TEST_EXISTS)) {
+        if (0 != g_unlink(tomove)) {
             fprintf(stderr, "ERROR! Unable to delete [%s]\n", tomove);
         }
     }
     g_free(tomove);
 
     // Rotate away any existing log files
-    for(int file_num = logger->rotate-1; file_num>=0; file_num--) {
-        gchar* newname = g_strdup_printf("%s.%d", logger->fname_prefix, file_num);
-        tomove = g_strdup_printf("%s.%d", logger->fname_prefix, file_num-1);
-        if(g_file_test(tomove, G_FILE_TEST_EXISTS)) {
-            if(0 != g_rename(tomove, newname)) {
+    for (int file_num = logger->rotate - 1; file_num >= 0; file_num--) {
+        gchar *newname = g_strdup_printf("%s.%d", logger->fname_prefix, file_num);
+        tomove = g_strdup_printf("%s.%d", logger->fname_prefix, file_num - 1);
+        if (g_file_test(tomove, G_FILE_TEST_EXISTS)) {
+            if (0 != g_rename(tomove, newname)) {
                 fprintf(stderr, "ERROR!  Unable to rotate [%s]\n", tomove);
             }
         }
@@ -129,19 +126,17 @@ rotate_logfiles(logger_t* logger)
     }
 }
 
-static int
-open_logfile(logger_t* logger)
+static int open_logfile(logger_t *logger)
 {
     // maybe run the filename through strftime
     if (logger->use_strftime) {
         char new_prefix[PATH_MAX];
-        time_t now = time (NULL);
-        strftime(new_prefix, sizeof(new_prefix),
-                logger->input_fname, localtime(&now));
+        time_t now = time(NULL);
+        strftime(new_prefix, sizeof(new_prefix), logger->input_fname, localtime(&now));
 
         // If auto-increment is enabled and the strftime-formatted filename
         // prefix has changed, then reset the auto-increment counter.
-        if(logger->auto_increment && strcmp(new_prefix, logger->fname_prefix))
+        if (logger->auto_increment && strcmp(new_prefix, logger->fname_prefix))
             logger->next_increment_num = 0;
         strcpy(logger->fname_prefix, new_prefix);
     } else {
@@ -152,76 +147,73 @@ open_logfile(logger_t* logger)
         /* Loop through possible file names until we find one that doesn't
          * already exist.  This way, we never overwrite an existing file. */
         do {
-            snprintf(logger->fname, sizeof(logger->fname), "%s.%02d",
-                    logger->fname_prefix, logger->next_increment_num);
+            snprintf(logger->fname, sizeof(logger->fname), "%s.%02d", logger->fname_prefix,
+                     logger->next_increment_num);
             logger->next_increment_num++;
-        } while(g_file_test(logger->fname, G_FILE_TEST_EXISTS));
-    } else if(logger->rotate > 0) {
+        } while (g_file_test(logger->fname, G_FILE_TEST_EXISTS));
+    } else if (logger->rotate > 0) {
         snprintf(logger->fname, sizeof(logger->fname), "%s.0", logger->fname_prefix);
     } else {
         strcpy(logger->fname, logger->fname_prefix);
-        if (! (logger->force_overwrite || logger->append)) {
-            if (g_file_test(logger->fname, G_FILE_TEST_EXISTS))
-            {
-                fprintf (stderr, "Refusing to overwrite existing file \"%s\"\n",
-                        logger->fname);
+        if (!(logger->force_overwrite || logger->append)) {
+            if (g_file_test(logger->fname, G_FILE_TEST_EXISTS)) {
+                fprintf(stderr, "Refusing to overwrite existing file \"%s\"\n", logger->fname);
                 return 1;
             }
         }
     }
 
     // create directories if needed
-    char *dirpart = g_path_get_dirname (logger->fname);
-    if (! g_file_test (dirpart, G_FILE_TEST_IS_DIR)) {
-        mkdir_with_parents (dirpart, 0755);
+    char *dirpart = g_path_get_dirname(logger->fname);
+    if (!g_file_test(dirpart, G_FILE_TEST_IS_DIR)) {
+        mkdir_with_parents(dirpart, 0755);
     }
-    g_free (dirpart);
+    g_free(dirpart);
 
-    if(!logger->quiet) {
+    if (!logger->quiet) {
         printf("Opening log file \"%s\"\n", logger->fname);
     }
 
     // open output file in append mode if we're rotating log files or appending
     // use write mode if not.
-    const char* logmode = (logger->rotate > 0 || logger->append) ? "a" : "w";
+    const char *logmode = (logger->rotate > 0 || logger->append) ? "a" : "w";
     logger->log = lcm_eventlog_create(logger->fname, logmode);
     if (logger->log == NULL) {
-        perror ("Error: fopen failed");
+        perror("Error: fopen failed");
         return 1;
     }
     return 0;
 }
 
-static void*
-write_thread(void *user_data)
+static void *write_thread(void *user_data)
 {
-    logger_t *logger = (logger_t*) user_data;
+    logger_t *logger = (logger_t *) user_data;
 
     GTimeVal start_time;
     g_get_current_time(&start_time);
     int num_splits = 0;
 
-    while(1) {
+    while (1) {
         void *msg = g_async_queue_pop(logger->write_queue);
 
         // Is it time to start a new logfile?
         int split_log = 0;
-        if(logger->auto_split_mb) {
-          double logsize_mb = (double)logger->logsize / (1 << 20);
-          split_log = (logsize_mb > logger->auto_split_mb);
+        if (logger->auto_split_mb) {
+            double logsize_mb = (double) logger->logsize / (1 << 20);
+            split_log = (logsize_mb > logger->auto_split_mb);
         }
-        if(_reset_logfile) {
+        if (_reset_logfile) {
             split_log = 1;
             _reset_logfile = 0;
         }
 
-        if(split_log) {
+        if (split_log) {
             // Yes.  open up a new log file
             lcm_eventlog_destroy(logger->log);
-            if(logger->rotate > 0)
+            if (logger->rotate > 0)
                 rotate_logfiles(logger);
-            if(0 != open_logfile(logger))
-              exit(1);
+            if (0 != open_logfile(logger))
+                exit(1);
             num_splits++;
             logger->logsize = 0;
             logger->last_report_logsize = 0;
@@ -229,37 +221,37 @@ write_thread(void *user_data)
 
         // Should the write thread exit?
         g_mutex_lock(logger->mutex);
-        if(msg == &logger->write_thread_exit_flag) {
+        if (msg == &logger->write_thread_exit_flag) {
             g_mutex_unlock(logger->mutex);
             return NULL;
         }
         // nope.  write the event to disk
-        lcm_eventlog_event_t *le = (lcm_eventlog_event_t*) msg;
+        lcm_eventlog_event_t *le = (lcm_eventlog_event_t *) msg;
         int64_t sz = sizeof(lcm_eventlog_event_t) + le->channellen + 1 + le->datalen;
         logger->write_queue_size -= sz;
         g_mutex_unlock(logger->mutex);
 
-        if(0 != lcm_eventlog_write_event(logger->log, le)) {
+        if (0 != lcm_eventlog_write_event(logger->log, le)) {
             static int64_t last_spew_utime = 0;
             char *reason = strdup(strerror(errno));
             int64_t now = timestamp_now();
-            if(now - last_spew_utime > 500000) {
+            if (now - last_spew_utime > 500000) {
                 fprintf(stderr, "lcm_eventlog_write_event: %s\n", reason);
                 last_spew_utime = now;
             }
             free(reason);
             free(le);
-            if(errno == ENOSPC) {
+            if (errno == ENOSPC) {
                 exit(1);
             } else {
                 continue;
             }
         }
         if (logger->fflush_interval_ms >= 0 &&
-            (le->timestamp - logger->last_fflush_time) > logger->fflush_interval_ms*1000) {
+            (le->timestamp - logger->last_fflush_time) > logger->fflush_interval_ms * 1000) {
             fflush(logger->log->f);
-            // Perform a full fsync operation after flush
 #ifndef WIN32
+            // Perform a full fsync operation after flush
             fdatasync(fileno(logger->log->f));
 #endif
             logger->last_fflush_time = le->timestamp;
@@ -268,21 +260,24 @@ write_thread(void *user_data)
         // bookkeeping, cleanup
         int64_t offset_utime = le->timestamp - logger->time0;
         logger->nevents++;
-        logger->events_since_last_report ++;
+        logger->events_since_last_report++;
         logger->logsize += 4 + 8 + 8 + 4 + le->channellen + 4 + le->datalen;
 
         free(le);
 
         if (!logger->quiet && (offset_utime - logger->last_report_time > 1000000)) {
-            double dt = (offset_utime - logger->last_report_time)/1000000.0;
+            double dt = (offset_utime - logger->last_report_time) / 1000000.0;
 
-            double tps =  logger->events_since_last_report / dt;
+            double tps = logger->events_since_last_report / dt;
             double kbps = (logger->logsize - logger->last_report_logsize) / dt / 1024.0;
-            printf("Summary: %s ti:%4"PRIi64"sec Events: %-9"PRIi64" ( %4"PRIi64" MB )      TPS: %8.2f       KB/s: %8.2f\n",
-                    logger->fname,
-                    timestamp_seconds(offset_utime),
-                    logger->nevents, logger->logsize/1048576,
-                    tps, kbps);
+
+            // clang-format off
+            static const char* const info_format_str =
+                "Summary: %s ti:%4" PRIi64 "sec Events: %-9" PRIi64 " ( %4"PRIi64" MB )      TPS: %8.2f       KB/s: %8.2f\n";
+            // clang-format on
+
+            printf(info_format_str, logger->fname, timestamp_seconds(offset_utime), logger->nevents,
+                   logger->logsize / 1048576, tps, kbps);
             logger->last_report_time = offset_utime;
             logger->events_since_last_report = 0;
             logger->last_report_logsize = logger->logsize;
@@ -290,13 +285,12 @@ write_thread(void *user_data)
     }
 }
 
-static void
-message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
+static void message_handler(const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
-    logger_t *logger = (logger_t*) u;
+    logger_t *logger = (logger_t *) u;
 
-    if(logger->invert_channels) {
-        if(g_regex_match(logger->regex, channel, (GRegexMatchFlags) 0, NULL))
+    if (logger->invert_channels) {
+        if (g_regex_match(logger->regex, channel, (GRegexMatchFlags) 0, NULL))
             return;
     }
 
@@ -308,19 +302,19 @@ message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
     g_mutex_lock(logger->mutex);
     int64_t mem_required = mem_sz + logger->write_queue_size;
 
-    if(mem_required > logger->max_write_queue_size) {
+    if (mem_required > logger->max_write_queue_size) {
         // can't write to logfile fast enough.  drop packet.
         g_mutex_unlock(logger->mutex);
 
         // maybe print an informational message to stdout
         int64_t now = timestamp_now();
-        logger->dropped_packets_count ++;
+        logger->dropped_packets_count++;
         int rc = logger->dropped_packets_count - logger->last_drop_report_count;
 
-        if(now - logger->last_drop_report_utime > 1000000 && rc > 0) {
-            if(!logger->quiet)
-                printf("Can't write to log fast enough.  Dropped %d packet%s\n",
-                        rc, rc==1?"":"s");
+        if (now - logger->last_drop_report_utime > 1000000 && rc > 0) {
+            if (!logger->quiet)
+                printf("Can't write to log fast enough.  Dropped %d packet%s\n", rc,
+                       rc == 1 ? "" : "s");
             logger->last_drop_report_utime = now;
             logger->last_drop_report_count = logger->dropped_packets_count;
         }
@@ -331,7 +325,7 @@ message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
     }
 
     // queue up the message for writing to disk by the write thread
-    lcm_eventlog_event_t *le = (lcm_eventlog_event_t*) malloc(mem_sz);
+    lcm_eventlog_event_t *le = (lcm_eventlog_event_t *) malloc(mem_sz);
     memset(le, 0, mem_sz);
 
     le->timestamp = rbuf->recv_utime;
@@ -339,25 +333,26 @@ message_handler (const lcm_recv_buf_t *rbuf, const char *channel, void *u)
     le->datalen = rbuf->data_size;
     // log_write_event will handle le.eventnum.
 
-    le->channel = ((char*)le) + sizeof(lcm_eventlog_event_t);
+    le->channel = ((char *) le) + sizeof(lcm_eventlog_event_t);
     strcpy(le->channel, channel);
     le->data = le->channel + channellen + 1;
-    assert((char*)le->data + rbuf->data_size == (char*)le + mem_sz);
+    assert((char *) le->data + rbuf->data_size == (char *) le + mem_sz);
     memcpy(le->data, rbuf->data, rbuf->data_size);
 
     g_async_queue_push(logger->write_queue, le);
 }
 
 #ifdef USE_SIGHUP
-static void sighup_handler (int signum)
+static void sighup_handler(int signum)
 {
     _reset_logfile = 1;
 }
 #endif
 
-static void usage ()
+static void usage()
 {
-    fprintf (stderr, "usage: lcm-logger [options] [FILE]\n"
+    fprintf(stderr,
+            "usage: lcm-logger [options] [FILE]\n"
             "\n"
             "    LCM message logging utility.  Subscribes to all channels on an LCM\n"
             "    network, and records all messages received on that network to\n"
@@ -413,14 +408,14 @@ static void usage ()
 int main(int argc, char *argv[])
 {
 #ifndef WIN32
-    setlinebuf (stdout);
+    setlinebuf(stdout);
 #endif
 
     char logpath[PATH_MAX];
-    memset (logpath, 0, sizeof (logpath));
+    memset(logpath, 0, sizeof(logpath));
 
     logger_t logger;
-    memset (&logger, 0, sizeof (logger));
+    memset(&logger, 0, sizeof(logger));
 
     // set some defaults
     logger.force_overwrite = 0;
@@ -438,105 +433,101 @@ int main(int argc, char *argv[])
     char *optstring = "fic:shm:vu:qa";
     int c;
     struct option long_opts[] = {
-        { "split-mb", required_argument, 0, 'b' },
-        { "channel", required_argument, 0, 'c' },
-        { "force", no_argument, 0, 'f' },
-        { "increment", required_argument, 0, 'i' },
-        { "lcm-url", required_argument, 0, 'l' },
-        { "max-unwritten-mb", required_argument, 0, 'm' },
-        { "rotate", required_argument, 0, 'r' },
-        { "strftime", required_argument, 0, 's' },
-        { "quiet", no_argument, 0, 'q' },
-        { "append", no_argument, 0, 'a' },
-        { "invert-channels", no_argument, 0, 'v' },
-        { "flush-interval", required_argument, 0,'u'},
-        { 0, 0, 0, 0 }
+        {"split-mb", required_argument, 0, 'b'},
+        {"channel", required_argument, 0, 'c'},
+        {"force", no_argument, 0, 'f'},
+        {"increment", required_argument, 0, 'i'},
+        {"lcm-url", required_argument, 0, 'l'},
+        {"max-unwritten-mb", required_argument, 0, 'm'},
+        {"rotate", required_argument, 0, 'r'},
+        {"strftime", required_argument, 0, 's'},
+        {"quiet", no_argument, 0, 'q'},
+        {"append", no_argument, 0, 'a'},
+        {"invert-channels", no_argument, 0, 'v'},
+        {"flush-interval", required_argument, 0, 'u'},
+        {0, 0, 0, 0},
     };
 
-    while ((c = getopt_long (argc, argv, optstring, long_opts, 0)) >= 0)
-    {
+    while ((c = getopt_long(argc, argv, optstring, long_opts, 0)) >= 0) {
         switch (c) {
-            case 'b':
-                logger.auto_split_mb = strtod(optarg, NULL);
-                if(logger.auto_split_mb <= 0) {
-                    usage();
-                    return 1;
-                }
-                break;
-            case 'f':
-                logger.force_overwrite = 1;
-                break;
-            case 'c':
-                free(chan_regex);
-                chan_regex = strdup(optarg);
-                break;
-            case 'i':
-                logger.auto_increment = 1;
-                break;
-            case 's':
-                logger.use_strftime = 1;
-                break;
-            case 'l':
-                free(lcmurl);
-                lcmurl = strdup(optarg);
-                break;
-            case 'q':
-                logger.quiet = 1;
-                break;
-            case 'v':
-                logger.invert_channels = 1;
-                break;
-            case 'm':
-                max_write_queue_size_mb = strtod(optarg, NULL);
-                if(max_write_queue_size_mb <= 0) {
-                    usage();
-                    return 1;
-                }
-                break;
-            case 'r':
-                {
-                  char* eptr = NULL;
-                  logger.rotate = strtol(optarg, &eptr, 10);
-                  if(*eptr) {
-                      usage();
-                      return 1;
-                  }
-                }
-                break;
-            case 'u':
-              logger.fflush_interval_ms = atol(optarg);
-              if(logger.fflush_interval_ms <= 0) {
-                  usage();
-                  return 1;
-              }
-              break;
-            case 'a':
-              logger.append = 1;
-              break;
-            case 'h':
-            default:
+        case 'b':
+            logger.auto_split_mb = strtod(optarg, NULL);
+            if (logger.auto_split_mb <= 0) {
                 usage();
                 return 1;
+            }
+            break;
+        case 'f':
+            logger.force_overwrite = 1;
+            break;
+        case 'c':
+            free(chan_regex);
+            chan_regex = strdup(optarg);
+            break;
+        case 'i':
+            logger.auto_increment = 1;
+            break;
+        case 's':
+            logger.use_strftime = 1;
+            break;
+        case 'l':
+            free(lcmurl);
+            lcmurl = strdup(optarg);
+            break;
+        case 'q':
+            logger.quiet = 1;
+            break;
+        case 'v':
+            logger.invert_channels = 1;
+            break;
+        case 'm':
+            max_write_queue_size_mb = strtod(optarg, NULL);
+            if (max_write_queue_size_mb <= 0) {
+                usage();
+                return 1;
+            }
+            break;
+        case 'r': {
+            char *eptr = NULL;
+            logger.rotate = strtol(optarg, &eptr, 10);
+            if (*eptr) {
+                usage();
+                return 1;
+            }
+        } break;
+        case 'u':
+            logger.fflush_interval_ms = atol(optarg);
+            if (logger.fflush_interval_ms <= 0) {
+                usage();
+                return 1;
+            }
+            break;
+        case 'a':
+            logger.append = 1;
+            break;
+        case 'h':
+        default:
+            usage();
+            return 1;
         };
     }
 
     if (optind == argc) {
-        strcpy (logger.input_fname, "lcmlog-%Y-%m-%d");
+        strcpy(logger.input_fname, "lcmlog-%Y-%m-%d");
         logger.auto_increment = 1;
         logger.use_strftime = 1;
     } else if (optind == argc - 1) {
-        strncpy (logger.input_fname, argv[optind], sizeof (logger.input_fname));
-    } else if (optind < argc-1) {
-        usage ();
+        strncpy(logger.input_fname, argv[optind], sizeof(logger.input_fname));
+    } else if (optind < argc - 1) {
+        usage();
         return 1;
     }
 
-
-    if(logger.auto_split_mb > 0 && !(logger.auto_increment || (logger.rotate > 0))) {
+    if (logger.auto_split_mb > 0 && !(logger.auto_increment || (logger.rotate > 0))) {
         fprintf(stderr, "ERROR.  --split-mb requires either --increment or --rotate\n");
         return 1;
     }
-    if(logger.rotate > 0 && logger.auto_increment) {
+    if (logger.rotate > 0 && logger.auto_increment) {
         fprintf(stderr, "ERROR.  --increment and --rotate can't both be used\n");
         return 1;
     }
@@ -547,7 +538,7 @@ int main(int argc, char *argv[])
     logger.time0 = timestamp_now();
     logger.max_write_queue_size = (int64_t)(max_write_queue_size_mb * (1 << 20));
 
-    if(0 != open_logfile(&logger))
+    if (0 != open_logfile(&logger))
         return 1;
 
     // create write thread
@@ -558,21 +549,21 @@ int main(int argc, char *argv[])
     logger.write_thread = g_thread_create(write_thread, &logger, TRUE, NULL);
 
     // begin logging
-    logger.lcm = lcm_create (lcmurl);
+    logger.lcm = lcm_create(lcmurl);
     free(lcmurl);
     if (!logger.lcm) {
-        fprintf (stderr, "Couldn't initialize LCM!");
+        fprintf(stderr, "Couldn't initialize LCM!");
         return 1;
     }
 
-    if(logger.invert_channels) {
+    if (logger.invert_channels) {
         // if inverting the channels, subscribe to everything and invert on the
         // callback
         lcm_subscribe(logger.lcm, ".*", message_handler, &logger);
         char *regexbuf = g_strdup_printf("^%s$", chan_regex);
         GError *rerr = NULL;
         logger.regex = g_regex_new(regexbuf, (GRegexCompileFlags) 0, (GRegexMatchFlags) 0, &rerr);
-        if(rerr) {
+        if (rerr) {
             fprintf(stderr, "%s\n", rerr->message);
             g_free(regexbuf);
             return 1;
@@ -585,16 +576,16 @@ int main(int argc, char *argv[])
 
     free(chan_regex);
 
-    _mainloop = g_main_loop_new (NULL, FALSE);
-    signal_pipe_glib_quit_on_kill ();
-    glib_mainloop_attach_lcm (logger.lcm);
+    _mainloop = g_main_loop_new(NULL, FALSE);
+    signal_pipe_glib_quit_on_kill();
+    glib_mainloop_attach_lcm(logger.lcm);
 
 #ifdef USE_SIGHUP
     signal(SIGHUP, sighup_handler);
 #endif
 
     // main loop
-    g_main_loop_run (_mainloop);
+    g_main_loop_run(_mainloop);
 
     fprintf(stderr, "Logger exiting\n");
 
@@ -608,19 +599,19 @@ int main(int argc, char *argv[])
 
     // cleanup.  This isn't strictly necessary, do it to be pedantic and so that
     // leak checkers don't complain
-    glib_mainloop_detach_lcm (logger.lcm);
-    lcm_destroy (logger.lcm);
-    lcm_eventlog_destroy (logger.log);
+    glib_mainloop_detach_lcm(logger.lcm);
+    lcm_destroy(logger.lcm);
+    lcm_eventlog_destroy(logger.log);
 
-    for(void *msg = g_async_queue_try_pop(logger.write_queue); msg;
-            msg=g_async_queue_try_pop(logger.write_queue)) {
-        if(msg == &logger.write_thread_exit_flag)
+    for (void *msg = g_async_queue_try_pop(logger.write_queue); msg;
+         msg = g_async_queue_try_pop(logger.write_queue)) {
+        if (msg == &logger.write_thread_exit_flag)
             continue;
         free(msg);
     }
     g_async_queue_unref(logger.write_queue);
 
-    if(logger.invert_channels) {
+    if (logger.invert_channels) {
         g_regex_unref(logger.regex);
     }
 
