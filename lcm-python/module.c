@@ -6,7 +6,7 @@
 
 // to support python 2.5 and earlier
 #ifndef Py_TYPE
-    #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
+#define Py_TYPE(ob) (((PyObject *) (ob))->ob_type)
 #endif
 
 extern PyTypeObject pylcmeventlog_type;
@@ -16,29 +16,29 @@ extern PyTypeObject pylcm_subscription_type;
 /* module initialization */
 
 static PyMethodDef lcmmod_methods[] = {
-    { NULL, NULL } /* sentinel */
+    {NULL, NULL}, /* sentinel */
 };
-PyDoc_STRVAR (lcmmod_doc, "LCM python extension modules");
+PyDoc_STRVAR(lcmmod_doc, "LCM python extension modules");
 
 // macro to make module init portable between python 2 and 3
 #if PY_MAJOR_VERSION >= 3
-    #define MOD_DEF(ob, name, doc, methods) \
-        static struct PyModuleDef moduledef = { \
-            PyModuleDef_HEAD_INIT, name, doc, -1, methods, }; \
-        ob = PyModule_Create(&moduledef);
+#define MOD_DEF(ob, name, doc, methods)                \
+    static struct PyModuleDef moduledef = {            \
+        PyModuleDef_HEAD_INIT, name, doc, -1, methods, \
+    };                                                 \
+    ob = PyModule_Create(&moduledef);
 #else
-    #define MOD_DEF(ob, name, doc, methods) \
-        ob = Py_InitModule3(name, methods, doc);
+#define MOD_DEF(ob, name, doc, methods) ob = Py_InitModule3(name, methods, doc);
 #endif
 
 #if __GNUC__ >= 4 || defined(__clang__)
-__attribute__((visibility ("default")))
+__attribute__((visibility("default")))
 #endif
 PyMODINIT_FUNC
-#if PY_MAJOR_VERSION >=3
-PyInit__lcm (void)
+#if PY_MAJOR_VERSION >= 3
+PyInit__lcm(void)
 #else
-init_lcm (void)
+init_lcm(void)
 #endif
 {
     PyObject *m;
@@ -49,35 +49,33 @@ init_lcm (void)
 
     MOD_DEF(m, "_lcm", lcmmod_doc, lcmmod_methods);
 
-    Py_INCREF (&pylcmeventlog_type);
-    if (PyModule_AddObject (m, "EventLog", 
-                (PyObject *)&pylcmeventlog_type) != 0) {
-        #if PY_MAJOR_VERSION >= 3
-        return NULL; // in python 3 return NULL on error
-        #else
+    Py_INCREF(&pylcmeventlog_type);
+    if (PyModule_AddObject(m, "EventLog", (PyObject *) &pylcmeventlog_type) != 0) {
+#if PY_MAJOR_VERSION >= 3
+        return NULL;  // in python 3 return NULL on error
+#else
         return;
-        #endif
+#endif
     }
 
-    Py_INCREF (&pylcm_type);
-    if (PyModule_AddObject (m, "LCM", (PyObject *)&pylcm_type) != 0) {
-        #if PY_MAJOR_VERSION >= 3
-        return NULL; // in python 3 return NULL on error
-        #else
+    Py_INCREF(&pylcm_type);
+    if (PyModule_AddObject(m, "LCM", (PyObject *) &pylcm_type) != 0) {
+#if PY_MAJOR_VERSION >= 3
+        return NULL;  // in python 3 return NULL on error
+#else
         return;
-        #endif
+#endif
     }
 
-    Py_INCREF (&pylcm_subscription_type);
-    if (PyModule_AddObject (m, "LCMSubscription", 
-                (PyObject *)&pylcm_subscription_type) != 0) {
-        #if PY_MAJOR_VERSION >= 3
-        return NULL; // in python 3 return NULL on error
-        #else
+    Py_INCREF(&pylcm_subscription_type);
+    if (PyModule_AddObject(m, "LCMSubscription", (PyObject *) &pylcm_subscription_type) != 0) {
+#if PY_MAJOR_VERSION >= 3
+        return NULL;  // in python 3 return NULL on error
+#else
         return;
-        #endif
+#endif
     }
-    #if PY_MAJOR_VERSION >= 3
-    return m; // in python 3, we must return the PyObject
-    #endif
+#if PY_MAJOR_VERSION >= 3
+    return m;  // in python 3, we must return the PyObject
+#endif
 }

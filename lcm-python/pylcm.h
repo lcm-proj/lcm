@@ -10,7 +10,7 @@ extern "C" {
 typedef struct {
     PyObject_HEAD
 
-    lcm_t *lcm;
+        lcm_t *lcm;
 
     int exception_raised;
 
