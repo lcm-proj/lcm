@@ -14,8 +14,9 @@
     #define PyInt_AsLong PyLong_AsLong
 #endif
 
-PyDoc_STRVAR (_class_doc,
-"The LCMSubscription class represents a single subscription of a message\n\
+PyDoc_STRVAR(_class_doc,
+             "\
+The LCMSubscription class represents a single subscription of a message\n\
 handler to an LCM channel.\n\
 \n\
 This class should never be instantiated by the programmer.\n\
@@ -44,8 +45,9 @@ _set_queue_capacity (PyLCMSubscriptionObject *sobj, PyObject *arg)
 
     Py_RETURN_NONE;
 }
-PyDoc_STRVAR (pylcm_set_queue_capacity_doc,
-"set_queue_capacity(num_messages) -> None\n\
+PyDoc_STRVAR(pylcm_set_queue_capacity_doc,
+             "\
+set_queue_capacity(num_messages) -> None\n\
 Sets the maximum number of received but unhandled messages to queue for this\n\
 subscription.  If messages start arriving faster than they are handled, then\n\
 they will be discarded after more than this number start piling up.\n\

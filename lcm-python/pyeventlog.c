@@ -23,7 +23,8 @@ typedef struct {
 } PyLogObject;
 
 PyDoc_STRVAR(pylog_doc,
-"Event Log parser\n\
+             "\
+Event Log parser\n\
 ");
 
 //gives redefinition error in MSVC

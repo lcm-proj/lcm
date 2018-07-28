@@ -30,8 +30,9 @@
     #define PyInt_AsLong PyLong_AsLong
 #endif
 
-PyDoc_STRVAR (pylcm_doc,
-"The LCM class provides a connection to an LCM network.\n\
+PyDoc_STRVAR(pylcm_doc,
+             "\
+The LCM class provides a connection to an LCM network.\n\
 \n\
 usage::\n\
 \n\
@@ -153,8 +154,9 @@ pylcm_subscribe (PyLCMObject *lcm_obj, PyObject *args)
     return (PyObject*)subs_obj;
 }
 
-PyDoc_STRVAR (pylcm_subscribe_doc, 
-"subscribe(channel, callback) -> L{LCMSubscription<lcm.LCMSubscription>}\n\
+PyDoc_STRVAR(pylcm_subscribe_doc,
+             "\
+subscribe(channel, callback) -> L{LCMSubscription<lcm.LCMSubscription>}\n\
 Registers a callback function to handle messages received on the specified\n\
 channel.\n\
 \n\
@@ -204,8 +206,9 @@ pylcm_unsubscribe (PyLCMObject *lcm_obj, PyObject *args)
 
     Py_RETURN_NONE;
 }
-PyDoc_STRVAR (pylcm_unsubscribe_doc, 
-"unsubscribe(subscription_object) -> None\n\
+PyDoc_STRVAR(pylcm_unsubscribe_doc,
+             "\
+unsubscribe(subscription_object) -> None\n\
 Unregisters a message handler so that it will no longer be invoked when\n\
 a message on the specified channel is received\n\
 \n\
@@ -240,8 +243,9 @@ pylcm_publish (PyLCMObject *lcm_obj, PyObject *args)
 
     Py_RETURN_NONE;
 }
-PyDoc_STRVAR (pylcm_publish_doc,
-"publish(channel, data) -> None\n\
+PyDoc_STRVAR(pylcm_publish_doc,
+             "\
+publish(channel, data) -> None\n\
 Publishes a message to an LCM network\n\
 \n\
 @param channel: specifies the channel to which the message should be published.\n\
@@ -254,8 +258,9 @@ pylcm_fileno (PyLCMObject *lcm_obj)
     dbg(DBG_PYTHON, "%s %p\n", __FUNCTION__, lcm_obj);
     return PyInt_FromLong (lcm_get_fileno (lcm_obj->lcm));
 }
-PyDoc_STRVAR (pylcm_fileno_doc,
-"fileno() -> int\n\
+PyDoc_STRVAR(pylcm_fileno_doc,
+             "\
+fileno() -> int\n\
 \n\
 Returns a file descriptor suitable for use with select, poll, etc.\n\
 ");
@@ -291,8 +296,9 @@ pylcm_handle (PyLCMObject *lcm_obj)
     }
     Py_RETURN_NONE;
 }
-PyDoc_STRVAR (pylcm_handle_doc,
-"handle() -> None\n\
+PyDoc_STRVAR(pylcm_handle_doc,
+             "\
+handle() -> None\n\
 waits for and dispatches the next incoming message\n\
 ");
 
@@ -336,8 +342,9 @@ pylcm_handle_timeout (PyLCMObject *lcm_obj, PyObject *arg)
     }
     return PyInt_FromLong(status);
 }
-PyDoc_STRVAR (pylcm_handle_timeout_doc,
-"handle_timeout(timeout_millis) -> int\n\
+PyDoc_STRVAR(pylcm_handle_timeout_doc,
+             "\
+handle_timeout(timeout_millis) -> int\n\
 New in LCM 1.1.0\n\
 \n\
 waits for and dispatches the next incoming message, with a timeout.\n\
