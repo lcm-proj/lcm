@@ -34,9 +34,9 @@ _set_queue_capacity (PyLCMSubscriptionObject *sobj, PyObject *arg)
         return NULL;
 
     int status;
-    Py_BEGIN_ALLOW_THREADS
-    status = lcm_subscription_set_queue_capacity (sobj->subscription, num_messages);
-    Py_END_ALLOW_THREADS
+    Py_BEGIN_ALLOW_THREADS;
+    status = lcm_subscription_set_queue_capacity(sobj->subscription, num_messages);
+    Py_END_ALLOW_THREADS;
 
     if (0 != status) {
         PyErr_SetFromErrno (PyExc_IOError);
