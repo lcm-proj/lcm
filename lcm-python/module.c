@@ -16,7 +16,7 @@ extern PyTypeObject pylcm_subscription_type;
 /* module initialization */
 
 static PyMethodDef lcmmod_methods[] = {
-    { NULL, NULL } /* sentinel */
+    {NULL, NULL}, /* sentinel */
 };
 PyDoc_STRVAR (lcmmod_doc, "LCM python extension modules");
 

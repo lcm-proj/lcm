@@ -192,14 +192,14 @@ pylog_ftell (PyLogObject *self)
 }
 
 static PyMethodDef pylog_methods[] = {
-    { "close", (PyCFunction)pylog_close, METH_NOARGS, "" },
-    { "seek", (PyCFunction)pylog_seek, METH_O, "" },
-    { "seek_to_timestamp", (PyCFunction)pylog_seek_to_timestamp, METH_O, "" },
-    { "read_next_event", (PyCFunction)pylog_read_next_event, METH_NOARGS, "" },
-    { "write_event", (PyCFunction)pylog_write_next_event, METH_VARARGS, "" },
-    { "size", (PyCFunction)pylog_size, METH_NOARGS, "" },
-    { "ftell", (PyCFunction)pylog_ftell, METH_NOARGS, "" },
-    { NULL, NULL }
+    {"close", (PyCFunction) pylog_close, METH_NOARGS, ""},
+    {"seek", (PyCFunction) pylog_seek, METH_O, ""},
+    {"seek_to_timestamp", (PyCFunction) pylog_seek_to_timestamp, METH_O, ""},
+    {"read_next_event", (PyCFunction) pylog_read_next_event, METH_NOARGS, ""},
+    {"write_event", (PyCFunction) pylog_write_next_event, METH_VARARGS, ""},
+    {"size", (PyCFunction) pylog_size, METH_NOARGS, ""},
+    {"ftell", (PyCFunction) pylog_ftell, METH_NOARGS, ""},
+    {NULL, NULL}, /* sentinel */
 };
 
 // ==================== class administrative methods ====================

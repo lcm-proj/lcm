@@ -57,8 +57,8 @@ A number less than or equal to zero indicates no limit (very dangerous!).\n\
 ");
 
 static PyMethodDef _methods[] = {
-    { "set_queue_capacity", (PyCFunction)_set_queue_capacity, METH_O, pylcm_set_queue_capacity_doc },
-    { NULL, NULL }
+    {"set_queue_capacity", (PyCFunction) _set_queue_capacity, METH_O, pylcm_set_queue_capacity_doc},
+    {NULL, NULL}, /* sentinel */
 };
 
 // ==================== class administrative methods ====================

@@ -357,17 +357,13 @@ error occurs.\n\
 ");
 
 static PyMethodDef pylcm_methods[] = {
-    { "handle", (PyCFunction)pylcm_handle, METH_NOARGS, pylcm_handle_doc },
-    { "handle_timeout", (PyCFunction)pylcm_handle_timeout, METH_O,
-      pylcm_handle_timeout_doc },
-    { "subscribe", (PyCFunction)pylcm_subscribe, METH_VARARGS, 
-        pylcm_subscribe_doc },
-    { "unsubscribe", (PyCFunction)pylcm_unsubscribe, METH_VARARGS,
-        pylcm_unsubscribe_doc },
-    { "publish", (PyCFunction)pylcm_publish, METH_VARARGS,
-        pylcm_publish_doc },
-    { "fileno", (PyCFunction)pylcm_fileno, METH_NOARGS, pylcm_fileno_doc },
-    { NULL, NULL }
+    {"handle", (PyCFunction) pylcm_handle, METH_NOARGS, pylcm_handle_doc},
+    {"handle_timeout", (PyCFunction) pylcm_handle_timeout, METH_O, pylcm_handle_timeout_doc},
+    {"subscribe", (PyCFunction) pylcm_subscribe, METH_VARARGS, pylcm_subscribe_doc},
+    {"unsubscribe", (PyCFunction) pylcm_unsubscribe, METH_VARARGS, pylcm_unsubscribe_doc},
+    {"publish", (PyCFunction) pylcm_publish, METH_VARARGS, pylcm_publish_doc},
+    {"fileno", (PyCFunction) pylcm_fileno, METH_NOARGS, pylcm_fileno_doc},
+    {NULL, NULL}, /* sentinel */
 };
 
 // ==================== class administrative methods ====================
