@@ -13,7 +13,7 @@ extern "C" {
 typedef struct {
     PyObject_HEAD
 
-    lcm_subscription_t *subscription;
+        lcm_subscription_t *subscription;
 
     PyObject *handler;
     PyLCMObject *lcm_obj;

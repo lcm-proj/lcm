@@ -1,33 +1,37 @@
-#include <Python.h> // include first because it contains pre-processor defs
+#include <Python.h>  // include first because it contains pre-processor defs
 #ifndef WIN32
-#include <sys/socket.h>
-#include <sys/select.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
+#include <sys/select.h>
+#include <sys/socket.h>
 #else
 #include <winsock2.h>
 #endif
 
+#include "../lcm/dbg.h"
 #include "pylcm.h"
 #include "pylcm_subscription.h"
-#include "../lcm/dbg.h"
 
 #ifndef Py_RETURN_NONE
-#define Py_RETURN_NONE  do { Py_INCREF( Py_None ); return Py_None; } while(0)
+#define Py_RETURN_NONE      \
+    do {                    \
+        Py_INCREF(Py_None); \
+        return Py_None;     \
+    } while (0)
 #endif
 
 //#define dbg(...) fprintf (stderr, __VA_ARGS__)
-//#define dbg(...) 
+//#define dbg(...)
 
 // to support python 2.5 and earlier
 #ifndef Py_TYPE
-    #define Py_TYPE(ob) (((PyObject*)(ob))->ob_type)
+#define Py_TYPE(ob) (((PyObject *) (ob))->ob_type)
 #endif
 
 // to support python 3 where all ints are long
 #if PY_MAJOR_VERSION >= 3
-    #define PyInt_FromLong PyLong_FromLong
-    #define PyInt_AsLong PyLong_AsLong
+#define PyInt_FromLong PyLong_FromLong
+#define PyInt_AsLong PyLong_AsLong
 #endif
 
 PyDoc_STRVAR(pylcm_doc,
@@ -72,86 +76,82 @@ and the following usage would publish a message::\n\
 @undocumented: __new__, __getattribute__\n\
 ");
 
-//gives redefinition error in MSVC
-//PyTypeObject pylcm_type;
+// gives redefinition error in MSVC
+// PyTypeObject pylcm_type;
 
 // all LCM messages subscribed to by all LCM objects pass through this
 // handler first.
-static void
-pylcm_msg_handler (const lcm_recv_buf_t *rbuf, const char *channel, 
-        void *userdata)
+static void pylcm_msg_handler(const lcm_recv_buf_t *rbuf, const char *channel, void *userdata)
 {
-    PyLCMSubscriptionObject *subs_obj = (PyLCMSubscriptionObject*) userdata;
+    PyLCMSubscriptionObject *subs_obj = (PyLCMSubscriptionObject *) userdata;
     dbg(DBG_PYTHON, "%s %p %p\n", __FUNCTION__, subs_obj, subs_obj->lcm_obj);
 
     // Restore the thread state before calling back into Python.
     if (subs_obj->lcm_obj->saved_thread_state) {
-      PyEval_RestoreThread(subs_obj->lcm_obj->saved_thread_state);
-      subs_obj->lcm_obj->saved_thread_state = NULL;
+        PyEval_RestoreThread(subs_obj->lcm_obj->saved_thread_state);
+        subs_obj->lcm_obj->saved_thread_state = NULL;
     }
 
     // if an exception has occurred, then abort.
-    if (PyErr_Occurred ()) {
-      return;
+    if (PyErr_Occurred()) {
+        return;
     }
 
-    #if PY_MAJOR_VERSION >= 3
-    PyObject *arglist = Py_BuildValue ("sy#", channel, // build from bytes
-            rbuf->data, rbuf->data_size);
-    #else
-    PyObject *arglist = Py_BuildValue ("ss#", channel, // build from string
-            rbuf->data, rbuf->data_size);
-    #endif
+#if PY_MAJOR_VERSION >= 3
+    PyObject *arglist = Py_BuildValue("sy#", channel,  // build from bytes
+                                      rbuf->data, rbuf->data_size);
+#else
+    PyObject *arglist = Py_BuildValue("ss#", channel,  // build from string
+                                      rbuf->data, rbuf->data_size);
+#endif
 
-    PyObject *result  = PyEval_CallObject (subs_obj->handler, arglist);
-    Py_DECREF (arglist);
+    PyObject *result = PyEval_CallObject(subs_obj->handler, arglist);
+    Py_DECREF(arglist);
 
-    if (! result) {
+    if (!result) {
         subs_obj->lcm_obj->exception_raised = 1;
     } else {
-        Py_DECREF (result);
+        Py_DECREF(result);
     }
 }
 
 // =============== LCM class methods ==============
 
-static PyObject *
-pylcm_subscribe (PyLCMObject *lcm_obj, PyObject *args)
+static PyObject *pylcm_subscribe(PyLCMObject *lcm_obj, PyObject *args)
 {
     char *channel = NULL;
     int chan_len = 0;
     PyObject *handler = NULL;
-    if (!PyArg_ParseTuple (args, "s#O", &channel, &chan_len, &handler)) 
+    if (!PyArg_ParseTuple(args, "s#O", &channel, &chan_len, &handler))
         return NULL;
 
-    if (!channel || ! chan_len) {
-        PyErr_SetString (PyExc_ValueError, "invalid channel");
-        return NULL;
-    }
-    if (!PyCallable_Check (handler))  {
-        PyErr_SetString (PyExc_ValueError, "handler is not callable");
+    if (!channel || !chan_len) {
+        PyErr_SetString(PyExc_ValueError, "invalid channel");
         return NULL;
     }
+    if (!PyCallable_Check(handler)) {
+        PyErr_SetString(PyExc_ValueError, "handler is not callable");
+        return NULL;
+    }
 
-    PyLCMSubscriptionObject * subs_obj = 
-        (PyLCMSubscriptionObject*) PyType_GenericNew (&pylcm_subscription_type, 
-                NULL, NULL);
+    PyLCMSubscriptionObject *subs_obj =
+        (PyLCMSubscriptionObject *) PyType_GenericNew(&pylcm_subscription_type, NULL, NULL);
 
-    lcm_subscription_t *subscription = 
-        lcm_subscribe (lcm_obj->lcm, channel, pylcm_msg_handler, subs_obj);
+    lcm_subscription_t *subscription =
+        lcm_subscribe(lcm_obj->lcm, channel, pylcm_msg_handler, subs_obj);
     if (!subscription) {
-        Py_DECREF (subs_obj);
+        Py_DECREF(subs_obj);
         Py_RETURN_NONE;
     }
 
     subs_obj->subscription = subscription;
     subs_obj->handler = handler;
-    Py_INCREF (handler);
+    Py_INCREF(handler);
     subs_obj->lcm_obj = lcm_obj;
 
-    PyList_Append (lcm_obj->all_handlers, (PyObject*)subs_obj);
+    PyList_Append(lcm_obj->all_handlers, (PyObject *) subs_obj);
 
-    return (PyObject*)subs_obj;
+    return (PyObject *) subs_obj;
 }
 
 PyDoc_STRVAR(pylcm_subscribe_doc,
@@ -170,37 +170,35 @@ corresponding to the actual channel on which the message was received, and \n\
 a binary string containing the raw message bytes.\n\
 ");
 
-static PyObject *
-pylcm_unsubscribe (PyLCMObject *lcm_obj, PyObject *args)
+static PyObject *pylcm_unsubscribe(PyLCMObject *lcm_obj, PyObject *args)
 {
     dbg(DBG_PYTHON, "%s %p\n", __FUNCTION__, lcm_obj);
     PyObject *_subs_obj = NULL;
-    if (!PyArg_ParseTuple (args, "O!", &pylcm_subscription_type, 
-                &_subs_obj))
+    if (!PyArg_ParseTuple(args, "O!", &pylcm_subscription_type, &_subs_obj))
         return NULL;
 
-    PyLCMSubscriptionObject *subs_obj = (PyLCMSubscriptionObject*) _subs_obj;
+    PyLCMSubscriptionObject *subs_obj = (PyLCMSubscriptionObject *) _subs_obj;
     if (!subs_obj->subscription || subs_obj->lcm_obj != lcm_obj) {
-        PyErr_SetString (PyExc_ValueError, "Invalid Subscription object");
+        PyErr_SetString(PyExc_ValueError, "Invalid Subscription object");
         return NULL;
     }
     int subs_index = 0;
-    int nhandlers = PyList_Size (lcm_obj->all_handlers);
-    for (subs_index=0; subs_index<nhandlers; subs_index++) {
-        PyObject *so = PyList_GetItem (lcm_obj->all_handlers, subs_index);
-        if (so == (PyObject*) subs_obj) {
-            PySequence_DelItem (lcm_obj->all_handlers, subs_index);
+    int nhandlers = PyList_Size(lcm_obj->all_handlers);
+    for (subs_index = 0; subs_index < nhandlers; subs_index++) {
+        PyObject *so = PyList_GetItem(lcm_obj->all_handlers, subs_index);
+        if (so == (PyObject *) subs_obj) {
+            PySequence_DelItem(lcm_obj->all_handlers, subs_index);
             break;
         }
     }
     if (subs_index == nhandlers) {
-        PyErr_SetString (PyExc_ValueError, "Invalid Subscription object");
+        PyErr_SetString(PyExc_ValueError, "Invalid Subscription object");
         return NULL;
     }
 
-    lcm_unsubscribe (lcm_obj->lcm, subs_obj->subscription);
+    lcm_unsubscribe(lcm_obj->lcm, subs_obj->subscription);
     subs_obj->subscription = NULL;
-    Py_DECREF (subs_obj->handler);
+    Py_DECREF(subs_obj->handler);
     subs_obj->handler = NULL;
     subs_obj->lcm_obj = NULL;
 
@@ -216,18 +214,17 @@ a message on the specified channel is received\n\
 call to subscribe()\n\
 ");
 
-static PyObject *
-pylcm_publish (PyLCMObject *lcm_obj, PyObject *args)
+static PyObject *pylcm_publish(PyLCMObject *lcm_obj, PyObject *args)
 {
     char *data = NULL;
     int datalen = 0;
     char *channel = NULL;
 
-    if (!PyArg_ParseTuple (args, "ss#", &channel, &data, &datalen)) {
+    if (!PyArg_ParseTuple(args, "ss#", &channel, &data, &datalen)) {
         return NULL;
     }
-    if (!channel || !strlen (channel)) {
-        PyErr_SetString (PyExc_ValueError, "invalid channel");
+    if (!channel || !strlen(channel)) {
+        PyErr_SetString(PyExc_ValueError, "invalid channel");
         return NULL;
     }
 
@@ -237,7 +234,7 @@ pylcm_publish (PyLCMObject *lcm_obj, PyObject *args)
     Py_END_ALLOW_THREADS;
 
     if (0 != status) {
-        PyErr_SetFromErrno (PyExc_IOError);
+        PyErr_SetFromErrno(PyExc_IOError);
         return NULL;
     }
 
@@ -252,11 +249,10 @@ Publishes a message to an LCM network\n\
 @param data: binary string containing the message to publish\n\
 ");
 
-static PyObject *
-pylcm_fileno (PyLCMObject *lcm_obj)
+static PyObject *pylcm_fileno(PyLCMObject *lcm_obj)
 {
     dbg(DBG_PYTHON, "%s %p\n", __FUNCTION__, lcm_obj);
-    return PyInt_FromLong (lcm_get_fileno (lcm_obj->lcm));
+    return PyInt_FromLong(lcm_get_fileno(lcm_obj->lcm));
 }
 PyDoc_STRVAR(pylcm_fileno_doc,
              "\
@@ -265,13 +261,13 @@ fileno() -> int\n\
 Returns a file descriptor suitable for use with select, poll, etc.\n\
 ");
 
-static PyObject *
-pylcm_handle (PyLCMObject *lcm_obj)
+static PyObject *pylcm_handle(PyLCMObject *lcm_obj)
 {
     dbg(DBG_PYTHON, "pylcm_handle(%p)\n", lcm_obj);
 
     if (lcm_obj->saved_thread_state) {
-        PyErr_SetString (PyExc_RuntimeError,
+        PyErr_SetString(
+            PyExc_RuntimeError,
             "only one thread is allowed to call LCM.handle() or LCM.handle_timeout() at a time");
         return NULL;
     }
@@ -279,19 +275,21 @@ pylcm_handle (PyLCMObject *lcm_obj)
     lcm_obj->exception_raised = 0;
 
     dbg(DBG_PYTHON, "calling lcm_handle(%p)\n", lcm_obj->lcm);
-    int status = lcm_handle (lcm_obj->lcm);
+    int status = lcm_handle(lcm_obj->lcm);
 
     // Restore the thread state before returning back to Python.  The thread
     // state may have already been restored by the callback function
     // pylcm_msg_handler()
     if (lcm_obj->saved_thread_state) {
-      PyEval_RestoreThread(lcm_obj->saved_thread_state);
-      lcm_obj->saved_thread_state = NULL;
+        PyEval_RestoreThread(lcm_obj->saved_thread_state);
+        lcm_obj->saved_thread_state = NULL;
     }
 
-    if (lcm_obj->exception_raised) { return NULL; }
+    if (lcm_obj->exception_raised) {
+        return NULL;
+    }
     if (status < 0) {
-        PyErr_SetString (PyExc_IOError, "lcm_handle() returned -1");
+        PyErr_SetString(PyExc_IOError, "lcm_handle() returned -1");
         return NULL;
     }
     Py_RETURN_NONE;
@@ -302,42 +300,42 @@ handle() -> None\n\
 waits for and dispatches the next incoming message\n\
 ");
 
-static PyObject *
-pylcm_handle_timeout (PyLCMObject *lcm_obj, PyObject *arg)
+static PyObject *pylcm_handle_timeout(PyLCMObject *lcm_obj, PyObject *arg)
 {
     int timeout_millis = PyInt_AsLong(arg);
     if (timeout_millis == -1 && PyErr_Occurred())
         return NULL;
     if (timeout_millis < 0) {
-        PyErr_SetString (PyExc_ValueError, "invalid timeout");
+        PyErr_SetString(PyExc_ValueError, "invalid timeout");
         return NULL;
     }
 
     dbg(DBG_PYTHON, "pylcm_handle_timeout(%p, %d)\n", lcm_obj, timeout_millis);
 
     if (lcm_obj->saved_thread_state) {
-        PyErr_SetString (PyExc_RuntimeError,
-            "Simultaneous calls to handle() / handle_timeout() detected");
+        PyErr_SetString(PyExc_RuntimeError,
+                        "Simultaneous calls to handle() / handle_timeout() detected");
         return NULL;
     }
     lcm_obj->saved_thread_state = PyEval_SaveThread();
     lcm_obj->exception_raised = 0;
 
-    dbg(DBG_PYTHON, "calling lcm_handle_timeout(%p, %d)\n", lcm_obj->lcm,
-        timeout_millis);
+    dbg(DBG_PYTHON, "calling lcm_handle_timeout(%p, %d)\n", lcm_obj->lcm, timeout_millis);
     int status = lcm_handle_timeout(lcm_obj->lcm, timeout_millis);
 
     // Restore the thread state before returning back to Python.  The thread
     // state may have already been restored by the callback function
     // pylcm_msg_handler()
     if (lcm_obj->saved_thread_state) {
-      PyEval_RestoreThread(lcm_obj->saved_thread_state);
-      lcm_obj->saved_thread_state = NULL;
+        PyEval_RestoreThread(lcm_obj->saved_thread_state);
+        lcm_obj->saved_thread_state = NULL;
     }
 
-    if (lcm_obj->exception_raised) { return NULL; }
+    if (lcm_obj->exception_raised) {
+        return NULL;
+    }
     if (status < 0) {
-        PyErr_SetString (PyExc_IOError, "lcm_handle_timeout() returned -1");
+        PyErr_SetString(PyExc_IOError, "lcm_handle_timeout() returned -1");
         return NULL;
     }
     return PyInt_FromLong(status);
@@ -368,46 +366,44 @@ static PyMethodDef pylcm_methods[] = {
 
 // ==================== class administrative methods ====================
 
-static PyObject *
-pylcm_new (PyTypeObject *type, PyObject *args, PyObject *kwds)
+static PyObject *pylcm_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
 {
-	PyObject *obj = type->tp_alloc (type, 0);
-    if (!obj) return NULL;
-    PyLCMObject *lcm_obj = (PyLCMObject*) obj;
-    lcm_obj->all_handlers = PyList_New (0);
+    PyObject *obj = type->tp_alloc(type, 0);
+    if (!obj)
+        return NULL;
+    PyLCMObject *lcm_obj = (PyLCMObject *) obj;
+    lcm_obj->all_handlers = PyList_New(0);
     if (!lcm_obj->all_handlers) {
-        Py_DECREF (obj);
+        Py_DECREF(obj);
         return NULL;
     }
-	return obj;
+    return obj;
 }
 
-static void
-pylcm_dealloc (PyLCMObject *lcm_obj)
+static void pylcm_dealloc(PyLCMObject *lcm_obj)
 {
     dbg(DBG_PYTHON, "pylcm_dealloc\n");
     if (lcm_obj->lcm) {
-        lcm_destroy (lcm_obj->lcm);
+        lcm_destroy(lcm_obj->lcm);
         lcm_obj->lcm = NULL;
     }
-    Py_DECREF (lcm_obj->all_handlers);
-    Py_TYPE (lcm_obj)->tp_free ((PyObject*)lcm_obj);
+    Py_DECREF(lcm_obj->all_handlers);
+    Py_TYPE(lcm_obj)->tp_free((PyObject *) lcm_obj);
 }
 
-static int
-pylcm_initobj (PyObject *self, PyObject *args, PyObject *kwargs)
+static int pylcm_initobj(PyObject *self, PyObject *args, PyObject *kwargs)
 {
     dbg(DBG_PYTHON, "%s %p\n", __FUNCTION__, self);
-    PyLCMObject *lcm_obj = (PyLCMObject *)self;
+    PyLCMObject *lcm_obj = (PyLCMObject *) self;
 
     char *url = NULL;
 
-    if (!PyArg_ParseTuple (args, "|s", &url))
+    if (!PyArg_ParseTuple(args, "|s", &url))
         return -1;
 
-    lcm_obj->lcm = lcm_create (url);
-    if (! lcm_obj->lcm) {
-        PyErr_SetString (PyExc_RuntimeError, "Couldn't create LCM");
+    lcm_obj->lcm = lcm_create(url);
+    if (!lcm_obj->lcm) {
+        PyErr_SetString(PyExc_RuntimeError, "Couldn't create LCM");
         return -1;
     }
     lcm_obj->saved_thread_state = NULL;
@@ -418,47 +414,47 @@ pylcm_initobj (PyObject *self, PyObject *args, PyObject *kwargs)
 /* Type object for socket objects. */
 PyTypeObject pylcm_type = {
 #if PY_MAJOR_VERSION >= 3
-    PyVarObject_HEAD_INIT (0, 0) /* size is now part of macro */
+    PyVarObject_HEAD_INIT(0, 0) /* size is now part of macro */
 #else
-    PyObject_HEAD_INIT (0)   /* Must fill in type value later */
-    0,                  /* ob_size */
+    PyObject_HEAD_INIT(0) /* Must fill in type value later */
+    0,                    /* ob_size */
 #endif
-    "LCM",            /* tp_name */
-    sizeof (PyLCMObject),     /* tp_basicsize */
-    0,                  /* tp_itemsize */
-    (destructor)pylcm_dealloc,     /* tp_dealloc */
-    0,                  /* tp_print */
-    0,                  /* tp_getattr */
-    0,                  /* tp_setattr */
-    0,                  /* tp_compare */
-    0,                  /* tp_repr */
-    0,                  /* tp_as_number */
-    0,                  /* tp_as_sequence */
-    0,                  /* tp_as_mapping */
-    0,                  /* tp_hash */
-    0,                  /* tp_call */
-    0,                  /* tp_str */
+    "LCM",                                    /* tp_name */
+    sizeof(PyLCMObject),                      /* tp_basicsize */
+    0,                                        /* tp_itemsize */
+    (destructor) pylcm_dealloc,               /* tp_dealloc */
+    0,                                        /* tp_print */
+    0,                                        /* tp_getattr */
+    0,                                        /* tp_setattr */
+    0,                                        /* tp_compare */
+    0,                                        /* tp_repr */
+    0,                                        /* tp_as_number */
+    0,                                        /* tp_as_sequence */
+    0,                                        /* tp_as_mapping */
+    0,                                        /* tp_hash */
+    0,                                        /* tp_call */
+    0,                                        /* tp_str */
     PyObject_GenericGetAttr,                  /* tp_getattro */
-    0,                  /* tp_setattro */
-    0,                  /* tp_as_buffer */
+    0,                                        /* tp_setattro */
+    0,                                        /* tp_as_buffer */
     Py_TPFLAGS_DEFAULT | Py_TPFLAGS_BASETYPE, /* tp_flags */
-    pylcm_doc,               /* tp_doc */
-    0,                  /* tp_traverse */
-    0,                  /* tp_clear */
-    0,                  /* tp_richcompare */
-    0,                  /* tp_weaklistoffset */
-    0,                  /* tp_iter */
-    0,                  /* tp_iternext */
-    pylcm_methods,               /* tp_methods */
-    0,                  /* tp_members */
-    0,                  /* tp_getset */
-    0,                  /* tp_base */
-    0,                  /* tp_dict */
-    0,                  /* tp_descr_get */
-    0,                  /* tp_descr_set */
-    0,                  /* tp_dictoffset */
-    pylcm_initobj,             /* tp_init */
-    PyType_GenericAlloc,            /* tp_alloc */
-    pylcm_new,             /* tp_new */
-    PyObject_Del,               /* tp_free */
+    pylcm_doc,                                /* tp_doc */
+    0,                                        /* tp_traverse */
+    0,                                        /* tp_clear */
+    0,                                        /* tp_richcompare */
+    0,                                        /* tp_weaklistoffset */
+    0,                                        /* tp_iter */
+    0,                                        /* tp_iternext */
+    pylcm_methods,                            /* tp_methods */
+    0,                                        /* tp_members */
+    0,                                        /* tp_getset */
+    0,                                        /* tp_base */
+    0,                                        /* tp_dict */
+    0,                                        /* tp_descr_get */
+    0,                                        /* tp_descr_set */
+    0,                                        /* tp_dictoffset */
+    pylcm_initobj,                            /* tp_init */
+    PyType_GenericAlloc,                      /* tp_alloc */
+    pylcm_new,                                /* tp_new */
+    PyObject_Del,                             /* tp_free */
 };
