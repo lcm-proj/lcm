@@ -17,7 +17,7 @@ void on_signal(int signum)
 
 void catchall_handler(const lcm_recv_buf_t *rbuf, const char *channel, void *u)
 {
-    printf("received [%s] (content: %s)\n", channel, (char*)rbuf->data);
+    printf("received [%s] (content: %s)\n", channel, (char *) rbuf->data);
     g_messages_received++;
 }
 
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
 #endif
 
     lcm_t *lcm = lcm_create(NULL);
-    if (! lcm) {
+    if (!lcm) {
         fprintf(stderr, "couldn't initialize LCM\n");
         return 1;
     }
