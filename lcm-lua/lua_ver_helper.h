@@ -15,10 +15,10 @@
 #elif LUA_VERSION_NUM >= 502
 
 #define luaX_registerglobal(L, NAME, FUNCS) \
-  do {                                      \
-    lua_newtable(L);                        \
-    luaL_setfuncs(L, FUNCS, 0);             \
-  } while (0)
+    do {                                    \
+        lua_newtable(L);                    \
+        luaL_setfuncs(L, FUNCS, 0);         \
+    } while (0)
 #define luaX_registertable(L, FUNCS) luaL_setfuncs(L, FUNCS, 0)
 #define luaX_setfenv(L, INDEX) lua_setuservalue(L, INDEX)
 #define luaX_getfenv(L, INDEX) lua_getuservalue(L, INDEX)
