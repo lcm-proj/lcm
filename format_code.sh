@@ -54,6 +54,6 @@ format_c_cpp_dir_r "${LCM_ROOT}/test" "/gtest/"
 format_c_cpp_dir_r "${LCM_ROOT}/lcm-logger"
 format_c_cpp_dir_r "${LCM_ROOT}/lcm-python"
 format_c_cpp_dir_r "${LCM_ROOT}/lcm-lua"
-#format_c_cpp_dir_r "${LCM_ROOT}/liblcm-test"
+format_c_cpp_dir_r "${LCM_ROOT}/liblcm-test"
 
 exit 0
