@@ -78,10 +78,10 @@ int main (int argc, char **argv)
 	char *data = "payload";
 	int datalen = (int) strlen(data)+1;
 
-//  lcm_params_t lcm_args;
-//  lcm_args.local_iface = INADDR_ANY;
-//  lcm_args.mc_addr = inet_addr ("225.0.0.3");
-//  lcm_args.mc_port = htons (2006);
+    // lcm_params_t lcm_args;
+    // lcm_args.local_iface = INADDR_ANY;
+    // lcm_args.mc_addr = inet_addr ("225.0.0.3");
+    // lcm_args.mc_port = htons (2006);
 
     lcm_t *lcm = lcm_create (NULL);
     if (! lcm) {
@@ -196,11 +196,10 @@ int main (int argc, char **argv)
 
     lcm_destroy (lcm);
 
-//	I was told there was a bug here - removing the +1 from the counts
-    int matched = 0 == test_count &&
-        ntotransmit == test_count2 &&
-      //        ntotransmit == default_count &&
-        ntotransmit*2 == catchall_count;
+    // I was told there was a bug here - removing the +1 from the counts
+    int matched = (0 == test_count && ntotransmit == test_count2 &&
+                   // ntotransmit == default_count &&
+                   ntotransmit * 2 == catchall_count);
 
     if (! matched) {
         printf ("LCM: receive count - "

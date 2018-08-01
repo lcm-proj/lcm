@@ -34,7 +34,8 @@ int main(int argc, char **argv)
     }
     lcm_subscribe(lcm, ".*", catchall_handler, NULL);
 
-    while(0 == lcm_handle(lcm)) {
+    while (0 == lcm_handle(lcm)) {
+        // Do nothing
     }
 
     lcm_destroy(lcm);

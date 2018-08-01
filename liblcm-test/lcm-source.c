@@ -72,7 +72,7 @@ int main(int argc, char **argv)
     uint8_t *data = NULL;
     int transmit_interval_usec = DEFAULT_TRANSMIT_INTERVAL_USEC;
     int packet_sz = 0;
-//    memset (data, 0, sizeof(data));
+    // memset (data, 0, sizeof(data));
 
     char *optstring = "hm:p:s:v";
     int c;
@@ -151,8 +151,8 @@ int main(int argc, char **argv)
         }
 
         if (transmit_interval_usec > 0) {
-            // sleep...
 #ifdef WIN32
+            // sleep...
             Sleep(transmit_interval_usec / 1000);
 #else
             struct timespec ts = {
