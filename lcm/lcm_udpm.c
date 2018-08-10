@@ -895,7 +895,7 @@ static int _setup_recv_parts(lcm_udpm_t *lcm)
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_addr = lcm->params.mc_addr;
     addr.sin_port = lcm->params.mc_port;
 
     // allow other applications on the local machine to also bind to this
