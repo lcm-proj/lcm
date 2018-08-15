@@ -97,6 +97,31 @@ class LCMMHUntypedSubscription : public Subscription {
     }
 };
 
+#if LCM_CXX_11_ENABLED
+template <class MessageType>
+class LCMLambdaSubscription : public Subscription {
+    friend class LCM;
+
+  private:
+    using HandlerFunction = typename LCM::HandlerFunction<MessageType>;
+    HandlerFunction handler;
+    static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
+    {
+        LCMLambdaSubscription<MessageType> *subs =
+            static_cast<LCMLambdaSubscription<MessageType> *>(user_data);
+        MessageType msg;
+        int status = msg.decode(rbuf->data, 0, rbuf->data_size);
+        if (status < 0) {
+            fprintf(stderr, "error %d decoding %s!!!\n", status, MessageType::getTypeName());
+            return;
+        }
+        const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
+        std::string chan_str(channel);
+        (subs->handler)(&rb, chan_str, &msg);
+    }
+};
+#endif
+
 inline LCM::LCM(std::string lcm_url) : owns_lcm(true)
 {
     this->lcm = lcm_create(lcm_url.c_str());
@@ -269,6 +294,23 @@ Subscription *LCM::subscribeFunction(const std::string &channel,
     subscriptions.push_back(sub);
     return sub;
 }
+
+#if LCM_CXX_11_ENABLED
+template <class MessageType>
+Subscription *LCM::subscribe(const std::string &channel, LCM::HandlerFunction<MessageType> handler)
+{
+    if (!this->lcm) {
+        fprintf(stderr, "LCM instance not initialized.  Ignoring call to subscribe()\n");
+        return NULL;
+    }
+    LCMLambdaSubscription<MessageType> *subs = new LCMLambdaSubscription<MessageType>();
+    subs->handler = handler;
+    subs->c_subs = lcm_subscribe(this->lcm, channel.c_str(),
+                                 LCMLambdaSubscription<MessageType>::cb_func, subs);
+    subscriptions.push_back(subs);
+    return subs;
+}
+#endif
 
 lcm_t *LCM::getUnderlyingLCM()
 {
