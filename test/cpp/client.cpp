@@ -157,3 +157,65 @@ TEST(LCM_CPP, cross_package_t)
 {
     EXPECT_TRUE(TypedTest<lcmtest2::cross_package_t>("test_lcmtest2_cross_package_t", 100).Run());
 }
+
+#if LCM_CXX_11_ENABLED
+template <class LcmType>
+class LambdaTest {
+  public:
+    LambdaTest(const std::string test_name, int num_trials)
+        : lcm_(), num_trials_(num_trials), test_channel_(test_name)
+    {
+    }
+
+    bool Run(void)
+    {
+        LcmType msg;
+        int response_count = 0;
+        lcm::LCM::HandlerFunction<LcmType> handler = [&response_count](
+            const lcm::ReceiveBuffer *rbuf, const std::string &channel, const LcmType *msg) {
+            if (CheckLcmType(msg, response_count + 1)) {
+                response_count++;
+            }
+        };
+        lcm::Subscription *subscription = lcm_.subscribe(test_channel_ + "_reply", handler);
+        bool result = true;
+        for (int trial = 0; trial < num_trials_ && result; trial++) {
+            FillLcmType(trial, &msg);
+            lcm_.publish(test_channel_, &msg);
+            if (lcm_.handleTimeout(500) <= 0) {
+                info("%s test: Timeout waiting for reply", test_channel_.c_str());
+                result = false;
+                break;
+            } else if (response_count != trial + 1) {
+                info("%s test: failed on iteration %d", test_channel_.c_str(), trial);
+                result = false;
+                break;
+            }
+            ClearLcmType(&msg);
+        }
+        lcm_.unsubscribe(subscription);
+        return result;
+    }
+
+  private:
+    lcm::LCM lcm_;
+    int num_trials_;
+    std::string test_channel_;
+};
+
+TEST(LCM_CPP, Lambda_A)
+{
+    EXPECT_TRUE(LambdaTest<lcmtest::primitives_t>("test_lcmtest_primitives_t", 1000).Run());
+}
+
+TEST(LCM_CPP, Lambda_B)
+{
+    EXPECT_TRUE(
+        LambdaTest<lcmtest::primitives_list_t>("test_lcmtest_primitives_list_t", 100).Run());
+}
+
+TEST(LCM_CPP, Lambda_C)
+{
+    EXPECT_TRUE(LambdaTest<lcmtest::node_t>("test_lcmtest_node_t", 7).Run());
+}
+#endif
