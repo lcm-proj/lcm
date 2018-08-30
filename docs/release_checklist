@@ -8,11 +8,11 @@
 4. Commit the above changes and create the vX.Y.Z git tag.
   $ git commit -a -m "Release X.Y.Z"
   $ git tag vX.Y.Z
-5. Create the release tarball
-  $ make dist
-6. Take the resulting tarball, extract it, build it, install it, make sure
+5. Create the release artifact
+  $ git archive --format zip -o lcm-X.Y.Z.zip --prefix lcm-X.Y.Z/ vX.Y.Z
+6. Take the resulting artifact, extract it, build it, install it, make sure
   the basic executables run
-  $ tar xzvf lcm-X.Y.Z.tar.gz
+  $ unzip lcm-X.Y.Z.zip
   $ cd lcm-X.Y.Z
   $ mkdir build
   $ cd build
@@ -23,11 +23,7 @@
 # Test
 
 1. Build and run all unit tests.  Verify that they all pass.
-  $ cd ../test
-  $ make clean
-  $ make
-  $ ./run_unit_tests.py
-  $ ./run_client_server_tests.py
+  $ make test
 2. Repeat unit tests on:
   * GNU/Linux
   * OS X
@@ -35,7 +31,7 @@
 4. Test on other available platforms
 5. Fix any errors that appear, and repeat as necessary.
 
-# Upload release archive
+# Upload release artifact
 
 1. Push the changes and release tag to GitHub.
   $ git push origin master

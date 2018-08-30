@@ -1,3 +1,30 @@
+August 30, 2018
+==============
+
+Release 1.4.0
+
+Significant changes:
+
+- Build system
+  - Switch to CMake
+  - Add CPack support
+- lcm-gen
+  - Allow arrays to be sized with const values
+- C
+  - Add lcm_subscription_get_queue_size()
+  - Standardize C/C++ code formatting with clang-format
+- C++
+  - Add support for some C++11 features (lambda subscribe)
+  - add lcm::Subscription::getQueueSize()
+- Go
+  - Experimental support for golang
+- Python
+ - Add __dimensions__ and __typenames__ fields for better introspection
+- lcm-logger
+  - flush buffers before exiting
+- General
+  - Lots of misc bugfixes
+
 April 29, 2016
 ==============
 
@@ -240,7 +267,10 @@ This is a bugfix and maintenance release.
     - in WinPorting.h, #define strtoll _strtoi64 (re #46)
     - add LCM C++ files to VS project file
     - remove redundant WinSpecific/include/lcm dir.
-    - move WinSpecific/Win*.{cpp,h} -> lcm/windows/
+    - move WinSpecific/Win*.
+{
+    cpp, h
+} -> lcm/windows/
     - adjust vcproj files accordingly
     - update WinSpecific/README.txt and remove dead directory
  lcm-logger:
@@ -364,7 +394,7 @@ This release includes a number of bugfixes and performance enhancements
       For example, to set the queue size to 5 for a message type example_t:
 
            example_t_subscription_t* subs = example_t_subscribe(lcm, "EXAMPLE", message_handler);
-           example_t_subscription_set_queue_capacity(subs, 5);
+example_t_subscription_set_queue_capacity(subs, 5);
 
     - Explicitly disallow recursive calls to lcm_handle.
     - fix synchronization issues when allocating receive resources and
