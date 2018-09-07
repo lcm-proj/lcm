@@ -619,7 +619,7 @@ static void emit_go_lcm_imports(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls)
             continue;
 
         int imported = FALSE;
-        for (int j = i - 1; j > 0; j--) {
+        for (int j = i - 1; j >= 0; j--) {
             lcm_member_t *lm_ = (lcm_member_t *) g_ptr_array_index(ls->members, j);
 
             if (strcmp(lm->type->package, lm_->type->package) == 0)
