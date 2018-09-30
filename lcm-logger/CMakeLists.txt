@@ -6,7 +6,11 @@ target_link_libraries(lcm-logger
 )
 
 add_executable(lcm-logplayer lcm_logplayer.c)
-target_link_libraries(lcm-logplayer lcm ${lcm-winport})
+target_link_libraries(lcm-logplayer
+  lcm
+  ${lcm-winport}
+  GLib2::glib
+)
 
 install(TARGETS
   lcm-logger
