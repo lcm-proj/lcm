@@ -23,6 +23,10 @@ endfunction()
 function(_glib2_find_library VAR LIB)
   list(APPEND CMAKE_PREFIX_PATH $ENV{GLIB_PATH})
 
+  if(WIN32)
+	set(CMAKE_FIND_LIBRARY_SUFFIXES ".dll.a")
+	set(CMAKE_FIND_LIBRARY_PREFIXES "lib")
+  endif()
   find_library(GLIB2_${VAR}_LIBRARY NAMES ${LIB}-2.0 ${LIB})
   mark_as_advanced(GLIB2_${VAR}_LIBRARY)
 
