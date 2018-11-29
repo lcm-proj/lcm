@@ -19,10 +19,10 @@ static void usage()
         "\n"
         "Optiosn:\n"
         "  -h        prints this help text and exits\n"
-        "  -c CHAN   POSIX regular expression.  Channels matching this expression\n"
+        "  -c CHAN   GLIB regular expression.  Channels matching this expression\n"
         "            will be copied to the destination logfile.\n"
         "  -i        invert the regular expression CHAN, so that only channels not\n"
-        "  -c CHAN   GLib regular expression.\n"
+        "            matching CHAN will be copied to the destination logfile.\n"
         "  -s START  start time.  Messages logged less than START seconds\n"
         "            after the first message in the logfile will not be\n"
         "            extracted.\n"
@@ -41,7 +41,7 @@ static void _verbose_entry_summary(gpointer key, gpointer value, gpointer user_d
 int main(int argc, char **argv)
 {
     int verbose = 0;
-    char *pattern = NULL;
+    char *pattern = g_strdup(".*");
     char *source_fname = NULL;
     char *dest_fname = NULL;
     int64_t start_utime = 0;
@@ -50,9 +50,9 @@ int main(int argc, char **argv)
     int invert_regex = 0;
 
     char *optstring = "hc:vs:e:i";
-    char c;
+    int c;
 
-    while ((c = getopt(argc, argv, optstring)) >= 0) {
+    while ((c = getopt_long(argc, argv, optstring, NULL, 0)) >= 0) {
         switch (c) {
         case 'h':
             usage();
@@ -76,6 +76,7 @@ int main(int argc, char **argv)
             invert_regex = 1;
             break;
         case 'c':
+            g_free(pattern);
             pattern = g_strdup(optarg);
             break;
         case 'v':
@@ -91,9 +92,6 @@ int main(int argc, char **argv)
         usage();
 
     if (optind != argc - 2)
-        usage();
-
-    if (!pattern)
         usage();
 
     GRegex *regex;
