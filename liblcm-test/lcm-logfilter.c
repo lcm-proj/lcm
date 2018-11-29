@@ -142,8 +142,7 @@ int main(int argc, char **argv)
         }
 
         int regmatch = g_regex_match(regex, event->channel, (GRegexMatchFlags) 0, NULL);
-        int copy_to_dest = (regmatch == 0 && !invert_regex) || (regmatch != 0 && invert_regex);
-        if (copy_to_dest) {
+        if ((!regmatch && invert_regex) || (regmatch && !invert_regex)) {
             lcm_eventlog_write_event(dst_log, event);
             nwritten++;
 
