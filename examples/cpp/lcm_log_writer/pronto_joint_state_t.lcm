@@ -1,0 +1,16 @@
+package pronto;
+
+// Generic State Message 
+// equivalent to ROS joint states message
+
+struct joint_state_t
+{
+  int64_t utime;
+
+  int16_t num_joints;
+  string joint_name[num_joints];
+  float joint_position[num_joints];
+  float joint_velocity[num_joints];
+  float joint_effort[num_joints];
+
+}
