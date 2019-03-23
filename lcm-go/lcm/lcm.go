@@ -165,16 +165,17 @@ func (lcm LCM) Publisher(channel string) (chan<- []byte, <-chan error) {
 // Destroy destroys an LCM object, so that it can be picked up by the garbage
 // collector. This method also unsubscribes to all channels that lcm previously
 // subscribed to.
-func (lcm LCM) Destroy() error {
+func (lcm *LCM) Destroy() error {
+	lcmInstance := *lcm
 	lcm.closed = true
 
 	C.lcm_destroy(lcm.cPtr)
 
-	if err := lcm.UnsubscribeAll(); err != nil {
+	if err := lcmInstance.UnsubscribeAll(); err != nil {
 		return err
 	}
 
-	delete(subscriptions, lcm)
+	delete(subscriptions, lcmInstance)
 
 	return nil
 }
