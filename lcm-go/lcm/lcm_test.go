@@ -17,16 +17,29 @@ var (
 	someBytes = []byte("abcdefghijklmnopqrstuvwxyz")
 )
 
-func TestLCM(t *testing.T) {
+func runTest(t *testing.T, provider string) {
 	// The amount of messages that we received.
 	messages := 1
+	var lcm LCM
+	var err error
 
 	// New LCM
-	lcm, err := New()
+	if len(provider) != 0 {
+		lcm, err = NewProvider(provider)
+	} else {
+		lcm, err = New()
+	}
+
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer lcm.Destroy()
+
+	defer func() {
+		err = lcm.Destroy()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}()
 
 	// Subscribe to "TEST" LCM channel using Go
 	subscription, err := lcm.Subscribe("TEST", messageGoal)
@@ -74,4 +87,16 @@ FOR_SELECT:
 	}
 
 	t.Log("received", "amount", messages)
+}
+
+func TestLCMDefaultProvider(t *testing.T) {
+	runTest(t, "")
+}
+
+func TestLCMProviderUDPM(t *testing.T) {
+	runTest(t, "udpm://239.255.76.67:7667?ttl=1")
+}
+
+func TestLCMProviderMemQ(t *testing.T) {
+	runTest(t, "memq://")
 }
