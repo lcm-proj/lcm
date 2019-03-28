@@ -52,9 +52,23 @@ type LCM struct {
 	cPtr   *C.lcm_t
 }
 
-// New returns a new LCM instance. In case of a failure, an error is returned.
+// New returns a new LCM instance using the default provider as defined in the
+// C interface. In case of a failure, an error is returned.
 func New() (LCM, error) {
-	cPtr := C.lcm_create(nil)
+	return NewProvider("")
+}
+
+// NewProvider returns a new LCM instance using the specified provider. In case
+// of a failure, an error is returned.
+func NewProvider(provider string) (LCM, error) {
+	var cProvider *C.char
+	if len(provider) != 0 {
+		cProvider = C.CString(provider)
+		defer C.free(unsafe.Pointer(cProvider))
+	}
+
+	cPtr := C.lcm_create(cProvider)
+
 	if cPtr == nil {
 		return LCM{}, errors.New("could not create c pointer to lcm_t")
 	}
