@@ -268,9 +268,9 @@ Subscription *LCM::subscribeFunction(const std::string &channel,
     }
     typedef LCMTypedSubscription<MessageType, ContextClass> SubsClass;
     SubsClass *sub = new SubsClass();
-    sub->c_subs = lcm_subscribe(lcm, channel.c_str(), SubsClass::cb_func, sub);
     sub->handler = handler;
     sub->context = context;
+    sub->c_subs = lcm_subscribe(lcm, channel.c_str(), SubsClass::cb_func, sub);
     subscriptions.push_back(sub);
     return sub;
 }
@@ -288,9 +288,9 @@ Subscription *LCM::subscribeFunction(const std::string &channel,
     }
     typedef LCMUntypedSubscription<ContextClass> SubsClass;
     SubsClass *sub = new SubsClass();
-    sub->c_subs = lcm_subscribe(lcm, channel.c_str(), SubsClass::cb_func, sub);
     sub->handler = handler;
     sub->context = context;
+    sub->c_subs = lcm_subscribe(lcm, channel.c_str(), SubsClass::cb_func, sub);
     subscriptions.push_back(sub);
     return sub;
 }
