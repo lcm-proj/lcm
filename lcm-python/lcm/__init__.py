@@ -1,6 +1,7 @@
 import os
 
-from ._lcm import LCM, LCMSubscription
+from lcm import _lcm
+from lcm._lcm import LCM, LCMSubscription
 
 class Event(object):
     """Data structure representing a single event in an LCM EventLog
