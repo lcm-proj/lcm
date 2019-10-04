@@ -321,19 +321,16 @@ static char *go_membername(lcm_struct_t *ls, const char *const str, int method)
 {
     char *membername = go_name(str);
 
-    if (lcm_find_member_with_named_dimension(ls, str, 0) >= ls->members->len) {
-        // If not a read-only attribute, uppercase it to export it.
-        membername[0] = toupper(membername[0]);
-    } else if (method) {
+    // expose all fields because the field value is inside the real data
+    membername[0] = toupper(membername[0]);
+    if (method) {
         // If read-only should be method invocation.
         size_t len = strlen(membername);
-        membername = realloc(membername, len + 3);
-        membername[0] = toupper(membername[0]);
-        membername[len++] = '(';
-        membername[len++] = ')';
-        membername[len++] = '\0';
+        membername = realloc(membername, len + 6);
+        // add Get at the end to distinguish between field name and method
+        strcat(membername, "Get()");
+        membername[len+5] = '\0';
     }
-
     return membername;
 }
 
@@ -569,9 +566,12 @@ static unsigned int emit_go_array_loops(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls
             const char *type =
                 map_builtintype_name(lcm_find_member(ls, dim->size)->type->lctypename);
 
-            if (slice_emit)
+            if (slice_emit){
+	        lcm_struct_t *ls_lm = lcm_find_struct(lcm, lm);
+		uint64_t lm_fingerprint = lcm_get_fingerprint(lcm, ls_lm);
                 emit_go_slice_make(f, n + 1, ls->structname->package, lm, n, slicestr->str, size,
-                                   fingerprint);
+                                   lm_fingerprint);
+	    }
 
             emit(1 + n, "for i%d := %s(0); i%d < p.%s; i%d++ {", n, type, n, size, n);
 
@@ -949,7 +949,7 @@ static void emit_go_lcm_read_only_getters(FILE *f, lcmgen_t *lcm, lcm_struct_t *
         for (; i < ls->members->len;
              i = lcm_find_member_with_named_dimension(ls, lm->membername, i + 1)) {
             lcm_member_t *lm_ = (lcm_member_t *) g_ptr_array_index(ls->members, i);
-            char *membername = go_membername(ls, lm_->membername, TRUE);
+            char *membername = go_membername(ls, lm_->membername, FALSE);
 
             unsigned int j = lcm_find_named_dimension(f, ls, lm_, lm->membername, 0);
 
