@@ -40,10 +40,15 @@ the scope of these instructions.
 Required packages:
   - build-essential
   - libglib2.0-dev
+  - cmake
 
-Strongly recommended packages:
-  - default-jdk (or openjdk-9-jdk)
-  - python-dev
+Optional packages (e.g., for language-specific support or building documentation):
+  - default-jdk
+  - python-all-dev
+  - liblua5.1-dev
+  - golang
+  - doxygen
+  - python-epydoc
 
 From a terminal, run the following commands.
 
@@ -62,7 +67,7 @@ better than the others.
 
 Install Homebrew packages
 
-    $ brew install glib pkg-config
+    $ brew install glib pkg-config cmake
 
 Install Java.  Type `javac` in a terminal, then follow the instructions.
 
@@ -92,8 +97,8 @@ LCM is officially supported on Visual Studio 2015.
 
 On other POSIX.1-2001 systems (e.g., other GNU/Linux distributions, FreeBSD,
 Solaris, etc.) the only major requirement is to install the GLib 2.x
-development files.  If possible, a Java development kit and Python should also
-be installed.  Then follow the same instructions as for
+development files and CMake.  If possible, a Java development kit and Python
+should also be installed.  Then follow the same instructions as for
 [Ubuntu / Debian](#build_ubuntu_debian).
 
 # Post Install {#build_post}

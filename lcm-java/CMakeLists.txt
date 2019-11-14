@@ -95,7 +95,7 @@ set(lcm_java_doc_classes
 add_custom_target(doc-java
   COMMAND  ${Java_JAVADOC_EXECUTABLE}
     -d ${lcm_BINARY_DIR}/docs/html/javadocs
-    -link https://docs.oracle.com/javase/1.5.0/docs/api
+    -link http://docs.oracle.com/javase/8/docs/api/
     ${lcm_java_doc_classes}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
   DEPENDS doc-clean)
