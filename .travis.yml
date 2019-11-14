@@ -1,0 +1,23 @@
+os:
+    - linux
+dist: xenial
+language: c++
+addons:
+  apt:
+    packages:
+    - build-essential
+      #    - cmake
+    - libglib2.0-dev
+      #    - default-jdk
+      #    - python-all-dev
+    - liblua5.1-dev
+    - doxygen
+      #    - golang
+    - python-epydoc
+
+script:
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
+    - make test

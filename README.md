@@ -37,3 +37,7 @@ variety of programming languages.
   * Lua
   * MATLAB
   * Python
+
+# Build Status (master)
+
+[![Build Status](https://travis-ci.com/lcm-proj/lcm.svg?branch=master)](https://travis-ci.com/lcm-proj/lcm)
