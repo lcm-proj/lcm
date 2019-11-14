@@ -161,11 +161,11 @@ public class LcmTestClient implements LCMSubscriber {
         }
 
         public boolean run() {
-            lcm_.subscribe("test_" + name_ + "_reply", this);
-            abortTime_ = System.currentTimeMillis() + 500;
             MsgType msg = makerChecker_.makeMessage(iteration_);
-            lcm_.publish("test_" + name_, msg);
             type_ = msg.getClass();
+            abortTime_ = System.currentTimeMillis() + 500;
+            lcm_.subscribe("test_" + name_ + "_reply", this);
+            lcm_.publish("test_" + name_, msg);
             while(true) {
                 synchronized(this) {
                     if (done_) {
