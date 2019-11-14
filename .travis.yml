@@ -16,4 +16,8 @@ addons:
     - python-epydoc
 
 script:
-    - mkdir build && cd build && cmake .. && make
+    - mkdir build
+    - cd build
+    - cmake ..
+    - make
+    - make test
