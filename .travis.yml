@@ -1,19 +1,43 @@
-os:
-    - linux
-dist: xenial
 language: c++
+
 addons:
-  apt:
-    packages:
-    - build-essential
-      #    - cmake
-    - libglib2.0-dev
-      #    - default-jdk
-      #    - python-all-dev
-    - liblua5.1-dev
-    - doxygen
-      #    - golang
-    - python-epydoc
+    homebrew:
+        packages:
+            - glib
+        update: true
+
+    apt:
+        packages:
+            - build-essential
+            - libglib2.0-dev
+            - liblua5.1-dev
+            - doxygen
+            - python-epydoc
+            - cmake
+            - default-jdk
+            - python-all-dev
+            - golang
+
+jobs:
+    include:
+        - os: osx
+
+        - os: linux
+          dist: xenial
+          arch: amd64
+
+        - os: linux
+          dist: bionic
+          arch: amd64
+
+        - os: linux
+          dist: xenial
+          arch: arm64
+
+        - os: linux
+          dist: bionic
+          arch: arm64
+
 
 script:
     - mkdir build
