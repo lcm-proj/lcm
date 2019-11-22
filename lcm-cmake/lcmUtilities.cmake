@@ -303,12 +303,12 @@ function(lcm_wrap_types)
 
         # Determine output file name(s) and add to output variables
         if(DEFINED _C_HEADERS AND DEFINED _C_SOURCES)
-          if(DEFINED _package_pre)
-            _lcm_add_outputs(_C_HEADERS ${_package_pre}_${_type}.h)
-            _lcm_add_outputs(_C_SOURCES ${_package_pre}_${_type}.c)
-          else()
+          if(_package_pre STREQUAL "")
             _lcm_add_outputs(_C_HEADERS ${_type}.h)
             _lcm_add_outputs(_C_SOURCES ${_type}.c)
+          else()
+            _lcm_add_outputs(_C_HEADERS ${_package_pre}_${_type}.h)
+            _lcm_add_outputs(_C_SOURCES ${_package_pre}_${_type}.c)
           endif()
           if(_CREATE_CPP_AGGREGATE_HEADER)
             _lcm_add_aggregate_include("${_package_dir}.h"
