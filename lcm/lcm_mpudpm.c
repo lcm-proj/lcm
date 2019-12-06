@@ -1387,7 +1387,13 @@ static mpudpm_socket_t *add_recv_socket(lcm_mpudpm_t *lcm, uint16_t port)
     struct sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
     addr.sin_family = AF_INET;
+#ifndef WIN32
+    addr.sin_addr = lcm->params.mc_addr;
+#else
+    // On WIN32 if we try to bind to mc_addr, we get WSAEADDRNOTAVAIL.
+    // See https://github.com/lcm-proj/lcm/issues/258.
     addr.sin_addr.s_addr = INADDR_ANY;
+#endif
     addr.sin_port = htons(port);
 
     // allow other applications on the local machine to also bind to this
