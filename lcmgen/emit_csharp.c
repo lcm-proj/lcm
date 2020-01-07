@@ -453,7 +453,7 @@ int emit_csharp(lcmgen_t *lcm)
             } else if (!strcmp(lc->lctypename, "int64_t")) {
                 emit(2, "public const long %s = %sL;", lc->membername, lc->val_str);
             } else if (!strcmp(lc->lctypename, "float")) {
-                emit(2, "public const float %s = %s;", lc->membername, lc->val_str);
+                emit(2, "public const float %s = %sf;", lc->membername, lc->val_str);
             } else if (!strcmp(lc->lctypename, "double")) {
                 emit(2, "public const double %s = %s;", lc->membername, lc->val_str);
             } else {
