@@ -1,6 +1,6 @@
 include(UseJava)
 
-set(LCM_JAVA_TARGET_VERSION "1.6" CACHE STRING
+set(LCM_JAVA_TARGET_VERSION "1.8" CACHE STRING
   "Java version to target when building Java components (leave empty to use default)"
 )
 if(NOT LCM_JAVA_TARGET_VERSION STREQUAL "")
