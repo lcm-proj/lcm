@@ -278,7 +278,8 @@ uint64_t __lcm_recursive_fingerprint(lcmgen_t *lcm, lcm_struct_t *ls,
             if (ls_ != NULL) {
                 fingerprint += __lcm_recursive_fingerprint(lcm, ls_, &fp);
             } else {
-                fprintf(stderr, "Unable to locate fingerprint for member '%s' of '%s'\n",
+                fprintf(stderr, "Unable to locate fingerprint for member '%s' of '%s'. "
+                                "Are you missing any .lcm files?\n",
                         lm->membername, ls->structname->shortname);
                 return 0;
             }
@@ -567,8 +568,18 @@ static unsigned int emit_go_array_loops(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls
                 map_builtintype_name(lcm_find_member(ls, dim->size)->type->lctypename);
 
             if (slice_emit){
-	        lcm_struct_t *ls_lm = lcm_find_struct(lcm, lm);
-		uint64_t lm_fingerprint = lcm_get_fingerprint(lcm, ls_lm);
+                uint64_t lm_fingerprint = 0;
+                if (!lcm_is_primitive_type(lm->type->lctypename)) {
+                    if (fingerprint != 0) {
+                        lcm_struct_t *ls_lm = lcm_find_struct(lcm, lm);
+                        if (ls_lm == NULL) {
+                            fprintf(stderr, "Unable to locate %s.\n",
+                                    lm->membername);
+                            return -1;
+                        }
+                        lm_fingerprint = lcm_get_fingerprint(lcm, ls_lm);
+                    }
+                }
                 emit_go_slice_make(f, n + 1, ls->structname->package, lm, n, slicestr->str, size,
                                    lm_fingerprint);
 	    }
