@@ -20,21 +20,26 @@ addons:
 
 jobs:
     include:
-        - os: osx
+        - name: "OS X"
+          os: osx
 
-        - os: linux
+        - name: "Ubuntu 16.04 / amd64"
+          os: linux
           dist: xenial
           arch: amd64
 
-        - os: linux
+        - name: "Ubuntu 18.04 / amd64"
+          os: linux
           dist: bionic
           arch: amd64
 
-        - os: linux
+        - name: "Ubuntu 16.04 / arm64"
+          os: linux
           dist: xenial
           arch: arm64
 
-        - os: linux
+        - name: "Ubuntu 18.04 / arm64"
+          os: linux
           dist: bionic
           arch: arm64
 
