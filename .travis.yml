@@ -49,4 +49,5 @@ script:
     - cd build
     - cmake ..
     - make
+    - make install
     - ctest --verbose
