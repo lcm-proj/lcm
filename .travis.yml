@@ -16,7 +16,6 @@ addons:
             - cmake
             - default-jdk
             - python-all-dev
-            - golang
 
 jobs:
     include:

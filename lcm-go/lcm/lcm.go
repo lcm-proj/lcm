@@ -4,14 +4,15 @@ package lcm
 //
 // #include <stdlib.h>
 // #include <string.h>
+// #include <sys/select.h>
 // #include <lcm/lcm.h>
 //
 // extern void goLCMCallbackHandler(void *, int, char *);
 //
 // static void lcm_msg_handler(const lcm_recv_buf_t *buffer,
 //                                   const char *channel, void *userdata) {
-//      (void)userdata;
-//      goLCMCallbackHandler((void *)buffer->data, (int)buffer->data_size,
+//     (void)userdata;
+//     goLCMCallbackHandler((void *)buffer->data, (int)buffer->data_size,
 //                           (char *)channel);
 // }
 //
@@ -19,10 +20,32 @@ package lcm
 //                                              const char *channel) {
 //     return lcm_subscribe(lcm, channel, &lcm_msg_handler, NULL);
 // }
+//
+// // Wrap lcm_handle in a select() as this is called in a separate go-routine
+// // which waits indefinitely in lcm_handle on messages and is not notified of
+// // calls to Destroy().
+// // This has the unfortunate effect of increasing the latency a bit.
+// //
+// // return 0 normally, or -1 when an error has occurred.
+// static int lcm_go_handle(lcm_t *lcm) {
+//     int lcm_fd = lcm_get_fileno(lcm);
+//     fd_set fds;
+//     FD_ZERO(&fds);
+//     FD_SET(lcm_fd, &fds);
+//
+//     int status = select(lcm_fd + 1, &fds, 0, 0, 0);
+//
+//     if (FD_ISSET(lcm_fd, &fds)) {
+//         // LCM has events ready to be processed.
+//         return lcm_handle(lcm);
+//     }
+//     return status;
+// }
 import "C"
 
 import (
 	"errors"
+	"time"
 	"unsafe"
 )
 
@@ -99,6 +122,11 @@ func (lcm LCM) Subscribe(channel string, size int) (Subscription, error) {
 			channel)
 	}
 
+	// Set lcm backend queue size to "unlimited", as we are handling buffering
+	if C.lcm_subscription_set_queue_capacity(cPtr, 0) != 0 {
+		return Subscription{}, errors.New("could not set queue capacity")
+	}
+
 	subscription := Subscription{
 		ReceiveChan: make(chan []byte, size),
 		channel:     channel,
@@ -157,6 +185,7 @@ func (lcm LCM) Publisher(channel string) (chan<- []byte, <-chan error) {
 				buffer := C.malloc(dataSize)
 				if buffer == nil {
 					errs <- errors.New("could not malloc memory for lcm message")
+					break
 				}
 				defer C.free(buffer)
 				C.memcpy(buffer, unsafe.Pointer(&data[0]), dataSize)
@@ -197,8 +226,11 @@ func (lcm *LCM) Destroy() error {
 func (lcm LCM) handle() {
 	defer close(lcm.Errors)
 
+	// Add some slack as LCM occasionally returns bad file descriptor upon start.
+	time.Sleep(1 * time.Second)
+
 	for !lcm.closed {
-		if status := C.lcm_handle(lcm.cPtr); status != 0 {
+		if status := C.lcm_go_handle(lcm.cPtr); status != 0 {
 			lcm.Errors <- errors.New("could not call lcm_handle")
 		}
 	}
