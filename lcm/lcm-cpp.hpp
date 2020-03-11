@@ -498,6 +498,8 @@ struct ReceiveBuffer {
  */
 class Subscription {
   public:
+    Subscription(const std::string& channel_in) : channel(channel_in) {}
+
     virtual ~Subscription() {}
     /**
      * @brief Adjusts the maximum number of received messages that can be
@@ -530,6 +532,9 @@ class Subscription {
      * subscription.
      */
     lcm_subscription_t *c_subs;
+
+    // The channel that `this` is subscribed to.
+    std::string channel;
 };
 
 /**

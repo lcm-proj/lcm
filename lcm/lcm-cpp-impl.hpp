@@ -20,6 +20,9 @@ template <class MessageType, class ContextClass>
 class LCMTypedSubscription : public Subscription {
     friend class LCM;
 
+  public:
+    explicit LCMTypedSubscription(const std::string &channel) : Subscription(channel) {}
+
   private:
     ContextClass context;
     void (*handler)(const ReceiveBuffer *rbuf, const std::string &channel, const MessageType *msg,
@@ -35,13 +38,16 @@ class LCMTypedSubscription : public Subscription {
             return;
         }
         const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
-        subs->handler(&rb, channel, &msg, subs->context);
+        subs->handler(&rb, subs->channel, &msg, subs->context);
     }
 };
 
 template <class ContextClass>
 class LCMUntypedSubscription : public Subscription {
     friend class LCM;
+
+  public:
+    explicit LCMUntypedSubscription(const std::string &channel) : Subscription(channel) {}
 
   private:
     ContextClass context;
@@ -51,13 +57,16 @@ class LCMUntypedSubscription : public Subscription {
         typedef LCMUntypedSubscription<ContextClass> SubsClass;
         SubsClass *subs = static_cast<SubsClass *>(user_data);
         const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
-        subs->handler(&rb, channel, subs->context);
+        subs->handler(&rb, subs->channel, subs->context);
     }
 };
 
 template <class MessageType, class MessageHandlerClass>
 class LCMMHSubscription : public Subscription {
     friend class LCM;
+
+  public:
+    explicit LCMMHSubscription(const std::string &channel) : Subscription(channel) {}
 
   private:
     MessageHandlerClass *handler;
@@ -74,14 +83,16 @@ class LCMMHSubscription : public Subscription {
             return;
         }
         const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
-        std::string chan_str(channel);
-        (subs->handler->*subs->handlerMethod)(&rb, chan_str, &msg);
+        (subs->handler->*subs->handlerMethod)(&rb, subs->channel, &msg);
     }
 };
 
 template <class MessageHandlerClass>
 class LCMMHUntypedSubscription : public Subscription {
     friend class LCM;
+
+  public:
+    explicit LCMMHUntypedSubscription(const std::string &channel) : Subscription(channel) {}
 
   private:
     MessageHandlerClass *handler;
@@ -92,8 +103,7 @@ class LCMMHUntypedSubscription : public Subscription {
         LCMMHUntypedSubscription<MessageHandlerClass> *subs =
             static_cast<LCMMHUntypedSubscription<MessageHandlerClass> *>(user_data);
         const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
-        std::string chan_str(channel);
-        (subs->handler->*subs->handlerMethod)(&rb, chan_str);
+        (subs->handler->*subs->handlerMethod)(&rb, subs->channel);
     }
 };
 
@@ -101,6 +111,9 @@ class LCMMHUntypedSubscription : public Subscription {
 template <class MessageType>
 class LCMLambdaSubscription : public Subscription {
     friend class LCM;
+
+  public:
+    explicit LCMLambdaSubscription(const std::string &channel) : Subscription(channel) {}
 
   private:
     using HandlerFunction = typename LCM::HandlerFunction<MessageType>;
@@ -116,8 +129,7 @@ class LCMLambdaSubscription : public Subscription {
             return;
         }
         const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
-        std::string chan_str(channel);
-        (subs->handler)(&rb, chan_str, &msg);
+        (subs->handler)(&rb, subs->channel, &msg);
     }
 };
 #endif
@@ -225,7 +237,7 @@ Subscription *LCM::subscribe(const std::string &channel,
         return NULL;
     }
     LCMMHSubscription<MessageType, MessageHandlerClass> *subs =
-        new LCMMHSubscription<MessageType, MessageHandlerClass>();
+        new LCMMHSubscription<MessageType, MessageHandlerClass>(channel);
     subs->handler = handler;
     subs->handlerMethod = handlerMethod;
     subs->c_subs =
@@ -246,7 +258,7 @@ Subscription *LCM::subscribe(const std::string &channel,
         return NULL;
     }
     LCMMHUntypedSubscription<MessageHandlerClass> *subs =
-        new LCMMHUntypedSubscription<MessageHandlerClass>();
+        new LCMMHUntypedSubscription<MessageHandlerClass>(channel);
     subs->handler = handler;
     subs->handlerMethod = handlerMethod;
     subs->c_subs = lcm_subscribe(this->lcm, channel.c_str(),
@@ -267,7 +279,7 @@ Subscription *LCM::subscribeFunction(const std::string &channel,
         return NULL;
     }
     typedef LCMTypedSubscription<MessageType, ContextClass> SubsClass;
-    SubsClass *sub = new SubsClass();
+    SubsClass *sub = new SubsClass(channel);
     sub->handler = handler;
     sub->context = context;
     sub->c_subs = lcm_subscribe(lcm, channel.c_str(), SubsClass::cb_func, sub);
@@ -287,7 +299,7 @@ Subscription *LCM::subscribeFunction(const std::string &channel,
         return NULL;
     }
     typedef LCMUntypedSubscription<ContextClass> SubsClass;
-    SubsClass *sub = new SubsClass();
+    SubsClass *sub = new SubsClass(channel);
     sub->handler = handler;
     sub->context = context;
     sub->c_subs = lcm_subscribe(lcm, channel.c_str(), SubsClass::cb_func, sub);
@@ -303,7 +315,7 @@ Subscription *LCM::subscribe(const std::string &channel, LCM::HandlerFunction<Me
         fprintf(stderr, "LCM instance not initialized.  Ignoring call to subscribe()\n");
         return NULL;
     }
-    LCMLambdaSubscription<MessageType> *subs = new LCMLambdaSubscription<MessageType>();
+    LCMLambdaSubscription<MessageType> *subs = new LCMLambdaSubscription<MessageType>(channel);
     subs->handler = handler;
     subs->c_subs = lcm_subscribe(this->lcm, channel.c_str(),
                                  LCMLambdaSubscription<MessageType>::cb_func, subs);
