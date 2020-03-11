@@ -27,7 +27,7 @@ class LCMTypedSubscription : public Subscription {
     ContextClass context;
     void (*handler)(const ReceiveBuffer *rbuf, const std::string &channel, const MessageType *msg,
                     ContextClass context);
-    static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
+    static void cb_func(const lcm_recv_buf_t *rbuf, const char *, void *user_data)
     {
         typedef LCMTypedSubscription<MessageType, ContextClass> SubsClass;
         SubsClass *subs = static_cast<SubsClass *>(user_data);
@@ -52,7 +52,7 @@ class LCMUntypedSubscription : public Subscription {
   private:
     ContextClass context;
     void (*handler)(const ReceiveBuffer *rbuf, const std::string &channel, ContextClass context);
-    static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
+    static void cb_func(const lcm_recv_buf_t *rbuf, const char *, void *user_data)
     {
         typedef LCMUntypedSubscription<ContextClass> SubsClass;
         SubsClass *subs = static_cast<SubsClass *>(user_data);
@@ -72,7 +72,7 @@ class LCMMHSubscription : public Subscription {
     MessageHandlerClass *handler;
     void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer *rbuf,
                                                const std::string &channel, const MessageType *msg);
-    static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
+    static void cb_func(const lcm_recv_buf_t *rbuf, const char *, void *user_data)
     {
         LCMMHSubscription<MessageType, MessageHandlerClass> *subs =
             static_cast<LCMMHSubscription<MessageType, MessageHandlerClass> *>(user_data);
@@ -98,7 +98,7 @@ class LCMMHUntypedSubscription : public Subscription {
     MessageHandlerClass *handler;
     void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer *rbuf,
                                                const std::string &channel);
-    static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
+    static void cb_func(const lcm_recv_buf_t *rbuf, const char *, void *user_data)
     {
         LCMMHUntypedSubscription<MessageHandlerClass> *subs =
             static_cast<LCMMHUntypedSubscription<MessageHandlerClass> *>(user_data);
@@ -118,7 +118,7 @@ class LCMLambdaSubscription : public Subscription {
   private:
     using HandlerFunction = typename LCM::HandlerFunction<MessageType>;
     HandlerFunction handler;
-    static void cb_func(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
+    static void cb_func(const lcm_recv_buf_t *rbuf, const char *, void *user_data)
     {
         LCMLambdaSubscription<MessageType> *subs =
             static_cast<LCMLambdaSubscription<MessageType> *>(user_data);
