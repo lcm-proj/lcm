@@ -525,7 +525,7 @@ class Subscription {
 
   protected:
     Subscription() {
-      channel_name_workspace.reserve(LCM_MAX_CHANNEL_NAME_LENGTH);
+      channel_buf.reserve(LCM_MAX_CHANNEL_NAME_LENGTH);
     };
 
     /**
@@ -538,7 +538,7 @@ class Subscription {
     // message handling. This string serves to eliminate a heap allocation that
     // would otherwise occur and which could preclude use in real-time
     // applications.
-    std::string channel_name_workspace;
+    std::string channel_buf;
 };
 
 /**
