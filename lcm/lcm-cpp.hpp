@@ -524,9 +524,7 @@ class Subscription {
     friend class LCM;
 
   protected:
-    Subscription() {
-      channel_buf.reserve(LCM_MAX_CHANNEL_NAME_LENGTH);
-    };
+    Subscription() { channel_buf.reserve(LCM_MAX_CHANNEL_NAME_LENGTH); };
 
     /**
      * The underlying lcm_subscription_t object wrapped by this
