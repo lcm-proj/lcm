@@ -28,6 +28,7 @@ class LCMTypedSubscription : public Subscription {
     {
         typedef LCMTypedSubscription<MessageType, ContextClass> SubsClass;
         SubsClass *subs = static_cast<SubsClass *>(user_data);
+        subs->channel_buf = channel;
         MessageType msg;
         int status = msg.decode(rbuf->data, 0, rbuf->data_size);
         if (status < 0) {
@@ -35,7 +36,7 @@ class LCMTypedSubscription : public Subscription {
             return;
         }
         const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
-        subs->handler(&rb, channel, &msg, subs->context);
+        subs->handler(&rb, subs->channel_buf, &msg, subs->context);
     }
 };
 
@@ -50,8 +51,9 @@ class LCMUntypedSubscription : public Subscription {
     {
         typedef LCMUntypedSubscription<ContextClass> SubsClass;
         SubsClass *subs = static_cast<SubsClass *>(user_data);
+        subs->channel_buf = channel;
         const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
-        subs->handler(&rb, channel, subs->context);
+        subs->handler(&rb, subs->channel_buf, subs->context);
     }
 };
 
@@ -74,8 +76,8 @@ class LCMMHSubscription : public Subscription {
             return;
         }
         const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
-        std::string chan_str(channel);
-        (subs->handler->*subs->handlerMethod)(&rb, chan_str, &msg);
+        subs->channel_buf = channel;
+        (subs->handler->*subs->handlerMethod)(&rb, subs->channel_buf, &msg);
     }
 };
 
@@ -91,9 +93,9 @@ class LCMMHUntypedSubscription : public Subscription {
     {
         LCMMHUntypedSubscription<MessageHandlerClass> *subs =
             static_cast<LCMMHUntypedSubscription<MessageHandlerClass> *>(user_data);
+        subs->channel_buf = channel;
         const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
-        std::string chan_str(channel);
-        (subs->handler->*subs->handlerMethod)(&rb, chan_str);
+        (subs->handler->*subs->handlerMethod)(&rb, subs->channel_buf);
     }
 };
 
@@ -109,6 +111,7 @@ class LCMLambdaSubscription : public Subscription {
     {
         LCMLambdaSubscription<MessageType> *subs =
             static_cast<LCMLambdaSubscription<MessageType> *>(user_data);
+        subs->channel_buf = channel;
         MessageType msg;
         int status = msg.decode(rbuf->data, 0, rbuf->data_size);
         if (status < 0) {
@@ -116,8 +119,7 @@ class LCMLambdaSubscription : public Subscription {
             return;
         }
         const ReceiveBuffer rb = {rbuf->data, rbuf->data_size, rbuf->recv_utime};
-        std::string chan_str(channel);
-        (subs->handler)(&rb, chan_str, &msg);
+        (subs->handler)(&rb, subs->channel_buf, &msg);
     }
 };
 #endif

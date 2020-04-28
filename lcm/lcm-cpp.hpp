@@ -524,12 +524,19 @@ class Subscription {
     friend class LCM;
 
   protected:
-    Subscription(){};
+    Subscription() { channel_buf.reserve(LCM_MAX_CHANNEL_NAME_LENGTH); };
+
     /**
      * The underlying lcm_subscription_t object wrapped by this
      * subscription.
      */
     lcm_subscription_t *c_subs;
+
+    // A "workspace" string that is overwritten with the channel name during
+    // message handling. This string serves to eliminate a heap allocation that
+    // would otherwise occur and which could preclude use in real-time
+    // applications.
+    std::string channel_buf;
 };
 
 /**
