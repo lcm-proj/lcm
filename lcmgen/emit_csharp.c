@@ -189,7 +189,7 @@ int emit_csharp(lcmgen_t *lcm)
 
     g_hash_table_insert(type_table, "byte", prim("byte", "# = ins.ReadByte();", "outs.Write(#);"));
     g_hash_table_insert(type_table, "int8_t",
-                        prim("byte", "# = ins.ReadByte();", "outs.Write(#);"));
+                        prim("sbyte", "# = ins.ReadSByte();", "outs.Write(#);"));
     g_hash_table_insert(type_table, "int16_t",
                         prim("short", "# = ins.ReadInt16();", "outs.Write(#);"));
     g_hash_table_insert(type_table, "int32_t",
