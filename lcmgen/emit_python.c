@@ -596,8 +596,6 @@ static void emit_python_init(const lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
 static void emit_python_fingerprint(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
 {
     const char *sn = ls->structname->shortname;
-    emit(1, "_hash = None");
-
     emit(1, "def _get_hash_recursive(parents):");
     emit(2, "if %s in parents: return 0", sn);
     for (unsigned int m = 0; m < ls->members->len; m++) {
