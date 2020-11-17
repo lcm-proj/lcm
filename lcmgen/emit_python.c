@@ -634,6 +634,11 @@ static void emit_python_fingerprint(const lcmgen_t *lcm, FILE *f, lcm_struct_t *
     emit(1, "_get_packed_fingerprint = staticmethod(_get_packed_fingerprint)");
     // clang-format off
     fprintf (f, "\n");
+
+    emit(1, "def get_hash(self):");
+    emit(2,     "\"\"\"Get the LCM hash of the struct\"\"\"");
+    emit(2,     "return struct.unpack(\">Q\", %s._get_packed_fingerprint())[0]", sn);
+    fprintf(f, "\n");
 }
 
 static void
