@@ -232,9 +232,6 @@ static int _recv_message_fragment(lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
 {
     lcm2_header_long_t *hdr = (lcm2_header_long_t *) lcmb->buf;
 
-    // any existing fragment buffer for this message source?
-    lcm_frag_buf_t *fbuf = lcm_frag_buf_store_lookup(lcm->frag_bufs, &lcmb->from);
-
     uint32_t msg_seqno = ntohl(hdr->msg_seqno);
     uint32_t data_size = ntohl(hdr->msg_size);
     uint32_t fragment_offset = ntohl(hdr->fragment_offset);
@@ -243,8 +240,14 @@ static int _recv_message_fragment(lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     uint32_t frag_size = sz - sizeof(lcm2_header_long_t);
     char *data_start = (char *) (hdr + 1);
 
+    // any existing fragment buffer for this message source?
+    lcm_frag_key_t key;
+    key.from = &(lcmb->from);
+    key.msg_seqno = msg_seqno;
+    lcm_frag_buf_t *fbuf = lcm_frag_buf_store_lookup(lcm->frag_bufs, &key);
+
     // discard any stale fragments from previous messages
-    if (fbuf && ((fbuf->msg_seqno != msg_seqno) || (fbuf->data_size != data_size))) {
+    if (fbuf && (fbuf->data_size != data_size)) {
         lcm_frag_buf_store_remove(lcm->frag_bufs, fbuf);
         dbg(DBG_LCM, "Dropping message (missing %d fragments)\n", fbuf->fragments_remaining);
         fbuf = NULL;
@@ -259,8 +262,10 @@ static int _recv_message_fragment(lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
         return 0;
     }
 
-    // create a new fragment buffer if necessary
-    if (!fbuf && hdr->fragment_no == 0) {
+    //if this is the first packet, set some values
+    char *channel = NULL;
+    if (hdr->fragment_no == 0) {
+        channel = (char*) (hdr + 1);
         char *channel = (char *) (hdr + 1);
         int channel_sz = strlen(channel);
         if (channel_sz > LCM_MAX_CHANNEL_NAME_LENGTH) {
@@ -268,21 +273,20 @@ static int _recv_message_fragment(lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
             lcm->udp_discarded_bad++;
             return 0;
         }
-
-        // if the packet has no subscribers, drop the message now.
-        if (!lcm_has_handlers(lcm->lcm, channel))
-            return 0;
-
-        fbuf = lcm_frag_buf_new(*((struct sockaddr_in *) &lcmb->from), channel, msg_seqno,
-                                data_size, fragments_in_msg, lcmb->recv_utime);
-        lcm_frag_buf_store_add(lcm->frag_bufs, fbuf);
         data_start += channel_sz + 1;
         frag_size -= (channel_sz + 1);
     }
 
-    if (!fbuf)
-        return 0;
+    if(!fbuf){
+        fbuf = lcm_frag_buf_new(*((struct sockaddr_in *) &lcmb->from), msg_seqno,
+                                data_size, fragments_in_msg, lcmb->recv_utime);
+        lcm_frag_buf_store_add(lcm->frag_bufs, fbuf);
+    }
 
+    if (channel!=NULL) {
+        strncpy (fbuf->channel, channel, sizeof (fbuf->channel));
+    }
+    
 #ifdef __linux__
     if (lcm->kernel_rbuf_sz < 262145 && data_size > lcm->kernel_rbuf_sz &&
         !lcm->warned_about_small_kernel_buf) {

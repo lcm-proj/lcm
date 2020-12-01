@@ -10,18 +10,19 @@
 #define LCM_MAX_UNFRAGMENTED_PACKET_SIZE 65536
 
 /******************** fragment buffer **********************/
-lcm_frag_buf_t *lcm_frag_buf_new(struct sockaddr_in from, const char *channel, uint32_t msg_seqno,
+lcm_frag_buf_t *lcm_frag_buf_new(struct sockaddr_in from, uint32_t msg_seqno,
                                  uint32_t data_size, uint16_t nfragments,
                                  int64_t first_packet_utime)
 {
     lcm_frag_buf_t *fbuf = (lcm_frag_buf_t *) malloc(sizeof(lcm_frag_buf_t));
-    strncpy(fbuf->channel, channel, sizeof(fbuf->channel));
     fbuf->from = from;
     fbuf->msg_seqno = msg_seqno;
     fbuf->data = (char *) malloc(data_size);
     fbuf->data_size = data_size;
     fbuf->fragments_remaining = nfragments;
     fbuf->last_packet_utime = first_packet_utime;
+    fbuf->key.from = &(fbuf->from);
+    fbuf->key.msg_seqno = msg_seqno;
     return fbuf;
 }
 
@@ -33,20 +34,26 @@ void lcm_frag_buf_destroy(lcm_frag_buf_t *fbuf)
 
 /******************** fragment buffer store **********************/
 
-static guint _sockaddr_in_hash(const void *key)
+static guint
+_lcm_frag_key_hash (const void * key)
 {
-    struct sockaddr_in *addr = (struct sockaddr_in *) key;
-    int v = addr->sin_port * addr->sin_addr.s_addr;
-    return g_int_hash(&v);
+    lcm_frag_key_t *frag_key = (lcm_frag_key_t *) key;
+    //try to combine 3 ints to create a unique into using bit shifting 
+    //ints are not completely unique, but old mult method also had collisions
+    int v = (((int) frag_key->from->sin_addr.s_addr ^  frag_key->from->sin_port) << 16) | (0x0000FFFF & frag_key->msg_seqno);
+    return g_int_hash (&v);
 }
 
-static gboolean _sockaddr_in_equal(const void *a, const void *b)
+static gboolean
+_lcm_frag_key_equal (const void * a, const void *b)
 {
-    struct sockaddr_in *a_addr = (struct sockaddr_in *) a;
-    struct sockaddr_in *b_addr = (struct sockaddr_in *) b;
+    lcm_frag_key_t *a_key = (lcm_frag_key_t*) a;
+    lcm_frag_key_t *b_key = (lcm_frag_key_t*) b;
 
-    return a_addr->sin_addr.s_addr == b_addr->sin_addr.s_addr &&
-           a_addr->sin_port == b_addr->sin_port && a_addr->sin_family == b_addr->sin_family;
+    return a_key->from->sin_addr.s_addr == b_key->from->sin_addr.s_addr &&
+           a_key->from->sin_port        == b_key->from->sin_port &&
+           a_key->from->sin_family      == b_key->from->sin_family &&
+           a_key->msg_seqno            == b_key->msg_seqno;
 }
 
 static void _find_lru_frag_buf(gpointer key, gpointer value, void *user_data)
@@ -65,8 +72,9 @@ lcm_frag_buf_store *lcm_frag_buf_store_new(uint32_t max_total_size, uint32_t max
     store->max_total_size = max_total_size;
     store->max_n_frag_bufs = max_n_frag_bufs;
 
-    store->frag_bufs = g_hash_table_new_full(_sockaddr_in_hash, _sockaddr_in_equal, NULL,
-                                             (GDestroyNotify) lcm_frag_buf_destroy);
+    store->frag_bufs = g_hash_table_new_full(_lcm_frag_key_hash,
+                                       _lcm_frag_key_equal, NULL,
+                                       (GDestroyNotify) lcm_frag_buf_destroy);
     return store;
 }
 
@@ -76,7 +84,7 @@ void lcm_frag_buf_store_destroy(lcm_frag_buf_store *store)
     free(store);
 }
 
-lcm_frag_buf_t *lcm_frag_buf_store_lookup(lcm_frag_buf_store *store, struct sockaddr *key)
+lcm_frag_buf_t *lcm_frag_buf_store_lookup(lcm_frag_buf_store *store, lcm_frag_key_t* key)
 {
     return (lcm_frag_buf_t *) g_hash_table_lookup(store->frag_bufs, key);
 }
@@ -92,14 +100,14 @@ void lcm_frag_buf_store_add(lcm_frag_buf_store *store, lcm_frag_buf_t *fbuf)
             lcm_frag_buf_store_remove(store, lru_fbuf);
         }
     }
-    g_hash_table_insert(store->frag_bufs, &fbuf->from, fbuf);
+    g_hash_table_insert (store->frag_bufs, &fbuf->key, fbuf);
     store->total_size += fbuf->data_size;
 }
 
 void lcm_frag_buf_store_remove(lcm_frag_buf_store *store, lcm_frag_buf_t *fbuf)
 {
     store->total_size -= fbuf->data_size;
-    g_hash_table_remove(store->frag_bufs, &fbuf->from);
+    g_hash_table_remove (store->frag_bufs, &fbuf->key);
 }
 
 /*** Functions for managing a queue of lcm buffers ***/
