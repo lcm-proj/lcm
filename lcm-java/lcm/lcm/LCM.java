@@ -245,9 +245,17 @@ public class LCM
         subscribe(".*", sub);
     }
 
-    /** Call this function to release all resources used by the LCM instance.  After calling this
-     * function, the LCM instance should consume no resources, and cannot be used to
-     * receive or transmit messages.
+    /** A convenience function that subscribes to selected LCM channels. **/
+    public synchronized void subscribeTo(ArrayList<String> channels, LCMSubscriber sub) {
+        for (String channel : channels) {
+            subscribe(channel, sub);
+        }
+    }
+
+    /**
+     * Call this function to release all resources used by the LCM instance. After
+     * calling this function, the LCM instance should consume no resources, and
+     * cannot be used to receive or transmit messages.
      */
     public synchronized void close()
     {

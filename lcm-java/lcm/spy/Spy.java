@@ -31,8 +31,7 @@ public class Spy
 
     JButton clearButton = new JButton("Clear");
 
-    public Spy(String lcmurl) throws IOException
-    {
+    public Spy(String lcmurl, String channels) throws IOException {
         //    sortedChannelTableModel.addMouseListenerToHeaderInTable(channelTable);
         channelTableModel.setTableHeader(channelTable.getTableHeader());
         channelTableModel.setSortingStatus(0, TableSorter.ASCENDING);
@@ -61,12 +60,17 @@ public class Spy
         jif.setLocationByPlatform(true);
         jif.setVisible(true);
 
-        if(null == lcmurl)
+        if (null == lcmurl)
             lcm = new LCM();
         else
             lcm = new LCM(lcmurl);
-        lcm.subscribeAll(new MySubscriber());
 
+        ArrayList<String> subscriptionList = getSubscriptionList(channels);
+        if (subscriptionList.size() > 0) {
+            lcm.subscribeTo(subscriptionList, new MySubscriber());
+        } else {
+            lcm.subscribeAll(new MySubscriber());
+        }
         new HzThread().start();
 
         clearButton.addActionListener(new ActionListener()
@@ -499,37 +503,74 @@ public class Spy
         System.err.println("unrecognized messages.");
         System.err.println("");
         System.err.println("Options:");
-        System.err.println("  -l, --lcm-url=URL      Use the specified LCM URL");
-        System.err.println("  -h, --help             Shows this help text and exits");
+        System.err.println("  -l, --lcm-url=URL             		Use the specified LCM URL");
+        System.err.println("  -h, --help                    		Shows this help text and exits");
+        System.err.println("  -c, --channels=<path>/channels.txt   	Subscribe and show only channels listed in the text file");
         System.err.println("");
         System.exit(1);
     }
 
-    public static void main(String args[])
-    {
+    public static ArrayList<String> getSubscriptionList(String path) {
+
+        BufferedReader reader;
+        ArrayList<String> subscriptionList = new ArrayList<String>();
+
+        try {
+            reader = new BufferedReader(new FileReader(path));
+            String line = "";
+            while (line != null) {
+                line = reader.readLine().trim();
+                System.out.println("Subscribing to channel: " + line);
+                subscriptionList.add(line);
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return subscriptionList;
+    }
+
+    public static void main(String args[]) {
         // check if the JRE is supplied by gcj, and warn the user if it is.
-        if(System.getProperty("java.vendor").indexOf("Free Software Foundation") >= 0) {
+        if (System.getProperty("java.vendor").indexOf("Free Software Foundation") >= 0) {
             System.err.println("WARNING: Detected gcj. lcm-spy is not known to work well with gcj.");
             System.err.println("         The Sun JRE is recommended.");
         }
 
         String lcmurl = null;
-        for(int optind=0; optind<args.length; optind++) {
+        String channels = null;
+
+        for (int optind = 0; optind < args.length; optind++) {
             String c = args[optind];
-            if(c.equals("-h") || c.equals("--help")) {
+            if (c.equals("-h") || c.equals("--help")) {
                 usage();
-            } else if(c.equals("-l") || c.equals("--lcm-url") || c.startsWith("--lcm-url=")) {
+            } else if (c.equals("-l") || c.equals("--lcm-url") || c.startsWith("--lcm-url=")) {
                 String optarg = null;
-                if(c.startsWith("--lcm-url=")) {
-                    optarg=c.substring(10);
-                } else if(optind < args.length) {
+                if (c.startsWith("--lcm-url=")) {
+                    optarg = c.substring(10);
+                } else if (optind < args.length) {
+                    optind++;
+                    optarg = args[optind];
+                }
+                if (null == optarg) {
+                    usage();
+                } else {
+                    lcmurl = optarg;
+                }
+            }
+            else if (c.equals("-c") || c.equals("--channels") || c.startsWith("--channels=")) {
+                String optarg = null;
+                if (c.startsWith("--channels=")) {
+                    optarg = c.substring(11);
+                } else if (optind < args.length) {
                     optind++;
                     optarg = args[optind];
                 }
                 if(null == optarg) {
                     usage();
                 } else {
-                    lcmurl = optarg;
+                    channels = optarg;
                 }
             } else {
                 usage();
@@ -537,7 +578,7 @@ public class Spy
         }
 
         try {
-            new Spy(lcmurl);
+            new Spy(lcmurl, channels);
         } catch (IOException ex) {
             System.out.println(ex);
         }
