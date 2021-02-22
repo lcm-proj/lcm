@@ -1,4 +1,4 @@
-set(test_c_libs lcm-test-types-c lcm gtest gtest_main)
+set(test_c_libs lcm-test-types-c lcm gtest_main)
 
 add_executable(test-c-server server.c common.c)
 target_link_libraries(test-c-server lcm-test-types-c lcm)

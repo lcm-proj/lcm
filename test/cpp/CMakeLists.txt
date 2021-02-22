@@ -1,4 +1,4 @@
-set(test_cpp_libs lcm-test-types-cpp lcm gtest gtest_main)
+set(test_cpp_libs lcm-test-types-cpp lcm gtest_main)
 
 add_executable(test-cpp-client client.cpp common.cpp)
 lcm_target_link_libraries(test-cpp-client ${test_cpp_libs})
