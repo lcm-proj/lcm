@@ -291,6 +291,29 @@ C() = R{K_C + R{K_B + R{K_A}}}
 
 Note that without the rotations, B() == C().
 
+## Implementation
+
+For computing the fingerprint, the algorithm is simply:
+
+* Compute the **base hash** for the struct
+  * Includes the fieldname in the base hash.
+  * If the type is a primitive, include its typename in the base hash
+  computation.
+  * If the type is *not* a primitive, do not include in the base hash
+  computation (as noted above). It will be included in the recursive
+  computation.
+* Recursively compute the **fingerprint** for the struct.
+  * This will recurse into non-primitive struct types, using their
+  **base hash**.
+
+The following are pinned reference implementations for C on the parsing side, generating local struct hashes (non-recursive) as well as for the C binding
+type (where computation is then done recursively):
+
+* <https://github.com/lcm-proj/lcm/blob/v1.4.0/lcmgen/lcmgen.c#L233-L267>
+* <https://github.com/hoxovic/lcm/blob/v1.4.0/lcmgen/emit_c.c#L390-L439>
+
+Of course, this should reflect implementations for other languages.
+
 ## Related Work {#type_specification_related_work}
 
 LCM is most similar to XDR, which is used in RPC and is described by RFC4506.
