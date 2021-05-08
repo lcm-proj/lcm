@@ -189,7 +189,7 @@ void encode_recursive(lcmgen_t *lcm, lcm_member_t *lm, FILE *f, primitive_info_t
             lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, depth);
             if (dim->mode == LCM_VAR) {
                 emit(2 + depth, "if (this.%s > 0)", dim->size);
-                emit(3 + depth, "outs.write(this.%s, 0, %s);", accessor_array, dim->size);
+                emit(3 + depth, "outs.write(this.%s, 0, (int) %s);", accessor_array, dim->size);
             } else {
                 emit(2 + depth, "outs.write(this.%s, 0, %s);", accessor_array, dim->size);
             }
@@ -244,7 +244,7 @@ void decode_recursive(lcmgen_t *lcm, lcm_member_t *lm, FILE *f, primitive_info_t
         // byte array
         if (!strcmp(pinfo->storage, "byte")) {
             lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, depth);
-            emit_start(2 + depth, "ins.readFully(this.%s, 0, %s);", accessor_array, dim->size);
+            emit_start(2 + depth, "ins.readFully(this.%s, 0, (int) %s);", accessor_array, dim->size);
             return;
         }
 
@@ -300,7 +300,7 @@ void copy_recursive(lcmgen_t *lcm, lcm_member_t *lm, FILE *f, primitive_info_t *
 
         if (dim->mode == LCM_VAR) {
             emit(2 + depth, "if (this.%s > 0)", dim->size);
-            emit_start(3 + depth, "System.arraycopy(this.%s, 0, outobj.%s, 0, %s%s);",
+            emit_start(3 + depth, "System.arraycopy(this.%s, 0, outobj.%s, 0, (int) %s%s);",
                        accessor_array, accessor_array, dim_size_prefix(dim->size), dim->size);
         } else {
             emit_start(2 + depth, "System.arraycopy(this.%s, 0, outobj.%s, 0, %s%s);",
