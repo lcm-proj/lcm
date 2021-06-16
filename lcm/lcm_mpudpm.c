@@ -733,6 +733,7 @@ static void *recv_thread(void *user)
                 if (sz < sizeof(lcm2_header_short_t)) {
                     // packet too short to be LCM
                     lcm->udp_discarded_bad++;
+                    g_static_mutex_lock(&lcm->receive_lock);
                     continue;
                 }
 
@@ -777,6 +778,7 @@ static void *recv_thread(void *user)
                 else {
                     dbg(DBG_LCM, "LCM: bad magic\n");
                     lcm->udp_discarded_bad++;
+                    g_static_mutex_lock(&lcm->receive_lock);
                     continue;
                 }
 
