@@ -14,9 +14,9 @@ class TestBools(unittest.TestCase):
         msg.fixed_array = [False, True, False]
         msg.num_a = 3
         msg.num_b = 2
-        for a_index in xrange(msg.num_a):
+        for a_index in range(msg.num_a):
             inner_list = []
-            for b_index in xrange(msg.num_b):
+            for b_index in range(msg.num_b):
                 inner_list.append(bool(b_index % 2))
             msg.two_dim_array.append(inner_list)
 
@@ -38,8 +38,8 @@ class TestBools(unittest.TestCase):
         self.assertTrue(all([type(elem) == bool
             for elem in decoded.one_dim_array]))
 
-        for a_index in xrange(msg.num_a):
-            for b_index in xrange(msg.num_b):
+        for a_index in range(msg.num_a):
+            for b_index in range(msg.num_b):
                 self.assertEqual(msg.two_dim_array[a_index][b_index],
                                  decoded.two_dim_array[a_index][b_index])
             self.assertEqual(msg.one_dim_array[a_index],

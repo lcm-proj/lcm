@@ -1,3 +1,4 @@
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 
 #include <lcm/eventlog.h>
@@ -124,11 +125,11 @@ static PyObject *pylog_write_next_event(PyLogObject *self, PyObject *args)
 {
     int64_t utime = 0;
     char *channel = NULL;
-    int channellen = 0;
+    Py_ssize_t channellen = 0;
 
     // TODO use a buffer object instead of a string
     uint8_t *data = NULL;
-    int datalen = 0;
+    Py_ssize_t datalen = 0;
 
     if (!PyArg_ParseTuple(args, "Ls#s#", &utime, &channel, &channellen, &data, &datalen)) {
         return NULL;
