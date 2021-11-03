@@ -298,7 +298,11 @@ class EchoTester(object):
         for i in range(self.num_iters):
             datalen = random.randint(10, 10000)
             nums = [ random.randint(-128, 127) for j in range(datalen) ]
-            self.data = array.array('b', nums).tostring()
+            arr = array.array('b', nums)
+            if sys.version_info[0] == 3:
+                self.data = arr.tobytes()
+            else:
+                self.data = arr.tostring()
             self.lc.publish("TEST_ECHO", self.data)
 
             if not _lcm_handle_timeout(self.lc, 500) or self.response_count != i + 1:

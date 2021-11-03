@@ -209,10 +209,10 @@ static void _emit_decode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls, lc
         emit(indent, "%sbuf.read(%s%s)%s", accessor, fixed_len ? "" : "self.", len, suffix);
     } else if (!strcmp("boolean", tn)) {
         if (fixed_len) {
-            emit(indent, "%smap(bool, struct.unpack('>%s%c', buf.read(%d)))%s", accessor, len,
+            emit(indent, "%s[bool(x) for x in struct.unpack('>%s%c', buf.read(%d))]%s", accessor, len,
                  _struct_format(lm), atoi(len) * _primitive_type_size(tn), suffix);
         } else {
-            emit(indent, "%smap(bool, struct.unpack('>%%d%c' %% self.%s, buf.read(self.%s)))%s",
+            emit(indent, "%s[bool(x) for x in struct.unpack('>%%d%c' %% self.%s, buf.read(self.%s))]%s",
                  accessor, _struct_format(lm), len, len, suffix);
         }
     } else if (!strcmp("int8_t", tn) || !strcmp("int16_t", tn) || !strcmp("int32_t", tn) ||
@@ -560,10 +560,10 @@ static void emit_member_initializer(const lcmgen_t *lcm, FILE *f, lcm_member_t *
         return;
     }
     if (dim_num == lm->dimensions->len - 1 &&
-        // Arrays of bytes get treated as strings, so that they can be more
+        // Arrays of bytes get treated as byte strings, so that they can be more
         // efficiently packed and unpacked.
         !strcmp(lm->type->lctypename, "byte")) {
-        fprintf(f, "\"\"");
+        fprintf(f, "b\"\"");
         return;
     }
     lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, dim_num);

@@ -1,3 +1,4 @@
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>  // include first because it contains pre-processor defs
 #ifndef WIN32
 #include <arpa/inet.h>
@@ -120,7 +121,7 @@ static void pylcm_msg_handler(const lcm_recv_buf_t *rbuf, const char *channel, v
 static PyObject *pylcm_subscribe(PyLCMObject *lcm_obj, PyObject *args)
 {
     char *channel = NULL;
-    int chan_len = 0;
+    Py_ssize_t chan_len = 0;
     PyObject *handler = NULL;
     if (!PyArg_ParseTuple(args, "s#O", &channel, &chan_len, &handler))
         return NULL;
@@ -217,7 +218,7 @@ call to subscribe()\n\
 static PyObject *pylcm_publish(PyLCMObject *lcm_obj, PyObject *args)
 {
     char *data = NULL;
-    int datalen = 0;
+    Py_ssize_t datalen = 0;
     char *channel = NULL;
 
     if (!PyArg_ParseTuple(args, "ss#", &channel, &data, &datalen)) {
