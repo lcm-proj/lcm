@@ -10,7 +10,6 @@
 #include <unistd.h> /* _exit */
 #endif
 #include <inttypes.h>
-
 #include <sys/stat.h>
 #include <sys/types.h>
 
@@ -384,6 +383,12 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(2, " * Returns \"%s\"", ls->structname->shortname);
     emit(2, " */");
     emit(2, "inline static const char* getTypeName();");
+    emit(0, "");
+    emit(2, "/**");
+    emit(2, " * Finish up message by popualting correct array length for variable sized");
+    emit(2, " * arrays.");
+    emit(2, "*/");
+    emit(2, "inline void finish();");
 
     emit(0, "");
     emit(2, "// LCM support functions. Users should not call these");
@@ -391,6 +396,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(2, "inline int _getEncodedSizeNoHash() const;");
     emit(2, "inline int _decodeNoHash(const void *buf, int offset, int maxlen);");
     emit(2, "inline static uint64_t _computeHash(const __lcm_hash_ptr *p);");
+    emit(2, "inline void _finish();");
     emit(0, "};");
     emit(0, "");
 
@@ -460,6 +466,18 @@ static void emit_get_hash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
     emit(0, "{");
     emit(1,     "static int64_t hash = static_cast<int64_t>(_computeHash(NULL));");
     emit(1,     "return hash;");
+    emit(0, "}");
+    emit(0, "");
+    // clang-format off
+}
+
+static void emit_finish_method(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char *sn = ls->structname->shortname;
+    // clang-format off
+    emit(0, "void %s::finish()", sn);
+    emit(0, "{");
+    emit(1,     "_finish();");
     emit(0, "}");
     emit(0, "");
     // clang-format off
@@ -558,6 +576,97 @@ static void _encode_recursive(lcmgen_t *lcm, FILE *f, lcm_member_t *lm, int dept
     _encode_recursive(lcm, f, lm, depth + 1, extra_indent);
 
     emit(indent, "}");
+}
+
+static void set_arr_len(const char *dim_size, const char *membername, char *out)
+{
+    const char *prefix = dim_size_prefix(dim_size);
+    // If prefix is empty, this is a constant size array, no need to set anything.
+    if (0u == strlen(prefix)) {
+        strcpy(out, "");
+        return;
+    }
+
+    // Else it's a variable size array.
+    sprintf(out, "%s%s = this->%s.size();", prefix, dim_size, membername);
+    return;
+}
+
+static void _finish_recursive(lcmgen_t *lcm, FILE *f, lcm_member_t *lm, int depth, int extra_indent)
+{
+    int indent = extra_indent + 1 + depth;
+    // primitive array
+    if (depth + 1 == g_ptr_array_size(lm->dimensions) &&
+        lcm_is_primitive_type(lm->type->lctypename) && strcmp(lm->type->lctypename, "string")) {
+        return;
+    }
+    //
+    if (depth == g_ptr_array_size(lm->dimensions)) {
+        if (!strcmp(lm->type->lctypename, "string")) {
+            for (int i = 0; i < depth; i++)
+                emit(indent, "(void) a%d;", i);
+        } else {
+            emit_start(indent, "this->%s", lm->membername);
+            for (int i = 0; i < depth; i++)
+                emit_continue("[a%d]", i);
+            emit_end("._finish();");
+        }
+        return;
+    }
+
+    lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, depth);
+
+    emit(indent, "for (int a%d = 0; a%d < %s%s; a%d++) {", depth, depth, dim_size_prefix(dim->size),
+         dim->size, depth);
+
+    _finish_recursive(lcm, f, lm, depth + 1, extra_indent);
+
+    emit(indent, "}");
+}
+
+static void emit_finish_method_internal(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
+{
+    const char *sn = ls->structname->shortname;
+    if (0 == g_ptr_array_size(ls->members)) {
+        return;
+    }
+
+    // clang-format off
+    emit(0, "void %s::_finish()", sn);
+    emit(0, "{");
+    // clang-format on
+    for (unsigned int m = 0; m < g_ptr_array_size(ls->members); m++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, m);
+        int num_dims = g_ptr_array_size(lm->dimensions);
+
+        if (0 == num_dims) {
+            if (!lcm_is_primitive_type(lm->type->lctypename)) {
+                _finish_recursive(lcm, f, lm, 0, 0);
+            }
+        } else {
+            lcm_dimension_t *last_dim =
+                (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, num_dims - 1);
+            // Emit populate array length if applicable.
+            char populate[1024];
+            set_arr_len(last_dim->size, lm->membername, populate);
+            if (strlen(populate) > 0) {
+                emit(1, "%s", populate);
+            }
+            // for non-string primitive types with variable size final
+            // dimension, add an optimization to only call the primitive encode
+            // functions only if the final dimension size is non-zero.
+            if (lcm_is_primitive_type(lm->type->lctypename) &&
+                strcmp(lm->type->lctypename, "string") && !is_dim_size_fixed(last_dim->size)) {
+                _finish_recursive(lcm, f, lm, 0, 1);
+            } else {
+                _finish_recursive(lcm, f, lm, 0, 0);
+            }
+        }
+        emit(0, "");
+    }
+    emit(1, "return;");
+    emit(0, "}");
+    emit(0, "");
 }
 
 static void emit_encode_nohash(lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -824,6 +933,7 @@ int emit_cpp(lcmgen_t *lcmgen)
             emit_decode(lcmgen, f, lr);
             emit_encoded_size(lcmgen, f, lr);
             emit_get_hash(lcmgen, f, lr);
+            emit_finish_method(lcmgen, f, lr);
 
             // clang-format off
             emit(0, "const char* %s::getTypeName()", lr->structname->shortname);
@@ -837,6 +947,7 @@ int emit_cpp(lcmgen_t *lcmgen)
             emit_decode_nohash(lcmgen, f, lr);
             emit_encoded_size_nohash(lcmgen, f, lr);
             emit_compute_hash(lcmgen, f, lr);
+            emit_finish_method_internal(lcmgen, f, lr);
 
             emit_package_namespace_close(lcmgen, f, lr);
             emit(0, "#endif");
