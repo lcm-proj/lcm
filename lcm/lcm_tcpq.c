@@ -237,7 +237,10 @@ static lcm_provider_t *lcm_tcpq_create(lcm_t *parent, const char *network, const
     dbg(DBG_LCM, "Initializing LCM TCPQ provider context...\n");
     dbg(DBG_LCM, "Server address %s:%d\n", inet_ntoa(self->server_addr), ntohs(self->server_port));
 
-    _connect_to_server(self);
+    if (_connect_to_server(self) != 0) {
+        free(self);
+        self = NULL;
+    }
 
     return self;
 }
