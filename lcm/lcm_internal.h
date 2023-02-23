@@ -4,10 +4,9 @@
 #include <glib.h>
 #include "lcm.h"
 
-// GRegex was new in GLib 2.14.0
-#if GLIB_CHECK_VERSION(2, 14, 0)
+#if GLIB_CHECK_VERSION(2, 32, 0)
 #else
-#error "LCM requires a glib version >= 2.14.0"
+#error "LCM requires a glib version >= 2.32.0"
 #endif
 
 #ifdef WIN32
