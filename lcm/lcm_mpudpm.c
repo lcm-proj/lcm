@@ -768,7 +768,7 @@ static void *recv_thread(void *user)
                 }
 #endif
                 if (!got_utime)
-                    lcmb->recv_utime = lcm_timestamp_now();
+                    lcmb->recv_utime = g_get_real_time();
 
                 lcm2_header_short_t *hdr2 = (lcm2_header_short_t *) lcmb->buf;
                 uint32_t rcvd_magic = ntohl(hdr2->magic);
@@ -925,7 +925,7 @@ int lcm_mpudpm_unsubscribe(lcm_mpudpm_t *lcm, const char *channel)
 // This function assumes that the caller is holding the transmit_lock
 static void publish_channel_mapping_update(lcm_mpudpm_t *lcm)
 {
-    int64_t now = lcm_timestamp_now();
+    int64_t now = g_get_real_time();
     if (now - lcm->last_mapping_update_utime < 1e4) {
         // lets not publish updates too often.
         // if we actually have new information (ie a new channel),
@@ -933,7 +933,7 @@ static void publish_channel_mapping_update(lcm_mpudpm_t *lcm)
         // is bypassed
         return;
     }
-    lcm->last_mapping_update_utime = lcm_timestamp_now();
+    lcm->last_mapping_update_utime = g_get_real_time();
 
     channel_port_map_update_t *msg =
         (channel_port_map_update_t *) calloc(1, sizeof(channel_port_map_update_t));
@@ -1121,7 +1121,7 @@ static int publish_message_internal(lcm_mpudpm_t *lcm, const char *channel, cons
         // force an update to get sent
         lcm->last_mapping_update_utime = 0;
     }
-    if (lcm_timestamp_now() - lcm->last_mapping_update_utime >
+    if (g_get_real_time() - lcm->last_mapping_update_utime >
         lcm->channel_to_port_map_update_period) {
         // publish the mapping if no one has broadcast in a while
         publish_channel_mapping_update(lcm);
@@ -1333,42 +1333,41 @@ static int mpudpm_self_test(lcm_mpudpm_t *lcm)
     publish_message_internal(lcm, SELF_TEST_CHANNEL, (uint8_t *) msg, strlen(msg));
     g_mutex_unlock(&lcm->transmit_lock);
 
-    // wait one second for message to be received
-    GTimeVal now, endtime;
-    g_get_current_time(&now);
-    endtime.tv_sec = now.tv_sec + 10;
-    endtime.tv_usec = now.tv_usec;
+    // wait 10 seconds for message to be received
+    int64_t now, endtime;
+    now = g_get_real_time();
+    endtime = now + (10 * G_TIME_SPAN_SECOND);
 
     // periodically retransmit, just in case
-    GTimeVal retransmit_interval = {0, 100000};
-    GTimeVal next_retransmit;
-    lcm_timeval_add(&now, &retransmit_interval, &next_retransmit);
+    int64_t retransmit_interval = 100 * G_TIME_SPAN_MILLISECOND;
+    int64_t next_retransmit = now + retransmit_interval;
 
     int recvfd = lcm->notify_pipe[0];
 
     do {
-        GTimeVal selectto;
-        lcm_timeval_subtract(&next_retransmit, &now, &selectto);
+	struct timeval selectto;
+	selectto.tv_sec = (next_retransmit - now) / G_TIME_SPAN_SECOND;
+	selectto.tv_usec = (next_retransmit - now) - selectto.tv_sec;
 
         fd_set readfds;
         FD_ZERO(&readfds);
         FD_SET(recvfd, &readfds);
 
-        g_get_current_time(&now);
-        if (lcm_timeval_compare(&now, &next_retransmit) > 0) {
+	now = g_get_real_time();
+        if (now > next_retransmit) {
             g_mutex_lock(&lcm->transmit_lock);
             status = publish_message_internal(lcm, SELF_TEST_CHANNEL, (uint8_t *) msg, strlen(msg));
             g_mutex_unlock(&lcm->transmit_lock);
-            lcm_timeval_add(&now, &retransmit_interval, &next_retransmit);
+	    next_retransmit = now + retransmit_interval;
         }
 
-        status = select(recvfd + 1, &readfds, 0, 0, (struct timeval *) &selectto);
+        status = select(recvfd + 1, &readfds, 0, 0, &selectto);
         if (status > 0 && FD_ISSET(recvfd, &readfds)) {
             lcm_mpudpm_handle(lcm);
         }
-        g_get_current_time(&now);
+	now = g_get_real_time();
 
-    } while (!success && lcm_timeval_compare(&now, &endtime) < 0);
+    } while (!success && now < endtime);
 
     lcm_unsubscribe(lcm->lcm, h);
 

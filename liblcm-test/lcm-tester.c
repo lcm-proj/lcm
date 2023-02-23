@@ -14,13 +14,6 @@
 
 #include <lcm/lcm.h>
 
-static int64_t timestamp_now()
-{
-    GTimeVal tv;
-    g_get_current_time(&tv);
-    return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
-}
-
 static int64_t timestamp_seconds(int64_t v)
 {
     return v / 1000000;
@@ -132,12 +125,12 @@ int main(int argc, char **argv)
     printf("LCM: transmitting %d messages to self-receive...\n", ntotransmit * 2);
 
     int64_t send_interval = 100000;
-    int64_t time_to_send = timestamp_now() + send_interval;
+    int64_t time_to_send = g_get_real_time() + send_interval;
     struct timeval timeout;
     fd_set readfds;
 
     while (ntransmitted < ntotransmit) {
-        int64_t now = timestamp_now();
+        int64_t now = g_get_real_time();
         if (time_to_send < now) {
             time_to_send = now;
         }
@@ -157,12 +150,12 @@ int main(int argc, char **argv)
             lcm_handle(lcm);
         }
 
-        if (timestamp_now() >= time_to_send) {
+        if (g_get_real_time() >= time_to_send) {
             lcm_publish(lcm, "TEST", data, datalen);
             lcm_publish(lcm, "12345", data, datalen);
             ntransmitted++;
 
-            time_to_send = timestamp_now() + send_interval;
+            time_to_send = g_get_real_time() + send_interval;
         }
     }
 

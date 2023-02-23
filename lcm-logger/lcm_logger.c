@@ -45,13 +45,6 @@ static inline int64_t timestamp_seconds(int64_t v)
     return v / 1000000;
 }
 
-static inline int64_t timestamp_now(void)
-{
-    GTimeVal tv;
-    g_get_current_time(&tv);
-    return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
-}
-
 typedef struct logger logger_t;
 struct logger {
     lcm_eventlog_t *log;
@@ -189,8 +182,6 @@ static void *write_thread(void *user_data)
 {
     logger_t *logger = (logger_t *) user_data;
 
-    GTimeVal start_time;
-    g_get_current_time(&start_time);
     int num_splits = 0;
 
     while (1) {
@@ -234,7 +225,7 @@ static void *write_thread(void *user_data)
         if (0 != lcm_eventlog_write_event(logger->log, le)) {
             static int64_t last_spew_utime = 0;
             char *reason = strdup(strerror(errno));
-            int64_t now = timestamp_now();
+            int64_t now = g_get_real_time();
             if (now - last_spew_utime > 500000) {
                 fprintf(stderr, "lcm_eventlog_write_event: %s\n", reason);
                 last_spew_utime = now;
@@ -307,7 +298,7 @@ static void message_handler(const lcm_recv_buf_t *rbuf, const char *channel, voi
         g_mutex_unlock(&logger->mutex);
 
         // maybe print an informational message to stdout
-        int64_t now = timestamp_now();
+        int64_t now = g_get_real_time();
         logger->dropped_packets_count++;
         int rc = logger->dropped_packets_count - logger->last_drop_report_count;
 
@@ -535,7 +526,7 @@ int main(int argc, char *argv[])
         fprintf(stderr, "ERROR.  --force_overwrite and --append can't both be used\n");
     }
 
-    logger.time0 = timestamp_now();
+    logger.time0 = g_get_real_time();
     logger.max_write_queue_size = (int64_t)(max_write_queue_size_mb * (1 << 20));
 
     if (0 != open_logfile(&logger))

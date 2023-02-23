@@ -73,13 +73,6 @@ static void lcm_logprov_destroy(lcm_logprov_t *lr)
     free(lr);
 }
 
-static int64_t timestamp_now(void)
-{
-    GTimeVal tv;
-    g_get_current_time(&tv);
-    return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
-}
-
 static void *timer_thread(void *user)
 {
     lcm_logprov_t *lr = (lcm_logprov_t *) user;
@@ -90,7 +83,7 @@ static void *timer_thread(void *user)
         if (abstime < 0)
             return NULL;
 
-        int64_t now = timestamp_now();
+        int64_t now = g_get_real_time();
 
         if (abstime > now) {
             int64_t sleep_utime = abstime - now;
@@ -266,7 +259,7 @@ static int lcm_logprov_handle(lcm_logprov_t *lr)
         return -1;
     }
 
-    int64_t now = timestamp_now();
+    int64_t now = g_get_real_time();
     /* Initialize the wall clock if this is the first time through */
     if (lr->next_clock_time < 0)
         lr->next_clock_time = now;
@@ -326,9 +319,7 @@ static int lcm_logprov_publish(lcm_logprov_t *lcm, const char *channel, const vo
     lcm_eventlog_event_t *le = (lcm_eventlog_event_t *) malloc(mem_sz);
     memset(le, 0, mem_sz);
 
-    GTimeVal tv;
-    g_get_current_time(&tv);
-    le->timestamp = (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
+    le->timestamp = (int64_t) g_get_real_time();
     ;
     le->channellen = channellen;
     le->datalen = datalen;

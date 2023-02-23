@@ -508,7 +508,7 @@ static lcm_buf_t *udp_read_packet(lcm_udpm_t *lcm)
         }
 #endif
         if (!got_utime)
-            lcmb->recv_utime = lcm_timestamp_now();
+            lcmb->recv_utime = g_get_real_time();
 
         lcm2_header_short_t *hdr2 = (lcm2_header_short_t *) lcmb->buf;
         uint32_t rcvd_magic = ntohl(hdr2->magic);
@@ -798,40 +798,39 @@ static int udpm_self_test(lcm_udpm_t *lcm)
     char *msg = "lcm self test";
     lcm_udpm_publish(lcm, SELF_TEST_CHANNEL, (uint8_t *) msg, strlen(msg));
 
-    // wait one second for message to be received
-    GTimeVal now, endtime;
-    g_get_current_time(&now);
-    endtime.tv_sec = now.tv_sec + 10;
-    endtime.tv_usec = now.tv_usec;
+    // wait 10 seconds for message to be received
+    int64_t now, endtime;
+    now = g_get_real_time();
+    endtime = now + (10 * G_TIME_SPAN_SECOND);
 
     // periodically retransmit, just in case
-    GTimeVal retransmit_interval = {0, 100000};
-    GTimeVal next_retransmit;
-    lcm_timeval_add(&now, &retransmit_interval, &next_retransmit);
+    int64_t retransmit_interval = 100 * G_TIME_SPAN_MILLISECOND;
+    int64_t next_retransmit = now + retransmit_interval;
 
     int recvfd = lcm->notify_pipe[0];
 
     do {
-        GTimeVal selectto;
-        lcm_timeval_subtract(&next_retransmit, &now, &selectto);
+	struct timeval selectto;
+	selectto.tv_sec = (next_retransmit - now) / G_TIME_SPAN_SECOND;
+	selectto.tv_usec = (next_retransmit - now) - selectto.tv_sec;
 
         fd_set readfds;
         FD_ZERO(&readfds);
         FD_SET(recvfd, &readfds);
 
-        g_get_current_time(&now);
-        if (lcm_timeval_compare(&now, &next_retransmit) > 0) {
+	now = g_get_real_time();
+        if (now > next_retransmit) {
             status = lcm_udpm_publish(lcm, SELF_TEST_CHANNEL, (uint8_t *) msg, strlen(msg));
-            lcm_timeval_add(&now, &retransmit_interval, &next_retransmit);
+	    next_retransmit = now + retransmit_interval;
         }
 
-        status = select(recvfd + 1, &readfds, 0, 0, (struct timeval *) &selectto);
+        status = select(recvfd + 1, &readfds, 0, 0, &selectto);
         if (status > 0 && FD_ISSET(recvfd, &readfds)) {
             lcm_udpm_handle(lcm);
         }
-        g_get_current_time(&now);
+	now = g_get_real_time();
 
-    } while (!success && lcm_timeval_compare(&now, &endtime) < 0);
+    } while (!success && now < endtime);
 
     lcm_unsubscribe(lcm->lcm, h);
 

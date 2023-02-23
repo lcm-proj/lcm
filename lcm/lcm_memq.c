@@ -65,13 +65,6 @@ static void lcm_memq_destroy(lcm_memq_t *self)
     free(self);
 }
 
-static int64_t timestamp_now(void)
-{
-    GTimeVal tv;
-    g_get_current_time(&tv);
-    return (int64_t) tv.tv_sec * 1000000 + tv.tv_usec;
-}
-
 static lcm_provider_t *lcm_memq_create(lcm_t *parent, const char *target, const GHashTable *args)
 {
     lcm_memq_t *self = (lcm_memq_t *) calloc(1, sizeof(lcm_memq_t));
@@ -131,7 +124,7 @@ static int lcm_memq_publish(lcm_memq_t *self, const char *channel, const void *d
         return 0;
     }
     dbg(DBG_LCM, "Publishing to [%s] message size [%d]\n", channel, datalen);
-    memq_msg_t *msg = memq_msg_new(self->lcm, channel, data, datalen, timestamp_now());
+    memq_msg_t *msg = memq_msg_new(self->lcm, channel, data, datalen, g_get_real_time());
 
     g_mutex_lock(&self->mutex);
     int was_empty = g_queue_is_empty(self->queue);
