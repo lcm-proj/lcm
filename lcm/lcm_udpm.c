@@ -114,7 +114,7 @@ struct _lcm_provider_t {
 
 static int _setup_recv_parts(lcm_udpm_t *lcm);
 
-static GStaticPrivate CREATE_READ_THREAD_PKEY = G_STATIC_PRIVATE_INIT;
+static GPrivate CREATE_READ_THREAD_PKEY;
 
 static void _destroy_recv_parts(lcm_udpm_t *lcm)
 {
@@ -851,7 +851,7 @@ static int _setup_recv_parts(lcm_udpm_t *lcm)
     if (lcm->creating_read_thread) {
         // check if this thread is the one creating the receive thread.
         // If so, just return.
-        if (g_static_private_get(&CREATE_READ_THREAD_PKEY)) {
+        if (g_private_get(&CREATE_READ_THREAD_PKEY)) {
             g_rec_mutex_unlock(&lcm->mutex);
             return 0;
         }
@@ -884,7 +884,7 @@ static int _setup_recv_parts(lcm_udpm_t *lcm)
     lcm->p_create_read_thread_mutex = &lcm->create_read_thread_mutex;
     g_cond_init(&lcm->create_read_thread_cond);
     // mark this thread as the one creating the read thread
-    g_static_private_set(&CREATE_READ_THREAD_PKEY, GINT_TO_POINTER(1), NULL);
+    g_private_set(&CREATE_READ_THREAD_PKEY, GINT_TO_POINTER(1));
 
     dbg(DBG_LCM, "allocating resources for receiving messages\n");
 
