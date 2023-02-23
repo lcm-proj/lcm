@@ -106,7 +106,7 @@ static void pylcm_msg_handler(const lcm_recv_buf_t *rbuf, const char *channel, v
                                       rbuf->data, rbuf->data_size);
 #endif
 
-    PyObject *result = PyEval_CallObject(subs_obj->handler, arglist);
+    PyObject *result = PyObject_CallObject(subs_obj->handler, arglist);
     Py_DECREF(arglist);
 
     if (!result) {
