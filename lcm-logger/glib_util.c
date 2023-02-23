@@ -165,18 +165,18 @@ typedef struct {
 } glib_attached_lcm_t;
 
 static GHashTable *lcm_glib_sources = NULL;
-static GStaticMutex lcm_glib_sources_mutex = G_STATIC_MUTEX_INIT;
+static GMutex lcm_glib_sources_mutex;
 
 int glib_mainloop_attach_lcm(lcm_t *lcm)
 {
-    g_static_mutex_lock(&lcm_glib_sources_mutex);
+    g_mutex_lock(&lcm_glib_sources_mutex);
 
     if (!lcm_glib_sources) {
         lcm_glib_sources = g_hash_table_new(g_direct_hash, g_direct_equal);
     }
 
     if (g_hash_table_lookup(lcm_glib_sources, lcm)) {
-        g_static_mutex_unlock(&lcm_glib_sources_mutex);
+        g_mutex_unlock(&lcm_glib_sources_mutex);
         return -1;
     }
 
@@ -188,22 +188,22 @@ int glib_mainloop_attach_lcm(lcm_t *lcm)
 
     g_hash_table_insert(lcm_glib_sources, lcm, galcm);
 
-    g_static_mutex_unlock(&lcm_glib_sources_mutex);
+    g_mutex_unlock(&lcm_glib_sources_mutex);
     return 0;
 }
 
 int glib_mainloop_detach_lcm(lcm_t *lcm)
 {
-    g_static_mutex_lock(&lcm_glib_sources_mutex);
+    g_mutex_lock(&lcm_glib_sources_mutex);
     if (!lcm_glib_sources) {
-        g_static_mutex_unlock(&lcm_glib_sources_mutex);
+        g_mutex_unlock(&lcm_glib_sources_mutex);
         return -1;
     }
 
     glib_attached_lcm_t *galcm = (glib_attached_lcm_t *) g_hash_table_lookup(lcm_glib_sources, lcm);
 
     if (!galcm) {
-        g_static_mutex_unlock(&lcm_glib_sources_mutex);
+        g_mutex_unlock(&lcm_glib_sources_mutex);
         return -1;
     }
 
@@ -218,7 +218,7 @@ int glib_mainloop_detach_lcm(lcm_t *lcm)
         lcm_glib_sources = NULL;
     }
 
-    g_static_mutex_unlock(&lcm_glib_sources_mutex);
+    g_mutex_unlock(&lcm_glib_sources_mutex);
     return 0;
 }
 

@@ -223,7 +223,7 @@ static lcm_provider_t *lcm_logprov_create(lcm_t *parent, const char *target, con
         }
 
         /* Start the reader thread */
-        lr->timer_thread = g_thread_create(timer_thread, lr, TRUE, NULL);
+        lr->timer_thread = g_thread_new(NULL, timer_thread, lr);
         if (!lr->timer_thread) {
             fprintf(stderr, "Error: LCM failed to start timer thread\n");
             lcm_logprov_destroy(lr);

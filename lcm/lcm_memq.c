@@ -16,7 +16,7 @@ typedef struct _lcm_provider_t lcm_memq_t;
 struct _lcm_provider_t {
     lcm_t *lcm;
     GQueue *queue;
-    GMutex *mutex;
+    GMutex mutex;
     int notify_pipe[2];
 };
 
@@ -60,7 +60,7 @@ static void lcm_memq_destroy(lcm_memq_t *self)
         memq_msg_destroy(msg);
     }
     g_queue_free(self->queue);
-    g_mutex_free(self->mutex);
+    g_mutex_clear(&self->mutex);
     memset(self, 0, sizeof(lcm_memq_t));
     free(self);
 }
@@ -77,7 +77,7 @@ static lcm_provider_t *lcm_memq_create(lcm_t *parent, const char *target, const 
     lcm_memq_t *self = (lcm_memq_t *) calloc(1, sizeof(lcm_memq_t));
     self->lcm = parent;
     self->queue = g_queue_new();
-    self->mutex = g_mutex_new();
+    g_mutex_init(&self->mutex);
 
     dbg(DBG_LCM, "Initializing LCM memq provider context...\n");
 
@@ -103,14 +103,14 @@ static int lcm_memq_handle(lcm_memq_t *self)
         return -1;
     }
 
-    g_mutex_lock(self->mutex);
+    g_mutex_lock(&self->mutex);
     memq_msg_t *msg = (memq_msg_t *) g_queue_pop_head(self->queue);
     if (!g_queue_is_empty(self->queue)) {
         if (lcm_internal_pipe_write(self->notify_pipe[1], "+", 1) < 0) {
             perror(__FILE__ " - write to notify pipe (lcm_memq_handle)");
         }
     }
-    g_mutex_unlock(self->mutex);
+    g_mutex_unlock(&self->mutex);
 
     dbg(DBG_LCM, "Dispatching message on channel [%s], size [%d]\n", msg->channel,
         msg->rbuf.data_size);
@@ -133,7 +133,7 @@ static int lcm_memq_publish(lcm_memq_t *self, const char *channel, const void *d
     dbg(DBG_LCM, "Publishing to [%s] message size [%d]\n", channel, datalen);
     memq_msg_t *msg = memq_msg_new(self->lcm, channel, data, datalen, timestamp_now());
 
-    g_mutex_lock(self->mutex);
+    g_mutex_lock(&self->mutex);
     int was_empty = g_queue_is_empty(self->queue);
     g_queue_push_tail(self->queue, msg);
     if (was_empty) {
@@ -141,7 +141,7 @@ static int lcm_memq_publish(lcm_memq_t *self, const char *channel, const void *d
             perror(__FILE__ " - write to notify pipe (lcm_memq_publish)");
         }
     }
-    g_mutex_unlock(self->mutex);
+    g_mutex_unlock(&self->mutex);
     return 0;
 }
 
