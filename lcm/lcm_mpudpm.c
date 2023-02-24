@@ -106,7 +106,7 @@ struct _lcm_provider_t {
     /***********************************************************
      *  begin variables guarded by receive_lock
      *  Access to the following members must be guarded by the receive_lock */
-    GStaticMutex receive_lock;
+    GMutex receive_lock;
 
     /* list of mpudpm_socket_t structs */
     GSList *recv_sockets;
@@ -138,7 +138,7 @@ struct _lcm_provider_t {
      *  Access to the following members must be guarded by the transmit_lock
      *  NOTE: If you need to hold both receive_lock and transmit_lock, then make sure
      *  that you lock receive_lock before transmit_lock to avoid deadlock*/
-    GStaticMutex transmit_lock;
+    GMutex transmit_lock;
 
     /* All traffic gets sent from a single socket */
     SOCKET send_fd;
@@ -168,8 +168,9 @@ struct _lcm_provider_t {
     /* synchronization variables used only while allocating receive resources
      */
     int8_t creating_read_thread;
-    GCond *create_read_thread_cond;
-    GMutex *create_read_thread_mutex;
+    GCond create_read_thread_cond;
+    GMutex create_read_thread_mutex;
+    GMutex *p_create_read_thread_mutex;
 
     /* other variables */
     lcm_frag_buf_store *frag_bufs;
@@ -199,7 +200,7 @@ static void update_subscription_ports(lcm_mpudpm_t *lcm);
 static void add_channel_to_subscriber(lcm_mpudpm_t *lcm, mpudpm_subscriber_t *sub,
                                       const char *channel, uint16_t port);
 
-static GStaticPrivate CREATE_READ_THREAD_PKEY = G_STATIC_PRIVATE_INIT;
+static GPrivate CREATE_READ_THREAD_PKEY;
 
 static void mpudpm_subscriber_t_destroy(mpudpm_subscriber_t *sub)
 {
@@ -285,11 +286,12 @@ void lcm_mpudpm_destroy(lcm_mpudpm_t *lcm)
     lcm_internal_pipe_close(lcm->notify_pipe[0]);
     lcm_internal_pipe_close(lcm->notify_pipe[1]);
 
-    g_static_mutex_free(&lcm->receive_lock);
-    g_static_mutex_free(&lcm->transmit_lock);
-    if (lcm->create_read_thread_mutex) {
-        g_mutex_free(lcm->create_read_thread_mutex);
-        g_cond_free(lcm->create_read_thread_cond);
+    g_mutex_clear(&lcm->receive_lock);
+    g_mutex_clear(&lcm->transmit_lock);
+    if (lcm->p_create_read_thread_mutex) {
+        g_mutex_clear(&lcm->create_read_thread_mutex);
+	lcm->p_create_read_thread_mutex = NULL;
+        g_cond_clear(&lcm->create_read_thread_cond);
     }
 
     if (lcm->regex_finder_re != NULL) {
@@ -480,9 +482,9 @@ static int recv_message_fragment(lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz
         // yes, transfer the message into the lcm_buf_t
 
         // deallocate the ringbuffer-allocated buffer
-        g_static_mutex_lock(&lcm->receive_lock);
+        g_mutex_lock(&lcm->receive_lock);
         lcm_buf_free_data(lcmb, lcm->ringbuf);
-        g_static_mutex_unlock(&lcm->receive_lock);
+        g_mutex_unlock(&lcm->receive_lock);
 
         // transfer ownership of the message's payload buffer
         lcmb->buf = fbuf->data;
@@ -543,9 +545,9 @@ static void dispatch_complete_message(lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, int ac
 {
     int handled_internal_message = 0;
     if (strcmp(lcmb->channel_name, CHANNEL_TO_PORT_MAP_REQUEST_CHANNEL) == 0) {
-        g_static_mutex_lock(&lcm->transmit_lock);
+        g_mutex_lock(&lcm->transmit_lock);
         publish_channel_mapping_update(lcm);
-        g_static_mutex_unlock(&lcm->transmit_lock);
+        g_mutex_unlock(&lcm->transmit_lock);
         // discard the received message
         handled_internal_message = 1;
     } else if (strcmp(lcmb->channel_name, CHANNEL_TO_PORT_MAP_UPDATE_CHANNEL) == 0) {
@@ -564,13 +566,13 @@ static void dispatch_complete_message(lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, int ac
 
     if (handled_internal_message) {
         // one of the handlers above took it, so discard lcmb
-        g_static_mutex_lock(&lcm->receive_lock);
+        g_mutex_lock(&lcm->receive_lock);
         lcm_buf_free_data(lcmb, lcm->ringbuf);
         lcm_buf_enqueue(lcm->inbufs_empty, lcmb);
-        g_static_mutex_unlock(&lcm->receive_lock);
+        g_mutex_unlock(&lcm->receive_lock);
     } else {
         // enqueue the lcmb for handling by the user
-        g_static_mutex_lock(&lcm->receive_lock);
+        g_mutex_lock(&lcm->receive_lock);
 
         // if the newly received packet is a short packet, then resize the space
         // allocated in the ringbuffer to exactly match the amount of space
@@ -590,7 +592,7 @@ static void dispatch_complete_message(lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, int ac
         }
         /* Queue the packet for future retrieval by lcm_handle (). */
         lcm_buf_enqueue(lcm->inbufs_filled, lcmb);
-        g_static_mutex_unlock(&lcm->receive_lock);
+        g_mutex_unlock(&lcm->receive_lock);
     }
 }
 
@@ -611,7 +613,7 @@ static void *recv_thread(void *user)
     // loop until we get an exit message on the thread_msg_pipe
     while (1) {
         // lock subscription lists so things don't change on us
-        g_static_mutex_lock(&lcm->receive_lock);
+        g_mutex_lock(&lcm->receive_lock);
 
         // setup file descriptors for select
         fd_set fds;
@@ -631,7 +633,7 @@ static void *recv_thread(void *user)
         lcm->recv_sockets_changed = 0;
 
         // unlock receive_lock while we wait for a message
-        g_static_mutex_unlock(&lcm->receive_lock);
+        g_mutex_unlock(&lcm->receive_lock);
 
         if (select(maxfd + 1, &fds, NULL, NULL, NULL) < 0) {
             perror("udp_read_packet -- select() failed:");
@@ -665,11 +667,11 @@ static void *recv_thread(void *user)
                 break;
             }
         }
-        g_static_mutex_lock(&lcm->receive_lock);
+        g_mutex_lock(&lcm->receive_lock);
         if (lcm->recv_sockets_changed) {
             // the set of receive sockets has changed, so we need to start
             // over
-            g_static_mutex_unlock(&lcm->receive_lock);
+            g_mutex_unlock(&lcm->receive_lock);
             continue;
         }
 
@@ -697,7 +699,7 @@ static void *recv_thread(void *user)
                 }
 
                 // unlock while we actually receive the incoming message
-                g_static_mutex_unlock(&lcm->receive_lock);
+                g_mutex_unlock(&lcm->receive_lock);
                 struct iovec vec;
                 vec.iov_base = lcmb->buf;
                 vec.iov_len = 65535;
@@ -733,7 +735,7 @@ static void *recv_thread(void *user)
                 if (sz < sizeof(lcm2_header_short_t)) {
                     // packet too short to be LCM
                     lcm->udp_discarded_bad++;
-                    g_static_mutex_lock(&lcm->receive_lock);
+                    g_mutex_lock(&lcm->receive_lock);
                     continue;
                 }
 
@@ -766,7 +768,7 @@ static void *recv_thread(void *user)
                 }
 #endif
                 if (!got_utime)
-                    lcmb->recv_utime = lcm_timestamp_now();
+                    lcmb->recv_utime = g_get_real_time();
 
                 lcm2_header_short_t *hdr2 = (lcm2_header_short_t *) lcmb->buf;
                 uint32_t rcvd_magic = ntohl(hdr2->magic);
@@ -778,7 +780,7 @@ static void *recv_thread(void *user)
                 else {
                     dbg(DBG_LCM, "LCM: bad magic\n");
                     lcm->udp_discarded_bad++;
-                    g_static_mutex_lock(&lcm->receive_lock);
+                    g_mutex_lock(&lcm->receive_lock);
                     continue;
                 }
 
@@ -788,20 +790,20 @@ static void *recv_thread(void *user)
                     lcmb = NULL;
                 }
                 // lock to go back around the while loop
-                g_static_mutex_lock(&lcm->receive_lock);
+                g_mutex_lock(&lcm->receive_lock);
             }
 
             // we're done with this file descriptor
             // lock the receive lock to check whether the receive sockets have
             // changed and go back around the loop
-            g_static_mutex_lock(&lcm->receive_lock);
+            g_mutex_lock(&lcm->receive_lock);
             if (lcm->recv_sockets_changed) {
                 // the set of receive sockets may have changed, so we need to
                 // break and wait again on the appropriate set of sockets
                 break;
             }
         }
-        g_static_mutex_unlock(&lcm->receive_lock);
+        g_mutex_unlock(&lcm->receive_lock);
     }
 
     dbg(DBG_LCM, "read thread exiting\n");
@@ -844,14 +846,14 @@ int lcm_mpudpm_subscribe(lcm_mpudpm_t *lcm, const char *channel)
         // Request an update to the channel to port map
         dbg(DBG_LCM, "Requesting a channel to port map update\n");
         char *msg = "r";
-        g_static_mutex_lock(&lcm->transmit_lock);
+        g_mutex_lock(&lcm->transmit_lock);
         publish_message_internal(lcm, CHANNEL_TO_PORT_MAP_REQUEST_CHANNEL, (uint8_t *) msg,
                                  strlen(msg));
-        g_static_mutex_unlock(&lcm->transmit_lock);
+        g_mutex_unlock(&lcm->transmit_lock);
     } else {
         dbg(DBG_LCM, "Subscribing to single channel: %s\n", channel);
         // add it to our channel map
-        g_static_mutex_lock(&lcm->transmit_lock);
+        g_mutex_lock(&lcm->transmit_lock);
 
         void *lookup_value = g_hash_table_lookup(lcm->channel_to_port_map, channel);
         uint16_t port;
@@ -865,17 +867,17 @@ int lcm_mpudpm_subscribe(lcm_mpudpm_t *lcm, const char *channel)
         } else {
             port = GPOINTER_TO_UINT(lookup_value);
         }
-        g_static_mutex_unlock(&lcm->transmit_lock);
+        g_mutex_unlock(&lcm->transmit_lock);
 
-        g_static_mutex_lock(&lcm->receive_lock);
+        g_mutex_lock(&lcm->receive_lock);
         add_channel_to_subscriber(lcm, sub, sub->channel_string, port);
-        g_static_mutex_unlock(&lcm->receive_lock);
+        g_mutex_unlock(&lcm->receive_lock);
     }
 
     // add sub to the list of active subscribers
-    g_static_mutex_lock(&lcm->receive_lock);
+    g_mutex_lock(&lcm->receive_lock);
     lcm->subscribers = g_slist_prepend(lcm->subscribers, sub);
-    g_static_mutex_unlock(&lcm->receive_lock);
+    g_mutex_unlock(&lcm->receive_lock);
 
     // Do an update to set the ports used by this subscription
     // this is what will actually open the sockets if needed...
@@ -885,7 +887,7 @@ int lcm_mpudpm_subscribe(lcm_mpudpm_t *lcm, const char *channel)
 
 int lcm_mpudpm_unsubscribe(lcm_mpudpm_t *lcm, const char *channel)
 {
-    g_static_mutex_lock(&lcm->receive_lock);
+    g_mutex_lock(&lcm->receive_lock);
     GSList *chan_it = NULL;
     mpudpm_subscriber_t *chan_sub = NULL;
     for (GSList *it = lcm->subscribers; it != NULL; it = it->next) {
@@ -898,7 +900,7 @@ int lcm_mpudpm_unsubscribe(lcm_mpudpm_t *lcm, const char *channel)
     }
     if (chan_it == NULL) {
         dbg(DBG_LCM, "ERROR could not unsubscribe from %s, no subscriber found!\n", channel);
-        g_static_mutex_unlock(&lcm->receive_lock);
+        g_mutex_unlock(&lcm->receive_lock);
         return -1;
     }
 
@@ -916,14 +918,14 @@ int lcm_mpudpm_unsubscribe(lcm_mpudpm_t *lcm, const char *channel)
     }
     lcm->subscribers = g_slist_delete_link(lcm->subscribers, chan_it);
     mpudpm_subscriber_t_destroy(chan_sub);
-    g_static_mutex_unlock(&lcm->receive_lock);
+    g_mutex_unlock(&lcm->receive_lock);
     return 0;
 }
 
 // This function assumes that the caller is holding the transmit_lock
 static void publish_channel_mapping_update(lcm_mpudpm_t *lcm)
 {
-    int64_t now = lcm_timestamp_now();
+    int64_t now = g_get_real_time();
     if (now - lcm->last_mapping_update_utime < 1e4) {
         // lets not publish updates too often.
         // if we actually have new information (ie a new channel),
@@ -931,7 +933,7 @@ static void publish_channel_mapping_update(lcm_mpudpm_t *lcm)
         // is bypassed
         return;
     }
-    lcm->last_mapping_update_utime = lcm_timestamp_now();
+    lcm->last_mapping_update_utime = g_get_real_time();
 
     channel_port_map_update_t *msg =
         (channel_port_map_update_t *) calloc(1, sizeof(channel_port_map_update_t));
@@ -981,7 +983,7 @@ static void channel_port_mapping_update_handler(lcm_mpudpm_t *lcm,
                 msg->num_ports, lcm->params.num_mc_ports);
         return;
     }
-    g_static_mutex_lock(&lcm->transmit_lock);
+    g_mutex_lock(&lcm->transmit_lock);
     int8_t updated_channel_to_port_map = FALSE;
     for (int i = 0; i < msg->num_channels; i++) {
         void *lookup_value = g_hash_table_lookup(lcm->channel_to_port_map, msg->mapping[i].channel);
@@ -1005,7 +1007,7 @@ static void channel_port_mapping_update_handler(lcm_mpudpm_t *lcm,
         dbg(DBG_LCM, "Channel to port map is up to date\n");
         lcm->last_mapping_update_utime = recv_utime;
     }
-    g_static_mutex_unlock(&lcm->transmit_lock);
+    g_mutex_unlock(&lcm->transmit_lock);
 
     if (updated_channel_to_port_map) {
         update_subscription_ports(lcm);
@@ -1044,8 +1046,8 @@ static void add_channel_to_subscriber(lcm_mpudpm_t *lcm, mpudpm_subscriber_t *su
 static void update_subscription_ports(lcm_mpudpm_t *lcm)
 {
     // grab both locks in the proper order
-    g_static_mutex_lock(&lcm->receive_lock);
-    g_static_mutex_lock(&lcm->transmit_lock);
+    g_mutex_lock(&lcm->receive_lock);
+    g_mutex_lock(&lcm->transmit_lock);
 
     for (GSList *it = lcm->subscribers; it != NULL; it = it->next) {
         mpudpm_subscriber_t *sub = (mpudpm_subscriber_t *) it->data;
@@ -1076,8 +1078,8 @@ static void update_subscription_ports(lcm_mpudpm_t *lcm)
         }
     }
     // Release both locks in the proper order
-    g_static_mutex_unlock(&lcm->transmit_lock);
-    g_static_mutex_unlock(&lcm->receive_lock);
+    g_mutex_unlock(&lcm->transmit_lock);
+    g_mutex_unlock(&lcm->receive_lock);
 }
 
 // This function assumes that the caller is holding the transmit_lock
@@ -1097,9 +1099,9 @@ static int publish_message_internal(lcm_mpudpm_t *lcm, const char *channel, cons
     // Set up the receive thread to manage port mapping requests if needed
     if (!lcm->recv_thread_created_tx) {
         // release transmit lock while we setup the receive thread
-        g_static_mutex_unlock(&lcm->transmit_lock);
+        g_mutex_unlock(&lcm->transmit_lock);
         int status = setup_recv_parts(lcm);
-        g_static_mutex_lock(&lcm->transmit_lock);
+        g_mutex_lock(&lcm->transmit_lock);
         if (status < 0) {
             return -1;
         }
@@ -1119,7 +1121,7 @@ static int publish_message_internal(lcm_mpudpm_t *lcm, const char *channel, cons
         // force an update to get sent
         lcm->last_mapping_update_utime = 0;
     }
-    if (lcm_timestamp_now() - lcm->last_mapping_update_utime >
+    if (g_get_real_time() - lcm->last_mapping_update_utime >
         lcm->channel_to_port_map_update_period) {
         // publish the mapping if no one has broadcast in a while
         publish_channel_mapping_update(lcm);
@@ -1247,9 +1249,9 @@ int lcm_mpudpm_publish(lcm_mpudpm_t *lcm, const char *channel, const void *data,
     }
 
     // acquire lock so that we can call the internal publish function
-    g_static_mutex_lock(&lcm->transmit_lock);
+    g_mutex_lock(&lcm->transmit_lock);
     int status = publish_message_internal(lcm, channel, data, datalen);
-    g_static_mutex_unlock(&lcm->transmit_lock);
+    g_mutex_unlock(&lcm->transmit_lock);
     return status;
 }
 
@@ -1273,12 +1275,12 @@ int lcm_mpudpm_handle(lcm_mpudpm_t *lcm)
     }
 
     /* Dequeue the next received packet */
-    g_static_mutex_lock(&lcm->receive_lock);
+    g_mutex_lock(&lcm->receive_lock);
     lcm_buf_t *lcmb = lcm_buf_dequeue(lcm->inbufs_filled);
 
     if (!lcmb) {
         fprintf(stderr, "Error: no packet available despite getting notification.\n");
-        g_static_mutex_unlock(&lcm->receive_lock);
+        g_mutex_unlock(&lcm->receive_lock);
         return -1;
     }
 
@@ -1287,7 +1289,7 @@ int lcm_mpudpm_handle(lcm_mpudpm_t *lcm)
     if (!lcm_buf_queue_is_empty(lcm->inbufs_filled))
         if (lcm_internal_pipe_write(lcm->notify_pipe[1], "+", 1) < 0)
             perror("write to notify");
-    g_static_mutex_unlock(&lcm->receive_lock);
+    g_mutex_unlock(&lcm->receive_lock);
 
     lcm_recv_buf_t rbuf;
     rbuf.data = (uint8_t *) lcmb->buf + lcmb->data_offset;
@@ -1304,10 +1306,10 @@ int lcm_mpudpm_handle(lcm_mpudpm_t *lcm)
         lcm_dispatch_handlers(lcm->lcm, &rbuf, lcmb->channel_name);
     }
 
-    g_static_mutex_lock(&lcm->receive_lock);
+    g_mutex_lock(&lcm->receive_lock);
     lcm_buf_free_data(lcmb, lcm->ringbuf);
     lcm_buf_enqueue(lcm->inbufs_empty, lcmb);
-    g_static_mutex_unlock(&lcm->receive_lock);
+    g_mutex_unlock(&lcm->receive_lock);
 
     return 0;
 }
@@ -1327,46 +1329,45 @@ static int mpudpm_self_test(lcm_mpudpm_t *lcm)
 
     // transmit a message
     char *msg = "lcm self test";
-    g_static_mutex_lock(&lcm->transmit_lock);
+    g_mutex_lock(&lcm->transmit_lock);
     publish_message_internal(lcm, SELF_TEST_CHANNEL, (uint8_t *) msg, strlen(msg));
-    g_static_mutex_unlock(&lcm->transmit_lock);
+    g_mutex_unlock(&lcm->transmit_lock);
 
-    // wait one second for message to be received
-    GTimeVal now, endtime;
-    g_get_current_time(&now);
-    endtime.tv_sec = now.tv_sec + 10;
-    endtime.tv_usec = now.tv_usec;
+    // wait 10 seconds for message to be received
+    int64_t now, endtime;
+    now = g_get_real_time();
+    endtime = now + (10 * G_TIME_SPAN_SECOND);
 
     // periodically retransmit, just in case
-    GTimeVal retransmit_interval = {0, 100000};
-    GTimeVal next_retransmit;
-    lcm_timeval_add(&now, &retransmit_interval, &next_retransmit);
+    int64_t retransmit_interval = 100 * G_TIME_SPAN_MILLISECOND;
+    int64_t next_retransmit = now + retransmit_interval;
 
     int recvfd = lcm->notify_pipe[0];
 
     do {
-        GTimeVal selectto;
-        lcm_timeval_subtract(&next_retransmit, &now, &selectto);
+	struct timeval selectto;
+	selectto.tv_sec = (next_retransmit - now) / G_TIME_SPAN_SECOND;
+	selectto.tv_usec = (next_retransmit - now) - selectto.tv_sec;
 
         fd_set readfds;
         FD_ZERO(&readfds);
         FD_SET(recvfd, &readfds);
 
-        g_get_current_time(&now);
-        if (lcm_timeval_compare(&now, &next_retransmit) > 0) {
-            g_static_mutex_lock(&lcm->transmit_lock);
+	now = g_get_real_time();
+        if (now > next_retransmit) {
+            g_mutex_lock(&lcm->transmit_lock);
             status = publish_message_internal(lcm, SELF_TEST_CHANNEL, (uint8_t *) msg, strlen(msg));
-            g_static_mutex_unlock(&lcm->transmit_lock);
-            lcm_timeval_add(&now, &retransmit_interval, &next_retransmit);
+            g_mutex_unlock(&lcm->transmit_lock);
+	    next_retransmit = now + retransmit_interval;
         }
 
-        status = select(recvfd + 1, &readfds, 0, 0, (struct timeval *) &selectto);
+        status = select(recvfd + 1, &readfds, 0, 0, &selectto);
         if (status > 0 && FD_ISSET(recvfd, &readfds)) {
             lcm_mpudpm_handle(lcm);
         }
-        g_get_current_time(&now);
+	now = g_get_real_time();
 
-    } while (!success && lcm_timeval_compare(&now, &endtime) < 0);
+    } while (!success && now < endtime);
 
     lcm_unsubscribe(lcm->lcm, h);
 
@@ -1514,7 +1515,7 @@ static void remove_recv_socket(lcm_mpudpm_t *lcm, mpudpm_socket_t *sock)
 
 static int setup_recv_parts(lcm_mpudpm_t *lcm)
 {
-    g_static_mutex_lock(&lcm->receive_lock);
+    g_mutex_lock(&lcm->receive_lock);
 
     // some thread synchronization code to ensure that only one thread sets up the
     // receive thread, and that all threads entering this function after the thread
@@ -1522,39 +1523,41 @@ static int setup_recv_parts(lcm_mpudpm_t *lcm)
     if (lcm->creating_read_thread) {
         // check if this thread is the one creating the receive thread.
         // If so, just return.
-        if (g_static_private_get(&CREATE_READ_THREAD_PKEY)) {
-            g_static_mutex_unlock(&lcm->receive_lock);
+        if (g_private_get(&CREATE_READ_THREAD_PKEY)) {
+            g_mutex_unlock(&lcm->receive_lock);
             return 0;
         }
 
-        // ugly bit with two mutexes because we can't use a GStaticRecMutex with a GCond
-        g_mutex_lock(lcm->create_read_thread_mutex);
-        g_static_mutex_unlock(&lcm->receive_lock);
+        // ugly bit with two mutexes because we can't use a GRecMutex with a GCond
+	// TODO: investigate whether this is still true
+        g_mutex_lock(lcm->p_create_read_thread_mutex);
+        g_mutex_unlock(&lcm->receive_lock);
 
         // wait for the thread creating the read thread to finish
         while (lcm->creating_read_thread) {
-            g_cond_wait(lcm->create_read_thread_cond, lcm->create_read_thread_mutex);
+            g_cond_wait(&lcm->create_read_thread_cond, lcm->p_create_read_thread_mutex);
         }
-        g_mutex_unlock(lcm->create_read_thread_mutex);
-        g_static_mutex_lock(&lcm->receive_lock);
+        g_mutex_unlock(lcm->p_create_read_thread_mutex);
+        g_mutex_lock(&lcm->receive_lock);
 
         // if we've gotten here, then either the read thread is created, or it
         // was not possible to do so.  Figure out which happened, and return.
         int result = lcm->recv_thread_created ? 0 : -1;
-        g_static_mutex_unlock(&lcm->receive_lock);
+        g_mutex_unlock(&lcm->receive_lock);
         return result;
     } else if (lcm->recv_thread_created) {
-        g_static_mutex_unlock(&lcm->receive_lock);
+        g_mutex_unlock(&lcm->receive_lock);
         return 0;
     }
 
     // no other thread is trying to create the read thread right now.  claim that task.
     lcm->creating_read_thread = 1;
-    lcm->create_read_thread_mutex = g_mutex_new();
-    lcm->create_read_thread_cond = g_cond_new();
+    g_mutex_init(&lcm->create_read_thread_mutex);
+    lcm->p_create_read_thread_mutex = &lcm->create_read_thread_mutex;
+    g_cond_init(&lcm->create_read_thread_cond);
 
     // mark this thread as the one creating the read thread
-    g_static_private_set(&CREATE_READ_THREAD_PKEY, GINT_TO_POINTER(1), NULL);
+    g_private_set(&CREATE_READ_THREAD_PKEY, GINT_TO_POINTER(1));
 
     dbg(DBG_LCM, "allocating resources for receiving messages\n");
 
@@ -1580,7 +1583,7 @@ static int setup_recv_parts(lcm_mpudpm_t *lcm)
     fcntl(lcm->thread_msg_pipe[1], F_SETFL, O_NONBLOCK);
 
     /* Start the reader thread */
-    lcm->read_thread = g_thread_create(recv_thread, lcm, TRUE, NULL);
+    lcm->read_thread = g_thread_new(NULL, recv_thread, lcm);
     if (!lcm->read_thread) {
         fprintf(stderr, "Error: LCM failed to start reader thread\n");
         goto setup_recv_thread_fail;
@@ -1599,12 +1602,12 @@ static int setup_recv_parts(lcm_mpudpm_t *lcm)
     dbg(DBG_LCM, "Publishing channel to port map updates every %.4f seconds\n",
         lcm->channel_to_port_map_update_period / 1.0e6);
 
-    g_static_mutex_unlock(&lcm->receive_lock);
+    g_mutex_unlock(&lcm->receive_lock);
 
     // conduct a self-test just to make sure everything is working.
     dbg(DBG_LCM, "LCM: conducting self test\n");
     int self_test_results = mpudpm_self_test(lcm);
-    g_static_mutex_lock(&lcm->receive_lock);
+    g_mutex_lock(&lcm->receive_lock);
 
     if (0 == self_test_results) {
         dbg(DBG_LCM, "LCM: self test successful\n");
@@ -1617,23 +1620,23 @@ static int setup_recv_parts(lcm_mpudpm_t *lcm)
     }
 
     // notify threads waiting for the read thread to be created
-    g_mutex_lock(lcm->create_read_thread_mutex);
+    g_mutex_lock(lcm->p_create_read_thread_mutex);
     lcm->creating_read_thread = 0;
-    g_cond_broadcast(lcm->create_read_thread_cond);
-    g_mutex_unlock(lcm->create_read_thread_mutex);
-    g_static_mutex_unlock(&lcm->receive_lock);
+    g_cond_broadcast(&lcm->create_read_thread_cond);
+    g_mutex_unlock(lcm->p_create_read_thread_mutex);
+    g_mutex_unlock(&lcm->receive_lock);
 
     // tell publishers that the receive thread has been created as well
-    g_static_mutex_lock(&lcm->transmit_lock);
+    g_mutex_lock(&lcm->transmit_lock);
     lcm->recv_thread_created_tx = 1;
-    g_static_mutex_unlock(&lcm->transmit_lock);
+    g_mutex_unlock(&lcm->transmit_lock);
 
     return self_test_results;
 
 setup_recv_thread_fail:
     destroy_recv_parts(lcm);
     fprintf(stderr, "ERROR creating receive thread!\n");
-    g_static_mutex_unlock(&lcm->receive_lock);
+    g_mutex_unlock(&lcm->receive_lock);
     return -1;
 }
 
@@ -1665,8 +1668,7 @@ lcm_provider_t *lcm_mpudpm_create(lcm_t *parent, const char *network, const GHas
 
     // synchronization variables used when allocating receive resources
     lcm->creating_read_thread = 0;
-    lcm->create_read_thread_mutex = NULL;
-    lcm->create_read_thread_cond = NULL;
+    lcm->p_create_read_thread_mutex = NULL;
 
     // internal notification pipe
     if (0 != lcm_internal_pipe_create(lcm->notify_pipe)) {
@@ -1676,8 +1678,8 @@ lcm_provider_t *lcm_mpudpm_create(lcm_t *parent, const char *network, const GHas
     }
     fcntl(lcm->notify_pipe[1], F_SETFL, O_NONBLOCK);
 
-    g_static_mutex_init(&lcm->receive_lock);
-    g_static_mutex_init(&lcm->transmit_lock);
+    g_mutex_init(&lcm->receive_lock);
+    g_mutex_init(&lcm->transmit_lock);
 
     dbg(DBG_LCM, "Initializing Multi-Port LCM UDP Multicast context...\n");
     dbg(DBG_LCM, "Multicast to %s on ports %d:%d\n", inet_ntoa(params.mc_addr),
