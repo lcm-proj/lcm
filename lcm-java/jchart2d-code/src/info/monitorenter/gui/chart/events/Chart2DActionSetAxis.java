@@ -120,11 +120,11 @@ public final class Chart2DActionSetAxis
       if (evt.getNewValue() != null) {
         Class< ? > axisClass = evt.getNewValue().getClass();
         if (this.m_axis.getClass() == axisClass) {
-          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, new Boolean(
-              false), new Boolean(true));
+          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, Boolean.valueOf(
+              false), Boolean.valueOf(true));
         } else {
-          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, new Boolean(
-              true), new Boolean(false));
+          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, Boolean.valueOf(
+              true), Boolean.valueOf(false));
         }
       }
     } else if (evt.getPropertyName().equals(Chart2D.PROPERTY_AXIS_Y)
@@ -134,11 +134,11 @@ public final class Chart2DActionSetAxis
 
         Class< ? > axisClass = evt.getNewValue().getClass();
         if (this.m_axis.getClass() == axisClass) {
-          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, new Boolean(
-              false), new Boolean(true));
+          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, Boolean.valueOf(
+              false), Boolean.valueOf(true));
         } else {
-          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, new Boolean(
-              true), new Boolean(false));
+          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, Boolean.valueOf(
+              true), Boolean.valueOf(false));
         }
       }
     }

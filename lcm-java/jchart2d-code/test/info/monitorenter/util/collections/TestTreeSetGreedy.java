@@ -59,7 +59,7 @@ public class TestTreeSetGreedy
     private static final long serialVersionUID = -615304987571740852L;
     
     /** The internal comparable. */
-    private Number m_compare = new Integer(ITrace2D.ZINDEX_MAX);
+    private Number m_compare = Integer.valueOf(ITrace2D.ZINDEX_MAX);
 
     /**
      * Defcon.

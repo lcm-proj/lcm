@@ -358,9 +358,9 @@ public abstract class ATrace2D implements ITrace2D, Comparable<ITrace2D> {
           this.m_minY = p.getY();
           this.m_maxX = p.getX();
           this.m_maxY = p.getY();
-          final Double zero = new Double(0);
-          this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, zero, new Double(this.m_minX));
-          this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, zero, new Double(this.m_minY));
+          final Double zero = Double.valueOf(0);
+          this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, zero, Double.valueOf(this.m_minX));
+          this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, zero, Double.valueOf(this.m_minY));
 
           this.m_firsttime = false;
         }
@@ -489,45 +489,45 @@ public abstract class ATrace2D implements ITrace2D, Comparable<ITrace2D> {
           if (this.showsPositiveXErrorBars()) {
             change = this.expandMaxXErrorBarBounds();
             if (change) {
-              this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, this, new Double(this.getMaxX()));
+              this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, this, Double.valueOf(this.getMaxX()));
             }
           } else {
             if (this.m_maxXErrorBar != -Double.MAX_VALUE) {
               this.m_maxXErrorBar = -Double.MAX_VALUE;
-              this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, this, new Double(this.getMaxX()));
+              this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, this, Double.valueOf(this.getMaxX()));
             }
           }
           if (this.showsPositiveYErrorBars()) {
             change = this.expandMaxYErrorBarBounds();
             if (change) {
-              this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, this, new Double(this.getMaxY()));
+              this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, this, Double.valueOf(this.getMaxY()));
             }
           } else {
             if (this.m_maxYErrorBar != -Double.MAX_VALUE) {
               this.m_maxYErrorBar = -Double.MAX_VALUE;
-              this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, this, new Double(this.getMaxY()));
+              this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, this, Double.valueOf(this.getMaxY()));
             }
           }
           if (this.showsNegativeXErrorBars()) {
             change = this.expandMinXErrorBarBounds();
             if (change) {
-              this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, this, new Double(this.getMinX()));
+              this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, this, Double.valueOf(this.getMinX()));
             }
           } else {
             if (this.m_minXErrorBar != Double.MAX_VALUE) {
               this.m_minXErrorBar = Double.MAX_VALUE;
-              this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, this, new Double(this.getMinX()));
+              this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, this, Double.valueOf(this.getMinX()));
             }
           }
           if (this.showsNegativeYErrorBars()) {
             change = this.expandMinYErrorBarBounds();
             if (change) {
-              this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, this, new Double(this.getMinY()));
+              this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, this, Double.valueOf(this.getMinY()));
             }
           } else {
             if (this.m_minYErrorBar != Double.MAX_VALUE) {
               this.m_minYErrorBar = Double.MAX_VALUE;
-              this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, this, new Double(this.getMinY()));
+              this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, this, Double.valueOf(this.getMinY()));
             }
           }
         }
@@ -744,20 +744,20 @@ public abstract class ATrace2D implements ITrace2D, Comparable<ITrace2D> {
           if (tmpx > this.m_maxX) {
             this.m_maxX = tmpx;
             this.expandMaxXErrorBarBounds();
-            this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, null, new Double(this.m_maxX));
+            this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, null, Double.valueOf(this.m_maxX));
           } else if (tmpx < this.m_minX) {
             this.m_minX = tmpx;
             this.expandMinXErrorBarBounds();
-            this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, null, new Double(this.m_minX));
+            this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, null, Double.valueOf(this.m_minX));
           }
           if (tmpy > this.m_maxY) {
             this.m_maxY = tmpy;
             this.expandMaxYErrorBarBounds();
-            this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, null, new Double(this.m_maxY));
+            this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, null, Double.valueOf(this.m_maxY));
           } else if (tmpy < this.m_minY) {
             this.m_minY = tmpy;
             this.expandMinYErrorBarBounds();
-            this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, null, new Double(this.m_minY));
+            this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, null, Double.valueOf(this.m_minY));
           }
         }
         if (ITracePoint2D.STATE_REMOVED == state) {
@@ -765,23 +765,23 @@ public abstract class ATrace2D implements ITrace2D, Comparable<ITrace2D> {
           if (tmpx >= this.m_maxX) {
             tmpx = this.m_maxX;
             this.maxXSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, new Double(tmpx), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, Double.valueOf(tmpx), Double.valueOf(
                 this.m_maxX));
           } else if (tmpx <= this.m_minX) {
             tmpx = this.m_minX;
             this.minXSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, new Double(tmpx), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, Double.valueOf(tmpx), Double.valueOf(
                 this.m_minX));
           }
           if (tmpy >= this.m_maxY) {
             tmpy = this.m_maxY;
             this.maxYSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, new Double(tmpy), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, Double.valueOf(tmpy), Double.valueOf(
                 this.m_maxY));
           } else if (tmpy <= this.m_minY) {
             tmpy = this.m_minY;
             this.minYSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, new Double(tmpy), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, Double.valueOf(tmpy), Double.valueOf(
                 this.m_minY));
           }
           if (this.getSize() == 0) {
@@ -792,49 +792,49 @@ public abstract class ATrace2D implements ITrace2D, Comparable<ITrace2D> {
           if (tmpx < this.m_maxX) {
             final double oldMaxX = this.m_maxX;
             this.maxXSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, new Double(oldMaxX), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, Double.valueOf(oldMaxX), Double.valueOf(
                 this.m_maxX));
           } else if (tmpx > this.m_maxX) {
             final double oldMaxX = this.m_maxX;
             this.m_maxX = tmpx;
             this.expandMaxXErrorBarBounds();
-            this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, new Double(oldMaxX), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, Double.valueOf(oldMaxX), Double.valueOf(
                 this.m_maxX));
           }
           if (tmpx > this.m_minX) {
             final double oldMinX = this.m_minX;
             this.minXSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, new Double(oldMinX), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, Double.valueOf(oldMinX), Double.valueOf(
                 this.m_minX));
           } else if (tmpx < this.m_minX) {
             final double oldMinX = this.m_minX;
             this.m_minX = tmpx;
             this.expandMinXErrorBarBounds();
-            this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, new Double(oldMinX), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, Double.valueOf(oldMinX), Double.valueOf(
                 this.m_minX));
           }
           if (tmpy < this.m_maxY) {
             final double oldMaxY = this.m_maxY;
             this.maxYSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, new Double(oldMaxY), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, Double.valueOf(oldMaxY), Double.valueOf(
                 this.m_maxY));
           } else if (tmpy > this.m_maxY) {
             final double oldMaxY = this.m_maxY;
             this.m_maxY = tmpy;
             this.expandMaxYErrorBarBounds();
-            this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, new Double(oldMaxY), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, Double.valueOf(oldMaxY), Double.valueOf(
                 this.m_maxY));
           }
           if (tmpy > this.m_minY) {
             final double oldMinY = this.m_minY;
             this.minYSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, new Double(oldMinY), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, Double.valueOf(oldMinY), Double.valueOf(
                 this.m_minY));
           } else if (tmpy < this.m_minY) {
             final double oldMinY = this.m_minY;
             this.m_minY = tmpy;
             this.expandMinYErrorBarBounds();
-            this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, new Double(oldMinY), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, Double.valueOf(oldMinY), Double.valueOf(
                 this.m_minY));
           }
           this.firePropertyChange(ITrace2D.PROPERTY_POINT_CHANGED, null, changed);
@@ -1459,19 +1459,19 @@ public abstract class ATrace2D implements ITrace2D, Comparable<ITrace2D> {
         // property changes:
         double oldValue = this.m_maxX;
         this.m_maxX = 0;
-        this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, new Double(oldValue), new Double(
+        this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, Double.valueOf(oldValue), Double.valueOf(
             this.m_maxX));
         oldValue = this.m_maxY;
         this.m_maxY = 0;
-        this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, new Double(oldValue), new Double(
+        this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, Double.valueOf(oldValue), Double.valueOf(
             this.m_maxY));
         oldValue = this.m_minX;
         this.m_minX = 0;
-        this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, new Double(oldValue), new Double(
+        this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, Double.valueOf(oldValue), Double.valueOf(
             this.m_minX));
         oldValue = this.m_minY;
         this.m_minY = 0;
-        this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, new Double(oldValue), new Double(
+        this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, Double.valueOf(oldValue), Double.valueOf(
             this.m_minY));
 
         // inform computing traces:
@@ -1566,23 +1566,23 @@ public abstract class ATrace2D implements ITrace2D, Comparable<ITrace2D> {
           if (tmpx >= this.m_maxX) {
             tmpx = this.m_maxX;
             this.maxXSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, new Double(tmpx), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MAX_X, Double.valueOf(tmpx), Double.valueOf(
                 this.m_maxX));
           } else if (tmpx <= this.m_minX) {
             tmpx = this.m_minX;
             this.minXSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, new Double(tmpx), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MIN_X, Double.valueOf(tmpx), Double.valueOf(
                 this.m_minX));
           }
           if (tmpy >= this.m_maxY) {
             tmpy = this.m_maxY;
             this.maxYSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, new Double(tmpy), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MAX_Y, Double.valueOf(tmpy), Double.valueOf(
                 this.m_maxY));
           } else if (tmpy <= this.m_minY) {
             tmpy = this.m_minY;
             this.minYSearch();
-            this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, new Double(tmpy), new Double(
+            this.firePropertyChange(ITrace2D.PROPERTY_MIN_Y, Double.valueOf(tmpy), Double.valueOf(
                 this.m_minY));
           }
 

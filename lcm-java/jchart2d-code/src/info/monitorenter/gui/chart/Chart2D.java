@@ -4088,7 +4088,7 @@ public class Chart2D extends JPanel implements PropertyChangeListener, Iterable<
     final boolean change = this.m_paintLabels != paintLabels;
     this.m_paintLabels = paintLabels;
     if (change) {
-      this.firePropertyChange(Chart2D.PROPERTY_PAINTLABELS, new Boolean(!paintLabels), new Boolean(
+      this.firePropertyChange(Chart2D.PROPERTY_PAINTLABELS, Boolean.valueOf(!paintLabels), Boolean.valueOf(
           paintLabels));
       this.setRequestedRepaint(true);
     }

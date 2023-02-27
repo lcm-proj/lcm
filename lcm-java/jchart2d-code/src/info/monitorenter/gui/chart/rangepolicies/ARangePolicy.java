@@ -227,10 +227,10 @@ public abstract class ARangePolicy implements IRangePolicy {
     if (minchanged && maxchanged) {
       this.firePropertyChange(IRangePolicy.PROPERTY_RANGE, oldRange, this.m_range);
     } else if (minchanged) {
-      this.firePropertyChange(IRangePolicy.PROPERTY_RANGE_MIN, new Double(oldMin), new Double(range
+      this.firePropertyChange(IRangePolicy.PROPERTY_RANGE_MIN, Double.valueOf(oldMin), Double.valueOf(range
           .getMin()));
     } else if (maxchanged) {
-      this.firePropertyChange(IRangePolicy.PROPERTY_RANGE_MAX, new Double(oldMax), new Double(range
+      this.firePropertyChange(IRangePolicy.PROPERTY_RANGE_MAX, Double.valueOf(oldMax), Double.valueOf(range
           .getMax()));
     }
 

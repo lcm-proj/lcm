@@ -141,7 +141,7 @@ public final class TimeStampedValue implements Map.Entry<Long, Object>,
    * @see java.util.Map.Entry#getKey()
    */
   public Long getKey() {
-    return new Long(this.m_key);
+    return Long.valueOf(this.m_key);
   }
 
   /**

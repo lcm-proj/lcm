@@ -117,14 +117,14 @@ public final class Trace2DActionAddRemoveTracePainter extends ATrace2DAction {
       if (oldValue == null) {
         // added
         if (newValue.getClass() == this.m_tracePainter.getClass()) {
-          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, new Boolean(
-              false), new Boolean(true));
+          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, Boolean.valueOf(
+              false), Boolean.valueOf(true));
         }
       } else {
         // removed
         if (oldValue.getClass() == this.m_tracePainter.getClass()) {
-          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, new Boolean(
-              true), new Boolean(false));
+          this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, Boolean.valueOf(
+              true), Boolean.valueOf(false));
         }
       }
     }

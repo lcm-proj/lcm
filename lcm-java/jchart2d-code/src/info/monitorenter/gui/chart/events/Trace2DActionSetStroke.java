@@ -92,10 +92,10 @@ public final class Trace2DActionSetStroke extends ATrace2DAction {
       // added
       if (newValue.equals(this.m_stroke)) {
         this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED,
-            new Boolean(false), new Boolean(true));
+            Boolean.valueOf(false), Boolean.valueOf(true));
       } else {
         this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED,
-            new Boolean(true), new Boolean(false));
+            Boolean.valueOf(true), Boolean.valueOf(false));
       }
     }
   }

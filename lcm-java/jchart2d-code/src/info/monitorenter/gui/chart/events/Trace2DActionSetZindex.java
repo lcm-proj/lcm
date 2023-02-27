@@ -68,7 +68,7 @@ public final class Trace2DActionSetZindex extends ATrace2DAction {
    */
   public Trace2DActionSetZindex(final ITrace2D trace, final String description, final int zIndex) {
     super(trace, description);
-    this.m_zIndex = new Integer(zIndex);
+    this.m_zIndex = Integer.valueOf(zIndex);
     trace.addPropertyChangeListener(ITrace2D.PROPERTY_ZINDEX, this);
   }
 
@@ -88,10 +88,10 @@ public final class Trace2DActionSetZindex extends ATrace2DAction {
       Number newValue = (Number) evt.getNewValue();
       if (newValue.equals(this.m_zIndex)) {
         this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED,
-            new Boolean(false), new Boolean(true));
+            Boolean.valueOf(false), Boolean.valueOf(true));
       } else {
         this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED,
-            new Boolean(true), new Boolean(false));
+            Boolean.valueOf(true), Boolean.valueOf(false));
       }
     }
   }

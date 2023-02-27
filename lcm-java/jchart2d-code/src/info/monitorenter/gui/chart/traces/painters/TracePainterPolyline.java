@@ -139,8 +139,8 @@ public class TracePainterPolyline extends ATracePainter {
   public void paintPoint(final int absoluteX, final int absoluteY, final int nextX,
       final int nextY, final Graphics g, final ITracePoint2D original) {
     super.paintPoint(absoluteX, absoluteY, nextX, nextY, g, original);
-    this.m_xPoints.add(new Integer(absoluteX));
-    this.m_yPoints.add(new Integer(absoluteY));
+    this.m_xPoints.add(Integer.valueOf(absoluteX));
+    this.m_yPoints.add(Integer.valueOf(absoluteY));
 
   }
 
