@@ -45,7 +45,3 @@ The LCM project is active again. The current near-term plan is to:
   * Lua
   * MATLAB
   * Python
-
-# Build Status (master)
-
-[![Build Status](https://travis-ci.com/lcm-proj/lcm.svg?branch=master)](https://travis-ci.com/lcm-proj/lcm)
