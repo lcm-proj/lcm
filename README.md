@@ -6,13 +6,13 @@ critical. It provides a publish/subscribe message passing model and automatic
 marshalling/unmarshalling code generation with bindings for applications in a
 variety of programming languages.
 
-# Looking for a new maintainer
+# Roadmap
 
-2022 September - LCM isn't actively updated much these days. It should be
-considered fairly stable on the platforms it was originally developed on, but
-new feature development and bug fixes are unlikely. If you are interested in
-taking over as the project maintainer and steering its direction going forwards,
-please send a message to Albert.
+The LCM project is active again. The current near-term plan is to:
+
+* Clear deprecation warnings from build for all language targets
+* Flush backlog of PRs
+* Cut a new release
 
 # Quick Links
 
