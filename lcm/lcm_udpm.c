@@ -243,7 +243,7 @@ static int _recv_message_fragment(lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
 
     // any existing fragment buffer for this message source?
     lcm_frag_key_t key;
-    key.from = &(lcmb->from);
+    key.from = (struct sockaddr_in*)&(lcmb->from);
     key.msg_seqno = msg_seqno;
     lcm_frag_buf_t *fbuf = lcm_frag_buf_store_lookup(lcm->frag_bufs, &key);
 
