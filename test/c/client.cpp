@@ -22,8 +22,7 @@ static lcm_t *g_lcm = NULL;
                                                                                                  \
     static int g_##type##_response_count = 0;                                                    \
                                                                                                  \
-    static void type##_handler(const lcm_recv_buf_t *rbuf, const char *channel, const type *msg, \
-                               void *user)                                                       \
+    static void type##_handler(const lcm_recv_buf_t *, const char *, const type *msg, void *)    \
     {                                                                                            \
         if (!check_##type(msg, g_##type##_response_count + 1)) {                                 \
             return;                                                                              \
@@ -66,7 +65,7 @@ int g_echo_response_count = 0;
 int g_echo_msg_len = 0;
 uint8_t *g_echo_data = NULL;
 
-static void echo_handler(const lcm_recv_buf_t *rbuf, const char *channel, void *user)
+static void echo_handler(const lcm_recv_buf_t *rbuf, const char *, void *)
 {
     if (rbuf->data_size != g_echo_msg_len)
         return;

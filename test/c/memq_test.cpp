@@ -16,7 +16,7 @@ struct MemqSimpleState {
     bool handled;
 };
 
-void MemqSimpleHandler(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
+void MemqSimpleHandler(const lcm_recv_buf_t *rbuf, const char *, void *user_data)
 {
     std::vector<uint8_t> *received_buf = (std::vector<uint8_t> *) user_data;
     received_buf->resize(rbuf->data_size);
@@ -48,7 +48,7 @@ TEST(LCM_C, MemqSimple)
     lcm_destroy(lcm);
 }
 
-void MemqBufferedHandler(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
+void MemqBufferedHandler(const lcm_recv_buf_t *rbuf, const char *, void *user_data)
 {
     std::vector<std::vector<uint8_t> > *received_buffers =
         (std::vector<std::vector<uint8_t> > *) user_data;
@@ -86,7 +86,7 @@ TEST(LCM_C, MemqBuffered)
     lcm_destroy(lcm);
 }
 
-void MemqTimeoutHandler(const lcm_recv_buf_t *rbuf, const char *channel, void *user_data)
+void MemqTimeoutHandler(const lcm_recv_buf_t *, const char *, void *user_data)
 {
     int *msg_handled = (int *) user_data;
     *msg_handled = 1;

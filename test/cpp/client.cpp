@@ -56,7 +56,7 @@ class EchoTest {
     }
 
   private:
-    void Handler(const lcm::ReceiveBuffer *rbuf, const std::string &channel)
+    void Handler(const lcm::ReceiveBuffer *rbuf, const std::string &)
     {
         if (rbuf->data_size != echo_msg_len_)
             return;
@@ -118,7 +118,7 @@ class TypedTest {
     }
 
   private:
-    void Handler(const lcm::ReceiveBuffer *rbuf, const std::string &channel, const LcmType *msg)
+    void Handler(const lcm::ReceiveBuffer *, const std::string &, const LcmType *msg)
     {
         if (CheckLcmType(msg, response_count_ + 1)) {
             response_count_++;
@@ -172,7 +172,7 @@ class LambdaTest {
         LcmType msg;
         int response_count = 0;
         lcm::LCM::HandlerFunction<LcmType> handler = [&response_count](
-            const lcm::ReceiveBuffer *rbuf, const std::string &channel, const LcmType *msg) {
+            const lcm::ReceiveBuffer *, const std::string &, const LcmType *msg) {
             if (CheckLcmType(msg, response_count + 1)) {
                 response_count++;
             }
