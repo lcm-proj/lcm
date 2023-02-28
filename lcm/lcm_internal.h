@@ -4,6 +4,8 @@
 #include <glib.h>
 #include "lcm.h"
 
+// Several thread and synchronization API functions (e.g. g_mutex_init,
+// g_cond_init, g_thread_new, etc) require 2.32
 #if GLIB_CHECK_VERSION(2, 32, 0)
 #else
 #error "LCM requires a glib version >= 2.32.0"
