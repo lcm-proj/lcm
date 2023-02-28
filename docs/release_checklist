@@ -41,21 +41,6 @@
   b. Name the release title "vX.Y.Z"
   c. Add release notes from the NEWS file
 
-# Update documentation
-
-1. Build docs
-  $ make doc
-2. Clone the documentation repository
-  $ git clone https://github.com/lcm-proj/lcm-proj.github.io
-  $ cd lcm-proj.github.io
-3. Copy the built docs to the lcm.www repository
-  $ cp -r ../docs/html/* .
-4. Commit the changes, tag the release, and push to origin
-  $ git commit -a -m "Release X.Y.Z"
-  $ git tag vX.Y.Z
-  $ git push origin master
-  $ git push origin vX.Y.Z
-
 # Notify the mailing list
 
 1. Send e-mail to lcm-users@googlegroups.com
