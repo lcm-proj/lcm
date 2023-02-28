@@ -13,11 +13,6 @@ namespace LCM.LCM
 	/// the messages to all other processes. TCPService is an
     /// implementation of the hub process.
     /// 
-    /// The tcpq:// protocol is NOT suitable for real-time or high-bandwidth
-    /// traffic.  It is specifically designed for playing back a log file in a
-    /// post-processing context (i.e., play back the log as fast as possible, but
-    /// without dropping anything).
-    /// 
     /// The .NET implementation is functionally equal to the Java version.
     /// </summary>
 	public class TCPProvider : Provider

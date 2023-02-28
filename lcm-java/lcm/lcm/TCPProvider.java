@@ -10,11 +10,6 @@ import java.nio.*;
  * "hub" process (that must be started separately), which will relay
  * the messages to all other processes. TCPService is an
  * implementation of the hub process.
- *
- * The tcpq:// protocol is NOT suitable for real-time or high-bandwidth
- * traffic.  It is specifically designed for playing back a log file in a
- * post-processing context (i.e., play back the log as fast as possible, but
- * without dropping anything).
  **/
 public class TCPProvider implements Provider
 {
