@@ -62,7 +62,7 @@ MAKE_CLIENT_TEST(lcmtest_primitives_t, 1000);
 
 // ================================= echo test
 int g_echo_response_count = 0;
-int g_echo_msg_len = 0;
+unsigned int g_echo_msg_len = 0;
 uint8_t *g_echo_data = NULL;
 
 static void echo_handler(const lcm_recv_buf_t *rbuf, const char *, void *)
@@ -89,7 +89,7 @@ TEST(LCM_C, EchoTest)
     int iter;
     for (iter = 0; iter < 100; iter++) {
         g_echo_msg_len = rand() % (maxlen - minlen) + minlen;
-        int i;
+        unsigned int i;
         for (i = 0; i < g_echo_msg_len; i++)
             g_echo_data[i] = rand() % 256;
 

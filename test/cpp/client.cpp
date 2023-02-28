@@ -38,7 +38,7 @@ class EchoTest {
 
         for (int iter = 0; iter < num_trials_; iter++) {
             echo_msg_len_ = rand() % (maxlen - minlen) + minlen;
-            for (int i = 0; i < echo_msg_len_; i++)
+            for (unsigned int i = 0; i < echo_msg_len_; i++)
                 echo_data_[i] = rand() % 256;
 
             lcm_.publish(test_channel_, echo_data_, echo_msg_len_);
@@ -67,7 +67,7 @@ class EchoTest {
 
     lcm::LCM lcm_;
     int num_trials_;
-    int echo_msg_len_;
+    unsigned int echo_msg_len_;
     uint8_t *echo_data_;
     int response_count_;
     lcm::Subscription *subscription_;
