@@ -1,3 +1,4 @@
+#include <glib.h>
 #include <gtest/gtest.h>
 #include <stdlib.h>
 #include <string.h>
@@ -8,20 +9,21 @@
 TEST(LCM_C, EventLogBasic)
 {
     // Open and close a log file.
-    char *fname = make_tmpnam();
+    char fname[] = "XXXXXX";
+    int fd = g_mkstemp(fname);
 
     lcm_eventlog_t *wlog = lcm_eventlog_create(fname, "w");
     EXPECT_NE((void *) NULL, wlog);
     lcm_eventlog_destroy(wlog);
-
-    free_tmpnam(fname);
+    close(fd);
 }
 
 TEST(LCM_C, EventLogWriteRead)
 {
     // Write some events to a log, then read them back in and check what was
     // read is the same as what was written.
-    char *fname = make_tmpnam();
+    char fname[] = "XXXXXX";
+    int fd = g_mkstemp(fname);
 
     lcm_eventlog_t *wlog = lcm_eventlog_create(fname, "w");
     EXPECT_NE((void *) NULL, wlog);
@@ -79,13 +81,14 @@ TEST(LCM_C, EventLogWriteRead)
     }
 
     lcm_eventlog_destroy(rlog);
-    free_tmpnam(fname);
+    close(fd);
 }
 
 TEST(LCM_C, EventLogCorrupt)
 {
     // Tests detection of corrupt data.
-    char *fname = make_tmpnam();
+    char fname[] = "XXXXXX";
+    int fd = g_mkstemp(fname);
 
     lcm_eventlog_t *wlog = lcm_eventlog_create(fname, "w");
     ASSERT_NE((void *) NULL, wlog);
@@ -128,5 +131,5 @@ TEST(LCM_C, EventLogCorrupt)
     EXPECT_EQ((void *) NULL, revent);
 
     lcm_eventlog_destroy(rlog);
-    free_tmpnam(fname);
+    close(fd);
 }
