@@ -11,6 +11,18 @@ import lcm.util.*;
 /** Lightweight Communications and Marshalling Java implementation **/
 public class LCM
 {
+    /**
+     * 
+     * @return The value of the LCM_DEFAULT_URL environment variable if set
+     *         or "udpm://239.255.76.67:7667".
+     */
+    public static String getDefaultURL() {
+        String env = System.getenv("LCM_DEFAULT_URL");
+        if (null == env || env.isEmpty())
+            return "udpm://239.255.76.67:7667";
+        return env;
+    }
+
     static class SubscriptionRecord
     {
         String  regex;
@@ -37,20 +49,14 @@ public class LCM
     public LCM(String... urls) throws IOException
     {
         if (urls.length==0) {
-            String env = System.getenv("LCM_DEFAULT_URL");
-            if (env == null)
-                urls = new String[] {"udpm://239.255.76.67:7667"};
-            else
-                urls = new String[] { env };
+            urls = new String[] { getDefaultURL() };
         }
 
         for (String url : urls) {
             // Allow passing in NULL or the empty string to explicitly indicate
             // the default LCM URL.
             if(null == url || url.equals("")) {
-                url = System.getenv("LCM_DEFAULT_URL");
-                if (url == null)
-                    url = "udpm://239.255.76.67:7667";
+                url = getDefaultURL();
             }
         	
             URLParser up = new URLParser(url);

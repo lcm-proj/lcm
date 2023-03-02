@@ -31,8 +31,22 @@ public class Spy
 
     JButton clearButton = new JButton("Clear");
 
-    public Spy(String lcmurl) throws IOException
+    public Spy(String lcmurl, WindowTitleOptions titleOptions) throws IOException
     {
+        if (null == lcmurl) {
+            lcmurl = LCM.getDefaultURL();
+        }
+        String title = "LCM Spy";
+        {
+            String spacer = "  •  ";
+            if (null != titleOptions.label) {
+                title += spacer + titleOptions.label;
+            }
+            if (titleOptions.showURL) {
+                title += spacer + lcmurl;
+            }
+        }
+        
         //    sortedChannelTableModel.addMouseListenerToHeaderInTable(channelTable);
         channelTableModel.setTableHeader(channelTable.getTableHeader());
         channelTableModel.setSortingStatus(0, TableSorter.ASCENDING);
@@ -48,7 +62,7 @@ public class Spy
         tcm.getColumn(5).setMaxWidth(100);
         tcm.getColumn(6).setMaxWidth(100);
 
-        JFrame jif = new JFrame("LCM Spy");
+        JFrame jif = new JFrame(title);
         jif.setLayout(new BorderLayout());
         jif.add(channelTable.getTableHeader(), BorderLayout.PAGE_START);
         // XXX weird bug, if clearButton is added after JScrollPane, we get an error.
@@ -61,10 +75,8 @@ public class Spy
         jif.setLocationByPlatform(true);
         jif.setVisible(true);
 
-        if(null == lcmurl)
-            lcm = new LCM();
-        else
-            lcm = new LCM(lcmurl);
+        
+        lcm = new LCM(lcmurl);
         lcm.subscribeAll(new MySubscriber());
 
         new HzThread().start();
@@ -499,10 +511,18 @@ public class Spy
         System.err.println("unrecognized messages.");
         System.err.println("");
         System.err.println("Options:");
-        System.err.println("  -l, --lcm-url=URL      Use the specified LCM URL");
         System.err.println("  -h, --help             Shows this help text and exits");
+        System.err.println("  -l, --lcm-url=URL      Use the specified LCM URL");
+        System.err.println("  -t, --title [LABEL]    Display LABEL in the window title");
+        System.err.println("  --title-url            Display the LCM URL in the title");
+        // System.err.println("  -, --            ");
         System.err.println("");
         System.exit(1);
+    }
+
+    static class WindowTitleOptions {
+        String label = null;
+        boolean showURL = false;
     }
 
     public static void main(String args[])
@@ -513,31 +533,53 @@ public class Spy
             System.err.println("         The Sun JRE is recommended.");
         }
 
+        final String ARG_LCM_URL = "--lcm-url";
+        final String ARG_LCM_URL_EQ = ARG_LCM_URL + "=";
+        final String ARG_TITLE = "--title";
+        final String ARG_TITLE_URL = "--title-url";
+
         String lcmurl = null;
-        for(int optind=0; optind<args.length; optind++) {
+        WindowTitleOptions titleOptions = new WindowTitleOptions();
+        for (int optind = 0; optind < args.length; optind++) {
             String c = args[optind];
-            if(c.equals("-h") || c.equals("--help")) {
+            boolean hasParam = optind + 1 < args.length;
+
+            if (c.equals("-h") || c.equals("--help")) {
                 usage();
-            } else if(c.equals("-l") || c.equals("--lcm-url") || c.startsWith("--lcm-url=")) {
+            } else if (c.equals("-l") || c.equals(ARG_LCM_URL) || c.startsWith(ARG_LCM_URL_EQ)) {
                 String optarg = null;
-                if(c.startsWith("--lcm-url=")) {
-                    optarg=c.substring(10);
-                } else if(optind < args.length) {
+
+                if (c.startsWith(ARG_LCM_URL_EQ)) {
+                    optarg = c.substring(ARG_LCM_URL_EQ.length());
+                } else if (hasParam) {
                     optind++;
                     optarg = args[optind];
                 }
-                if(null == optarg) {
+
+                if (null == optarg || optarg.isEmpty()) {
                     usage();
                 } else {
                     lcmurl = optarg;
                 }
+            } else if (c.equals("-t") || c.equals(ARG_TITLE)) {
+                if (hasParam) {
+                    optind++;
+                    titleOptions.label = args[optind];
+                } else {
+                    usage();
+
+                }
+
+            } else if (c.equals(ARG_TITLE_URL)) {
+                titleOptions.showURL = true;
+
             } else {
                 usage();
             }
         }
 
         try {
-            new Spy(lcmurl);
+            new Spy(lcmurl, titleOptions);
         } catch (IOException ex) {
             System.out.println(ex);
         }
