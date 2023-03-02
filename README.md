@@ -17,7 +17,7 @@ The LCM project is active again. The current near-term plan is to:
 # Quick Links
 
 * [LCM downloads](https://github.com/lcm-proj/lcm/releases)
-* [Website and documentation](https://lcm-proj.github.io)
+* [Website and documentation](https://lcm-proj.github.io/lcm)
 
 # Features
 
