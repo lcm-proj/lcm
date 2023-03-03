@@ -686,7 +686,8 @@ static void emit_lua_dependencies(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls
         emit(0, "");
 
     g_ptr_array_free(deps, TRUE);
-    g_hash_table_destroy(dependencies);
+    if (dependencies)
+        g_hash_table_destroy(dependencies);
 }
 
 static void emit_lua_locals(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
@@ -1109,7 +1110,8 @@ static int emit_package(lcmgen_t *lcm, _package_contents_t *pc)
         fclose(init_lua_fp);
     }
 
-    g_hash_table_destroy(initlua_requires);
+    if (initlua_requires)
+        g_hash_table_destroy(initlua_requires);
     return 0;
 }
 
@@ -1153,6 +1155,7 @@ int emit_lua(lcmgen_t *lcm)
 
     g_ptr_array_free(vals, TRUE);
 
-    g_hash_table_destroy(packages);
+    if (packages)
+        g_hash_table_destroy(packages);
     return 0;
 }
