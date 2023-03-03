@@ -44,23 +44,6 @@
 
 /*
  * Simple function that takes a string like this.is.a.string and turns it into
- * this_is_a_string.
- *
- * CAUTION: memory has to be freed manually.
- */
-static char *dots_to_underscores(const char *const s)
-{
-    char *p = strdup(s);
-
-    for (char *t = p; *t != 0; t++)
-        if (*t == '.')
-            *t = '_';
-
-    return p;
-}
-
-/*
- * Simple function that takes a string like this.is.a.string and turns it into
  * this/is/a/string.
  *
  * CAUTION: memory has to be freed manually.
@@ -91,19 +74,6 @@ static char *strip_dots(const char *const s)
             p = t + 1;
 
     return strdup(p);
-}
-
-/*
- * Simple function that takes a string like this_is_a_string and turns it into
- * This_is_a_string.
- *
- * CAUTION: memory has to be freed manually.
- */
-static char *first_to_upper(const char *const str)
-{
-    char *s = strdup(str);
-    s[0] = toupper(s[0]);
-    return s;
 }
 
 /*
@@ -1147,7 +1117,6 @@ static void emit_go_lcm_decode(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls, const c
 static void emit_go_lcm_unmarshal_binary(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
                                          const char *const gotype, const uint64_t fingerprint)
 {
-    int readVar = 0;
     emit(0, "// UnmarshalBinary implements the BinaryUnmarshaler interface");
     emit(0, "func (p *%s) UnmarshalBinary(data []byte) (err error) {", gotype);
     if (ls->members->len) {
