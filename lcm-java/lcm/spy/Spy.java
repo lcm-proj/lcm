@@ -515,7 +515,6 @@ public class Spy
         System.err.println("  -l, --lcm-url=URL      Use the specified LCM URL");
         System.err.println("  -t, --title [LABEL]    Display LABEL in the window title");
         System.err.println("  --title-url            Display the LCM URL in the title");
-        // System.err.println("  -, --            ");
         System.err.println("");
         System.exit(1);
     }
