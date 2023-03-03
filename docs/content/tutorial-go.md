@@ -1,24 +1,24 @@
-Go Tutorial {#tut_go}
-====
-\brief Sending and receiving LCM messages using Go
+# Go Tutorial
 
-# Introduction {#tut_go_intro}
+Sending and receiving LCM messages using Go
+
+## Introduction
 
 This tutorial will walk you through the main tasks for exchanging LCM messages
 using the Go LCM library. Throughout this tutorial, we will look at how to:
 
-\li Initialize an LCM instance.
-\li Publish a message.
-\li Subscribe to a channel and receive a message over it.
+- Initialize an LCM instance.
+- Publish a message.
+- Subscribe to a channel and receive a message over it.
 
-Like the other tutorials, this one uses the \p example_t message type defined in
-the \ref tut_lcmgen "type definition tutorial", and assumes that you have
+Like the other tutorials, this one uses the `example_t` message type defined in
+the [type definition tutorial](./lcm-type-ref.md#lcm-type-specification-language), and assumes that you have
 generated the Go bindings by executing for it:
 
-\code
+``` 
 cd examples/go
 go generate
-\endcode
+``` 
 
 This should produce a few go files in `exlcm`, we will use the file called
 `exlcm/example_t.go`.
@@ -26,7 +26,7 @@ This should produce a few go files in `exlcm`, we will use the file called
 The file contains everything you need to encode and decode data of type
 example_t, which is necessary in order to use LCM.
 
-# Initializing LCM {#tut_go_initialize}
+## Initializing LCM
 
 That was not too difficult, right? Time to actually get our hands dirty with
 some actual Go code.
@@ -39,7 +39,7 @@ After you have successfully executed that, you are able to use and import the
 just fetched library. Make sure that the following code is inside a subdirectory
 of `$GOPATH/src`.
 
-\code
+```go
 package main
 
 import "github.com/lcm-proj/lcm/lcm-go/lcm"
@@ -51,7 +51,7 @@ func main() {
     }
     defer lc.Destroy()
 }
-\endcode
+``` 
 
 This will result in a new lcm instance by the name `lc` that is ready for use.
 
@@ -64,7 +64,7 @@ Compile and run the code to see, if it works: `go run path/to/subdirectory`
 As you can see, we are also using `defer` to destroy the LCM instance just right
 before main is done executing.
 
-# Publishing a message {#tut_go_publish}
+## Publishing a message
 
 Now that you have successfully created an LCM instance in Go, it is time to
 actually send some data to a channel. This is done by sending data down a Golang
@@ -80,7 +80,7 @@ Finally, make sure that you are actually sending (LCM) encoded data down the
 channel. So where do you get that from? *From the Go bindings that you have
 generated earlier!*
 
-\code
+```go
     // Skipping the code above...
     // Create a pointer to a new ExampleT object.
     example := &exlcm.ExampleT{}
@@ -113,7 +113,7 @@ FOR_SELECT:
             panic(err)
         }
     }
-\endcode
+``` 
 
 As you can see, it does not require much code to send something through LCM
 using Go. Obviously, in a real-world case, one would need to initialize
@@ -125,7 +125,7 @@ close the corresponding publisher channel, as we are doing in the `defer`
 statement. This is necessary, so that you do not end up in a potential deadlock.
 The errs channel is only closed *after* the publisher one is.
 
-# Receiving LCM Messages {#tut_go_receive}
+## Receiving LCM Messages
 
 Receiving messages is just as simple as sending them out. It's just the other
 way around. Needless to say, it is important that the sender and receiver
@@ -137,7 +137,7 @@ In order to receive data, you will need to check for data that comes down a
 Go channel. Usually, deserialize the received data back into a suitable object
 is a reasonable way to do here.
 
-\code
+```go
     // Skipping the code from the initialization part.
     // Subscribe to the previously used EXAMPLE channel. The subscription Go
     // channel has a buffer size 5, whenever more messages are pending than the
@@ -176,7 +176,7 @@ FOR:
 
         }
     }
-\endcode
+``` 
 
 Done!
 
@@ -185,7 +185,7 @@ possible because we are timing out (and returning) after five seconds.
 ReceiveChan is only closed whenever one unsubscribes. Therefore:: **be aware of
 potential deadlocks that you could introduce to your application**.
 
-# Conclusion and Important Information {#tu_go_concl}
+## Conclusion and Important Information
 
 Obviously, this tutorial outlines just a really simple use-case of LCM in Go.
 Some of the practices used here ought to be avoided in a proper production

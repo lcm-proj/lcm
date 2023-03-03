@@ -7,6 +7,8 @@ if(NOT DOXYGEN_EXECUTABLE)
   return()
 endif()
 
+set(BUILD_DIR ${lcm_BINARY_DIR})
+
 configure_file(
   ${lcm_SOURCE_DIR}/docs/Doxyfile.in
   ${lcm_BINARY_DIR}/docs/Doxyfile
@@ -18,16 +20,41 @@ configure_file(
   @ONLY)
 
 add_custom_target(doc-clean
-  COMMAND ${CMAKE_COMMAND} -E remove_directory ${lcm_BINARY_DIR}/docs/html)
+  COMMAND ${CMAKE_COMMAND} -E remove_directory ${lcm_BINARY_DIR}/docs/_build)
 
-add_custom_target(doc-doxygen
-  COMMAND ${DOXYGEN_EXECUTABLE} ${lcm_BINARY_DIR}/docs/Doxyfile
-  WORKING_DIRECTORY ${lcm_SOURCE_DIR}/docs
+add_custom_target(doc-setup
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${lcm_BINARY_DIR}/docs/_build/
   DEPENDS doc-clean)
 
+add_custom_target(doc-doxygen
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${lcm_BINARY_DIR}/docs/_build/doxygen_output/
+  COMMAND ${DOXYGEN_EXECUTABLE} ${lcm_BINARY_DIR}/docs/Doxyfile
+  WORKING_DIRECTORY ${lcm_SOURCE_DIR}/docs
+  DEPENDS doc-setup)
+
 add_custom_target(doc-dotnet
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${lcm_BINARY_DIR}/docs/_build/doxygen_output/
   COMMAND ${DOXYGEN_EXECUTABLE} ${lcm_BINARY_DIR}/lcm-dotnet/Doxyfile
   WORKING_DIRECTORY ${lcm_SOURCE_DIR}/lcm-dotnet
-  DEPENDS doc-clean doc-doxygen)
+  DEPENDS doc-setup doc-doxygen)
 
-add_dependencies(doc doc-doxygen doc-dotnet)
+find_program(SPHINX_EXECUTABLE sphinx-build)
+if(NOT SPHINX_EXECUTABLE)
+  message(WARNING
+    "Sphinx was not found; documentation generation will be incomplete")
+  return()
+endif()
+
+execute_process(
+  COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
+    from distutils import sysconfig as sc
+    print(sc.get_python_lib(prefix='', plat_specific=True))"
+  OUTPUT_VARIABLE PYTHON_SITE
+  OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+add_custom_target(doc-sphinx
+  COMMAND "PYTHONPATH=${CMAKE_BINARY_DIR}/${PYTHON_SITE}" ${SPHINX_EXECUTABLE} ${lcm_SOURCE_DIR}/docs ${lcm_BINARY_DIR}/docs/_build
+  WORKING_DIRECTORY ${lcm_SOURCE_DIR}/docs
+  DEPENDS doc-setup doc-dotnet doc-doxygen doc-java lcm-python lcm-python-init)
+
+add_dependencies(doc doc-sphinx)

@@ -1,22 +1,22 @@
-C Tutorial {#tut_c}
-====
-\brief Sending and receiving LCM messages with C
+# C Tutorial
 
-# Introduction {#tutorial_c_intro}
+Sending and receiving LCM messages with C
+
+## Introduction
 
 This tutorial will walk you through the main tasks for exchanging messages
 using the LCM C API.  It covers the following topics:
 
-\li Initialize LCM in your application.
-\li Publish a message.
-\li Subscribe to and receive a message.
+- Initialize LCM in your application.
+- Publish a message.
+- Subscribe to and receive a message.
 
-This tutorial uses the \p example_t message type defined in the
-\ref tut_lcmgen "type definition tutorial", and assumes that you have
+This tutorial uses the `example_t` message type defined in the
+[type definition tutorial](tutorial-lcmgen.md), and assumes that you have
 generated the C bindings for the example type by running
-\code
+``` 
 lcm-gen -c example_t.lcm
-\endcode
+``` 
 
 After running this command, you should have two files:
 <tt>exlcm_example_t.c</tt> and <tt>exlcm_example_t.h</tt>.  These two files are
@@ -25,13 +25,13 @@ package name "exlcm" was prepended to the file name.  This is how LCM emulates
 namespaces in C, and the package name is also prefixed to the generated C struct name.  
 If you have the time, take a moment to open up those two files and inspect the generated code.
 
-# Initializing LCM {#tutorial_c_initialize}
+## Initializing LCM
 
 The first task for any application that uses LCM is to
 initialize the library.  Here's an example of that (and how to clean
 up after itself as well):
 
-\code
+``` C
 #include <lcm/lcm.h>
 
 int main(int argc, char ** argv)
@@ -46,11 +46,11 @@ int main(int argc, char ** argv)
     lcm_destroy(lcm);
     return 0;
 }
-\endcode
+``` 
 
 The function lcm_create() allocates and initializes an instance of
-\ref lcm_t, which represents a connection to an LCM network.  The single
-argument can be \c NULL as shown above, to initialize LCM
+<a href="../doxygen_output/c_cpp/html/group__LcmC__lcm__t.html#gabb730c9e49442a4bcf400e0f2fef7576">lcm_t</a>, which represents a connection to an LCM network.  The single
+argument can be `NULL` as shown above, to initialize LCM
 with default settings.  The defaults initialized are suitable for communicating
 with other LCM applications on the local computer.  The argument can also be a
 string specifying the underlying communications mechanisms.
@@ -61,13 +61,13 @@ see the API reference for lcm_create().
 Once you're all done, it's a good idea to call lcm_destroy() to clean
 up any resources used by LCM.
     
-# Publishing a message {#tutorial_c_publishing}
+## Publishing a message
 
 When you create an LCM data type and generate C code with <tt>lcm-gen</tt>,
 that data type will then be available as a C struct with the same name.  For
 <tt>example_t</tt>, the C struct that gets generated looks like this:
     
-\code
+``` C
 typedef struct _exlcm_example_t exlcm_example_t;
 struct _exlcm_example_t
 {
@@ -79,14 +79,14 @@ struct _exlcm_example_t
     char*      name;
     int8_t     enabled;
 };
-\endcode
+``` 
 
 Notice here that fixed-length arrays in LCM appear as fixed-length C arrays.
 Variable length arrays appear as pointers in C.  More on that below.
     
 We can instantiate and then publish some sample data as follows:
     
-\code
+``` C
 #include <lcm/lcm.h>
 #include "exlcm_example_t.h"
 
@@ -117,20 +117,20 @@ main(int argc, char ** argv)
     lcm_destroy(lcm);
     return 0;
 }
-\endcode
+``` 
 
 The full example is available in runnable form as
 <tt>examples/c/send_message.c</tt> in the LCM source distribution.
 
 For the most part, this example should be pretty straightforward.
-Note that \c my_data.ranges refers to a variable length array defined by the
+Note that `my_data.ranges`  refers to a variable length array defined by the
 <tt>example_t</tt> LCM type, and is represented by a pointer in the generated
 C struct.  It is up to the programmer to set this pointer to an array of the
-proper type, and set \c my_data.num_ranges to a value smaller or equal to the
-number of elements in that array.  When the message is encoded, \c
-my_data.num_ranges determines how many elements will actually be read and
-transmitted from \c my_data.ranges.  If \c my_data.num_ranges is set to 0, the
-value of \c my_data.ranges is ignored.
+proper type, and set `my_data.num_ranges` to a value smaller or equal to the
+number of elements in that array.  When the message is encoded,
+`my_data.num_ranges` determines how many elements will actually be read and
+transmitted from `my_data.ranges` .  If `my_data.num_ranges` is set to 0, the
+value of `my_data.ranges`  is ignored.
 
 The call to exlcm_example_t_publish() serializes the data into a byte stream and
 transmits the packet using LCM to any interested receivers.  The string
@@ -139,7 +139,7 @@ transmitted with each packet that identifies the contents to receivers.
 Receivers subscribe to different channels using this identifier, allowing
 uninteresting data to be discarded quickly and efficiently.
 
-# Receiving LCM Messages {#tutorial_c_receive}
+## Receiving LCM Messages
 
 As discussed above, each LCM message is transmitted with an attached channel
 name.  You can use these channel names to determine which LCM messages your
@@ -154,7 +154,7 @@ being transmitted over the network, this program will not see them because it
 only has a subscription to the <tt>"EXAMPLE"</tt> channel.  A
 particular instance of LCM may have an unlimited number of subscriptions.
 
-\code
+``` C
 #include <stdio.h>
 #include <inttypes.h>
 #include <lcm/lcm.h>
@@ -195,7 +195,7 @@ main(int argc, char ** argv)
     lcm_destroy(lcm);
     return 0;
 }
-\endcode
+``` 
 
 The full example is available in runnable form as
 <tt>examples/c/listener.c</tt> in the LCM source distribution.

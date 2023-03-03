@@ -1,5 +1,5 @@
-LCM UDP Multicast Protocol Description {#udp_multicast_protocol}
-====
+# LCM UDP Multicast Protocol Description
+
 
 Conceptually, an LCM message consists of a channel name and a payload.  The
 channel name is a string identifying the semantic grouping of the message (e.g.
@@ -20,7 +20,7 @@ To subscribe to a messaging channel, an LCM client joins the multicast group
 and inspects each message transmitted to the multicast group, retaining
 messages of interest and discarding the remainder.
 
-# Small messages
+## Small messages
 
 A small message is defined as one where the LCM small message header, channel
 name, and the payload can fit into a single UDP datagram.  Small messages have
@@ -45,7 +45,7 @@ The header is followed by the null-terminated UTF-8 encoding of the channel name
 
 The channel name is followed by the payload.
 
-# Fragmented messages
+## Fragmented messages
 
 Large messages can be split into multiple fragments for transmission.  Each
 fragment is transmitted in a single UDP datagram.  The very first fragment
