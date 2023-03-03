@@ -38,6 +38,15 @@ if(LCM_ENABLE_EXAMPLES)
   add_subdirectory(liblcm-test)
 endif()
 
+# Python
+lcm_option(
+  LCM_ENABLE_PYTHON
+  "Build Python bindings and utilities"
+  PYTHON_FOUND Python)
+if(LCM_ENABLE_PYTHON)
+  add_subdirectory(lcm-python)
+endif()
+
 # Documentation (Main, C/C++, .NET)
 add_subdirectory(docs)
 
@@ -50,15 +59,6 @@ if(LCM_ENABLE_JAVA)
   add_subdirectory(lcm-java)
   add_custom_target(lcm-spy DEPENDS lcm-spy-alias)
   add_custom_target(lcm-logplayer-gui DEPENDS lcm-logplayer-gui-alias)
-endif()
-
-# Python
-lcm_option(
-  LCM_ENABLE_PYTHON
-  "Build Python bindings and utilities"
-  PYTHON_FOUND Python)
-if(LCM_ENABLE_PYTHON)
-  add_subdirectory(lcm-python)
 endif()
 
 # Lua

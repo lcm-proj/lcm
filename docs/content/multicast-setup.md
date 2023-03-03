@@ -1,8 +1,8 @@
-UDP Multicast Setup {#multicast_setup}
-====
-\brief Getting maximum performance on your LAN or local host
+# UDP Multicast Setup
 
-# Using LCM on a single host {#multicast_single_host}
+Getting maximum performance on your LAN or local host
+
+## Using LCM on a single host
 
 Since LCM uses UDP Multicast as a transport mechanism, a valid multicast route
 must always be defined.  This means that to use LCM, even for
@@ -17,17 +17,17 @@ enable multicast traffic by adding multicast entries to your system's routing
 table.  On Linux, you can setup the loopback interface for multicast with the
 following commands:
 
-\verbatim
+``` 
   sudo ifconfig lo multicast
   sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev lo
-\endverbatim
+``` 
     
 Remember, you must always do this to use LCM if your machine is <em>not
 connected</em> to any external network.
 
-# Using LCM across multiple hosts {#multicast_multihost}
+## Using LCM across multiple hosts
 
-## Choosing a TTL {#multicast_ttl}
+### Choosing a TTL
 
 LCM by default uses a time-to-live (TTL) value of 0.  This will prevent any
 LCM packets from being transmitted on the wire.  Only local applications will
@@ -41,11 +41,11 @@ provide a way to set the TTL (e.g. see lcm_create()), so you can set this in
 your code.  Second, if your program does not explicitly set its provider URL,
 then you can use the <tt>LCM_DEFAULT_URL</tt> environment variable.  For
 exaple, in the bash shell:
-\verbatim
+``` 
   export LCM_DEFAULT_URL=udpm://239.255.76.67:7667?ttl=1
-\endverbatim
+``` 
 
-## Using IGMP snooping {#multicast_igmp}
+### Using IGMP snooping
 
 When the multicast protocol was designed, it was intended that on local
 subnets it would act like broadcast traffic.  However, for high-bandwidth
@@ -66,7 +66,7 @@ this, the hosts will eventually stop sending IGMP subscription requests, and
 the switch will "fail open" causing all multicast traffic to be broadcast
 again.
 
-## Firewalls {#multicast_firewalls}
+### Firewalls
 
 If your operating system is running a firewall, then be sure to check its
 settings and make sure that it is allowing UDP Multicast traffic to get
@@ -75,7 +75,7 @@ multicast group and port you're using (defined in the LCM URL).  The exact
 method of doing this depends heavily on the specific firewall software
 installed, so general instructions can't be given here.
 
-## Mixed-speed networks {#multicast_mixed_speed}
+### Mixed-speed networks
 
 If you have a subnet with devices of different speeds, such as 10Mbps links
 mixed with 100Mbps links, be extra careful using multicast.  LCM traffic will
@@ -94,7 +94,7 @@ consumer-grade switches to managed switches, which often have better buffering
 strategies.  As a last resort, separating the slow devices from high-speed
 devices using two levels of switches can also improve the situation.
 
-# Kernel UDP receive buffer sizing {#multicast_kernel_buffer}
+## Kernel UDP receive buffer sizing
 
 When used on a properly shielded local area network, the most common source of
 dropped and lost packets is not electrical disturbances.  Instead, it will
@@ -103,14 +103,14 @@ packets.
 
 Operating system kernels typically allocate both a <em>send buffer</em> and
 <em>receive buffer</em> for a network socket.  The send buffer stores packets
-that the operating system has agreed to transmit (i.e. a call to \c send() was
+that the operating system has agreed to transmit (i.e. a call to `send()` was
 successful) but that it hasn't actually yet transmitted over the network.  The
 receive buffer stores packets that the operating system has received from the
 network, but that the application hasn't yet retrieved.  In both cases, the
 buffers have a maximum capacity, and no new packets can be sent or received if
 that capacity is reached.  In the send case, a call to
-\c send() blocks until there is space in the buffer (or fails with
-\c EAGAIN for non-blocking sockets).  In the receive case, incoming
+`send()` blocks until there is space in the buffer (or fails with
+`EAGAIN` for non-blocking sockets).  In the receive case, incoming
 packets are simply discarded.
     
 When LCM is used in a high-bandwidth application, it may become necessary to
@@ -121,41 +121,20 @@ Configuring the kernel can be done without rebooting, but requires
 superuser privileges. The following table demonstrates how to do this and set
 a 2MB maximum buffer size.
     
-<table>
-<tr><th>OS</th><th>Maximum</th><th>Default</th>
-<tr><td>Linux</td>
-    <td><tt>sysctl -w net.core.rmem_max=2097152</tt></td>
-    <td><tt>sysctl -w net.core.rmem_default=2097152</tt></td>
-</tr><tr>
-    <td>OS/X, FreeBSD, etc.</td>
-    <td><tt>sysctl -w kern.ipc.maxsockbuf=2097152</tt></td>
-    <td>??</td>
-</tr>
-</tr><tr>
-<td>Windows</td>
-<td></td>
-<td>Set registry keys:
-<pre>
-[HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\services\\AFD\\Parameters]
-"DefaultReceiveWindow"=dword:00200000
-"DefaultSendWindow"=dword:00200000
-</pre>
-
-See also:
-1. https://technet.microsoft.com/en-us/library/bb726981.aspx#EBAA
-2. http://stackoverflow.com/questions/18985816/change-default-socket-buffer-size-under-windows
-</td>
-</tr>
-</table>
+| OS | Maximum | Default |
+| -- | ------- | ------- |
+| Linux |  sysctl -w<br>net.core.rmem_max=2097152 | sysctl -w net.core.rmem_default=2097152 |
+| OS/X, FreeBSD, etc. | sysctl -w<br>kern.ipc.maxsockbuf=2097152 | ?? |
+| Windows | | Set registry keys:<br><br>[HKEY_LOCAL_MACHINE\\SYSTEM\\CurrentControlSet\\services\\AFD\\Parameters]<br>"DefaultReceiveWindow"=dword:00200000<br>"DefaultSendWindow"=dword:00200000<br><br>See also:<br><br>1. https://technet.microsoft.com/en-us/library/bb726981.aspx#EBAA<br>2. http://stackoverflow.com/questions/18985816/change-default-socket-buffer-size-under-windows |
 
 Most GNU/Linux distributions also allow setting these permanently using the
 file <tt>/etc/sysctl.conf</tt>.  To do this, add the following
 lines into the file somewhere:
 
-\verbatim
+``` 
     net.core.rmem_max=2097152
     net.core.rmem_default=2097152
-\endverbatim
+``` 
     
 Note that OS/X users may need to increase the incoming
 (<tt>net.inet.udp.recvspace</tt>) and outgoing
@@ -163,17 +142,15 @@ Note that OS/X users may need to increase the incoming
 larger messages. This can be done with
 the following commands:
 
-\verbatim
+``` 
     sysctl -w net.inet.udp.recvspace=209715
     sysctl -w net.inet.udp.maxdgram=65500
-\endverbatim
+``` 
 
 In our initial projects, which involved typical data rates of 10 MB/s, a 2 MB
 receive buffer was generally sufficient.
 
-\note http://www.29west.com/docs/THPM/udp-buffer-sizing.html is also a good source of information on UDP buffer sizing.
-
-# Firewalls {#multicast_firewalls}
+## Firewalls
 
 Systems with overzealous firewalls may prevent UDP multicast traffic from
 reaching an LCM process.  If you are having trouble receiving messages across

@@ -1,7 +1,6 @@
-Tutorial and examples {#tutorial_general}
-====
+# Tutorial and examples
 
-# Introduction {#tutorial_general_intro}
+## Introduction
 
 LCM is a package designed to allow multiple processes to exchange messages in
 a safe and high-performance way.   
@@ -24,27 +23,27 @@ channel.
 This tutorial will walk you through the main tasks for exchange messages
 between two applications:
 
- -# Create a type definition
- -# Initialize LCM in your application
- -# Publish a message
- -# Subscribe to and receive a message
+ - Create a type definition
+ - Initialize LCM in your application
+ - Publish a message
+ - Subscribe to and receive a message
 
-Since the type definitions are language independent, the \ref tut_lcmgen "first step" is the same
+Since the type definitions are language independent, the [first step](tutorial-lcmgen.md) is the same
 for all programming languages.  
 
- - \ref tut_lcmgen "Step 1: Creating a type definition"
+ - [Step 1: Creating a type definition](tutorial-lcmgen.md)
 
 The remaining steps vary across programming
 languages, consult the following sections for language-specific tutorials.
 
- - \ref tut_c "Steps 2-4: C"
- - \ref tut_cpp "Steps 2-4: C++"
- - \ref tut_dotnet "Steps 2-4: C# / .NET"
- - \ref tut_java "Steps 2-4: Java"
- - \ref tut_matlab "Steps 2-4: MATLAB"
- - \ref tut_python "Steps 2-4: Python"
- - \ref tut_lua "Steps 2-4: Lua"
- - \ref tut_go "Steps 2-4: Go"
+ - [Steps 2-4: C](tutorial-c.md)
+ - [Steps 2-4: C++](tutorial-cpp.md)
+ - [Steps 2-4: C# / .NET](tutorial-dotnet.md)
+ - [Steps 2-4: Java](tutorial-java.md)
+ - [Steps 2-4: MATLAB](tutorial-matlab.md)
+ - [Steps 2-4: Python](tutorial-python.md)
+ - [Steps 2-4: Lua](tutorial-lua.md)
+ - [Steps 2-4: Go](tutorial-go.md)
 
 Note that C and C++ are considered to be separate programming languages.  It is
 possible to use the C bindings from C++, but there are also LCM bindings
@@ -54,9 +53,9 @@ Of course, serious projects will need a build system. LCM itself is built with
 [CMake](https://cmake.org/), and provides helper functions to simplify the
 binding generation process for projects built with CMake.
 
- - \ref tut_cmake "Steps 5: Generating bindings with CMake"
+ - [Steps 5: Generating bindings with CMake](tutorial-cmake.md)
 
-# Additional examples
+## Additional examples
 
 Additional examples are provided with the source distribution of LCM.
 

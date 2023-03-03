@@ -1,5 +1,6 @@
-Defining a data type - \c example_t {#tut_lcmgen}
-====
+# LCM-gen Tutorial
+
+## Defining a data type - `example_t`
 
 When exchanging messages between two applications, you may have
 many different types of data.  LCM allows you to define these types as
@@ -11,7 +12,9 @@ defined in a language-neutral specification that looks very similar to C.
 Let's define an example type called <tt>example_t</tt>.  Create
 a file called <tt>example_t.lcm</tt> with the following contents.  
 
-\include types/example_t.lcm
+
+```{literalinclude} ../../examples/types/example_t.lcm
+```
 
 The file is fairly straightforward, and consists of two parts: a package
 name, and a structure definition. The package defines a namespace for the data
@@ -20,7 +23,7 @@ namespace in C++, package in Java and Python, etc.).
 
 The structure definition is a list of data fields, each with a name and a
 type.  A number of primitive types are available for use, some of which are
-shown above.  The \ref type_specification_primitives "LCM type specification"
+shown above.  The [LCM type specification](./lcm-type-ref.md#primitive-types)
 has a complete listing of primitive types.
 
 The <tt>lcm-gen</tt> tool, distributed with LCM, converts message type
@@ -32,32 +35,31 @@ NULL-terminated <tt>char *</tt>.  Note that unsigned types are not defined,
 since there is no equivalent in Java.
 
 Additionally, you can define fixed-size or variable-length arrays.  In this
-example, \p position is a \c double array of length 3, and \p ranges is a
-variable-length \c int16_t array.  The length of \p ranges is specified by the
-\c num_ranges field.
+example, `position` is a `double` array of length 3, and `ranges` is a
+variable-length `int16_t` array.  The length of `ranges` is specified by the
+`num_ranges` field.
 
 Although not shown in this example, you can build up more complex types by
 referring to any other LCM types in the definition of your struct.  The
 <tt>examples/</tt> directory in the LCM source distribution contains more
 example type definitions.  This feature, and others are all described in more
-detail in the \ref type_specification "LCM type specification".
+detail in the [LCM type specification](./lcm-type-ref.md#primitive-types).
 
-# Generating language-specific bindings {#tutorial_general_lcmgen}
+## Generating language-specific bindings
 
 Run <tt>lcm-gen</tt> with the arguments listed in a row from the following
 table to generate bindings for the programming language of your choice.
 
-<table>
-<tr><th>Language</th><th>lcm-gen usage</th></tr>
-<tr><td>C</td><td><tt>lcm-gen -c example_t.lcm</tt></tr>
-<tr><td>C++</td><td><tt>lcm-gen -x example_t.lcm</tt></tr>
-<tr><td>Java</td><td><tt>lcm-gen -j example_t.lcm</tt></tr>
-<tr><td>Lua</td><td><tt>lcm-gen -l example_t.lcm</tt></tr>
-<tr><td>Python</td><td><tt>lcm-gen -p example_t.lcm</tt></tr>
-<tr><td>C#</td><td><tt>lcm-gen --csharp example_t.lcm</tt></tr>
-<tr><td>MATLAB</td><td>Generate Java code</tr>
-<tr><td>Go</td><td>lcm-gen -g example_t.lcm</td></tr>
-</table>
+| Language | lcm-gen usage |
+| -------- | ------------- |
+| C | lcm-gen -c example_t.lcm |
+| C++ | lcm-gen -x example_t.lcm |
+| Java | lcm-gen -j example_t.lcm |
+| Lua | lcm-gen -l example_t.lcm |
+| Python | lcm-gen -p example_t.lcm |
+| C# | lcm-gen --csharp example_t.lcm |
+| MATLAB | Generate Java code |
+| Go | lcm-gen -g example_t.lcm</td> |
 
 You can pass additional arguments to <tt>lcm-gen</tt> to adjust its behavior
 for each programming language.  Run <tt>lcm-gen -h</tt> to get a full list of

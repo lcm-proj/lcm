@@ -1,9 +1,8 @@
-LCM Type Specification Language {#type_specification}
-====
+# LCM Type Specification Language
 
-\brief The usage and features of the LCM type language.
+The usage and features of the LCM type language.
 
-# Introduction {#type_specification_intro}
+## Introduction
 
 In addition to providing a set of communications primitives, LCM
 includes utilities for generating platform-independent marshalling
@@ -16,19 +15,19 @@ described elsewhere. Note that it is possible to use the data
 marshalling features of LCM independently of LCM's communication
 facilities.
 
-## Design Goals {#type_specification_design_goals}
+### Design Goals
 
 The primary design goals of the LCM marshalling facility are:
 
-\li Provide a simple mechanism to define complex types that would be
+- Provide a simple mechanism to define complex types that would be
 immediately comfortable to users of C and Java
-\li Provide first class support for a wide variety of client languages
-\li Abstract away platform-specific details such as byte ordering
-\li Maximize the amount of compile-time and run-time type safety
-\li Be able to detect message type incompatibilities, such as when two
+- Provide first class support for a wide variety of client languages
+- Abstract away platform-specific details such as byte ordering
+- Maximize the amount of compile-time and run-time type safety
+- Be able to detect message type incompatibilities, such as when two
 applications have different versions of the same datatype
-\li Produce space-efficient encoded messages
-\li Minimize encoding and decoding computational
+- Produce space-efficient encoded messages
+- Minimize encoding and decoding computational
 costs
 
 The current version of LCM achieves these goals with only a few
@@ -36,7 +35,7 @@ compromises. In some cases, a least-common-denominator approach
 was used to ensure that all platforms supported the features
 provided by LCM.
 
-# Type Specifications {#type_specification_spec}
+## Type Specifications
 
 Type specifications are contained in files with an ".lcm" file type. They are
 conventionally named in lower case with underscores between words: e.g., the
@@ -45,14 +44,14 @@ type "wind_speed_t" is defined in the file "wind_speed_t.lcm". The utility
 language-dependent implementation.
   
 
-## Structs {#type_specification_structs}
+### Structs
     
 LCM structs are compound types consisting of other types. We begin with a
 simple struct named "temperature_t" that contains a 64 bit integer named
 "utime" and a 64 bit floating point number named "degCelsius". Two types of
 comments are also illustrated.
     
-\code
+``` C
 struct temperature_t 
 {
     int64_t   utime;         // Timestamp, in microseconds
@@ -64,7 +63,7 @@ struct temperature_t
      */
     double    degCelsius;    
 }
-\endcode
+``` 
 
 This declaration must appear in a file named <tt>temperature_t.lcm</tt>.
     
@@ -74,27 +73,27 @@ this eliminates the possibility of circular references.
 Before we go further, let's take a look at the various primitive types
 available.
 
-\subsubsection type_specification_primitives Primitive Types
+### Primitive Types
       
 LCM supports a number of primitive types: 
-  <table>
-   <tr><th>type</th><th>Description</th></tr>
-   <tr><td><tt>int8_t</tt></td><td>8-bit signed integer</td></tr>
-   <tr><td><tt>int16_t</tt></td><td>16-bit signed integer</td></tr>
-   <tr><td><tt>int32_t</tt></td><td>32-bit signed integer</td></tr>
-   <tr><td><tt>int64_t</tt></td><td>64-bit signed integer</td></tr>
-   <tr><td><tt>float</tt></td><td>32-bit IEEE floating point value</td></tr>
-   <tr><td><tt>double</tt></td><td>64-bit IEEE floating point value</td></tr>
-   <tr><td><tt>string</tt></td><td>UTF-8 string</td></tr>
-   <tr><td><tt>boolean</tt></td><td>true/false logical value</td></tr>
-   <tr><td><tt>byte</tt></td><td>8-bit value</td></tr>
-  </table>
+
+   | type | Description |
+   | ---- | ----------- |
+   | int8_t | 8-bit signed integer |
+   | int16_t | 16-bit signed integer |
+   | int32_t | 32-bit signed integer |
+   | int64_t | 64-bit signed integer |
+   | float | 32-bit IEEE floating point value |
+   | double | 64-bit IEEE floating point value |
+   | string | UTF-8 string |
+   | boolean | true/false logical value |
+   | byte | 8-bit value |
 
 The integer types are all signed (as is necessary to ensure easy
 inter-operation with Java, which lacks unsigned types) and are encoded in
 network byte order.
 
-The type \c byte is represented in C/C++ as `uint8_t`. Languages with a native
+The type `byte` is represented in C/C++ as `uint8_t`. Languages with a native
 `byte` representation use their respective native byte representations (e.g.,
 type `byte` in Java).
 
@@ -102,15 +101,15 @@ Floating point types are encoded using the IEEE 32 and 64 bit formats. An LCM
 implementation may not use any other encoding. The 32 and 64 bit quantities
 are transmitted in network byte order.
 
-The \c boolean type is encoded as a single byte whose value is either 0 or 1.
+The `boolean` type is encoded as a single byte whose value is either 0 or 1.
 An array of N booleans will require N bytes.
 
-The \c string type encodes a NULL-terminated UTF-8 string. The string is sent
+The `string` type encodes a NULL-terminated UTF-8 string. The string is sent
 as a 32 bit integer comprising the total length of string in bytes (including
 terminating NULL character) followed by the bytes of the string (again,
 including the NULL character).
       
-\subsubsection type_specification_arrays Arrays
+### Arrays
  
 LCM supports multi-dimensional arrays consisting of primitives, structs, or
 constant declarations. The number of dimensions in the array are declared by
@@ -118,13 +117,13 @@ the LCM type declaration: you cannot encode an LCM type that consists of a
 variable-dimension array. In contrast, variable-sized arrays are fine.
 Consider this example:
       
-\code
+``` C
 struct point2d_list_t
 {
     int32_t npoints;
     double  points[npoints][2];
 }
-\endcode
+``` 
 
 This example shows a two-dimensional array declaration consisting of both
 variable-length and fixed-length components. In a variable-length declaration,
@@ -141,7 +140,7 @@ being encoded together. In other words, the array above would be encoded in
 the order <tt> points[0][0], points[0][1], points[1][0], points[1][1],
 points[2][0], points[2][1],</tt> etc.
       
-## Constants {#type_specification_constants}
+### Constants
     
 LCM provides a simple way of declaring constants that can subsequently be used
 to populate other data fields. Users are free to use these constants in any
@@ -149,18 +148,18 @@ way they choose: as magic numbers, enumerations, or bitfields.
     
 Constants can be declared by using the const keyword.
 
-\code
+``` C
 struct my_constants_t
 {
     const int32_t YELLOW=1, GOLDENROD=2, CANARY=3;
     const double E=2.8718;
 }
-\endcode
+``` 
     
 Note that types must be declared for constants. All integer and floating point
 types are supported.  String constants are not supported.
     
-# Namespaces {#type_specification_namespaces}
+## Namespaces
   
 LCM allows types to be defined in a namespace, making it easier for users to
 use types from other organizations even if those types have the same name. The
@@ -172,7 +171,7 @@ example of namespaces. Note that the package keyword identifies the namespace
 of the structs defined in that file, and that fully-qualified types are formed
 by concatenating the package and type name, with a period between.
   
-\code
+``` C
 package mycorp;
 
 struct camera_image_t {
@@ -181,12 +180,12 @@ struct camera_image_t {
     jpeg.image_t jpeg_image;
     mit.pose_t   pose;
 }
-\endcode
+``` 
 
 LCM users are encouraged to put their types into a unique namespace and to
 fully-qualify the types of all the member fields.
   
-# Performance Considerations {#type_specification_performance}
+## Performance Considerations
   
 The runtime costs of encoding and decoding with LCM are generally not a system
 bottleneck. The marshalling functions are dramatically faster than an XML
@@ -194,7 +193,7 @@ implementation, but since each member must be individually processed (in order
 to ensure correct byte ordering, for example), LCM is more expensive than
 using raw C structs. That said, LCM's first application used over 40MB/s.
   
-# Fingerprint Computation {#type_specification_fingerprints}
+## Fingerprint Computation
   
 Fingerprints ensure that the encoding and decoding methods agree on the format
 of a data type. The fingerprints are a function, recursively, of all of the
@@ -229,7 +228,7 @@ lcmenum->hash.
   
 PSEUDO-CODE 
 
-\code
+``` 
   v = compute_hash(type, parents)
   
   if type is member of parents
@@ -241,7 +240,7 @@ PSEUDO-CODE
       v += compute_hash(m, [parents, type])
 
   return rot_left(v);
-\endcode
+``` 
 
 
 When encoding/decode a type T, we would use compute_hash(T, []) as the hash
@@ -250,7 +249,7 @@ function.
 
 EXAMPLE
 
-\code
+``` C
 struct A
 {
         B b;
@@ -266,14 +265,14 @@ struct C
 {
         B b;
 }
-\endcode
+``` 
 
   Diagrammatically, we can compute their hashes by showing the children
   of each branch. We use lower case to indicate a terminal leaf (where
   the leaf is the same class as one of its parents).
 
 
-\verbatim
+``` 
          A                B                  C
        /   \              |                  |
       B     C             A                  B
@@ -287,11 +286,11 @@ A() = R{K_A + R{K_B}} + R{K_C + R{K_B}}}
 B() = R{K_B + R{K_A + R{K_C}}}
 
 C() = R{K_C + R{K_B + R{K_A}}}
-\endverbatim
+``` 
 
 Note that without the rotations, B() == C().
 
-## Implementation
+### Implementation
 
 For computing the fingerprint, the algorithm is simply:
 
@@ -314,7 +313,7 @@ type (where computation is then done recursively):
 
 Of course, this should reflect implementations for other languages.
 
-## Related Work {#type_specification_related_work}
+### Related Work
 
 LCM is most similar to XDR, which is used in RPC and is described by RFC4506.
 Both use a C-like syntax (and even C keywords like "struct"). LCM differs in
@@ -333,7 +332,7 @@ space. A more rigid type definition, along with space-efficient and
 computationally-efficient encodings, are better fits for these types of
 applications.
 
-## Development History {#type_specification_history}
+### Development History
 
 LCM's marshalling facilities were created for use on MIT's DARPA
 Urban Challenge vehicle, with development starting during the

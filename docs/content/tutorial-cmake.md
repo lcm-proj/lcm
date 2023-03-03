@@ -1,24 +1,25 @@
-CMake Tutorial {#tut_cmake}
-====
-\brief Generating LCM type bindings with CMake
+# CMake Tutorial
+
+Generating LCM type bindings with CMake
 
 This tutorial will walk you through writing a `CMakeLists.txt` to generate
 bindings for your LCM message types. Please note that this is *not* meant to
 serve as a general CMake tutorial. This tutorial assumes that you are already
 familiar with CMake.
 
-\note
-  This tutorial assumes that you are using CMake 3.1 or later. Some of the
-  features used, especially those related to the creation of a convenient
-  `INTERFACE` library for C++ bindings, are not available in older versions of
-  CMake. If you are using an older version of CMake, you may need to refer to
-  the implementation details of LCM's helper functions, found in
-  `lcmUtilities.cmake`, in order to manually accomplish the tasks that the
-  helper functions would normally do. Note that *all* of the helper functions
-  require CMake 3.1 or later on Windows, and that it is much more difficult to
-  use `lcm-gen` on Windows from within CMake prior to CMake 3.1.
+```{note}
+This tutorial assumes that you are using CMake 3.1 or later. Some of the
+features used, especially those related to the creation of a convenient
+`INTERFACE` library for C++ bindings, are not available in older versions of
+CMake. If you are using an older version of CMake, you may need to refer to
+the implementation details of LCM's helper functions, found in
+`lcmUtilities.cmake`, in order to manually accomplish the tasks that the
+helper functions would normally do. Note that *all* of the helper functions
+require CMake 3.1 or later on Windows, and that it is much more difficult to
+use `lcm-gen` on Windows from within CMake prior to CMake 3.1.
+```
 
-### Initial Setup
+## Initial Setup
 
 The very first thing you'll want to do is to find LCM and include its "use
 file". (A "use file" is a CMake script provided with some packages that adds
@@ -43,7 +44,7 @@ parts. Alternatively, you may want to make them `REQUIRED`.)
 The rest of the CMake logic we will show will typically go in the
 `CMakeLists.txt` that is located with your LCM type files.
 
-### A Simple Example
+## A Simple Example
 
 We'll start with a very simple example that generates a `STATIC` library of
 C language bindings:
@@ -92,7 +93,7 @@ The include directory should be the directory where the bindings are generated.
 Since we didn't pass a `DESTINATION` to `lcm_wrap_types`, it defaulted to the
 current subdirectory of the build tree (`CMAKE_CURRENT_BINARY_DIR`).
 
-### Shared C Libraries
+## Shared C Libraries
 
 Static libraries are ugly. They inflate the size of every binary that consumes
 them, and they can't be replaced with updated versions without recompiling
@@ -139,7 +140,7 @@ enabled. This approach is often preferred as it allows the user to decide if
 they want static libraries or shared libraries, but you can also use `SHARED`
 to enforce building of a shared library.
 
-### C++
+## C++
 
 We probably want to generate at least C++ bindings also. Let's do that now:
 
@@ -191,7 +192,7 @@ would use `target_link_libraries`. (If your project enforces use of CMake 3.3
 or later, or if the bindings you are consuming are build by an external
 project, just use `target_link_libraries`.)
 
-### Python and Java
+## Python and Java
 
 C and C++ are great, but you may well have users that want to consume your LCM
 types with Python or Java. Just as when we added C++, we'll start by adding
@@ -238,7 +239,7 @@ a moment), so for now, the only other change is to build the JAR:
 
 As before, if you require Java, you can omit the `JAVA_FOUND` check.
 
-### Installing Everything
+## Installing Everything
 
 First, let's revisit our variable names:
 
@@ -314,7 +315,7 @@ Note that exporting JAR files requires CMake 3.7 or later, or copying
 (Note that *consumers* of exported JAR's don't require CMake 3.7; the created
 export files are perfectly usable with much older versions of CMake.)
 
-### Other Useful Tidbits
+## Other Useful Tidbits
 
 We did not cover every possible argument to `lcm_wrap_types`. Most of the
 options accepted by `lcm-gen` are available through `lcm_wrap_types`. See

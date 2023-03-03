@@ -51,30 +51,3 @@ lcm_copy_file_target(lcm-python-init
 )
 
 install(FILES lcm/__init__.py DESTINATION ${PYTHON_SITE}/lcm)
-
-find_program(EPYDOC_EXECUTABLE epydoc)
-if(NOT EPYDOC_EXECUTABLE)
-  message(WARNING
-    "epydoc was not found; Python documentation will not be generated")
-  return()
-endif()
-
-if(NOT "$ENV{PYTHONPATH}" STREQUAL "")
-  if(WIN32)
-    set(EXTRA_PYTHON_PATH ";$ENV{PYTHONPATH}")
-  else()
-    set(EXTRA_PYTHON_PATH ":$ENV{PYTHONPATH}")
-  endif()
-else()
-  set(EXTRA_PYTHON_PATH "")
-endif()
-
-add_custom_target(doc-python
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${lcm_BINARY_DIR}/docs/html/python
-  COMMAND ${CMAKE_COMMAND} -E env
-    "PYTHONPATH=${CMAKE_BINARY_DIR}/${PYTHON_SITE}${EXTRA_PYTHON_PATH}"
-    ${EPYDOC_EXECUTABLE} --config ${lcm_SOURCE_DIR}/docs/epydoc.cfg
-  WORKING_DIRECTORY ${lcm_BINARY_DIR}/docs
-  DEPENDS doc-clean)
-
-add_dependencies(doc doc-python)

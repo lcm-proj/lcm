@@ -1,12 +1,9 @@
-Build Instructions {#build_instructions}
-====
+# Build Instructions
 
-[TOC]
+Source releases may be obtained from [the releases page](https://github.com/lcm-proj/lcm/releases).
 
-Source releases may be obtained from https://github.com/lcm-proj/lcm/releases.
-
-You may also build the latest development version by cloning the git repository,
-https://github.com/lcm-proj/lcm.git.
+You may also build the latest development version by cloning the [git
+repository](https://github.com/lcm-proj/lcm.git).
 
 The following instructions assume that you have obtained a copy of the source,
 either by unpacking a release archive or cloning the git repository, and that
@@ -14,7 +11,7 @@ your initial working directory contains the source code. (For release archives,
 this includes descending into the top level `lcm-X.Y.Z` subdirectory.)
 
 Regardless of platform, CMake 3.1 or later is required. Binaries may be
-obtained from https://cmake.org/download/. Sufficiently recent Linux
+obtained from [https://cmake.org/download/](https://cmake.org/download/). Sufficiently recent Linux
 distributions may provide a new enough CMake via their package managers.
 
 Please note that these instructions refer to the latest release of LCM. As the
@@ -23,7 +20,7 @@ release or the latest `master`, we recommend referring to the copy of this
 document (`docs/content/build-instructions.md`) found in your source
 distribution.
 
-# CMake Overview {#build_cmake}
+## CMake Overview
 
 These instructions assume that you will build in a directory named `build` as
 a direct subdirectory of the source directory, and that you will use the
@@ -35,7 +32,7 @@ generators. To users familiar with CMake, we recommend using
 A detailed description of how to use CMake is not specific to LCM and is beyond
 the scope of these instructions.
 
-# Ubuntu / Debian {#build_ubuntu_debian}
+## Ubuntu and Debian
 
 Required packages:
   - build-essential
@@ -58,12 +55,12 @@ From a terminal, run the following commands.
     $ make
     $ sudo make install
 
-# OS X {#build_osx}
+## OS X
 
 There are several ways to build LCM on OS X, none of which are necessarily
 better than the others.
 
-## Homebrew
+### Homebrew
 
 Install Homebrew packages
 
@@ -79,10 +76,10 @@ Download and build LCM.
     $ make
     $ make install
 
-# Windows {#build_windows}
+## Windows
 
 Requirements:
- - GLib for Windows (http://www.gtk.org).  You'll need the following packages
+ - GLib for Windows ([http://www.gtk.org](http://www.gtk.org)).  You'll need the following packages
   - GLib (Run-time, dev)
   - gettext-runtime (Run-time)
 
@@ -93,17 +90,17 @@ Building:
 
 LCM is officially supported on Visual Studio 2015.
 
-# Other / General {#build_other}
+## Other / General
 
 On other POSIX.1-2001 systems (e.g., other GNU/Linux distributions, FreeBSD,
 Solaris, etc.) the only major requirement is to install the GLib 2.x
 development files and CMake.  If possible, a Java development kit and Python
 should also be installed.  Then follow the same instructions as for
-[Ubuntu / Debian](#build_ubuntu_debian).
+[Ubuntu / Debian](#ubuntu-and-debian).
 
-# Post Install {#build_post}
+## Post Install
 
-## Linux {#build_post_linux}
+### Linux
 
 In the following, replace `$LCM_INSTALL_PREFIX` with the prefix to which
 LCM was installed (by default, `/usr/local`), and replace `$LCM_LIBRARY_DIR`

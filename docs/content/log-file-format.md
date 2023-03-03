@@ -1,5 +1,4 @@
-LCM Log File format {#log_file_format}
-====
+# LCM Log File format
 
 Conceptually, an LCM Log file is an ordered list of events.  Each event has
 four fields:
@@ -11,7 +10,7 @@ timestamp    | monotonically increasing 64-bit integer that identifies the numbe
 channel      | UTF-8 string identifying the LCM channel on which the message was received.
 data         | binary blob consisting of the exact message received.
 
-# Event Encoding
+## Event Encoding
 
 Each event is encoded as a binary structure consisting of a header, followed by the channel and the data.
 
