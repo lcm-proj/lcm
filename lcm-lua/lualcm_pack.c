@@ -754,7 +754,7 @@ static void impl_unpack_byte(lua_State *L, const uint8_t *buf, size_t *offset, s
 {
     /* unpack as a Lua "byte string" which is really just a string */
     const uint8_t *bytes = (const uint8_t *) (buf + *offset);
-    lua_pushlstring(L, bytes, bytes_size);
+    lua_pushlstring(L, (const char*)bytes, bytes_size);
     *offset += bytes_size * sizeof(uint8_t);
 }
 
@@ -897,7 +897,7 @@ static void impl_pack_byte(lua_State *L, uint8_t *buf, size_t *offset, int *stac
                            size_t bytes_size, bool swap)
 {
     size_t other_bytes_size;
-    const uint8_t *other_bytes = luaL_checklstring(L, *stack_pos, &other_bytes_size);
+    const uint8_t *other_bytes = (const uint8_t *)luaL_checklstring(L, *stack_pos, &other_bytes_size);
     uint8_t *bytes = (uint8_t *) (buf + *offset);
 
     int i;
