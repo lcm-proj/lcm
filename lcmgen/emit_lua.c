@@ -433,12 +433,12 @@ static void _emit_encode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls, lc
         !strcmp("int16_t", tn) || !strcmp("int32_t", tn) || !strcmp("int64_t", tn) ||
         !strcmp("float", tn) || !strcmp("double", tn)) {
         if (fixed_len) {
-            emit(indent, "table.insert(buf_table, lcm._pack.pack('>%s%c', unpack(%s)))", len,
+            emit(indent, "table.insert(buf_table, lcm._pack.pack('>%s%c', table.unpack(%s)))", len,
                  _struct_format(lm), accessor);
         } else {
             emit(indent,
                  "table.insert(buf_table, lcm._pack.pack(string.format('>%%d%c', self.%s), "
-                 "unpack(%s)))",
+                 "table.unpack(%s)))",
                  _struct_format(lm), len, accessor);
         }
     } else {
