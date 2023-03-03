@@ -19,9 +19,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Install Dependencies
+        run: |
+          sudo apt install doxygen liblua5.4-dev
+          pip install sphinx-rtd-theme Sphinx myst-parser
+
       - name: Build Docs
         run: |
-          sudo apt install doxygen
           cmake -B ${{github.workspace}}/build
           cd build
           make doc
@@ -29,7 +33,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: '${{github.workspace}}/build/docs/html'
+          path: '${{github.workspace}}/build/docs/_build'
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v1
