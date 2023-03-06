@@ -195,7 +195,7 @@ int CheckLcmType(const lcmtest::primitives_list_t *msg, int expected)
         for (i = 0; i < n; i++)
             CHECK_FIELD(ex->ranges[i], -i, "%d");
         char expected_name[100];
-        sprintf(expected_name, "%d", -n);
+        snprintf(expected_name, sizeof(expected_name), "%d", -n);
         if (strcmp(expected_name, ex->name.c_str())) {
             info("Expected msg->items[%d].name to be %s, got %s instead", n, expected_name,
                  ex->name.c_str());
@@ -259,7 +259,7 @@ int CheckLcmType(const lcmtest::primitives_t *msg, int expected)
     for (i = 0; i < n; i++)
         CHECK_FIELD(msg->ranges[i], i, "%d");
     char expected_name[100];
-    sprintf(expected_name, "%d", n);
+    snprintf(expected_name, sizeof(expected_name), "%d", n);
     if (strcmp(expected_name, msg->name.c_str())) {
         info("Expected msg->expected_name to be %s, got %s instead", expected_name,
              msg->name.c_str());
