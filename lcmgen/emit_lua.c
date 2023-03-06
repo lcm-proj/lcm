@@ -56,8 +56,10 @@ static void mkdir_with_parents(const char *path, mode_t mode)
     int len = strlen(path);
     for (int i = 0; i < len; i++) {
         if (path[i] == '/') {
-            char *dirpath = (char *) malloc(i + 1);
-            strncpy(dirpath, path, i);
+
+            char* dirpath = malloc(strlen(path)+1);
+            strcpy(dirpath, path);
+
             dirpath[i] = 0;
 
             mkdir(dirpath, mode);

@@ -285,7 +285,7 @@ static int _recv_message_fragment(lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     }
 
     if (channel!=NULL) {
-        strncpy (fbuf->channel, channel, sizeof (fbuf->channel));
+        memcpy (fbuf->channel, channel, sizeof (fbuf->channel));
     }
     
 #ifdef __linux__
