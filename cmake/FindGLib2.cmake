@@ -45,7 +45,6 @@ function(_glib2_add_target TARGET LIBRARY)
   endforeach()
 
   find_package_handle_standard_args(GLib2_${TARGET}
-    NAME_MISMATCHED
     FOUND_VAR GLib2_${TARGET}_FOUND
     REQUIRED_VARS ${_deps}
   )
