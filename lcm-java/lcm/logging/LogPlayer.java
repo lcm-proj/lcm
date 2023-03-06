@@ -769,6 +769,7 @@ public class LogPlayer extends JComponent
             long localOffset = 0;
             long logOffset = 0;
             long last_e_utime = 0;
+            double last_positionfraction = 0;
 
             double lastspeed = 0;
 
@@ -779,6 +780,9 @@ public class LogPlayer extends JComponent
             try {
                 while (!stopflag)
                 {
+                    // read position fraction before getting to next event to be able to get back to it if we pause
+		    last_positionfraction = log.getPositionFraction();
+
                     Log.Event e = log.readNext();
 
                     if (speed != lastspeed) {
@@ -839,8 +843,11 @@ public class LogPlayer extends JComponent
                     // the stop flag before we blindly proceed.
                     // (This ameliorates but does not solve an
                     // intrinsic race condition)
-                    if (stopflag)
+                    if (stopflag){
+                        // if we stop for whatever reason we need to get back to where we were at
+                        log.seekPositionFraction(last_positionfraction);
                         break;
+		    }
 
                     Filter f = filterMap.get(e.channel);
                     if (f == null) {
