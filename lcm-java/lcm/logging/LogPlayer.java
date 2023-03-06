@@ -989,46 +989,61 @@ public class LogPlayer extends JComponent
         int optind;
         String channelFilterRegex = null;
         boolean invertChannelFilter = false;
-        for(optind=0; optind<args.length; optind++) {
+
+
+        for (optind = 0; optind < args.length; optind++) {
+            boolean hasParam = optind + 1 < args.length;
             String c = args[optind];
-            if(c.equals("-h") || c.equals("--help")) {
+
+            if (c.equals("-h") || c.equals("--help")) {
                 usage();
-            } else if(c.equals("-l") || c.equals("--lcm-url") || c.startsWith("--lcm-url=")) {
+
+            } else if (c.equals("-l") || c.equals("--lcm-url") || c.startsWith("--lcm-url=")) {
                 String optarg = null;
-                if(c.startsWith("--lcm-url=")) {
-                    optarg=c.split("=")[1];
-                } else if(optind < args.length) {
+                if (c.startsWith("--lcm-url=")) {
+                    String[] parts = c.split("=", 2);
+
+                    if (parts.length == 2 && !parts[1].isEmpty())
+                        optarg = parts[1];
+                } else if (hasParam) {
                     optind++;
                     optarg = args[optind];
                 }
-                if(null == optarg) {
+                if (null == optarg) {
                     usage();
                 } else {
                     lcmurl = optarg;
                 }
-            } else if (c.equals("-p") || c.equals("--paused")){
-            	startPaused = true;
-            }else if(c.equals("-f") || c.equals("--filter") || c.startsWith("--filter=")) {
-            	String optarg = null;
-                if(c.startsWith("--filter=")) {
-                    optarg=c.split("=")[1];
-                } else if(optind < args.length) {
+            } else if (c.equals("-p") || c.equals("--paused")) {
+                startPaused = true;
+
+            } else if (c.equals("-f") || c.equals("--filter") || c.startsWith("--filter=")) {
+                String optarg = null;
+                if (c.startsWith("--filter=")) {
+                    String[] parts = c.split("=", 2);
+                    if (parts.length == 2 && !parts[1].isEmpty())
+                        optarg = parts[1];
+                } else if (hasParam) {
                     optind++;
                     optarg = args[optind];
                 }
-                if(null == optarg) {
+                if (null == optarg) {
                     usage();
                 } else {
-                	channelFilterRegex = optarg;
+                    channelFilterRegex = optarg;
                 }
-            } else if (c.equals("-v") || c.equals("--invert-filter")){
-            	invertChannelFilter = true;
-            } else if (c.startsWith("-")){
+            } else if (c.equals("-v") || c.equals("--invert-filter")) {
+                invertChannelFilter = true;
+
+            } else if (c.startsWith("-")) {
+                // !! This does not allow the common unix pattern of passing
+                // ["--", "--strangely-named-file"] after all named arguments
                 usage();
-            } else if (logFile!=null) //there should only be 1 non-flag argument
-            	usage();
+
+            } else if (logFile != null) // there should only be 1 non-flag argument
+                usage();
             else {
-            	logFile = c;
+                logFile = c;
             }
         }
 
