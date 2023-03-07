@@ -180,6 +180,7 @@ static void dbg_init()
             if (mode->d_name == NULL) {
                 fprintf(stderr, "Warning: Unknown debug option: "
                         "\"%s\"\n", name);
+                free(env);
                 return;
             }
 
@@ -193,6 +194,7 @@ static void dbg_init()
             }
 
         }
+        free(env);
     }
 }
 
