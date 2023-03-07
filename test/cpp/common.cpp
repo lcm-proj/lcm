@@ -182,7 +182,7 @@ int CheckLcmType(const lcmtest::primitives_list_t *msg, int expected)
         const lcmtest::primitives_t *ex = &msg->items[n];
         CHECK_FIELD(ex->i8, -(n % 100), "%d");
         CHECK_FIELD(ex->i16, -n * 10, "%d");
-        CHECK_FIELD(ex->i64, (int64_t)(-n * 10000), "%jd");
+        CHECK_FIELD(ex->i64, (int64_t)(-n * 10000), "%" PRId64);
         CHECK_FIELD(ex->position[0], (double) -n, "%f");
         CHECK_FIELD(ex->position[1], (double) -n, "%f");
         CHECK_FIELD(ex->position[2], (double) -n, "%f");
@@ -195,7 +195,7 @@ int CheckLcmType(const lcmtest::primitives_list_t *msg, int expected)
         for (i = 0; i < n; i++)
             CHECK_FIELD(ex->ranges[i], -i, "%d");
         char expected_name[100];
-        sprintf(expected_name, "%d", -n);
+        snprintf(expected_name, sizeof(expected_name), "%d", -n);
         if (strcmp(expected_name, ex->name.c_str())) {
             info("Expected msg->items[%d].name to be %s, got %s instead", n, expected_name,
                  ex->name.c_str());
@@ -246,7 +246,7 @@ int CheckLcmType(const lcmtest::primitives_t *msg, int expected)
     int n = expected;
     CHECK_FIELD(msg->i8, n % 100, "%d");
     CHECK_FIELD(msg->i16, n * 10, "%d");
-    CHECK_FIELD(msg->i64, (int64_t)(n * 10000), "%jd");
+    CHECK_FIELD(msg->i64, (int64_t)(n * 10000), "%" PRId64);
     CHECK_FIELD(msg->position[0], (double) n, "%f");
     CHECK_FIELD(msg->position[1], (double) n, "%f");
     CHECK_FIELD(msg->position[2], (double) n, "%f");
@@ -259,7 +259,7 @@ int CheckLcmType(const lcmtest::primitives_t *msg, int expected)
     for (i = 0; i < n; i++)
         CHECK_FIELD(msg->ranges[i], i, "%d");
     char expected_name[100];
-    sprintf(expected_name, "%d", n);
+    snprintf(expected_name, sizeof(expected_name), "%d", n);
     if (strcmp(expected_name, msg->name.c_str())) {
         info("Expected msg->expected_name to be %s, got %s instead", expected_name,
              msg->name.c_str());

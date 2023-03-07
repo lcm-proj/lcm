@@ -413,6 +413,9 @@ static size_t impl_get_required_buffer_size(impl_pack_op_t *ops, size_t num_ops)
         case DATATYPE_HASH:
             buf_size += ops[i].repeat * sizeof(uint64_t);
             break;
+        case DATATYPE_UNKNOWN:
+            fprintf(stderr, "WARNING! Encountered unknown datatype.\n");
+            break;
         }
     }
 
@@ -459,6 +462,10 @@ static int impl_get_required_stack_size(impl_pack_op_t *ops, size_t num_ops)
         case DATATYPE_HASH:
             num_values += ops[i].repeat;
             break;
+        case DATATYPE_UNKNOWN:
+            fprintf(stderr, "WARNING! Encountered unknown datatype.\n");
+            num_values += 1;
+            break;;
         }
     }
 
@@ -519,6 +526,9 @@ static bool impl_unpack_buffer(lua_State *L, impl_pack_op_t *ops, size_t num_ops
             break;
         case DATATYPE_HASH:
             impl_unpack_hash(L, buf, &offset, ops[i].repeat, swap);
+            break;
+        case DATATYPE_UNKNOWN:
+            fprintf(stderr, "WARNING! Encountered unknown datatype.\n");
             break;
         }
     }
@@ -588,6 +598,9 @@ static bool impl_pack_buffer(lua_State *L, impl_pack_op_t *ops, size_t num_ops,
             break;
         case DATATYPE_HASH:
             impl_pack_hash(L, buf, &offset, &stack_pos, ops[i].repeat, swap);
+            break;
+        case DATATYPE_UNKNOWN:
+            fprintf(stderr, "WARNING! Encountered unknown datatype.\n");
             break;
         }
     }
@@ -741,7 +754,7 @@ static void impl_unpack_byte(lua_State *L, const uint8_t *buf, size_t *offset, s
 {
     /* unpack as a Lua "byte string" which is really just a string */
     const uint8_t *bytes = (const uint8_t *) (buf + *offset);
-    lua_pushlstring(L, bytes, bytes_size);
+    lua_pushlstring(L, (const char*)bytes, bytes_size);
     *offset += bytes_size * sizeof(uint8_t);
 }
 
@@ -884,7 +897,7 @@ static void impl_pack_byte(lua_State *L, uint8_t *buf, size_t *offset, int *stac
                            size_t bytes_size, bool swap)
 {
     size_t other_bytes_size;
-    const uint8_t *other_bytes = luaL_checklstring(L, *stack_pos, &other_bytes_size);
+    const uint8_t *other_bytes = (const uint8_t *)luaL_checklstring(L, *stack_pos, &other_bytes_size);
     uint8_t *bytes = (uint8_t *) (buf + *offset);
 
     int i;

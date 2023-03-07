@@ -30,8 +30,10 @@
 
 #include <stdlib.h>
 
-int utf8_check(const char *s, size_t length)
+int utf8_check(const char *p, size_t length)
 {
+    const unsigned char* s = (const unsigned char*)p;
+
     size_t i = 0;
     while (i < length) {
         if (s[i] < 0x80) /* 0xxxxxxx */

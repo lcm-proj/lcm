@@ -340,7 +340,7 @@ static char *go_typename(const char *const package, const char *const typepackag
 
     // Add fingerprint suffix
     if (fingerprint != 0) {
-        g_string_append_printf(name, "_%lx", (uint64_t) fingerprint);
+        g_string_append_printf(name, "_%" PRIu64, (uint64_t) fingerprint);
     }
 
     char *ret = name->str;
@@ -357,7 +357,7 @@ char *go_filename(lcmgen_t *lcm, const char *const dir, const char *const name,
                   uint64_t fingerprint, const char *const suffix)
 {
     if (fingerprint != 0)
-        return g_strdup_printf("%s/%s_%lx%s.go", dir, name, fingerprint, suffix);
+        return g_strdup_printf("%s/%s_%" PRIu64 "%s.go", dir, name, (uint64_t) fingerprint, suffix);
     else
         return g_strdup_printf("%s/%s%s.go", dir, name, suffix);
 }

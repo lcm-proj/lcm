@@ -812,7 +812,11 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index (pc->enums, i);
 
         char path[PATH_MAX];
-        sprintf (path, "%s%s.py", package_dir, le->enumname->shortname);
+        int ret = snprintf(path, sizeof(path), "%s%s.py", package_dir, le->enumname->shortname);
+        if (ret < 0) {
+            fprintf(stderr, "Error: failed to create path string");
+            return -1;
+        }
 
         if(init_py_fp && 
            !g_hash_table_lookup(init_py_imports, le->enumname->shortname))
@@ -893,7 +897,11 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         lcm_struct_t *ls = (lcm_struct_t *) g_ptr_array_index(pc->structs, i);
 
         char path[PATH_MAX];
-        sprintf(path, "%s%s.py", package_dir, ls->structname->shortname);
+        int ret = snprintf(path, sizeof(path), "%s%s.py", package_dir, ls->structname->shortname);
+        if (ret < 0) {
+            fprintf(stderr, "Error: failed to create path string");
+            return -1;
+        } 
 
         if (init_py_fp && !g_hash_table_lookup(init_py_imports, ls->structname->shortname))
             fprintf(init_py_fp, "from .%s import %s\n", ls->structname->shortname,

@@ -3,7 +3,7 @@ name: test
 on: [push, pull_request]
 
 env:
-  BUILD_TYPE: Release
+  CMAKE_FLAGS: -DCMAKE_CXX_FLAGS="-Werror" -DCMAKE_C_FLAGS="-Werror"
 
 jobs:
 
@@ -18,14 +18,14 @@ jobs:
         sudo apt install liblua5.4-dev lua5.4
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}}
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{github.workspace}}/build
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}}
+      run: ctest
 
   macos:
     runs-on: macos-latest
@@ -38,14 +38,14 @@ jobs:
         brew install lua
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}}
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
+      run: cmake --build ${{github.workspace}}/build
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest -C ${{env.BUILD_TYPE}}
+      run: ctest
 
   docs:
     runs-on: ubuntu-latest

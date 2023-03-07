@@ -212,7 +212,7 @@ static int impl_hash_rotate(lua_State *L)
     /* do a fancy modulo, because 64 is 2^8, result is always positive*/
     rotation &= 63;
 
-    hashu->hash = hashu->hash << rotation | hashu->hash >> 64 - rotation;
+    hashu->hash = hashu->hash << rotation | hashu->hash >> (64 - rotation);
 
     /* pop the rotation int from the stack, return the hash */
     lua_pop(L, 1);
