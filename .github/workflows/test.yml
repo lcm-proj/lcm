@@ -69,3 +69,26 @@ jobs:
         with:
           name: archived-docs
           path: build/docs/_build
+
+  examples:
+    strategy:
+      matrix:
+        directory: [c, cpp]
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        sudo apt install liblcm-dev
+
+    - name: Configure CMake
+      run: cmake -B build ${{env.CMAKE_FLAGS}}
+      working-directory: ${{github.workspace}}/examples/${{ matrix.directory }}
+
+    - name: Build
+      run: cmake --build build
+      working-directory: ${{github.workspace}}/examples/${{ matrix.directory }}
+
