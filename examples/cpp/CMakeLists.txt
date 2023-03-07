@@ -1,34 +1,27 @@
 cmake_minimum_required(VERSION 3.1)
 
-find_package(lcm REQUIRED)
-include(${LCM_USE_FILE})
+project(lcm_cpp_example)
 
-# Put all message definition files in the type directory in one list
-FILE(GLOB example_message_definitions "${CMAKE_CURRENT_LIST_DIR}/../types/*.lcm")
+# Import LCM via pkgconfig.
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(LCM REQUIRED lcm)
 
-lcm_wrap_types(CPP_HEADERS cpp_install_headers
-               ${example_message_definitions}
-)
+# Use lcm-gen to generate headers.
+find_program(LCM_GEN_EXECUTABLE lcm-gen)
+add_custom_target(exlcm
+  COMMAND ${LCM_GEN_EXECUTABLE} -x ../../types/*.lcm)
+include_directories("${lcm_cpp_example_BINARY_DIR}")
 
-# Create library from all the messages
-lcm_add_library(example_messages-cpp CPP ${cpp_install_headers})
-target_include_directories(example_messages-cpp INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
-
-# If one does 'make install, the gengerated cpp headers will end up in a subdirectory in the current directory
-lcm_install_headers(${cpp_install_headers}
-                    DESTINATION ${CMAKE_CURRENT_LIST_DIR}
-)
-
-# Create executables for the three example programs, linking all of them to our messages library and lcm
+# Create executables for the example programs.
 
 add_executable(listener "listener.cpp")
-lcm_target_link_libraries(listener example_messages-cpp
-                                   ${LCM_NAMESPACE}lcm)
+add_dependencies(listener exlcm)
+target_link_libraries(listener ${LCM_LIBRARIES})
 
 add_executable(send_message "send_message.cpp")
-lcm_target_link_libraries(send_message example_messages-cpp
-                                       ${LCM_NAMESPACE}lcm)
+add_dependencies(send_message exlcm)
+target_link_libraries(send_message ${LCM_LIBRARIES})
                                        
 add_executable(read_log "read_log.cpp")
-lcm_target_link_libraries(read_log example_messages-cpp
-                                   ${LCM_NAMESPACE}lcm)
+add_dependencies(read_log exlcm)
+target_link_libraries(read_log ${LCM_LIBRARIES})
