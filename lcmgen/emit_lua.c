@@ -993,7 +993,11 @@ static int emit_package(lcmgen_t *lcm, _package_contents_t *pc)
         lcm_struct_t *ls = (lcm_struct_t *) g_ptr_array_index(pc->structs, i);
 
         char path[PATH_MAX];
-        sprintf(path, "%s%s.lua", package_dir, ls->structname->shortname);
+        int ret = snprintf(path, sizeof(path), "%s%s.lua", package_dir, ls->structname->shortname);
+        if (ret < 0) {
+            fprintf(stderr, "Error: failed to create path string");
+            return -1;
+        }
 
         if (init_lua_fp) {
             // XXX add the 'require' to the appropriate init.lua

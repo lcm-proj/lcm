@@ -141,12 +141,20 @@ static int open_logfile(logger_t *logger)
         /* Loop through possible file names until we find one that doesn't
          * already exist.  This way, we never overwrite an existing file. */
         do {
-            snprintf(logger->fname, sizeof(logger->fname), "%s.%02d", logger->fname_prefix,
+            int ret = snprintf(logger->fname, sizeof(logger->fname), "%s.%02d", logger->fname_prefix,
                      logger->next_increment_num);
+            if (ret < 0) {
+                fprintf(stderr, "Error: failed to create filename string");
+                return 1;
+            }
             logger->next_increment_num++;
         } while (g_file_test(logger->fname, G_FILE_TEST_EXISTS));
     } else if (logger->rotate > 0) {
-        snprintf(logger->fname, sizeof(logger->fname), "%s.0", logger->fname_prefix);
+        int ret = snprintf(logger->fname, sizeof(logger->fname), "%s.0", logger->fname_prefix);
+        if (ret < 0) {
+            fprintf(stderr, "Error: failed to create filename string");
+            return 1;
+        }
     } else {
         strcpy(logger->fname, logger->fname_prefix);
         if (!(logger->force_overwrite || logger->append)) {
