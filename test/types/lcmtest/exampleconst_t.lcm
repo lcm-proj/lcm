@@ -18,4 +18,9 @@ struct exampleconst_t
     const double E=2.8718;
 
     const int64_t LONG = 0xf0f0f0f0;
+
+    // Add a member to this struct so that we don't fail a -Wall -Werror
+    // compilation since without this it would result in `thislen` not being
+    // used in the t_decode_array function.
+    int8_t my_octet;
 }
