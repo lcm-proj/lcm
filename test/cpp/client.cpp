@@ -38,7 +38,7 @@ class EchoTest {
 
         for (int iter = 0; iter < num_trials_; iter++) {
             echo_msg_len_ = rand() % (maxlen - minlen) + minlen;
-            for (int i = 0; i < echo_msg_len_; i++)
+            for (unsigned int i = 0; i < echo_msg_len_; i++)
                 echo_data_[i] = rand() % 256;
 
             lcm_.publish(test_channel_, echo_data_, echo_msg_len_);
@@ -56,7 +56,7 @@ class EchoTest {
     }
 
   private:
-    void Handler(const lcm::ReceiveBuffer *rbuf, const std::string &channel)
+    void Handler(const lcm::ReceiveBuffer *rbuf, const std::string &)
     {
         if (rbuf->data_size != echo_msg_len_)
             return;
@@ -67,7 +67,7 @@ class EchoTest {
 
     lcm::LCM lcm_;
     int num_trials_;
-    int echo_msg_len_;
+    unsigned int echo_msg_len_;
     uint8_t *echo_data_;
     int response_count_;
     lcm::Subscription *subscription_;
@@ -118,7 +118,7 @@ class TypedTest {
     }
 
   private:
-    void Handler(const lcm::ReceiveBuffer *rbuf, const std::string &channel, const LcmType *msg)
+    void Handler(const lcm::ReceiveBuffer *, const std::string &, const LcmType *msg)
     {
         if (CheckLcmType(msg, response_count_ + 1)) {
             response_count_++;
@@ -172,7 +172,7 @@ class LambdaTest {
         LcmType msg;
         int response_count = 0;
         lcm::LCM::HandlerFunction<LcmType> handler = [&response_count](
-            const lcm::ReceiveBuffer *rbuf, const std::string &channel, const LcmType *msg) {
+            const lcm::ReceiveBuffer *, const std::string &, const LcmType *msg) {
             if (CheckLcmType(msg, response_count + 1)) {
                 response_count++;
             }

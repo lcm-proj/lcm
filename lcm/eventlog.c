@@ -130,9 +130,9 @@ int lcm_eventlog_write_event(lcm_eventlog_t *l, lcm_eventlog_event_t *le)
     if (0 != fwrite32(l->f, le->datalen))
         return -1;
 
-    if (le->channellen != fwrite(le->channel, 1, le->channellen, l->f))
+    if (le->channellen != (int32_t)fwrite(le->channel, 1, le->channellen, l->f))
         return -1;
-    if (le->datalen != fwrite(le->data, 1, le->datalen, l->f))
+    if (le->datalen != (int32_t)fwrite(le->data, 1, le->datalen, l->f))
         return -1;
 
     l->eventcount++;

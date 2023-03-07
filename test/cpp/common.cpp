@@ -327,7 +327,7 @@ void FillLcmType(int n, lcmtest2::another_type_t *msg)
     msg->val = n;
 }
 
-void ClearLcmType(lcmtest2::another_type_t *msg)
+void ClearLcmType(lcmtest2::another_type_t *)
 {
     return;
 }

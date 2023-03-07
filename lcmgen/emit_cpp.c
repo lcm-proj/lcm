@@ -39,11 +39,6 @@
         fprintf(f, "\n");                 \
     } while (0)
 
-static inline int imax(int a, int b)
-{
-    return (a > b) ? a : b;
-}
-
 static char *dots_to_underscores(const char *s)
 {
     char *p = strdup(s);

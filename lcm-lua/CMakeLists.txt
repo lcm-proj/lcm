@@ -4,7 +4,6 @@ set(lcm_lua_sources
   lualcm_lcm.c
   lualcm_pack.c
   lua_ref_helper.c
-  test_unref.c
   utf8_check.c
 )
 

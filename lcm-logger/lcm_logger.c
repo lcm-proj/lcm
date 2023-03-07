@@ -191,8 +191,6 @@ static void *write_thread(void *user_data)
 {
     logger_t *logger = (logger_t *) user_data;
 
-    int num_splits = 0;
-
     while (1) {
         void *msg = g_async_queue_pop(logger->write_queue);
 
@@ -214,7 +212,6 @@ static void *write_thread(void *user_data)
                 rotate_logfiles(logger);
             if (0 != open_logfile(logger))
                 exit(1);
-            num_splits++;
             logger->logsize = 0;
             logger->last_report_logsize = 0;
         }

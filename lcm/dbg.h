@@ -159,10 +159,10 @@ static void dbg_init()
     if (!dbg_env) {
         return;
     } else {
-        char env[256];
-        char *name;
+        char* env = malloc(strlen(dbg_env)+1);
+        strcpy(env, dbg_env);
 
-        strncpy(env, dbg_env, sizeof(env));
+        char *name;
         for (name = strtok(env,","); name; name = strtok(NULL, ",")) {
             int cancel;
             dbg_mode_t *mode;
@@ -180,6 +180,7 @@ static void dbg_init()
             if (mode->d_name == NULL) {
                 fprintf(stderr, "Warning: Unknown debug option: "
                         "\"%s\"\n", name);
+                free(env);
                 return;
             }
 
@@ -193,6 +194,7 @@ static void dbg_init()
             }
 
         }
+        free(env);
     }
 }
 
