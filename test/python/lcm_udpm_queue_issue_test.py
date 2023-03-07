@@ -6,19 +6,18 @@ import time
 from lcm import LCM
 
 
-def lcm_handle_all(lcm, timeout=0.01):
+def lcm_handle_all(lcm, timeout=10):
     total_count = 0
     while True:
         count = lcm.handle_timeout(timeout)
         if count == 0:
             return total_count
         total_count += count
-    return total_count
 
 
 def unique_lcm_url(s):
     """Returns a unique LCM url given a string."""
-    rand = [ord(c) for c in hashlib.sha256(s).digest()]
+    rand = [c for c in hashlib.sha256(s.encode()).digest()]
     return "udpm://239.{:d}.{:d}.{:d}:{:d}?ttl=0".format(
         rand[0], rand[1], rand[2], 20000 + rand[3])
 
