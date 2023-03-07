@@ -978,9 +978,17 @@ public class LogPlayer extends JComponent
         System.err.println("                         (default: \"\")");
         System.err.println("  -v, --invert-filter    Invert the filtering regex. Only enable channels");
         System.err.println("                         matching CHAN.");
+        System.err.println("  -t, --title [LABEL]    Display LABEL in the window title.");
+        System.err.println("                         Defaults to the log filename.");
+        System.err.println("  --title-url            Display the LCM URL in the window title.");
         System.err.println("  -h, --help             Shows this help text and exits");
         System.err.println("");
         System.exit(1);
+    }
+
+    static class WindowTitleOptions {
+        String label = null;
+        boolean showURL = false;
     }
 
     public static void main(String args[])
@@ -1000,6 +1008,7 @@ public class LogPlayer extends JComponent
         String channelFilterRegex = null;
         boolean invertChannelFilter = false;
 
+        WindowTitleOptions titleOptions = new WindowTitleOptions();
 
         for (optind = 0; optind < args.length; optind++) {
             boolean hasParam = optind + 1 < args.length;
@@ -1024,6 +1033,7 @@ public class LogPlayer extends JComponent
                 } else {
                     lcmurl = optarg;
                 }
+
             } else if (c.equals("-p") || c.equals("--paused")) {
                 startPaused = true;
 
@@ -1042,8 +1052,24 @@ public class LogPlayer extends JComponent
                 } else {
                     channelFilterRegex = optarg;
                 }
+
             } else if (c.equals("-v") || c.equals("--invert-filter")) {
                 invertChannelFilter = true;
+
+            } else if (c.equals("-t") || c.equals("--title")) {
+                String optarg = null;
+                if (hasParam) {
+                    optind++;
+                    optarg = args[optind];
+                }
+                if (null == optarg) {
+                    usage();
+                } else {
+                    titleOptions.label = optarg;
+                }
+
+            } else if (c.equals("--title-url")) {
+                titleOptions.showURL = true;
 
             } else if (c.startsWith("-")) {
                 // !! This does not allow the common unix pattern of passing
@@ -1098,7 +1124,17 @@ public class LogPlayer extends JComponent
                 String filename = p.logName.getText();
 
                 String title = "LogPlayer";
-                title += spacer + filename;
+
+                if (null != titleOptions.label) {
+                    title += spacer + titleOptions.label;
+                } else {
+                    title += spacer + filename;
+                }
+
+                if (titleOptions.showURL){
+                    String url = null == lcmurl ? LCM.getDefaultURL() : lcmurl;
+                    title += spacer + url;
+                }
 
                 f.setTitle(title);
             }  
