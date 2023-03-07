@@ -469,18 +469,21 @@ public class LogPlayer extends JComponent
         return chooser.getSelectedFile().getPath();
     }
 
-    void openDialog()
+    boolean openDialog()
     {
         doStop();
         int res = jfc.showOpenDialog(this);
-        if (res != JFileChooser.APPROVE_OPTION)
-            return;
+        if (res != JFileChooser.APPROVE_OPTION) {
+            return false;
+        }
 
         try {
             setLog(jfc.getSelectedFile().getPath(), true);
         } catch (IOException ex) {
-            System.out.println("Exception: "+ex);
+            System.out.println("Exception: " + ex);
+            return false;
         }
+        return true;
     }
 
     void savePreferences() throws IOException
@@ -1078,10 +1081,27 @@ public class LogPlayer extends JComponent
             if (invertChannelFilter)
             	p.invertChannelFilter();
 
-            if (logFile !=null)
+            if (logFile != null) {
                 p.setLog(logFile, !startPaused);
-            else
-                p.openDialog();
+            } else {
+                // `openDialog` blocks execution flow until the window closes
+                boolean pathGiven = p.openDialog();
+                if (!pathGiven) {
+                    f.dispose();
+                    System.err.println("No log chosen. Exiting.");
+                    System.exit(1);
+                }
+            }
+
+            {
+                String spacer = "  •  ";
+                String filename = p.logName.getText();
+
+                String title = "LogPlayer";
+                title += spacer + filename;
+
+                f.setTitle(title);
+            }  
 
         } catch (IOException ex) {
             System.out.println("Exception: "+ex);
