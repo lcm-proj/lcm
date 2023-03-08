@@ -60,8 +60,10 @@ foreach(lcm_lib lcm lcm-static)
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>
   )
 
+  target_include_directories(${lcm_lib} PRIVATE ${GLIB_INCLUDE_DIRS})
+
   target_link_libraries(${lcm_lib} PRIVATE
-    GLib2::glib
+    ${GLIB_LDFLAGS}
     ${CMAKE_THREAD_LIBS_INIT}
   )
 endforeach()
