@@ -24,6 +24,7 @@ add_python_test(Python::byte_array_test byte_array_test.py)
 add_python_test(Python::lcm_file_test lcm_file_test.py)
 add_python_test(Python::lcm_memq_test lcm_memq_test.py)
 add_python_test(Python::lcm_thread_test lcm_thread_test.py)
+add_python_test(Python::lcm_udpm_queue_issue_test lcm_udpm_queue_issue_test.py)
 
 add_python_test(Python::client_server
   ../run_client_server_test.py
