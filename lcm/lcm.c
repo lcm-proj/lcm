@@ -13,7 +13,6 @@
 
 #ifdef WIN32
 #include <winsock2.h>
-#include "windows/WinPorting.h"
 #else
 #include <sys/select.h>
 typedef int SOCKET;

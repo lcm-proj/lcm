@@ -11,7 +11,7 @@ extern "C" {
 #include "lcmtest_primitives_list_t.h"
 #include "lcmtest_primitives_t.h"
 
-#ifndef _MSC_VER
+#ifndef WIN32
 char *_strdup(const char *src);
 #endif
 

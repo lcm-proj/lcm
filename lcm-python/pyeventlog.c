@@ -2,9 +2,6 @@
 #include <Python.h>
 
 #include <lcm/eventlog.h>
-#ifdef WIN32
-#include <lcm/windows/WinPorting.h>
-#endif
 
 // to support python 2.5 and earlier
 #ifndef Py_TYPE

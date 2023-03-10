@@ -14,10 +14,6 @@
 #include "../lcm/lcm_version.h"
 #include "lcmgen.h"
 
-#ifdef WIN32
-#include <lcm/windows/WinPorting.h>
-#endif
-
 #include "getopt.h"
 #include "tokenize.h"
 

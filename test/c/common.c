@@ -54,7 +54,7 @@ inline int c99_snprintf(char *outBuf, size_t size, const char *format, ...)
 #endif
 
 // Avoid clashing with predefined _strdup
-#ifndef _MSC_VER
+#ifndef WIN32
 char *_strdup(const char *src)
 {
     int len = strlen(src);

@@ -2,9 +2,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef WIN32
-#define __STDC_FORMAT_MACROS
-#endif
 #include <assert.h>
 #include <inttypes.h>
 
@@ -14,10 +11,6 @@
 #include "lcmgen.h"
 
 #include "getopt.h"
-
-#ifdef WIN32
-#include <lcm/windows/WinPorting.h>
-#endif
 
 #define INDENT(n) (4 * (n))
 

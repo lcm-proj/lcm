@@ -7,16 +7,9 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#ifdef WIN32
-#define __STDC_FORMAT_MACROS
-#include <inttypes.h>
-#include <lcm/windows/WinPorting.h>
-#include <windows.h>
-#else
 #include <fcntl.h>
 #include <inttypes.h>
 #include <unistd.h>
-#endif
 
 #include <glib.h>
 

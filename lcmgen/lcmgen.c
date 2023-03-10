@@ -1,32 +1,12 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#ifdef WIN32
-#define __STDC_FORMAT_MACROS  // Enable integer types
-#endif
 #include <ctype.h>
 #include <inttypes.h>
 
 #include <sys/stat.h>
 #include <sys/types.h>
-#ifndef WIN32
 #include <unistd.h>
-#else  // These should be coming from stdint.h - but not working?
-#include <lcm/windows/WinPorting.h>
-// clang-format off
-#define INT8_MIN     ((int8_t)_I8_MIN)
-#define INT8_MAX     _I8_MAX
-#define INT16_MIN    ((int16_t)_I16_MIN)
-#define INT16_MAX    _I16_MAX
-#define INT32_MIN    ((int32_t)_I32_MIN)
-#define INT32_MAX    _I32_MAX
-#define INT64_MIN    ((int64_t)_I64_MIN)
-#define INT64_MAX    _I64_MAX
-#define UINT8_MAX    _UI8_MAX
-#define UINT16_MAX   _UI16_MAX
-#define UINT32_MAX   _UI32_MAX
-// clang-format on
-#endif
 
 #include "lcmgen.h"
 #include "tokenize.h"

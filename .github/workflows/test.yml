@@ -91,6 +91,45 @@ jobs:
         cmake --build build
         build/lcm_log_writer build/example.log
 
+  windows:
+    runs-on: windows-latest
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: mingw64
+        update: false
+        install: >-
+          git
+          make
+        pacboy: >-
+          toolchain:p
+          cmake:p
+          glib2:p
+          gtest:p
+  
+    - name: Configure CMake
+      run: cmake -B build
+
+    - name: Build
+      run: cmake --build build
+
+    # Needs to be installed for the tests to be able to find DLLs.
+    - name: Install
+      run: cmake --install build --prefix /mingw64/
+
+    - name: Test
+      run: |
+        cd build
+        # Copy DLLs that don't get installed into the directories of the tests that need them.
+        cp test/types/liblcm-test-types.dll test/c/
+        ctest
+
   docs:
     runs-on: ubuntu-latest
     steps:

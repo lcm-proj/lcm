@@ -1,6 +1,7 @@
 
 #define _WIN32_WINNT 0x0501
 #include <stdio.h>
+#include <cstdint>
 #include <winsock2.h>
 #include <Mswsock.h>
 
@@ -205,7 +206,7 @@ size_t sendmsg(SOCKET s, const struct msghdr *msg, int flags)
 
 int gettimeofday(struct timeval *tv, struct timezone *tz)  // tz is not used in any lcm code
 {
-    _int64 ftUNIXTime, ftNow, secNow, usec;
+    int64_t ftUNIXTime, ftNow, secNow, usec;
     SYSTEMTIME UNIXStart;
 
     UNIXStart.wYear = 1970;

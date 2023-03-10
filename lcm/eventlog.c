@@ -11,10 +11,6 @@
 #include "eventlog.h"
 #include "ioutils.h"
 
-#ifdef WIN32
-#include "./windows/WinPorting.h"
-#endif
-
 #define MAGIC ((int32_t) 0xEDA1DA01L)
 
 lcm_eventlog_t *lcm_eventlog_create(const char *path, const char *mode)
