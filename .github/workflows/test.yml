@@ -42,6 +42,13 @@ jobs:
         cmake -B build ${{env.CMAKE_FLAGS}}
         cmake --build build
 
+    - name: Build and Run C++ Log Writer Example
+      working-directory: ${{github.workspace}}/examples/cpp/lcm_log_writer
+      run: |
+        cmake -B build ${{env.CMAKE_FLAGS}}
+        cmake --build build
+        LD_LIBRARY_PATH=/usr/local/lib/ build/lcm_log_writer build/example.log
+
   macos:
     runs-on: macos-latest
 
@@ -76,6 +83,13 @@ jobs:
       run: |
         cmake -B build ${{env.CMAKE_FLAGS}}
         cmake --build build
+
+    - name: Build and Run C++ Log Writer Example
+      working-directory: ${{github.workspace}}/examples/cpp/lcm_log_writer
+      run: |
+        cmake -B build ${{env.CMAKE_FLAGS}}
+        cmake --build build
+        build/lcm_log_writer build/example.log
 
   docs:
     runs-on: ubuntu-latest
