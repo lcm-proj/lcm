@@ -2,20 +2,23 @@ add_executable(lcm-sink lcm-sink.c)
 target_link_libraries(lcm-sink lcm)
 
 add_executable(lcm-source lcm-source.c)
-target_link_libraries(lcm-source lcm ${lcm-winport})
+target_link_libraries(lcm-source lcm)
 
 add_executable(lcm-tester lcm-tester.c)
 target_link_libraries(lcm-tester lcm ${GLIB_LDFLAGS})
 target_include_directories(lcm-tester PRIVATE ${GLIB_INCLUDE_DIRS})
+if(WIN32)
+  target_link_libraries(lcm-tester wsock32 ws2_32)
+endif()
 
 add_executable(lcm-example lcm-example.c)
 target_link_libraries(lcm-example lcm)
 if(WIN32)
-  target_link_libraries(lcm-example lcm-winport ws2_32)
+  target_link_libraries(lcm-example ws2_32)
 endif()
 
 add_executable(lcm-logfilter lcm-logfilter.c)
-target_link_libraries(lcm-logfilter lcm ${lcm-winport} ${GLIB_LDFLAGS})
+target_link_libraries(lcm-logfilter lcm ${GLIB_LDFLAGS})
 target_include_directories(lcm-logfilter PRIVATE ${GLIB_INCLUDE_DIRS})
 
 add_executable(lcm-buftest-receiver buftest-receiver.c)

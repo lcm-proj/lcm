@@ -66,6 +66,10 @@ foreach(lcm_lib lcm lcm-static)
     ${GLIB_LDFLAGS}
     ${CMAKE_THREAD_LIBS_INIT}
   )
+
+  if(WIN32)
+    target_link_libraries(${lcm_lib} PRIVATE wsock32 ws2_32)
+  endif()
 endforeach()
 
 generate_export_header(lcm STATIC_DEFINE LCM_STATIC)

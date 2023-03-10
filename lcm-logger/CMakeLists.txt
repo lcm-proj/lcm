@@ -1,7 +1,6 @@
 add_executable(lcm-logger lcm_logger.c glib_util.c)
 target_link_libraries(lcm-logger
   lcm
-  ${lcm-winport}
   ${GLIB_LDFLAGS}
 )
 target_include_directories(lcm-logger PRIVATE ${GLIB_INCLUDE_DIRS})
@@ -9,7 +8,6 @@ target_include_directories(lcm-logger PRIVATE ${GLIB_INCLUDE_DIRS})
 add_executable(lcm-logplayer lcm_logplayer.c)
 target_link_libraries(lcm-logplayer
   lcm
-  ${lcm-winport}
   ${GLIB_LDFLAGS}
 )
 target_include_directories(lcm-logplayer PRIVATE ${GLIB_INCLUDE_DIRS})

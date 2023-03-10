@@ -4,10 +4,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef WIN32
-#include <lcm/windows/WinPorting.h>
-#endif
-
 #include "getopt.h"
 
 #define GOO_BOOL_TYPE 1
