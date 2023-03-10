@@ -15,21 +15,12 @@ def lcm_handle_all(lcm, timeout=10):
         total_count += count
 
 
-def unique_lcm_url(s):
-    """Returns a unique LCM url given a string."""
-    rand = [c for c in hashlib.sha256(s.encode()).digest()]
-    return "udpm://239.{:d}.{:d}.{:d}:{:d}?ttl=0".format(
-        rand[0], rand[1], rand[2], 20000 + rand[3])
-
-
 FAKE_CHANNEL = "FAKE_CHANNEL"
 
 
 class TestLcmUtil(unittest.TestCase):
     def test_lcm_handle_all(self):
-        # Explicitly use udpm, but try to avoid crossing into other LCM urls.
-        lcm_url = unique_lcm_url(str(os.getpid()))
-        lcm = LCM(lcm_url)
+        lcm = LCM('udpm://239.107.71.73:20042?ttl=0')
         received = []
 
         def callback(channel, msg):
