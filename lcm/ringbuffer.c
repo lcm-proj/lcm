@@ -1,11 +1,11 @@
+#include "ringbuffer.h"
+
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "ringbuffer.h"
 
 // must be power of 2
 #define ALIGNMENT 32

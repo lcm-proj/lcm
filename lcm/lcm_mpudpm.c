@@ -22,10 +22,9 @@
 #include "dbg.h"
 #include "lcm.h"
 #include "lcm_internal.h"
+#include "lcmtypes/channel_port_map_update_t.h"
 #include "ringbuffer.h"
 #include "udpm_util.h"
-
-#include "lcmtypes/channel_port_map_update_t.h"
 
 // Lets reserve channels starting with #! for internal use
 #define RESERVED_CHANNEL_PREFIX "#!"
@@ -290,7 +289,7 @@ void lcm_mpudpm_destroy(lcm_mpudpm_t *lcm)
     g_mutex_clear(&lcm->transmit_lock);
     if (lcm->p_create_read_thread_mutex) {
         g_mutex_clear(&lcm->create_read_thread_mutex);
-	lcm->p_create_read_thread_mutex = NULL;
+        lcm->p_create_read_thread_mutex = NULL;
         g_cond_clear(&lcm->create_read_thread_cond);
     }
 
@@ -398,7 +397,7 @@ static int recv_message_fragment(lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz
 
     // any existing fragment buffer for this message source?
     lcm_frag_key_t key;
-    key.from = (struct sockaddr_in*)&(lcmb->from);
+    key.from = (struct sockaddr_in *) &(lcmb->from);
     key.msg_seqno = msg_seqno;
     lcm_frag_buf_t *fbuf = lcm_frag_buf_store_lookup(lcm->frag_bufs, &key);
 
@@ -414,7 +413,7 @@ static int recv_message_fragment(lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz
         return 0;
     }
 
-    //if this is the first packet, set some values
+    // if this is the first packet, set some values
     char *channel = NULL;
     if (hdr->fragment_no == 0) {
         channel = (char *) (hdr + 1);
@@ -429,14 +428,14 @@ static int recv_message_fragment(lcm_mpudpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz
     }
 
     // create a new fragment buffer if necessary
-    if(!fbuf){
-        fbuf = lcm_frag_buf_new(*((struct sockaddr_in *) &lcmb->from), msg_seqno,
-                                data_size, fragments_in_msg, lcmb->recv_utime);
+    if (!fbuf) {
+        fbuf = lcm_frag_buf_new(*((struct sockaddr_in *) &lcmb->from), msg_seqno, data_size,
+                                fragments_in_msg, lcmb->recv_utime);
         lcm_frag_buf_store_add(lcm->frag_bufs, fbuf);
     }
 
-    if (channel!=NULL) {
-        memcpy (fbuf->channel, channel, sizeof (fbuf->channel));
+    if (channel != NULL) {
+        memcpy(fbuf->channel, channel, sizeof(fbuf->channel));
     }
 
 #ifdef __linux__
@@ -1345,27 +1344,27 @@ static int mpudpm_self_test(lcm_mpudpm_t *lcm)
     int recvfd = lcm->notify_pipe[0];
 
     do {
-	struct timeval selectto;
-	selectto.tv_sec = (next_retransmit - now) / G_TIME_SPAN_SECOND;
-	selectto.tv_usec = (next_retransmit - now) - selectto.tv_sec;
+        struct timeval selectto;
+        selectto.tv_sec = (next_retransmit - now) / G_TIME_SPAN_SECOND;
+        selectto.tv_usec = (next_retransmit - now) - selectto.tv_sec;
 
         fd_set readfds;
         FD_ZERO(&readfds);
         FD_SET(recvfd, &readfds);
 
-	now = g_get_real_time();
+        now = g_get_real_time();
         if (now > next_retransmit) {
             g_mutex_lock(&lcm->transmit_lock);
             status = publish_message_internal(lcm, SELF_TEST_CHANNEL, (uint8_t *) msg, strlen(msg));
             g_mutex_unlock(&lcm->transmit_lock);
-	    next_retransmit = now + retransmit_interval;
+            next_retransmit = now + retransmit_interval;
         }
 
         status = select(recvfd + 1, &readfds, 0, 0, &selectto);
         if (status > 0 && FD_ISSET(recvfd, &readfds)) {
             lcm_mpudpm_handle(lcm);
         }
-	now = g_get_real_time();
+        now = g_get_real_time();
 
     } while (!success && now < endtime);
 
@@ -1529,7 +1528,7 @@ static int setup_recv_parts(lcm_mpudpm_t *lcm)
         }
 
         // ugly bit with two mutexes because we can't use a GRecMutex with a GCond
-	// TODO: investigate whether this is still true
+        // TODO: investigate whether this is still true
         g_mutex_lock(lcm->p_create_read_thread_mutex);
         g_mutex_unlock(&lcm->receive_lock);
 

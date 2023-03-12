@@ -139,23 +139,22 @@ void lcm_buf_free_data(lcm_buf_t *lcmb, lcm_ringbuf_t *ringbuf);
 /******************** fragment buffer **********************/
 typedef struct _lcm_frag_key {
     uint32_t msg_seqno;
-    struct   sockaddr_in *from;
+    struct sockaddr_in *from;
 } lcm_frag_key_t;
 
 typedef struct _lcm_frag_buf {
-    char            channel[LCM_MAX_CHANNEL_NAME_LENGTH+1];
-    struct          sockaddr_in from;
-    char            *data;
-    uint32_t        data_size;
-    uint16_t        fragments_remaining;
-    uint32_t        msg_seqno;
-    int64_t         last_packet_utime;
-    lcm_frag_key_t  key;
+    char channel[LCM_MAX_CHANNEL_NAME_LENGTH + 1];
+    struct sockaddr_in from;
+    char *data;
+    uint32_t data_size;
+    uint16_t fragments_remaining;
+    uint32_t msg_seqno;
+    int64_t last_packet_utime;
+    lcm_frag_key_t key;
 } lcm_frag_buf_t;
 
-lcm_frag_buf_t *lcm_frag_buf_new(struct sockaddr_in from, uint32_t msg_seqno,
-                                 uint32_t data_size, uint16_t nfragments,
-                                 int64_t first_packet_utime);
+lcm_frag_buf_t *lcm_frag_buf_new(struct sockaddr_in from, uint32_t msg_seqno, uint32_t data_size,
+                                 uint16_t nfragments, int64_t first_packet_utime);
 void lcm_frag_buf_destroy(lcm_frag_buf_t *fbuf);
 
 /******************** fragment buffer store **********************/
@@ -168,7 +167,7 @@ typedef struct _lcm_frag_buf_store {
 
 lcm_frag_buf_store *lcm_frag_buf_store_new(uint32_t max_total_size, uint32_t max_n_frag_bufs);
 void lcm_frag_buf_store_destroy(lcm_frag_buf_store *store);
-lcm_frag_buf_t *lcm_frag_buf_store_lookup(lcm_frag_buf_store *store, lcm_frag_key_t* key);
+lcm_frag_buf_t *lcm_frag_buf_store_lookup(lcm_frag_buf_store *store, lcm_frag_key_t *key);
 
 void lcm_frag_buf_store_remove(lcm_frag_buf_store *store, lcm_frag_buf_t *fbuf);
 void lcm_frag_buf_store_add(lcm_frag_buf_store *store, lcm_frag_buf_t *fbuf);

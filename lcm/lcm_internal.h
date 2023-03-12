@@ -2,6 +2,7 @@
 #define __LCM_INTERNAL_H__
 
 #include <glib.h>
+
 #include "lcm.h"
 
 // Several thread and synchronization API functions (e.g. g_mutex_init,
@@ -13,6 +14,7 @@
 
 #ifdef WIN32
 #include <winsock2.h>
+
 #include "windows/WinPorting.h"
 #else
 // in POSIX systems, the normal read/write/close/pipe functions are fine for

@@ -12,6 +12,7 @@
 #include <cstdio> /* needed for FILE* */
 #include <string>
 #include <vector>
+
 #include "lcm.h"
 
 #if LCM_CXX_11_ENABLED
@@ -664,6 +665,6 @@ class LogFile {
 #define __lcm_cpp_impl_ok__
 #include "lcm-cpp-impl.hpp"
 #undef __lcm_cpp_impl_ok__
-}
+}  // namespace lcm
 
 #endif
