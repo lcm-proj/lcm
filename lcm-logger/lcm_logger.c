@@ -1,15 +1,13 @@
 #include <assert.h>
 #include <errno.h>
 #include <getopt.h>
+#include <glib.h>
+#include <glib/gstdio.h>
+#include <lcm/lcm.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#include <glib.h>
-#include <glib/gstdio.h>
-
-#include <lcm/lcm.h>
 
 // Several thread and synchronization API functions (e.g. g_mutex_init,
 // g_cond_init, g_thread_new, etc) require 2.32
@@ -140,8 +138,8 @@ static int open_logfile(logger_t *logger)
         /* Loop through possible file names until we find one that doesn't
          * already exist.  This way, we never overwrite an existing file. */
         do {
-            int ret = snprintf(logger->fname, sizeof(logger->fname), "%s.%02d", logger->fname_prefix,
-                     logger->next_increment_num);
+            int ret = snprintf(logger->fname, sizeof(logger->fname), "%s.%02d",
+                               logger->fname_prefix, logger->next_increment_num);
             if (ret < 0) {
                 fprintf(stderr, "Error: failed to create filename string");
                 return 1;
@@ -532,7 +530,7 @@ int main(int argc, char *argv[])
     }
 
     logger.time0 = g_get_real_time();
-    logger.max_write_queue_size = (int64_t)(max_write_queue_size_mb * (1 << 20));
+    logger.max_write_queue_size = (int64_t) (max_write_queue_size_mb * (1 << 20));
 
     if (0 != open_logfile(&logger))
         return 1;

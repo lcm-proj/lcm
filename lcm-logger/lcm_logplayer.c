@@ -1,10 +1,8 @@
 #include <getopt.h>
+#include <lcm/lcm.h>
 #include <stdio.h>
 #include <stdlib.h>
-
 #include <string.h>
-
-#include <lcm/lcm.h>
 
 typedef struct logplayer logplayer_t;
 struct logplayer {
