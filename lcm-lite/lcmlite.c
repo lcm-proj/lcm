@@ -1,8 +1,8 @@
-#include <stdint.h>
-#include <string.h>
-#include <stdio.h>
-
 #include "lcmlite.h"
+
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
 
 #define MAGIC_LCM2 0x4c433032
 #define MAGIC_LCM3 0x4c433033
@@ -63,16 +63,14 @@ static inline uint16_t decode_u16(const uint8_t *p)
 // packets.)
 static void deliver_packet(lcmlite_t *lcm, const char *channel, const void *buf, int buf_len)
 {
-//    printf("deliver packet, channel %-30s, size %10d\n", channel, buflen);
+    //    printf("deliver packet, channel %-30s, size %10d\n", channel, buflen);
 
     for (lcmlite_subscription_t *sub = lcm->first_subscription; sub != NULL; sub = sub->next) {
-
         int good = 1;
 
         for (int pos = 0; 1; pos++) {
-
             // special case: does the channel have a wildcard-like expression in it?
-            if (sub->channel[pos] == '.' && sub->channel[pos+1] == '*')
+            if (sub->channel[pos] == '.' && sub->channel[pos + 1] == '*')
                 break;
 
             if (sub->channel[pos] == channel[pos]) {
@@ -95,7 +93,8 @@ static void deliver_packet(lcmlite_t *lcm, const char *channel, const void *buf,
 }
 
 // The caller allocates permanent storage for LCMLite. This initializes
-int lcmlite_init(lcmlite_t *lcm, void (*transmit_packet)(const void *_buf, int buf_len, void *user), void *transmit_user)
+int lcmlite_init(lcmlite_t *lcm, void (*transmit_packet)(const void *_buf, int buf_len, void *user),
+                 void *transmit_user)
 {
     memset(lcm, 0, sizeof(lcmlite_t));
     lcm->transmit_packet = transmit_packet;
@@ -115,19 +114,20 @@ int lcmlite_init(lcmlite_t *lcm, void (*transmit_packet)(const void *_buf, int b
  **/
 int lcmlite_receive_packet(lcmlite_t *lcm, const void *_buf, int buf_len, uint64_t from_addr)
 {
-    uint8_t *buf = (uint8_t*) _buf;
+    uint8_t *buf = (uint8_t *) _buf;
     int buf_pos = 0;
 
     // not even a header's length
     if (buf_len < 4)
         return -1;
 
-    uint32_t magic = decode_u32(&buf[buf_pos]);  buf_pos += 4;
+    uint32_t magic = decode_u32(&buf[buf_pos]);
+    buf_pos += 4;
 
     if (magic == MAGIC_LCM2) {
-
-        uint32_t msg_seq = decode_u32(&buf[buf_pos]);  buf_pos += 4;
-        (void) msg_seq; // quiet unused variable warning.
+        uint32_t msg_seq = decode_u32(&buf[buf_pos]);
+        buf_pos += 4;
+        (void) msg_seq;  // quiet unused variable warning.
 
         // copy out zero-terminated string holding the channel #.
         char channel[LCM_MAX_CHANNEL_LENGTH];
@@ -141,20 +141,24 @@ int lcmlite_receive_packet(lcmlite_t *lcm, const void *_buf, int buf_len, uint64
             channel[channel_len++] = buf[buf_pos++];
         }
         channel[channel_len] = 0;
-        buf_pos++; // skip the zero.
+        buf_pos++;  // skip the zero.
 
         deliver_packet(lcm, channel, &buf[buf_pos], buf_len - buf_pos);
 
     } else if (magic == MAGIC_LCM3) {
-
         if (LCM3_NUM_BUFFERS == 0)
             return -3;
 
-        uint32_t msg_seq = decode_u32(&buf[buf_pos]);           buf_pos += 4;
-        uint32_t msg_size = decode_u32(&buf[buf_pos]);          buf_pos += 4;
-        uint32_t fragment_offset = decode_u32(&buf[buf_pos]);   buf_pos += 4;
-        uint32_t fragment_id = decode_u16(&buf[buf_pos]);       buf_pos += 2;
-        uint32_t fragments_in_msg = decode_u16(&buf[buf_pos]);  buf_pos += 2;
+        uint32_t msg_seq = decode_u32(&buf[buf_pos]);
+        buf_pos += 4;
+        uint32_t msg_size = decode_u32(&buf[buf_pos]);
+        buf_pos += 4;
+        uint32_t fragment_offset = decode_u32(&buf[buf_pos]);
+        buf_pos += 4;
+        uint32_t fragment_id = decode_u16(&buf[buf_pos]);
+        buf_pos += 2;
+        uint32_t fragments_in_msg = decode_u16(&buf[buf_pos]);
+        buf_pos += 2;
 
         int payload_len = buf_len - buf_pos;
 
@@ -177,7 +181,6 @@ int lcmlite_receive_packet(lcmlite_t *lcm, const void *_buf, int buf_len, uint64
 
         // try to find a reassembly buffer for this from_addr that's already in progress
         for (int idx = 0; idx < LCM3_NUM_BUFFERS; idx++) {
-
             if (lcm->fragment_buffers[idx].from_addr == from_addr &&
                 lcm->fragment_buffers[idx].msg_seq == msg_seq) {
                 fbuf = &lcm->fragment_buffers[idx];
@@ -191,13 +194,14 @@ int lcmlite_receive_packet(lcmlite_t *lcm, const void *_buf, int buf_len, uint64
             // Priorities:
             //   1) an idle (complete) buffer
             //   2) the incomplete buffer that received a valid fragment the longest time ago.
-            int32_t max_age = -1; // low scores are good.
+            int32_t max_age = -1;  // low scores are good.
             for (int idx = 0; idx < LCM3_NUM_BUFFERS; idx++) {
                 if (lcm->fragment_buffers[idx].fragments_remaining == 0) {
                     fbuf = &lcm->fragment_buffers[idx];
                     break;
                 } else {
-                    int32_t age = lcm->last_fragment_count - lcm->fragment_buffers[idx].last_fragment_count;
+                    int32_t age =
+                        lcm->last_fragment_count - lcm->fragment_buffers[idx].last_fragment_count;
                     if (age > max_age) {
                         fbuf = &lcm->fragment_buffers[idx];
                         max_age = age;
@@ -206,7 +210,7 @@ int lcmlite_receive_packet(lcmlite_t *lcm, const void *_buf, int buf_len, uint64
             }
 
             if (fbuf == NULL)
-                return -7; // this should never happen
+                return -7;  // this should never happen
 
             // initialize the fragment buffer
             for (int i = 0; i < fragments_in_msg; i++) {
@@ -231,7 +235,7 @@ int lcmlite_receive_packet(lcmlite_t *lcm, const void *_buf, int buf_len, uint64
                 fbuf->channel[channel_len++] = buf[buf_pos++];
             }
             fbuf->channel[channel_len] = 0;
-            buf_pos++; // skip the zero.
+            buf_pos++;  // skip the zero.
         }
 
         if (buf_pos < buf_len)
@@ -263,8 +267,10 @@ int lcmlite_publish(lcmlite_t *lcm, const char *channel, const void *_buf, int b
         // publish non-fragmented message
         uint32_t buf_pos = 0;
 
-        encode_u32(&lcm->publish_buffer[buf_pos], MAGIC_LCM2);      buf_pos += 4;
-        encode_u32(&lcm->publish_buffer[buf_pos], lcm->msg_seq);    buf_pos += 4;
+        encode_u32(&lcm->publish_buffer[buf_pos], MAGIC_LCM2);
+        buf_pos += 4;
+        encode_u32(&lcm->publish_buffer[buf_pos], lcm->msg_seq);
+        buf_pos += 4;
         lcm->msg_seq++;
 
         // copy channel
@@ -272,9 +278,10 @@ int lcmlite_publish(lcmlite_t *lcm, const char *channel, const void *_buf, int b
             lcm->publish_buffer[buf_pos++] = *channel;
             channel++;
         }
-        lcm->publish_buffer[buf_pos++] =0 ;
+        lcm->publish_buffer[buf_pos++] = 0;
 
-        memcpy(&lcm->publish_buffer[buf_pos], _buf, buf_len);       buf_pos += buf_len;
+        memcpy(&lcm->publish_buffer[buf_pos], _buf, buf_len);
+        buf_pos += buf_len;
 
         lcm->transmit_packet(lcm->publish_buffer, buf_pos, lcm->transmit_user);
 
@@ -292,12 +299,18 @@ int lcmlite_publish(lcmlite_t *lcm, const char *channel, const void *_buf, int b
         while (fragment_offset < buf_len) {
             uint32_t buf_pos = 0;
 
-            encode_u32(&lcm->publish_buffer[buf_pos], MAGIC_LCM3);      buf_pos += 4;
-            encode_u32(&lcm->publish_buffer[buf_pos], msg_seq);         buf_pos += 4;
-            encode_u32(&lcm->publish_buffer[buf_pos], buf_len);         buf_pos += 4;
-            encode_u32(&lcm->publish_buffer[buf_pos], fragment_offset); buf_pos += 4;
-            encode_u16(&lcm->publish_buffer[buf_pos], fragment_id);     buf_pos += 2;
-            encode_u16(&lcm->publish_buffer[buf_pos], fragments_in_msg);     buf_pos += 2;
+            encode_u32(&lcm->publish_buffer[buf_pos], MAGIC_LCM3);
+            buf_pos += 4;
+            encode_u32(&lcm->publish_buffer[buf_pos], msg_seq);
+            buf_pos += 4;
+            encode_u32(&lcm->publish_buffer[buf_pos], buf_len);
+            buf_pos += 4;
+            encode_u32(&lcm->publish_buffer[buf_pos], fragment_offset);
+            buf_pos += 4;
+            encode_u16(&lcm->publish_buffer[buf_pos], fragment_id);
+            buf_pos += 2;
+            encode_u16(&lcm->publish_buffer[buf_pos], fragments_in_msg);
+            buf_pos += 2;
 
             // copy channel
             if (fragment_id == 0) {
@@ -305,14 +318,15 @@ int lcmlite_publish(lcmlite_t *lcm, const char *channel, const void *_buf, int b
                     lcm->publish_buffer[buf_pos++] = *channel;
                     channel++;
                 }
-                lcm->publish_buffer[buf_pos++] =0 ;
+                lcm->publish_buffer[buf_pos++] = 0;
             }
 
             uint32_t this_fragment_size = buf_len - fragment_offset;
             if (this_fragment_size > max_fragment_size)
                 this_fragment_size = max_fragment_size;
 
-            memcpy(&lcm->publish_buffer[buf_pos], &((char*) _buf)[fragment_offset], this_fragment_size);
+            memcpy(&lcm->publish_buffer[buf_pos], &((char *) _buf)[fragment_offset],
+                   this_fragment_size);
             buf_pos += this_fragment_size;
 
             lcm->transmit_packet(lcm->publish_buffer, buf_pos, lcm->transmit_user);

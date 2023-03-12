@@ -1,14 +1,14 @@
+#include "lcmgen.h"
+
 #include <assert.h>
-#include <stdlib.h>
-#include <string.h>
 #include <ctype.h>
 #include <inttypes.h>
-
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "lcmgen.h"
 #include "tokenize.h"
 
 #ifdef WIN32

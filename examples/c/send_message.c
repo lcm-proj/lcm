@@ -20,7 +20,9 @@ int main(int argc, char **argv)
         return 1;
 
     exlcm_example_t my_data = {
-        .timestamp = 0, .position = {1, 2, 3}, .orientation = {1, 0, 0, 0},
+        .timestamp = 0,
+        .position = {1, 2, 3},
+        .orientation = {1, 0, 0, 0},
     };
     int16_t ranges[15];
     int i;

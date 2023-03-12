@@ -1,10 +1,10 @@
+#include "tokenize.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "tokenize.h"
 
 static const char single_char_toks[] = "();\",:\'[]";  // no '.' so that name spaces are one token
 static const char op_chars[] = "!~<>=&|^%*+=";

@@ -3,7 +3,6 @@
 #endif
 
 #include <gtest/gtest.h>
-
 #include <lcm/lcm.h>
 
 TEST(LCM_C, InvalidCreation)

@@ -2,12 +2,10 @@
 // desc: utility to selectively extract channels from a logfile into a new one
 
 #include <getopt.h>
+#include <glib.h>
+#include <lcm/lcm.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include <glib.h>
-
-#include <lcm/lcm.h>
 
 static void usage()
 {
@@ -62,14 +60,14 @@ int main(int argc, char **argv)
             double start_time = strtod(optarg, &eptr);
             if (*eptr != 0)
                 usage();
-            start_utime = (int64_t)(start_time * 1000000);
+            start_utime = (int64_t) (start_time * 1000000);
         } break;
         case 'e': {
             char *eptr = NULL;
             double end_time = strtod(optarg, &eptr);
             if (*eptr != 0)
                 usage();
-            end_utime = (int64_t)(end_time * 1000000);
+            end_utime = (int64_t) (end_time * 1000000);
             have_end_utime = 1;
         } break;
         case 'i':

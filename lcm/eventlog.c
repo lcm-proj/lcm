@@ -126,9 +126,9 @@ int lcm_eventlog_write_event(lcm_eventlog_t *l, lcm_eventlog_event_t *le)
     if (0 != fwrite32(l->f, le->datalen))
         return -1;
 
-    if (le->channellen != (int32_t)fwrite(le->channel, 1, le->channellen, l->f))
+    if (le->channellen != (int32_t) fwrite(le->channel, 1, le->channellen, l->f))
         return -1;
-    if (le->datalen != (int32_t)fwrite(le->data, 1, le->datalen, l->f))
+    if (le->datalen != (int32_t) fwrite(le->data, 1, le->datalen, l->f))
         return -1;
 
     l->eventcount++;
@@ -187,7 +187,7 @@ int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *l, int64_t timestamp)
 
     while (1) {
         frac = 0.5 * (frac1 + frac2);
-        off_t offset = (off_t)(frac * file_len);
+        off_t offset = (off_t) (frac * file_len);
         fseeko(l->f, offset, SEEK_SET);
         cur_time = get_event_time(l);
         if (cur_time < 0)

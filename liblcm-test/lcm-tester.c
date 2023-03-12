@@ -9,9 +9,7 @@
 #endif
 
 #include <fcntl.h>
-
 #include <glib.h>
-
 #include <lcm/lcm.h>
 
 static int64_t timestamp_seconds(int64_t v)

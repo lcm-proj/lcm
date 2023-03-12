@@ -32,7 +32,7 @@
 
 int utf8_check(const char *p, size_t length)
 {
-    const unsigned char* s = (const unsigned char*)p;
+    const unsigned char *s = (const unsigned char *) p;
 
     size_t i = 0;
     while (i < length) {

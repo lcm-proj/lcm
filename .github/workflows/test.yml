@@ -152,3 +152,17 @@ jobs:
         with:
           name: archived-docs
           path: build/docs/_build
+
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: |
+          sudo apt install clang-format-12
+
+      - name: Check formatting
+        run: |
+          ./format_code.sh --check

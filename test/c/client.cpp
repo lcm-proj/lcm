@@ -1,10 +1,9 @@
 #include <gtest/gtest.h>
+#include <lcm/lcm.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#include <lcm/lcm.h>
 
 #include "common.h"
 
@@ -18,40 +17,40 @@
 static lcm_t *g_lcm = NULL;
 
 // ====================================== node_t test
-#define MAKE_CLIENT_TEST(type, num_iters)                                                        \
-                                                                                                 \
-    static int g_##type##_response_count = 0;                                                    \
-                                                                                                 \
-    static void type##_handler(const lcm_recv_buf_t *, const char *, const type *msg, void *)    \
-    {                                                                                            \
-        if (!check_##type(msg, g_##type##_response_count + 1)) {                                 \
-            return;                                                                              \
-        }                                                                                        \
-        g_##type##_response_count++;                                                             \
-    }                                                                                            \
-                                                                                                 \
-    static int do_##type##_test(void)                                                            \
-    {                                                                                            \
-        type msg;                                                                                \
-        type##_subscription_t *subs =                                                            \
-            type##_subscribe(g_lcm, "test_" #type "_reply", type##_handler, NULL);               \
-        g_##type##_response_count = 0;                                                           \
-        int result = 1;                                                                          \
-        int iter;                                                                                \
-        for (iter = 0; iter < num_iters && result; iter++) {                                     \
-            fill_##type(iter, &msg);                                                             \
-            type##_publish(g_lcm, "test_" #type, &msg);                                          \
-            if (!lcm_handle_timeout(g_lcm, 500)) {                                               \
-                info(#type " test: Timeout waiting for reply");                                  \
-                result = 0;                                                                      \
-            } else if (g_##type##_response_count != iter + 1) {                                  \
-                info(#type " test: failed on iteration %d", iter);                               \
-                result = 0;                                                                      \
-            }                                                                                    \
-            clear_##type(&msg);                                                                  \
-        }                                                                                        \
-        type##_unsubscribe(g_lcm, subs);                                                         \
-        return result;                                                                           \
+#define MAKE_CLIENT_TEST(type, num_iters)                                                     \
+                                                                                              \
+    static int g_##type##_response_count = 0;                                                 \
+                                                                                              \
+    static void type##_handler(const lcm_recv_buf_t *, const char *, const type *msg, void *) \
+    {                                                                                         \
+        if (!check_##type(msg, g_##type##_response_count + 1)) {                              \
+            return;                                                                           \
+        }                                                                                     \
+        g_##type##_response_count++;                                                          \
+    }                                                                                         \
+                                                                                              \
+    static int do_##type##_test(void)                                                         \
+    {                                                                                         \
+        type msg;                                                                             \
+        type##_subscription_t *subs =                                                         \
+            type##_subscribe(g_lcm, "test_" #type "_reply", type##_handler, NULL);            \
+        g_##type##_response_count = 0;                                                        \
+        int result = 1;                                                                       \
+        int iter;                                                                             \
+        for (iter = 0; iter < num_iters && result; iter++) {                                  \
+            fill_##type(iter, &msg);                                                          \
+            type##_publish(g_lcm, "test_" #type, &msg);                                       \
+            if (!lcm_handle_timeout(g_lcm, 500)) {                                            \
+                info(#type " test: Timeout waiting for reply");                               \
+                result = 0;                                                                   \
+            } else if (g_##type##_response_count != iter + 1) {                               \
+                info(#type " test: failed on iteration %d", iter);                            \
+                result = 0;                                                                   \
+            }                                                                                 \
+            clear_##type(&msg);                                                               \
+        }                                                                                     \
+        type##_unsubscribe(g_lcm, subs);                                                      \
+        return result;                                                                        \
     }
 
 MAKE_CLIENT_TEST(lcmtest2_cross_package_t, 100);

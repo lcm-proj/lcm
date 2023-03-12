@@ -9,7 +9,6 @@
 #endif
 
 #include <fcntl.h>
-
 #include <lcm/lcm.h>
 
 int test_count = 0;

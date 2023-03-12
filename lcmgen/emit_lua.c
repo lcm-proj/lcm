@@ -1,17 +1,15 @@
 #include <assert.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <glib.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#include <fcntl.h>
-#include <inttypes.h>
 #include <unistd.h>
-
-#include <glib.h>
 
 #include "lcmgen.h"
 
@@ -47,7 +45,7 @@ static void mkdir_with_parents(const char *path, mode_t mode)
     g_mkdir_with_parents(path, 0755);
 #else
     int len = strlen(path);
-    char* dirpath = malloc(len+1);
+    char *dirpath = malloc(len + 1);
     for (int i = 0; i < len; i++) {
         if (path[i] == '/') {
             strncpy(dirpath, path, i);

@@ -15,9 +15,8 @@
 #endif
 
 #include <getopt.h>
-#include <time.h>
-
 #include <lcm/lcm.h>
+#include <time.h>
 
 #define DEFAULT_TRANSMIT_INTERVAL_USEC 10000
 

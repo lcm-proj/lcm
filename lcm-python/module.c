@@ -1,4 +1,5 @@
 #include <Python.h>
+
 #include "pylcm_subscription.h"
 
 //#define dbg(...) fprintf (stderr, __VA_ARGS__)
@@ -11,7 +12,7 @@
 
 // to support python 3.9.0a3 and earlier
 #if PY_VERSION_HEX < 0x030900A4
-#define Py_SET_TYPE(obj, type) ((Py_TYPE(obj) = (type)), (void)0)
+#define Py_SET_TYPE(obj, type) ((Py_TYPE(obj) = (type)), (void) 0)
 #endif
 
 extern PyTypeObject pylcmeventlog_type;

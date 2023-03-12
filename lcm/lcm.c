@@ -1,14 +1,14 @@
 
+#include "lcm.h"
+
 #include <assert.h>
+#include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
 
-#include <glib.h>
-
 #include "dbg.h"
-#include "lcm.h"
 #include "lcm_internal.h"
 
 #ifdef WIN32
@@ -151,7 +151,7 @@ fail:
 // the lcm_subscription_t*s.
 static void map_free_handlers_callback(gpointer _key, gpointer _value, gpointer _data)
 {
-    (void)_data;
+    (void) _data;
     GPtrArray *handlers = (GPtrArray *) _value;
     g_ptr_array_free(handlers, TRUE);
     free(_key);
@@ -272,7 +272,7 @@ static void map_add_handler_callback(gpointer _key, gpointer _value, gpointer _d
 // remove from a channel's handler list
 static void map_remove_handler_callback(gpointer _key, gpointer _value, gpointer _data)
 {
-    (void)_key;
+    (void) _key;
     lcm_subscription_t *h = (lcm_subscription_t *) _data;
     GPtrArray *handlers = (GPtrArray *) _value;
     g_ptr_array_remove_fast(handlers, h);

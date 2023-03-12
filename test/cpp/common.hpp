@@ -2,6 +2,7 @@
 #define __common_hpp__
 
 #include <lcm/lcm-cpp.hpp>
+
 #include "lcmtest/multidim_array_t.hpp"
 #include "lcmtest/node_t.hpp"
 #include "lcmtest/primitives_list_t.hpp"

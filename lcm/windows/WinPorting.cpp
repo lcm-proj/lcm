@@ -1,11 +1,12 @@
 
 #define _WIN32_WINNT 0x0501
-#include <stdio.h>
-#include <cstdint>
-#include <winsock2.h>
-#include <Mswsock.h>
-
 #include "WinPorting.h"
+
+#include <Mswsock.h>
+#include <stdio.h>
+#include <winsock2.h>
+
+#include <cstdint>
 
 #define ARBITRARY_START_PORT 10000
 //	The following data allows multiple processes to access the LastSocket variable

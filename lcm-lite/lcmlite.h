@@ -50,8 +50,7 @@
 typedef struct lcmlite_subscription lcmlite_subscription_t;
 typedef struct lcmlite lcmlite_t;
 
-struct fragment_buffer
-{
+struct fragment_buffer {
     int32_t last_fragment_count;
 
     uint64_t from_addr;
@@ -63,8 +62,7 @@ struct fragment_buffer
     uint8_t frag_received[LCM3_MAX_FRAGMENTS];
 };
 
-struct lcmlite_subscription
-{
+struct lcmlite_subscription {
     char *channel;
 
     void (*callback)(lcmlite_t *lcm, const char *channel, const void *buf, int buf_len, void *user);
@@ -74,8 +72,7 @@ struct lcmlite_subscription
     lcmlite_subscription_t *next;
 };
 
-struct lcmlite
-{
+struct lcmlite {
     /** Buffers for reassembling multi-fragment messages. **/
     struct fragment_buffer fragment_buffers[LCM3_NUM_BUFFERS];
 
@@ -96,7 +93,8 @@ struct lcmlite
 };
 
 // Caller allocates the lcmlite_t object, which we initialize.
-int lcmlite_init(lcmlite_t *lcm, void (*transmit_packet)(const void *_buf, int buf_len, void *user), void *transmit_user);
+int lcmlite_init(lcmlite_t *lcm, void (*transmit_packet)(const void *_buf, int buf_len, void *user),
+                 void *transmit_user);
 
 // The user is responsible for creating and listening on a UDP
 // multicast socket. When a packet is received, call this function. Do
