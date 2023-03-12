@@ -14,24 +14,25 @@
 // needed for MACOS and FreeBSD
 #define USE_REUSEPORT
 
-#include <stdint.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <unistd.h>
+#include <assert.h>
+#include <netinet/in.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <assert.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "lcmlite.h"
 
 void lcmlite_impl_transmit_packet(const void *_buf, int buf_len, void *user)
 {
-    struct lcmlite_impl *tinfo = (struct lcmlite_impl*) user;
+    struct lcmlite_impl *tinfo = (struct lcmlite_impl *) user;
 
-    ssize_t res = sendto(tinfo->send_fd, _buf, buf_len, 0, (struct sockaddr*) &tinfo->send_addr, sizeof(tinfo->send_addr));
+    ssize_t res = sendto(tinfo->send_fd, _buf, buf_len, 0, (struct sockaddr *) &tinfo->send_addr,
+                         sizeof(tinfo->send_addr));
     if (res < 0)
         perror("transmit_packet: sendto");
 }
@@ -42,13 +43,13 @@ int lcmlite_impl_init(struct lcmlite_impl *impl)
     struct in_addr mc_addr;
     int mc_port = htons(7667);
 
-    if (inet_aton("239.255.76.67", (struct in_addr*) &mc_addr) < 0)
+    if (inet_aton("239.255.76.67", (struct in_addr *) &mc_addr) < 0)
         return 1;
 
     // create the Multicast UDP socket
     memset(&impl->read_addr, 0, sizeof(impl->read_addr));
-	impl->read_addr.sin_family = AF_INET;
-	impl->read_addr.sin_addr.s_addr = INADDR_ANY;
+    impl->read_addr.sin_family = AF_INET;
+    impl->read_addr.sin_addr.s_addr = INADDR_ANY;
     impl->read_addr.sin_port = mc_port;
 
     memset(&impl->send_addr, 0, sizeof(impl->send_addr));
@@ -81,11 +82,11 @@ int lcmlite_impl_init(struct lcmlite_impl *impl)
     mreq.imr_interface.s_addr = INADDR_ANY;
 
     if (setsockopt(impl->read_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
-        perror ("setsockopt (IPPROTO_IP, IP_ADD_MEMBERSHIP)");
+        perror("setsockopt (IPPROTO_IP, IP_ADD_MEMBERSHIP)");
         return -1;
     }
 
-    if (bind(impl->read_fd, (struct sockaddr*) &impl->read_addr, sizeof(impl->read_addr)) < 0) {
+    if (bind(impl->read_fd, (struct sockaddr *) &impl->read_addr, sizeof(impl->read_addr)) < 0) {
         perror("bind");
         return -1;
     }
@@ -95,9 +96,9 @@ int lcmlite_impl_init(struct lcmlite_impl *impl)
         return 1;
     }
 
-	impl->send_fd = socket(AF_INET, SOCK_DGRAM, 0);
+    impl->send_fd = socket(AF_INET, SOCK_DGRAM, 0);
 
-	return 0;
+    return 0;
 }
 
 void lcmlite_impl_readloop(lcmlite_t *lcm, struct lcmlite_impl *impl)
@@ -105,16 +106,15 @@ void lcmlite_impl_readloop(lcmlite_t *lcm, struct lcmlite_impl *impl)
     // read packets, pass them to LCM
     while (1) {
         char buf[65536];
-        struct sockaddr_in from_addr; // only IPv4 compatible
+        struct sockaddr_in from_addr;  // only IPv4 compatible
         socklen_t from_addr_sz = sizeof(from_addr);
 
-        ssize_t buf_len = recvfrom(impl->read_fd, buf, sizeof(buf), 0, (struct sockaddr*) &from_addr, &from_addr_sz);
+        ssize_t buf_len = recvfrom(impl->read_fd, buf, sizeof(buf), 0,
+                                   (struct sockaddr *) &from_addr, &from_addr_sz);
         assert(from_addr_sz == sizeof(struct sockaddr_in));
 
-        int res = lcmlite_receive_packet(lcm,
-                                         buf,
-                                         buf_len,
-                                         from_addr.sin_addr.s_addr | ((uint64_t) from_addr.sin_port << 32));
+        int res = lcmlite_receive_packet(
+            lcm, buf, buf_len, from_addr.sin_addr.s_addr | ((uint64_t) from_addr.sin_port << 32));
         if (res < 0)
             printf("ERR %d\n", res);
     }

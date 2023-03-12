@@ -7,25 +7,24 @@
  *
  */
 
-#include <stdint.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <unistd.h>
+#include <assert.h>
+#include <netinet/in.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <assert.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "lcmlite.h"
 
 #ifndef _LCMLITE_IMPL_H
 #define _LCMLITE_IMPL_H
 
-struct lcmlite_impl
-{
-	struct sockaddr_in read_addr;
+struct lcmlite_impl {
+    struct sockaddr_in read_addr;
     struct sockaddr_in send_addr;
     int send_fd, read_fd;
 };

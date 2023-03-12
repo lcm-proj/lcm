@@ -4,41 +4,42 @@
 // needed for MACOS and FreeBSD
 // #define USE_REUSEPORT
 
-#include <stdint.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
-#include <unistd.h>
+#include <assert.h>
+#include <netinet/in.h>
+#include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
-#include <assert.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "lcmlite.h"
 
-struct transmit_info
-{
+struct transmit_info {
     struct sockaddr_in send_addr;
     int send_fd;
 };
 
 void transmit_packet(const void *_buf, int buf_len, void *user)
 {
-    struct transmit_info *tinfo = (struct transmit_info*) user;
+    struct transmit_info *tinfo = (struct transmit_info *) user;
 
-    ssize_t res = sendto(tinfo->send_fd, _buf, buf_len, 0, (struct sockaddr*) &tinfo->send_addr, sizeof(tinfo->send_addr));
+    ssize_t res = sendto(tinfo->send_fd, _buf, buf_len, 0, (struct sockaddr *) &tinfo->send_addr,
+                         sizeof(tinfo->send_addr));
     if (res < 0)
         perror("transmit_packet: sendto");
 }
 
-static void abc_callback(lcmlite_t *lcm, const char *channel, const void *buf, int buf_len, void *user)
+static void abc_callback(lcmlite_t *lcm, const char *channel, const void *buf, int buf_len,
+                         void *user)
 {
     int8_t v = 17;
     printf("%d\n", buf_len);
 
     for (int i = 0; i < buf_len; i++) {
-        if (((char*) buf)[i] != v) {
+        if (((char *) buf)[i] != v) {
             printf("ERROR!\n");
             exit(1);
         }
@@ -50,7 +51,8 @@ static void abc_callback(lcmlite_t *lcm, const char *channel, const void *buf, i
     lcmlite_publish(lcm, "ECHO", buf, buf_len);
 }
 
-static void generic_callback(lcmlite_t *lcm, const char *channel, const void *buf, int buf_len, void *user)
+static void generic_callback(lcmlite_t *lcm, const char *channel, const void *buf, int buf_len,
+                             void *user)
 {
     printf("rx %20s %d bytes\n", channel, buf_len);
 }
@@ -61,7 +63,7 @@ int main(int argc, char *argv[])
     struct in_addr mc_addr;
     int mc_port = htons(7667);
 
-    if (inet_aton("239.255.76.67", (struct in_addr*) &mc_addr) < 0)
+    if (inet_aton("239.255.76.67", (struct in_addr *) &mc_addr) < 0)
         return 1;
 
     // create the Multicast UDP socket
@@ -89,12 +91,12 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    #ifdef USE_REUSEPORT
+#ifdef USE_REUSEPORT
     if (setsockopt(read_fd, SOL_SOCKET, SO_REUSEPORT, &opt, sizeof(opt)) < 0) {
         perror("setsockopt(SOL_SOCKET, SO_REUSEPORT)");
         return 1;
     }
-    #endif
+#endif
 
     // join the multicast group
     struct ip_mreq mreq;
@@ -102,11 +104,11 @@ int main(int argc, char *argv[])
     mreq.imr_interface.s_addr = INADDR_ANY;
 
     if (setsockopt(read_fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq)) < 0) {
-        perror ("setsockopt (IPPROTO_IP, IP_ADD_MEMBERSHIP)");
+        perror("setsockopt (IPPROTO_IP, IP_ADD_MEMBERSHIP)");
         return -1;
     }
 
-    if (bind(read_fd, (struct sockaddr*) &read_addr, sizeof(read_addr)) < 0) {
+    if (bind(read_fd, (struct sockaddr *) &read_addr, sizeof(read_addr)) < 0) {
         perror("bind");
         return -1;
     }
@@ -144,16 +146,15 @@ int main(int argc, char *argv[])
     // read packets, pass them to LCM
     while (1) {
         char buf[65536];
-        struct sockaddr_in from_addr; // only IPv4 compatible
+        struct sockaddr_in from_addr;  // only IPv4 compatible
         int from_addr_sz = sizeof(from_addr);
 
-        ssize_t buf_len = recvfrom(read_fd, buf, sizeof(buf), 0, (struct sockaddr*) &from_addr, &from_addr_sz);
+        ssize_t buf_len =
+            recvfrom(read_fd, buf, sizeof(buf), 0, (struct sockaddr *) &from_addr, &from_addr_sz);
         assert(from_addr_sz == sizeof(struct sockaddr_in));
 
-        int res = lcmlite_receive_packet(&lcm,
-                                         buf,
-                                         buf_len,
-                                         from_addr.sin_addr.s_addr | ((uint64_t) from_addr.sin_port << 32));
+        int res = lcmlite_receive_packet(
+            &lcm, buf, buf_len, from_addr.sin_addr.s_addr | ((uint64_t) from_addr.sin_port << 32));
         if (res < 0)
             printf("ERR %d\n", res);
     }
