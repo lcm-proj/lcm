@@ -1,4 +1,5 @@
 #include "lualcm_lcm.h"
+
 #include "lcm/lcm.h"
 #include "lua_ref_helper.h"
 #include "lua_ver_helper.h"
@@ -96,7 +97,9 @@ void ll_lcm_makemetatable(lua_State *L)
     }
 
     const struct luaL_Reg metas[] = {
-        {"__tostring", impl_lcm_tostring}, {"__gc", impl_lcm_gc}, {NULL, NULL},
+        {"__tostring", impl_lcm_tostring},
+        {"__gc", impl_lcm_gc},
+        {NULL, NULL},
     };
 
     /* register to meta */
@@ -139,7 +142,8 @@ void ll_lcm_makemetatable(lua_State *L)
 void ll_lcm_register_new(lua_State *L)
 {
     const struct luaL_Reg new_function[] = {
-        {"new", impl_lcm_new}, {NULL, NULL},
+        {"new", impl_lcm_new},
+        {NULL, NULL},
     };
 
     luaX_registerglobal(L, "lcm.lcm", new_function);

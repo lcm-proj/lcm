@@ -1,6 +1,5 @@
 #define PY_SSIZE_T_CLEAN
 #include <Python.h>
-
 #include <lcm/eventlog.h>
 
 // to support python 2.5 and earlier
