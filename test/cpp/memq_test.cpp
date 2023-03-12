@@ -80,8 +80,7 @@ TEST(LCM_CPP, MemqBuffered)
     EXPECT_EQ(buffers, received_buffers);
 }
 
-void MemqTimeoutHandler(const lcm::ReceiveBuffer *, const std::string &,
-                        bool *msg_handled)
+void MemqTimeoutHandler(const lcm::ReceiveBuffer *, const std::string &, bool *msg_handled)
 {
     *msg_handled = true;
 }

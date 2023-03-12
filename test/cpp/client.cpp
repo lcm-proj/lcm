@@ -1,10 +1,9 @@
 #include <gtest/gtest.h>
+#include <lcm/lcm.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-#include <lcm/lcm.h>
 
 #include "common.hpp"
 
@@ -171,12 +170,12 @@ class LambdaTest {
     {
         LcmType msg;
         int response_count = 0;
-        lcm::LCM::HandlerFunction<LcmType> handler = [&response_count](
-            const lcm::ReceiveBuffer *, const std::string &, const LcmType *msg) {
-            if (CheckLcmType(msg, response_count + 1)) {
-                response_count++;
-            }
-        };
+        lcm::LCM::HandlerFunction<LcmType> handler =
+            [&response_count](const lcm::ReceiveBuffer *, const std::string &, const LcmType *msg) {
+                if (CheckLcmType(msg, response_count + 1)) {
+                    response_count++;
+                }
+            };
         lcm::Subscription *subscription = lcm_.subscribe(test_channel_ + "_reply", handler);
         bool result = true;
         for (int trial = 0; trial < num_trials_ && result; trial++) {
