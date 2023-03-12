@@ -1,9 +1,8 @@
+#include <glib.h>
+#include <lcm/lcm.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <glib.h>
-#include <lcm/lcm.h>
 
 lcm_t *lcm = NULL;
 lcm_subscription_t *subscription = NULL;

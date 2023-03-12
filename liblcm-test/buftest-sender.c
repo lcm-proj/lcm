@@ -1,9 +1,8 @@
+#include <glib.h>
+#include <lcm/lcm.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include <glib.h>
-#include <lcm/lcm.h>
 
 int main(int argc, char **argv)
 {
