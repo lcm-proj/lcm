@@ -11,6 +11,7 @@
 #include <inttypes.h>
 #include <lcm/lcm.h>
 #include <stdio.h>
+
 #include "exlcm_example_t.h"
 
 static void my_handler(const lcm_recv_buf_t *rbuf, const char *channel, const exlcm_example_t *msg,

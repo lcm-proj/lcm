@@ -11,6 +11,7 @@
 #include <stdio.h>
 
 #include <lcm/lcm-cpp.hpp>
+
 #include "exlcm/example_t.hpp"
 
 class Handler {

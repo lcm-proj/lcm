@@ -11,6 +11,7 @@
 #include <lcm/lcm.h>
 #include <stdio.h>
 #include <sys/select.h>
+
 #include "exlcm_example_t.h"
 
 typedef struct _state_t {
