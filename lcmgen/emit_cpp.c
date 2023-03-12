@@ -10,7 +10,6 @@
 #include <unistd.h> /* _exit */
 #endif
 #include <inttypes.h>
-
 #include <sys/stat.h>
 #include <sys/types.h>
 

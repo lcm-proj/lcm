@@ -1,16 +1,14 @@
+#include <assert.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <assert.h>
-#include <inttypes.h>
-
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "lcmgen.h"
-
 #include "getopt.h"
+#include "lcmgen.h"
 
 #define INDENT(n) (4 * (n))
 
@@ -237,7 +235,8 @@ void decode_recursive(lcmgen_t *lcm, lcm_member_t *lm, FILE *f, primitive_info_t
         // byte array
         if (!strcmp(pinfo->storage, "byte")) {
             lcm_dimension_t *dim = (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, depth);
-            emit_start(2 + depth, "ins.readFully(this.%s, 0, (int) %s);", accessor_array, dim->size);
+            emit_start(2 + depth, "ins.readFully(this.%s, 0, (int) %s);", accessor_array,
+                       dim->size);
             return;
         }
 

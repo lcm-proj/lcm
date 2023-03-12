@@ -1,10 +1,10 @@
+#include "getopt.h"
+
 #include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-#include "getopt.h"
 
 #define GOO_BOOL_TYPE 1
 #define GOO_STRING_TYPE 2

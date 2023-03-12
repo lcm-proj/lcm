@@ -1,17 +1,15 @@
 #include <assert.h>
 #include <ctype.h>
+#include <fcntl.h>
+#include <glib.h>
+#include <inttypes.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-
-#include <fcntl.h>
-#include <inttypes.h>
 #include <unistd.h>
-
-#include <glib.h>
 
 #include "lcmgen.h"
 
@@ -46,7 +44,7 @@ static void mkdir_with_parents(const char *path, mode_t mode)
     g_mkdir_with_parents(path, 0755);
 #else
     int len = strlen(path);
-    char* dirpath = malloc(len+1);
+    char *dirpath = malloc(len + 1);
     for (int i = 0; i < len; i++) {
         if (path[i] == '/') {
             strncpy(dirpath, path, i);
@@ -200,10 +198,11 @@ static void _emit_decode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls, lc
         emit(indent, "%sbuf.read(%s%s)%s", accessor, fixed_len ? "" : "self.", len, suffix);
     } else if (!strcmp("boolean", tn)) {
         if (fixed_len) {
-            emit(indent, "%s[bool(x) for x in struct.unpack('>%s%c', buf.read(%d))]%s", accessor, len,
-                 _struct_format(lm), atoi(len) * _primitive_type_size(tn), suffix);
+            emit(indent, "%s[bool(x) for x in struct.unpack('>%s%c', buf.read(%d))]%s", accessor,
+                 len, _struct_format(lm), atoi(len) * _primitive_type_size(tn), suffix);
         } else {
-            emit(indent, "%s[bool(x) for x in struct.unpack('>%%d%c' %% self.%s, buf.read(self.%s))]%s",
+            emit(indent,
+                 "%s[bool(x) for x in struct.unpack('>%%d%c' %% self.%s, buf.read(self.%s))]%s",
                  accessor, _struct_format(lm), len, len, suffix);
         }
     } else if (!strcmp("int8_t", tn) || !strcmp("int16_t", tn) || !strcmp("int32_t", tn) ||
@@ -892,7 +891,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
         if (ret < 0) {
             fprintf(stderr, "Error: failed to create path string");
             return -1;
-        } 
+        }
 
         if (init_py_fp && !g_hash_table_lookup(init_py_imports, ls->structname->shortname))
             fprintf(init_py_fp, "from .%s import %s\n", ls->structname->shortname,

@@ -297,7 +297,7 @@ static char *go_membername(lcm_struct_t *ls, const char *const str, int method)
         membername = realloc(membername, len + 6);
         // add Get at the end to distinguish between field name and method
         strcat(membername, "Get()");
-        membername[len+5] = '\0';
+        membername[len + 5] = '\0';
     }
     return membername;
 }
@@ -534,12 +534,12 @@ static unsigned int emit_go_array_loops(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls
             const char *type =
                 map_builtintype_name(lcm_find_member(ls, dim->size)->type->lctypename);
 
-            if (slice_emit){
-	        lcm_struct_t *ls_lm = lcm_find_struct(lcm, lm);
-		uint64_t lm_fingerprint = lcm_get_fingerprint(lcm, ls_lm);
+            if (slice_emit) {
+                lcm_struct_t *ls_lm = lcm_find_struct(lcm, lm);
+                uint64_t lm_fingerprint = lcm_get_fingerprint(lcm, ls_lm);
                 emit_go_slice_make(f, n + 1, ls->structname->package, lm, n, slicestr->str, size,
                                    lm_fingerprint);
-	    }
+            }
 
             emit(1 + n, "for i%d := %s(0); i%d < p.%s; i%d++ {", n, type, n, size, n);
 
