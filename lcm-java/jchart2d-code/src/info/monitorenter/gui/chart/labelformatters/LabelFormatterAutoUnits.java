@@ -84,7 +84,7 @@ public class LabelFormatterAutoUnits extends ALabelFormatter {
           power--;
         }
       }
-      LabelFormatterAutoUnits.UNITS_2_POWER.put(unit, new Integer(power));
+      LabelFormatterAutoUnits.UNITS_2_POWER.put(unit, Integer.valueOf(power));
     }
   }
 
@@ -291,7 +291,7 @@ public class LabelFormatterAutoUnits extends ALabelFormatter {
   public Number parse(final String formatted) throws NumberFormatException {
     double parsed = this.m_delegate.parse(formatted).doubleValue();
     parsed *= this.m_unit.getFactor();
-    return new Double(parsed);
+    return Double.valueOf(parsed);
   }
 
   /**

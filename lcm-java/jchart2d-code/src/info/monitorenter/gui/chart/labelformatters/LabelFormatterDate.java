@@ -269,7 +269,7 @@ public class LabelFormatterDate extends ALabelFormatter implements IAxisLabelFor
    * @see info.monitorenter.gui.chart.IAxisLabelFormatter#parse(java.lang.String)
    */
   public Number parse(final String formatted) throws NumberFormatException {
-    return new Double(this.m_lastFormatted);
+    return Double.valueOf(this.m_lastFormatted);
   }
 
   /**

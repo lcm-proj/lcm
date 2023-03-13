@@ -78,7 +78,7 @@ public class TestRingBufferArrayFast
   public void testAdd() {
     RingBufferArrayFast<Integer> ringBuffer = new RingBufferArrayFast<Integer>(1);
     System.out.println("Adding 1 element to a buffer of size 1.");
-    ringBuffer.add(new Integer(0));
+    ringBuffer.add(Integer.valueOf(0));
     Assert.assertEquals(1, ringBuffer.size());
 
   }

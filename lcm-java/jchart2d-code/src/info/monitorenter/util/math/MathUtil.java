@@ -129,12 +129,12 @@ public final class MathUtil {
 	 * <p>
 	 * 
 	 * <b>Warning</b>: Never do the following: <code>
-	 *  Integer count = new Integer(6);
+	 *  Integer count = Integer.valueOf(6);
 	 * 	MathUtil.increment(count);
 	 *  // don't expect count now carries 6.
  * </code> Integers are immutable.
 	 * Write: <code>
-	 *  Integer count = new Integer(6);
+	 *  Integer count = Integer.valueOf(6);
 	 * 	count = MathUtil.increment(count);
  * </code>
 	 * 

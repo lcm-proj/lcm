@@ -78,7 +78,7 @@ public final class Trace2DActionZindexIncrease extends ATrace2DAction {
    */
   public void actionPerformed(final ActionEvent e) {
     int value = this.m_trace.getZIndex().intValue();
-    this.m_trace.setZIndex(new Integer(value + this.m_increase));
+    this.m_trace.setZIndex(Integer.valueOf(value + this.m_increase));
   }
 
   /**

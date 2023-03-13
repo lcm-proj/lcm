@@ -252,7 +252,7 @@ public class LabelFormatterUnit
   public Number parse(final String formatted) throws NumberFormatException {
     double parsed = this.m_delegate.parse(formatted).doubleValue();
     parsed *= this.m_unit.getFactor();
-    return new Double(parsed);
+    return Double.valueOf(parsed);
   }
 
   /**

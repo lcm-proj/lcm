@@ -218,7 +218,7 @@ public class TestChart2DHeadless extends TestCase {
     for (int i = 0; i < 100; i++) {
       chart.addTrace(new Trace2DSimple());
     }
-    trace.setZIndex(new Integer(33));
+    trace.setZIndex(Integer.valueOf(33));
     boolean removed = chart.removeTrace(trace);
     assertTrue("The trace was not removed after changing z-index!", removed);
 

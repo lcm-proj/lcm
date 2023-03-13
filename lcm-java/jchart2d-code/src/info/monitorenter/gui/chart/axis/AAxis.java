@@ -2633,7 +2633,7 @@ public abstract class AAxis<T extends IAxisScalePolicy> implements IAxis<T>, Pro
     this.m_paintGrid = grid;
     if (oldValue != grid) {
       this.m_propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this,
-          IAxis.PROPERTY_PAINTGRID, new Boolean(oldValue), Boolean.valueOf(this.m_paintGrid)));
+          IAxis.PROPERTY_PAINTGRID, Boolean.valueOf(oldValue), Boolean.valueOf(this.m_paintGrid)));
     }
   }
 
@@ -2649,7 +2649,7 @@ public abstract class AAxis<T extends IAxisScalePolicy> implements IAxis<T>, Pro
     this.m_paintScale = show;
     if (oldValue != this.m_paintScale) {
       this.m_propertyChangeSupport.firePropertyChange(new PropertyChangeEvent(this,
-          IAxis.PROPERTY_PAINTSCALE, new Boolean(oldValue), Boolean.valueOf(this.m_paintGrid)));
+          IAxis.PROPERTY_PAINTSCALE, Boolean.valueOf(oldValue), Boolean.valueOf(this.m_paintGrid)));
     }
   }
 

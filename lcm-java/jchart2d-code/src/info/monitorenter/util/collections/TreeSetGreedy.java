@@ -160,17 +160,17 @@ public class TreeSetGreedy<T extends IComparableProperty> extends TreeSet<T> imp
     Number result;
     Class< ? > c = n.getClass();
     if (c == Integer.class) {
-      result = new Integer(n.intValue() - 1);
+      result = Integer.valueOf(n.intValue() - 1);
     } else if (c == Double.class) {
-      result = new Double(n.doubleValue() - 1);
+      result = Double.valueOf(n.doubleValue() - 1);
     } else if (c == Float.class) {
-      result = new Float(n.floatValue() - 1);
+      result = Float.valueOf(n.floatValue() - 1);
     } else if (c == Short.class) {
-      result = new Short((short) (n.shortValue() - 1));
+      result = Short.valueOf((short) (n.shortValue() - 1));
     } else if (c == Byte.class) {
-      result = new Byte((byte) (n.byteValue() - 1));
+      result = Byte.valueOf((byte) (n.byteValue() - 1));
     } else if (c == Long.class) {
-      result = new Long(n.longValue() - 1);
+      result = Long.valueOf(n.longValue() - 1);
     } else if (c == BigDecimal.class) {
       BigDecimal bd = new BigDecimal(n.toString());
       bd = bd.subtract(new BigDecimal(1));
@@ -268,7 +268,7 @@ public class TreeSetGreedy<T extends IComparableProperty> extends TreeSet<T> imp
   // private void packComparableProperties() {
   // int i = ITrace2D.ZINDEX_MAX;
   // for (IComparableProperty prop : this) {
-  // prop.setComparableProperty(new Integer(i));
+  // prop.setComparableProperty(Integer.valueOf(i));
   // i++;
   // }
   // }

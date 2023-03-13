@@ -98,11 +98,11 @@ public class AxisActionSetTitleFont
       Font newFont = (Font) evt.getNewValue();
       if (newFont.equals(this.m_titleFont)) {
         this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED,
-            new Boolean(false), new Boolean(true));
+            Boolean.valueOf(false), Boolean.valueOf(true));
 
       } else {
         this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED,
-            new Boolean(true), new Boolean(false));
+            Boolean.valueOf(true), Boolean.valueOf(false));
       }
     }
   }

@@ -153,11 +153,11 @@ public final class JComponentActionSetCustomBackgroundSingleton extends AJCompon
       Color newColor = (Color) evt.getNewValue();
       if (newColor.equals(this.m_lastChosenColor)) {
         this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED,
-            new Boolean(false), new Boolean(true));
+            Boolean.valueOf(false), Boolean.valueOf(true));
 
       } else {
         this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED,
-            new Boolean(true), new Boolean(false));
+            Boolean.valueOf(true), Boolean.valueOf(false));
       }
     }
   }

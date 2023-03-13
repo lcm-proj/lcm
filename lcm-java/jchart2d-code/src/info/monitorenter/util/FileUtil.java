@@ -584,18 +584,18 @@ public final class FileUtil extends Object {
 
     if (Math.abs(filesize) < 1024) {
       result = MessageFormat.format(m_bundle.getString("GUI_FILEUTIL_FILESIZE_BYTES_1"),
-          new Object[] {new Long(filesizeNormal) });
+          new Object[] {Long.valueOf(filesizeNormal) });
     } else if (filesizeNormal < 1048576) {
       // 1048576 = 1024.0 * 1024.0
       result = MessageFormat.format(m_bundle.getString("GUI_FILEUTIL_FILESIZE_KBYTES_1"),
-          new Object[] {new Double(filesizeNormal / 1024.0) });
+          new Object[] {Double.valueOf(filesizeNormal / 1024.0) });
     } else if (filesizeNormal < 1073741824) {
       // 1024.0^3 = 1073741824
       result = MessageFormat.format(m_bundle.getString("GUI_FILEUTIL_FILESIZE_MBYTES_1"),
-          new Object[] {new Double(filesize / 1048576.0) });
+          new Object[] {Double.valueOf(filesize / 1048576.0) });
     } else {
       result = MessageFormat.format(m_bundle.getString("GUI_FILEUTIL_FILESIZE_GBYTES_1"),
-          new Object[] {new Double(filesizeNormal / 1073741824.0) });
+          new Object[] {Double.valueOf(filesizeNormal / 1073741824.0) });
     }
     return result;
   }

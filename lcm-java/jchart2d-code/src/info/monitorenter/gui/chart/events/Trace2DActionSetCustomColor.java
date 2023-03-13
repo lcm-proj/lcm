@@ -109,10 +109,10 @@ public final class Trace2DActionSetCustomColor extends ATrace2DAction {
       Color newValue = (Color) evt.getNewValue();
       if (newValue.equals(this.m_lastChosen)) {
         this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED,
-            new Boolean(false), new Boolean(true));
+            Boolean.valueOf(false), Boolean.valueOf(true));
       } else {
         this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED,
-            new Boolean(true), new Boolean(false));
+            Boolean.valueOf(true), Boolean.valueOf(false));
       }
     }
   }

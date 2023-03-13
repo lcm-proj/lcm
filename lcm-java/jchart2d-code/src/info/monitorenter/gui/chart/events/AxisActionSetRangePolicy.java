@@ -118,11 +118,11 @@ public class AxisActionSetRangePolicy
       Boolean oldValue;
       Boolean newValue;
       if (rangepolicyClass == this.m_rangePolicy.getClass()) {
-        oldValue = new Boolean(false);
-        newValue = new Boolean(true);
+        oldValue = Boolean.valueOf(false);
+        newValue = Boolean.valueOf(true);
       } else {
-        oldValue = new Boolean(true);
-        newValue = new Boolean(false);
+        oldValue = Boolean.valueOf(true);
+        newValue = Boolean.valueOf(false);
       }
       this.firePropertyChange(PropertyChangeCheckBoxMenuItem.PROPERTY_SELECTED, oldValue, newValue);
     }

@@ -154,7 +154,7 @@ public class RangeChooserPanel extends JPanel {
     // text field views to show the range values;
     // minimum value view:
     final JTextField rangeMinView = new JTextField();
-    rangeMinView.setText(this.m_nf.format(new Double(this.m_rangeSlider.getLowValue())));
+    rangeMinView.setText(this.m_nf.format(Double.valueOf(this.m_rangeSlider.getLowValue())));
     rangeMinView.setEditable(true);
     rangeMinView.setPreferredSize(new Dimension(120, 20));
     rangeMinView.addActionListener(new ActionListener() {
@@ -180,7 +180,7 @@ public class RangeChooserPanel extends JPanel {
 
     // maximum value view:
     final JTextField rangeMaxView = new JTextField();
-    rangeMaxView.setText(new Double(this.m_rangeSlider.getHighValue()).toString());
+    rangeMaxView.setText(Double.valueOf(this.m_rangeSlider.getHighValue()).toString());
     rangeMaxView.setEditable(true);
 
     rangeMaxView.setPreferredSize(new Dimension(120, 20));
