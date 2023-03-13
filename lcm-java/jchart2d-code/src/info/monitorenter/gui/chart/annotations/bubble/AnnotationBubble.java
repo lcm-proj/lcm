@@ -208,9 +208,7 @@ public class AnnotationBubble extends JPanel {
         public void mouseDragged(final MouseEvent e) {
             if (this.m_lastDragPosition != null) {
 
-                // TODO: replace this with e.getLocationOnScreen(e) in 1.6:
-                // this is the 1.5 alternative:
-                Point pointNow = UIUtil.getLocationOnScreen(e);
+                Point pointNow = e.getLocationOnScreen();
                 double deltaX = pointNow.getX() - this.m_lastDragPosition.getX();
                 double deltaY = pointNow.getY() - this.m_lastDragPosition.getY();
                 Point panelPos = AnnotationBubble.this.getLocation();
@@ -246,9 +244,7 @@ public class AnnotationBubble extends JPanel {
          * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
          */
         public void mousePressed(final MouseEvent e) {
-            // TODO: replace this with e.getLocationOnScreen(e) in 1.6:
-            // this is the 1.5 alternative:
-            this.m_lastDragPosition = UIUtil.getLocationOnScreen(e);
+            this.m_lastDragPosition = e.getLocationOnScreen();
         }
 
         /**

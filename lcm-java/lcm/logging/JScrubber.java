@@ -524,12 +524,12 @@ public class JScrubber extends JComponent
             else
                 inhibitGeometryChanges = false;
 
-            if ((e.getModifiers() & MouseEvent.BUTTON1_MASK) != 0)
+            if ((e.getModifiersEx() & MouseEvent.BUTTON1_DOWN_MASK) != 0)
             {
                 userSet(position);
             }
 
-            if ((e.getModifiers() & MouseEvent.BUTTON3_MASK) != 0)
+            if ((e.getModifiersEx() & MouseEvent.BUTTON3_DOWN_MASK) != 0)
             {
                 if (trackbookmark != null)
                 {
