@@ -122,20 +122,21 @@ public class LcmTestClient implements LCMSubscriber {
         private long abortTime_;
         private boolean success_ = false;
         private boolean done_ = false;
-        private Class type_;
+        private Class<MsgType> type_;
 
         MessageTester(LCM lcm, String name, MessageMakerChecker<MsgType> makerChecker,
-                int numIterations) {
+                int numIterations, Class<MsgType> c) {
             lcm_ = lcm;
             makerChecker_ = makerChecker;
             name_ = name;
             numIterations_ = numIterations;
+            type_ = c;
         }
 
         public void messageReceived(LCM lcm, String channel, LCMDataInputStream ins) {
             MsgType msg;
             try {
-                msg = (MsgType)type_.getConstructor(DataInput.class).newInstance(ins);
+                msg = type_.getConstructor(DataInput.class).newInstance(ins);
             } catch (java.lang.Exception ex) {
                 done_ = true;
                 return;
@@ -162,7 +163,6 @@ public class LcmTestClient implements LCMSubscriber {
 
         public boolean run() {
             MsgType msg = makerChecker_.makeMessage(iteration_);
-            type_ = msg.getClass();
             abortTime_ = System.currentTimeMillis() + 500;
             lcm_.subscribe("test_" + name_ + "_reply", this);
             lcm_.publish("test_" + name_, msg);
@@ -428,31 +428,31 @@ public class LcmTestClient implements LCMSubscriber {
             }
 
             MessageTester<primitives_t> primitives_tester = new MessageTester<primitives_t>(
-                    lcm_, "lcmtest_primitives_t", new PrimitivesMakerChecker(), 1000);
+                    lcm_, "lcmtest_primitives_t", new PrimitivesMakerChecker(), 1000, primitives_t.class);
             if (!primitives_tester.run()) {
                 return 1;
             }
 
             MessageTester<primitives_list_t> primitives_list_tester = new MessageTester<primitives_list_t>(
-                    lcm_, "lcmtest_primitives_list_t", new PrimitivesListMakerChecker(), 100);
+                    lcm_, "lcmtest_primitives_list_t", new PrimitivesListMakerChecker(), 100, primitives_list_t.class);
             if (!primitives_list_tester.run()) {
                 return 1;
             }
 
             MessageTester<node_t> node_tester = new MessageTester<node_t>(
-                    lcm_, "lcmtest_node_t", new NodeMakerChecker(), 7);
+                    lcm_, "lcmtest_node_t", new NodeMakerChecker(), 7, node_t.class);
             if (!node_tester.run()) {
                 return 1;
             }
 
             MessageTester<multidim_array_t> multidim_array_tester = new MessageTester<multidim_array_t>(
-                    lcm_, "lcmtest_multidim_array_t", new MultidimArrayMakerChecker(), 5);
+                    lcm_, "lcmtest_multidim_array_t", new MultidimArrayMakerChecker(), 5, multidim_array_t.class);
             if (!multidim_array_tester.run()) {
                 return 1;
             }
 
             MessageTester<cross_package_t> cross_package_tester = new MessageTester<cross_package_t>(
-                    lcm_, "lcmtest2_cross_package_t", new CrossPackageMakerChecker(), 100);
+                    lcm_, "lcmtest2_cross_package_t", new CrossPackageMakerChecker(), 100, cross_package_t.class);
             if (!cross_package_tester.run()) {
                 return 1;
             }
