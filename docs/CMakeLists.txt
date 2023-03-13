@@ -45,15 +45,8 @@ if(NOT SPHINX_EXECUTABLE)
   return()
 endif()
 
-execute_process(
-  COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
-    from distutils import sysconfig as sc
-    print(sc.get_python_lib(prefix='', plat_specific=True))"
-  OUTPUT_VARIABLE PYTHON_SITE
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
-
 add_custom_target(doc-sphinx
-  COMMAND "PYTHONPATH=${CMAKE_BINARY_DIR}/${PYTHON_SITE}" ${SPHINX_EXECUTABLE} ${lcm_SOURCE_DIR}/docs ${lcm_BINARY_DIR}/docs/_build
+  COMMAND "PYTHONPATH=${CMAKE_BINARY_DIR}/python" ${SPHINX_EXECUTABLE} ${lcm_SOURCE_DIR}/docs ${lcm_BINARY_DIR}/docs/_build
   WORKING_DIRECTORY ${lcm_SOURCE_DIR}/docs
   DEPENDS doc-setup doc-dotnet doc-doxygen doc-java lcm-python lcm-python-init)
 

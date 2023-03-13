@@ -1,13 +1,6 @@
-execute_process(
-  COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
-    from distutils import sysconfig as sc
-    print(sc.get_python_lib(prefix='', plat_specific=True))"
-  OUTPUT_VARIABLE PYTHON_SITE
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
-
 set(PYTHON_PATH
   ${lcm_BINARY_DIR}/test/types
-  ${CMAKE_BINARY_DIR}/${PYTHON_SITE})
+  ${CMAKE_BINARY_DIR}/python)
 if(NOT WIN32)
   string(REPLACE ";" ":" PYTHON_PATH "${PYTHON_PATH}")
 endif()

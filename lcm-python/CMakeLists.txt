@@ -1,7 +1,7 @@
 execute_process(
   COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
-    from distutils import sysconfig as sc
-    print(sc.get_python_lib(prefix='', plat_specific=True))"
+    import sysconfig as sc
+    print(sc.get_path('platlib'))"
   OUTPUT_VARIABLE PYTHON_SITE
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
@@ -15,7 +15,7 @@ set(lcm_python_sources
 add_library(lcm-python MODULE ${lcm_python_sources})
 
 set_target_properties(lcm-python PROPERTIES
-  LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/${PYTHON_SITE}/lcm
+  LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/python/lcm
   LIBRARY_OUTPUT_NAME _lcm
   PREFIX ""
 )
@@ -47,7 +47,7 @@ install(TARGETS lcm-python
 
 lcm_copy_file_target(lcm-python-init
   ${CMAKE_CURRENT_SOURCE_DIR}/lcm/__init__.py
-  ${CMAKE_BINARY_DIR}/${PYTHON_SITE}/lcm/__init__.py
+  ${CMAKE_BINARY_DIR}/python/lcm/__init__.py
 )
 
 install(FILES lcm/__init__.py DESTINATION ${PYTHON_SITE}/lcm)
