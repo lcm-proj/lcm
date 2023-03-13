@@ -88,13 +88,10 @@ public class ChartCoordinateView extends JPanel {
        */
       @Override
       public void mouseMoved(final MouseEvent me) {
-        final ITracePoint2D value = ChartCoordinateView.this.m_chart2D.translateMousePosition(me);
-        if (value != null) {
-          ChartCoordinateView.this.m_xView.setText(ChartCoordinateView.this.m_chart2D.getAxisX()
-              .getFormatter().format(value.getX()));
-          ChartCoordinateView.this.m_yView.setText(ChartCoordinateView.this.m_chart2D.getAxisY()
-              .getFormatter().format(value.getY()));
-        }
+        ChartCoordinateView.this.m_xView.setText(ChartCoordinateView.this.m_chart2D.getAxisX()
+            .getFormatter().format(me.getX()));
+        ChartCoordinateView.this.m_yView.setText(ChartCoordinateView.this.m_chart2D.getAxisY()
+            .getFormatter().format(me.getY()));
       }
     };
     this.m_chart2D.addMouseMotionListener(this.m_mouseListener);

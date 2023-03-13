@@ -54,6 +54,9 @@ public class UDPMulticastProvider implements Provider
         sock = new MulticastSocket(inetPort);
 
         sock.setReuseAddress(true);
+        // TODO setLoopbackMode was deprecated in Java 1.14 but not added until Java 1.9. Replace it
+        // with the line below when the minimum Java version is 1.9 or higher.
+        // sock.setOption(StandardSocketOptions.IP_MULTICAST_LOOP, false); // true *disables* loopback
         sock.setLoopbackMode(false); // true *disables* loopback
 
         int ttl = up.get("ttl", DEFAULT_TTL);
@@ -66,7 +69,8 @@ public class UDPMulticastProvider implements Provider
 
         sock.setTimeToLive(up.get("ttl", DEFAULT_TTL));
 
-        sock.joinGroup(inetAddr);
+        SocketAddress socketAddr = new InetSocketAddress(inetAddr, inetPort);
+        sock.joinGroup(socketAddr, null);
     }
 
     public synchronized void publish(String channel, byte data[], int offset, int length)

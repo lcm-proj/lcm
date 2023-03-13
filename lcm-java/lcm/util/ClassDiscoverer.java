@@ -66,7 +66,7 @@ public class ClassDiscoverer
         try {
             URL[] urls = new URL[items.length];
             for (int i = 0; i < items.length; i++)
-                urls[i] = new File(items[i]).toURL();
+                urls[i] = new File(items[i]).toURI().toURL();
 
             cldr = new URLClassLoader(urls);
         } catch (IOException ex) {
