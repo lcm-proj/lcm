@@ -1,13 +1,24 @@
 include(UseJava)
 
-set(LCM_JAVA_TARGET_VERSION "1.8" CACHE STRING
-  "Java version to target when building Java components (leave empty to use default)"
-)
-if(NOT LCM_JAVA_TARGET_VERSION STREQUAL "")
-  set(CMAKE_JAVA_COMPILE_FLAGS
-    -source ${LCM_JAVA_TARGET_VERSION}
-    -target ${LCM_JAVA_TARGET_VERSION}
+if (Java_VERSION VERSION_GREATER 1.9 OR Java_VERSION VERSION_EQUAL 1.9)
+  set(LCM_JAVA_TARGET_VERSION "8" CACHE STRING
+    "Java version to target when building Java components (leave empty to use default)"
   )
+  if(NOT LCM_JAVA_TARGET_VERSION STREQUAL "")
+    set(CMAKE_JAVA_COMPILE_FLAGS
+      --release ${LCM_JAVA_TARGET_VERSION}
+    )
+  endif()
+elseif (Java_VERSION VERSION_LESS 1.9)
+  set(LCM_JAVA_TARGET_VERSION "1.8" CACHE STRING
+    "Java version to target when building Java components (leave empty to use default)"
+  )
+  if(NOT LCM_JAVA_TARGET_VERSION STREQUAL "")
+    set(CMAKE_JAVA_COMPILE_FLAGS
+      -source ${LCM_JAVA_TARGET_VERSION}
+      -target ${LCM_JAVA_TARGET_VERSION}
+    )
+  endif()
 endif()
 
 add_subdirectory(jchart2d-code)
