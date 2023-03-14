@@ -364,7 +364,7 @@ public class ParameterGUI
     class StringValue extends PValue
     {
         JTextField textField;
-        JComboBox  comboBox;
+        JComboBox<String>  comboBox;
 
         String     value;
         String     values[];
@@ -392,12 +392,12 @@ public class ParameterGUI
             return textField;
         }
 
-        JComboBox getComboBox()
+        JComboBox<String> getComboBox()
         {
             assert(values != null);
 
             if (comboBox == null) {
-                comboBox = new JComboBox(values);
+                comboBox = new JComboBox<String>(values);
                 comboBox.addActionListener(new ActionListener() {
                     public void actionPerformed(ActionEvent e) {
                         setStringValue(values[comboBox.getSelectedIndex()]);
