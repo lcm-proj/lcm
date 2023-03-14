@@ -13,3 +13,6 @@ RUN dnf install -y \
     python3-devel
 
 WORKDIR /work
+
+# Necessary to encode certain characters when compiling the Java code.
+ENV LANG=C.UTF-8
