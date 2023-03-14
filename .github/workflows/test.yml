@@ -8,14 +8,18 @@ env:
 jobs:
 
   ubuntu:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, ubuntu-22.04]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
 
     - name: Install Dependencies
       run: |
-        sudo apt install liblua5.4-dev lua5.4
+        sudo apt install liblua5.3-dev lua5.3
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}}
@@ -50,7 +54,11 @@ jobs:
         LD_LIBRARY_PATH=/usr/local/lib/ build/lcm_log_writer build/example.log
 
   macos:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        os: [macos-11, macos-12]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
@@ -92,7 +100,11 @@ jobs:
         build/lcm_log_writer build/example.log
 
   windows:
-    runs-on: windows-latest
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+
+    runs-on: ${{ matrix.os }}
 
     defaults:
       run:
@@ -131,7 +143,7 @@ jobs:
         ctest
 
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -154,7 +166,7 @@ jobs:
           path: build/docs/_build
 
   formatting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
