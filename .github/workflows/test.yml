@@ -54,7 +54,7 @@ jobs:
         LD_LIBRARY_PATH=/usr/local/lib/ build/lcm_log_writer build/example.log
 
   macos:
-    runs-on: macos-latest
+    runs-on: macos-12
 
     steps:
     - uses: actions/checkout@v3
@@ -96,7 +96,7 @@ jobs:
         build/lcm_log_writer build/example.log
 
   windows:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     defaults:
       run:
@@ -135,7 +135,7 @@ jobs:
         ctest
 
   docs:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -158,7 +158,7 @@ jobs:
           path: build/docs/_build
 
   formatting:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
