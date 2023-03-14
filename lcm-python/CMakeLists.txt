@@ -33,7 +33,7 @@ target_link_libraries(lcm-python PRIVATE
 )
 
 if(APPLE)
-  set_target_properties(lcm-python PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+  set_target_properties(lcm-python PROPERTIES LINK_FLAGS "-undefined dynamic_lookup -Wl,-no_fixup_chains")
 else()
   target_link_libraries(lcm-python PRIVATE
     ${PYTHON_LIBRARY}
