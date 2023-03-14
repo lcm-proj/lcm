@@ -72,6 +72,7 @@ public class TableSorter extends AbstractTableModel {
     private static Directive EMPTY_DIRECTIVE = new Directive(-1, NOT_SORTED);
 
     public static final Comparator COMPARABLE_COMAPRATOR = new Comparator() {
+        @SuppressWarnings("unchecked")
         public int compare(Object o1, Object o2) {
             return ((Comparable) o1).compareTo(o2);
         }
@@ -282,6 +283,7 @@ public class TableSorter extends AbstractTableModel {
 
     // Helper classes
 
+    @SuppressWarnings("unchecked")
     private class Row implements Comparable {
         private int modelIndex;
 
