@@ -54,7 +54,11 @@ jobs:
         LD_LIBRARY_PATH=/usr/local/lib/ build/lcm_log_writer build/example.log
 
   macos:
-    runs-on: macos-12
+    strategy:
+      matrix:
+        os: [macos-11, macos-12]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v3
