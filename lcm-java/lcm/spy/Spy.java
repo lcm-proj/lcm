@@ -195,7 +195,7 @@ public class Spy
             for (Class iface : interfaces) {
                 if (iface.equals(SpyPlugin.class)) {
                     try {
-                        Constructor c = cls.getConstructor(new Class[0]);
+                        Constructor c = ((Class<?>)cls).getConstructor(new Class[0]);
                         SpyPlugin plugin = (SpyPlugin) c.newInstance(new Object[0]);
                         plugins.add(plugin);
                     } catch (Exception ex) {
@@ -367,7 +367,7 @@ public class Spy
 
                 cd.nreceived++;
 
-                o = cd.cls.getConstructor(DataInput.class).newInstance(dins);
+                o = ((Class<?>)cd.cls).getConstructor(DataInput.class).newInstance(dins);
                 cd.last = o;
 
                 if (cd.viewer != null)
