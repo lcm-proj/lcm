@@ -100,7 +100,11 @@ jobs:
         build/lcm_log_writer build/example.log
 
   windows:
-    runs-on: windows-2022
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+
+    runs-on: ${{ matrix.os }}
 
     defaults:
       run:
