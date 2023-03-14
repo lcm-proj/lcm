@@ -1,0 +1,15 @@
+FROM fedora:37
+
+# cmake3: To build LCM
+# clang: For compiling code with Clang
+# glib2-devel: A dependency of LCM
+# java-17-openjdk-devel: Latest LTS release of Java for building lcm-spy, lcm-logplayer-gui, etc.
+# python3-devel: Support library to compile the Python Extension Module
+RUN dnf install -y \
+    cmake3 \
+    clang \
+    glib2-devel \
+    java-17-openjdk-devel \
+    python3-devel
+
+WORKDIR /work
