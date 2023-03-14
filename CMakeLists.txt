@@ -17,6 +17,11 @@ include(lcm-cmake/version.cmake)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
+# Set CMAKE_MACOSX_RPATH on macOS to satisfy policy CMP0042.
+if (${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+  set(CMAKE_MACOSX_RPATH FALSE)
+endif()
+
 # Core modules
 add_subdirectory(lcm)
 add_subdirectory(lcmgen)
