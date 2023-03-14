@@ -53,6 +53,46 @@ jobs:
         cmake --build build
         LD_LIBRARY_PATH=/usr/local/lib/ build/lcm_log_writer build/example.log
 
+  fedora:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build and Start Container
+      run: |
+        docker build -f docker/Dockerfile.fedora -t lcm-fedora docker
+        docker run -v $(pwd):/work -d --rm -it --name lcm-fedora lcm-fedora /bin/bash
+
+    - name: Configure CMake
+      run: docker exec lcm-fedora cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}}
+
+    - name: Build
+      run: docker exec lcm-fedora cmake --build ${{github.workspace}}/build
+
+    - name: Test
+      run: docker exec lcm-fedora ctest --test-dir ${{github.workspace}}/build
+
+    - name: Install
+      run: docker exec lcm-fedora cmake --install ${{github.workspace}}/build
+
+    - name: Build C Example
+      run: |
+        docker exec --workdir /work/examples/c -e PKG_CONFIG_PATH=/usr/local/lib/pkgconfig lcm-fedora cmake -B build ${{env.CMAKE_FLAGS}}
+        docker exec --workdir /work/examples/c lcm-fedora cmake --build build
+
+    - name: Build C++ Example
+      run: |
+        docker exec --workdir /work/examples/cpp -e PKG_CONFIG_PATH=/usr/local/lib/pkgconfig lcm-fedora cmake -B build ${{env.CMAKE_FLAGS}}
+        docker exec --workdir /work/examples/cpp lcm-fedora cmake --build build
+
+    - name: Build and Run C++ Log Writer Example
+      working-directory: ${{github.workspace}}/examples/cpp/lcm_log_writer
+      run: |
+        docker exec --workdir /work/examples/cpp/lcm_log_writer -e PKG_CONFIG_PATH=/usr/local/lib/pkgconfig lcm-fedora cmake -B build ${{env.CMAKE_FLAGS}}
+        docker exec --workdir /work/examples/cpp/lcm_log_writer lcm-fedora cmake --build build
+        docker exec --workdir /work/examples/cpp/lcm_log_writer -e LD_LIBRARY_PATH=/usr/local/lib/ lcm-fedora build/lcm_log_writer build/example.log
+
   macos:
     strategy:
       matrix:
