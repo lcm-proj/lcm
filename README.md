@@ -39,9 +39,15 @@ The LCM project is active again. The current near-term plan is to:
 * Languages
   * C
   * C++
-  * C#
-  * Go
   * Java
   * Lua
   * MATLAB
   * Python
+
+## Unmaintained languages
+
+The following languages are currently unmaintained. PRs for these languages are still welcome and if
+you are interested in maintaining them please let us know.
+
+ * Go
+ * C#/.NET
