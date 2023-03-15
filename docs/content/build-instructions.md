@@ -36,16 +36,20 @@ the scope of these instructions.
 
 Required packages:
   - build-essential
-  - libglib2.0-dev
   - cmake
+  - libglib2.0-dev
 
 Optional packages (e.g., for language-specific support or building documentation):
   - default-jdk
-  - python-all-dev
-  - liblua5.1-dev
-  - golang
   - doxygen
-  - python-epydoc
+  - liblua5.3-dev
+  - lua5.3
+  - python3-dev
+
+Python packages needed for building documentation:
+  - Sphinx
+  - myst-parser
+  - sphinx-rtd-theme
 
 From a terminal, run the following commands.
 
