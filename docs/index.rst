@@ -60,7 +60,7 @@ API Reference
 
  - `C <doxygen_output/c_cpp/html/group__LcmC.html>`_
  - `C++ <doxygen_output/c_cpp/html/group__LcmCpp.html>`_
- - `C# <doxygen_output/lcm-dotnet/html/index.html>`_
+ - `C# <doxygen_output/lcm-dotnet/html/namespaces.html>`_
  - `Go <https://godoc.org/github.com/lcm-proj/lcm/lcm-go/lcm>`_
  - `Java <javadocs/index.html>`_
  - :ref:`Lua <The Lua LCM API>`

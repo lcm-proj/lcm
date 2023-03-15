@@ -101,7 +101,7 @@ the constructor can accept variable number of parameters specifying individual
 connection strings.
 
 For detailed information on the LCM .NET API please see the
-<a href="../doxygen_output/lcm-dotnet/html/index.html">.NET API reference</a>.
+<a href="../doxygen_output/lcm-dotnet/html/namespaces.html">.NET API reference</a>.
 
 ## Publishing a message
   
