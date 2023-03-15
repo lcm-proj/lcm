@@ -49,11 +49,13 @@ Optional packages (e.g., for language-specific support or building documentation
 
 From a terminal, run the following commands.
 
-    $ mkdir build
-    $ cd build
-    $ cmake ..
-    $ make
-    $ sudo make install
+```shell
+mkdir build
+cd build
+cmake ..
+make
+sudo make install
+```
 
 ## OS X
 
@@ -64,17 +66,21 @@ better than the others.
 
 Install Homebrew packages
 
-    $ brew install glib pkg-config cmake
+```shell
+brew install glib pkg-config cmake
+```
 
 Install Java.  Type `javac` in a terminal, then follow the instructions.
 
 Download and build LCM.
 
-    $ mkdir build
-    $ cd build
-    $ cmake ..
-    $ make
-    $ make install
+```shell
+mkdir build
+cd build
+cmake ..
+make
+make install
+```
 
 ## Windows
 
@@ -111,19 +117,25 @@ location (`/usr/local/lib/`) in the `ld.so.conf` search path. In this case,
 or if you installed LCM to a different, non-standard prefix, you may wish to
 create a `ld.so.conf` file for lcm:
 
-    $ echo $LCM_LIBRARY_DIR > /etc/ld.so.conf.d/lcm.conf
+```shell
+echo $LCM_LIBRARY_DIR > /etc/ld.so.conf.d/lcm.conf
+```
 
 Python users may need to add the lcm install location to Python's site packages
 search path using a .pth file:
 
-    $ PYTHON_VERSION=$(python -c "import sys; print(\"%s.%s\" % sys.version_info[:2])")
-    $ PYTHON_USER_SITE=$(python -m site --user-site)
-    $ echo "$LCM_LIBRARY_DIR/python$PYTHON_VERSION/site-packages" > $PYTHON_USER_SITE/lcm.pth
+```shell
+PYTHON_VERSION=$(python -c "import sys; print(\"%s.%s\" % sys.version_info[:2])")
+PYTHON_USER_SITE=$(python -m site --user-site)
+echo "$LCM_LIBRARY_DIR/python$PYTHON_VERSION/site-packages" > $PYTHON_USER_SITE/lcm.pth
+```
 
 Lua users may need to add to `LUA_CPATH`:
 
-    $ LUA_VERSION=$(lua -e "print(string.sub(_VERSION, 5))")
-    $ export LUA_CPATH=$LUA_CPATH:$LCM_LIBRARY_DIR/lua/$LUA_VERSION/?.so
+```shell
+LUA_VERSION=$(lua -e "print(string.sub(_VERSION, 5))")
+export LUA_CPATH=$LUA_CPATH:$LCM_LIBRARY_DIR/lua/$LUA_VERSION/?.so
+```
 
 If you install LCM to a non-standard location (i.e. other than the default
 `/usr/local`, other CMake projects using LCM may need help finding it. Although
@@ -131,8 +143,12 @@ you can always point to the directory where `lcmConfig.cmake` is installed by
 manually setting `lcm_DIR`, it may be convenient to add the location to the
 default search paths:
 
-    $ export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$LCM_INSTALL_PREFIX
+```shell
+export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:$LCM_INSTALL_PREFIX
+```
 
 In addition, `pkgconfig` can be configured to find lcm.pc:
 
-    $ export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$LCM_LIBRARY_DIR/pkgconfig
+```shell
+export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$LCM_LIBRARY_DIR/pkgconfig
+```
