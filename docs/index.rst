@@ -144,6 +144,10 @@ sending a message to the `mailing list <http://groups.google.com/group/lcm-users
    :caption: APIs
    :glob:
 
+   doxygen_output/c_cpp/html/group__LcmC
+   doxygen_output/c_cpp/html/group__LcmCpp
+   doxygen_output/lcm-dotnet/html/namespaces
+   javadocs/index
    content/lua-api.md
    python/index.rst
 
