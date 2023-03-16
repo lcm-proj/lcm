@@ -20,12 +20,6 @@ often be found installed in <tt>/usr/local/share/java/</tt>.
 Separately, `lcm.jar` can also be found in the `lcm-java` subdirectory of the
 source distribution after compiling LCM from source.
 
-## Building lcm.jar separately from the rest of LCM
-
-It is possible to build `lcm.jar` separately from the rest of LCM.  The
-`lcm-java` subdirectory of the source distribution contains a `build.xml` file,
-which can be used with a build tool like Apache Ant or Eclipse.  
-
 ## Namespace issues
 
 LCM supports namespaces for data types, making it easier for users to use the
