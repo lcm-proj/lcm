@@ -109,6 +109,6 @@ add_custom_target(doc-java
     -link http://docs.oracle.com/javase/8/docs/api/
     ${lcm_java_doc_classes}
   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-  DEPENDS doc-setup)
+  DEPENDS doc-setup doc-sphinx)
 
 add_dependencies(doc doc-java)
