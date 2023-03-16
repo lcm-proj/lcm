@@ -33,7 +33,7 @@ add_custom_target(doc-doxygen
           ${lcm_SOURCE_DIR}/docs/redirect.html
           ${lcm_BINARY_DIR}/docs/_build/doxygen_output/c_cpp/html/index.html
   WORKING_DIRECTORY ${lcm_SOURCE_DIR}/docs
-  DEPENDS doc-setup)
+  DEPENDS doc-setup doc-sphinx)
 
 add_custom_target(doc-dotnet
   COMMAND ${CMAKE_COMMAND} -E make_directory ${lcm_BINARY_DIR}/docs/_build/doxygen_output/
@@ -54,6 +54,6 @@ endif()
 add_custom_target(doc-sphinx
   COMMAND "PYTHONPATH=${CMAKE_BINARY_DIR}/python" ${SPHINX_EXECUTABLE} ${lcm_SOURCE_DIR}/docs ${lcm_BINARY_DIR}/docs/_build
   WORKING_DIRECTORY ${lcm_SOURCE_DIR}/docs
-  DEPENDS doc-setup doc-dotnet doc-doxygen doc-java lcm-python lcm-python-init)
+  DEPENDS doc-setup lcm-python lcm-python-init)
 
-add_dependencies(doc doc-sphinx)
+add_dependencies(doc doc-dotnet doc-doxygen doc-java )
