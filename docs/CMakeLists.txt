@@ -56,4 +56,4 @@ add_custom_target(doc-sphinx
   WORKING_DIRECTORY ${lcm_SOURCE_DIR}/docs
   DEPENDS doc-setup lcm-python lcm-python-init)
 
-add_dependencies(doc doc-dotnet doc-doxygen doc-java )
+add_dependencies(doc doc-dotnet doc-doxygen)
