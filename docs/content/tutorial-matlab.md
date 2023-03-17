@@ -43,6 +43,18 @@ You should then have a file `my_types.jar`, which is a Java archive containing
 the Java bindings for the example message.
 
 ```{note}
+To use `my_types.jar` in MATLAB, you must make sure the Java version used by
+MATLAB is equal or greater than the version used to build `my_types.jar`.
+To check your system Java version, type `java -version` on the command line.
+To check the version used by MATLAB, type `version -java` in a MATLAB terminal. 
+If the MATLAB version is *older*, you will either need to rebuild the JAR with an
+older version of Java, or configure MATLAB to use a newer version.
+
+By default, MATLAB is bundled with Java 8. If you have Java 9 or later, you can
+target Java 8 by compiling `example_t.java` via `javac -cp lcm.jar exlcm/*.java --release 8`.
+```
+
+```{note}
 On Windows, use `\` instead of `/` for directory separators.
 ```
 
