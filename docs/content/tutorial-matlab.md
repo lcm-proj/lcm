@@ -77,6 +77,7 @@ We can instantiate and publish some sample data as follows:
 lc = lcm.lcm.LCM.getSingleton();
 
 msg = exlcm.example_t();
+
 msg.timestamp = 0;
 msg.position = [1  2  3];
 msg.orientation = [1 0 0 0];
@@ -143,7 +144,7 @@ disp([ 'timestamp:   ' sprintf('%d ', m.timestamp) ])
 disp([ 'position:    ' sprintf('%f ', m.position) ])
 disp([ 'orientation: ' sprintf('%f ', m.orientation) ])
 disp([ 'ranges:      ' sprintf('%f ', m.ranges) ])
-disp([ 'name:        ' m.name) ])
+disp([ 'name:        ' sprintf('%s ', m.name ])
 disp([ 'enabled:     ' sprintf('%d ', m.enabled) ])
 ``` 
 
