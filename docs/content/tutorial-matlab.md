@@ -128,7 +128,7 @@ while true
     disp waiting
     millis_to_wait = 1000;
     msg = aggregator.getNextMessage(millis_to_wait);
-    if length(msg) > 0
+    if ~isempty(msg)
         break
     end
 end
