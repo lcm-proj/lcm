@@ -43,7 +43,7 @@ You should then have a file `my_types.jar`, which is a Java archive containing
 the Java bindings for the example message.
 
 ```{note}
-On Windows, use '\' instead of '/' for directory separators.
+On Windows, use `\` instead of `/` for directory separators.
 ```
 
 The next task is to tell MATLAB how to find LCM and the message bindings.  You
