@@ -43,6 +43,18 @@ You should then have a file `my_types.jar`, which is a Java archive containing
 the Java bindings for the example message.
 
 ```{note}
+To use `my_types.jar` in MATLAB, you must make sure the Java version used by
+MATLAB is equal or greater than the version used to build `my_types.jar`.
+To check your system Java version, type `java -version` on the command line.
+To check the version used by MATLAB, type `version -java` in a MATLAB terminal. 
+If the MATLAB version is *older*, you will either need to rebuild the JAR with an
+older version of Java, or configure MATLAB to use a newer version.
+
+By default, MATLAB is bundled with Java 8. If you have Java 9 or later, you can
+target Java 8 by compiling `example_t.java` via `javac -cp lcm.jar exlcm/*.java --release 8`.
+```
+
+```{note}
 On Windows, use `\` instead of `/` for directory separators.
 ```
 
@@ -77,6 +89,7 @@ We can instantiate and publish some sample data as follows:
 lc = lcm.lcm.LCM.getSingleton();
 
 msg = exlcm.example_t();
+
 msg.timestamp = 0;
 msg.position = [1  2  3];
 msg.orientation = [1 0 0 0];
@@ -127,7 +140,7 @@ while true
     disp waiting
     millis_to_wait = 1000;
     msg = aggregator.getNextMessage(millis_to_wait);
-    if length(msg) > 0
+    if ~isempty(msg)
         break
     end
 end
@@ -143,7 +156,7 @@ disp([ 'timestamp:   ' sprintf('%d ', m.timestamp) ])
 disp([ 'position:    ' sprintf('%f ', m.position) ])
 disp([ 'orientation: ' sprintf('%f ', m.orientation) ])
 disp([ 'ranges:      ' sprintf('%f ', m.ranges) ])
-disp([ 'name:        ' m.name) ])
+disp([ 'name:        ' sprintf('%s ', m.name ])
 disp([ 'enabled:     ' sprintf('%d ', m.enabled) ])
 ``` 
 

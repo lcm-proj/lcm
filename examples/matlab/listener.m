@@ -7,7 +7,7 @@ while true
     disp waiting
     millis_to_wait = 1000;
     msg = aggregator.getNextMessage(millis_to_wait);
-    if length(msg) > 0
+    if ~isempty(msg)
         break
     end
 end
@@ -23,5 +23,5 @@ disp([ 'timestamp:   ' sprintf('%d ', m.timestamp) ])
 disp([ 'position:    ' sprintf('%f ', m.position) ])
 disp([ 'orientation: ' sprintf('%f ', m.orientation) ])
 disp([ 'ranges:      ' sprintf('%f ', m.ranges) ])
-disp([ 'name:        ' char(m.name) ])
+disp([ 'name:        ' sprintf('%s ', m.name ])
 disp([ 'enabled:     ' sprintf('%d ', m.enabled) ])
