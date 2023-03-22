@@ -1,7 +1,8 @@
 execute_process(
   COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
-    import sysconfig as sc
-    print(sc.get_path('platlib'))"
+    from sysconfig import get_path
+    from os.path import sep
+    print(get_path('platlib').replace(get_path('data') + sep, ''))"
   OUTPUT_VARIABLE PYTHON_SITE
   OUTPUT_STRIP_TRAILING_WHITESPACE)
 
