@@ -29,7 +29,7 @@ jobs:
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest
+      run: ctest --output-on-failure
 
     - name: Install
       run: sudo cmake --install ${{github.workspace}}/build
@@ -71,7 +71,7 @@ jobs:
       run: docker exec lcm-fedora cmake --build ${{github.workspace}}/build
 
     - name: Test
-      run: docker exec lcm-fedora ctest --test-dir ${{github.workspace}}/build
+      run: docker exec lcm-fedora ctest --test-dir ${{github.workspace}}/build --output-on-failure
 
     - name: Install
       run: docker exec lcm-fedora cmake --install ${{github.workspace}}/build
@@ -115,7 +115,7 @@ jobs:
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest
+      run: ctest --output-on-failure
 
     - name: Install
       run: sudo cmake --install ${{github.workspace}}/build
@@ -180,7 +180,7 @@ jobs:
         cd build
         # Copy DLLs that don't get installed into the directories of the tests that need them.
         cp test/types/liblcm-test-types.dll test/c/
-        ctest
+        ctest --output-on-failure
 
   docs:
     runs-on: ubuntu-22.04
