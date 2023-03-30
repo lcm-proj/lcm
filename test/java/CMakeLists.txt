@@ -28,7 +28,7 @@ if(NOT WIN32)
 endif()
 
 add_test(NAME Java::client_server COMMAND
-  ${PYTHON_EXECUTABLE}
+  ${Python_EXECUTABLE}
   ${CMAKE_CURRENT_SOURCE_DIR}/../run_client_server_test.py
   $<TARGET_FILE:test-c-server>
   ${Java_JAVA_EXECUTABLE} -cp "${lcm-test-java_CLASSPATH}" LcmTestClient)

@@ -10,9 +10,10 @@ either by unpacking a release archive or cloning the git repository, and that
 your initial working directory contains the source code. (For release archives,
 this includes descending into the top level `lcm-X.Y.Z` subdirectory.)
 
-Regardless of platform, CMake 3.1 or later is required. Binaries may be
-obtained from [https://cmake.org/download/](https://cmake.org/download/). Sufficiently recent Linux
-distributions may provide a new enough CMake via their package managers.
+Regardless of platform, CMake 3.12 or later is required. Binaries may be obtained from
+[https://cmake.org/download/](https://cmake.org/download/). Sufficiently recent Linux distributions
+may provide a new enough CMake via their package managers but if they don't it is often possible to
+use pip to get a more recent version.
 
 Please note that these instructions refer to the latest release of LCM. As the
 build procedure may vary from release to release, if you are building an old

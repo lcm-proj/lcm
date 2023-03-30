@@ -9,7 +9,7 @@ function(add_python_test NAME SCRIPT)
   get_filename_component(SCRIPT ${SCRIPT} ABSOLUTE)
   add_test(NAME ${NAME} COMMAND
     ${CMAKE_COMMAND} -E env "PYTHONPATH=${PYTHON_PATH}"
-    ${PYTHON_EXECUTABLE} ${SCRIPT} ${ARGN})
+    ${Python_EXECUTABLE} ${SCRIPT} ${ARGN})
 endfunction()
 
 add_python_test(Python::bool_test bool_test.py)
@@ -22,4 +22,4 @@ add_python_test(Python::lcm_udpm_queue_issue_test lcm_udpm_queue_issue_test.py)
 add_python_test(Python::client_server
   ../run_client_server_test.py
   $<TARGET_FILE:test-c-server>
-  ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/client.py)
+  ${Python_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/client.py)

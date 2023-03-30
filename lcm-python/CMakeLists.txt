@@ -1,5 +1,8 @@
+# FindPython added in 3.12
+cmake_minimum_required(VERSION 3.12)
+
 execute_process(
-  COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
+  COMMAND "${Python_EXECUTABLE}" -c "if True:
     from sysconfig import get_path
     from os.path import sep
     print(get_path('platlib').replace(get_path('data') + sep, ''))"
@@ -25,8 +28,10 @@ if (WIN32 AND NOT CYGWIN)
   set_target_properties(lcm-python PROPERTIES SUFFIX .pyd)
 endif ()
 
+find_package (Python COMPONENTS Interpreter Development)
+
 target_include_directories(lcm-python PRIVATE
-  ${PYTHON_INCLUDE_DIR}
+  ${Python_INCLUDE_DIRS}
 )
 
 target_link_libraries(lcm-python PRIVATE
@@ -37,7 +42,7 @@ if(APPLE)
   set_target_properties(lcm-python PROPERTIES LINK_FLAGS "-undefined dynamic_lookup -Wl,-no_fixup_chains")
 else()
   target_link_libraries(lcm-python PRIVATE
-    ${PYTHON_LIBRARY}
+    ${Python_LIBRARIES}
   )
 endif()
 
