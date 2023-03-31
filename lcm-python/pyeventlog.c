@@ -55,15 +55,15 @@ static PyObject *pylog_read_next_event(PyLogObject *self)
         return Py_None;
     }
 
+    Py_ssize_t channellen = next_event->channellen;
+    Py_ssize_t datalen = next_event->datalen;
 #if PY_MAJOR_VERSION >= 3
-    PyObject *result =
-        Py_BuildValue("LLs#y#",  // build from bytes
-                      next_event->eventnum, next_event->timestamp, next_event->channel,
-                      next_event->channellen, next_event->data, next_event->datalen);
+    PyObject *result = Py_BuildValue("LLs#y#",  // build from bytes
+                                     next_event->eventnum, next_event->timestamp,
+                                     next_event->channel, channellen, next_event->data, datalen);
 #else
-    PyObject *result =
-        Py_BuildValue("LLs#s#", next_event->eventnum, next_event->timestamp, next_event->channel,
-                      next_event->channellen, next_event->data, next_event->datalen);
+    PyObject *result = Py_BuildValue("LLs#s#", next_event->eventnum, next_event->timestamp,
+                                     next_event->channel, channellen, next_event->data, datalen);
 #endif
     lcm_eventlog_free_event(next_event);
 
