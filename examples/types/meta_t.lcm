@@ -1,0 +1,10 @@
+package exlcm;
+
+struct meta_t
+{
+  int64_t  timestamp;
+  string   robot;
+  string   build;
+  int64_t  clips;
+  string   flight_id;
+}

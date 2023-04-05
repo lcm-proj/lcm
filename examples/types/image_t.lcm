@@ -1,0 +1,11 @@
+package exlcm;
+
+struct image_t
+{
+  int64_t  timestamp;
+  string   camera;
+  int32_t  width;
+  int32_t  height;
+  int16_t  depth;
+  byte     data[height][width][depth];
+}

@@ -1,0 +1,9 @@
+package exlcm;
+
+struct pose_t
+{
+    int64_t  timestamp;
+    string   frame;
+    double   position[3];
+    double   orientation[4];
+}
