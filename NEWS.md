@@ -16,6 +16,8 @@ This is primarily a bugfix and maintenance release.
     - Location has moved from https://lcm-proj.github.io/ to https://lcm-proj.github.io/lcm/
 - Windows support
     - Moved from supporting Visual Studio to supporting a MSYS2 MGW64 environment
+- Java 
+    - Version 1.8 or later is now required
 
 August 30, 2018
 ==============
