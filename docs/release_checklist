@@ -2,15 +2,16 @@
 
 1. Update NEWS (use Markdown syntax)
 2. Verify that all manpages are up to date
-3. Bump the version number in:
+3. Verify that supported platforms and version numbers are correct in the README
+4. Bump the version number in:
   a. lcm/lcm_version.h
   b. lcm-lua/rock/lcm-<version>-0.rockspec
-4. Commit the above changes and create the vX.Y.Z git tag.
+5. Commit the above changes and create the vX.Y.Z git tag.
   $ git commit -a -m "Release X.Y.Z"
   $ git tag vX.Y.Z
-5. Create the release artifact
+6. Create the release artifact
   $ git archive --format zip -o lcm-X.Y.Z.zip --prefix lcm-X.Y.Z/ vX.Y.Z
-6. Take the resulting artifact, extract it, build it, install it, make sure
+7. Take the resulting artifact, extract it, build it, install it, make sure
   the basic executables run
   $ unzip lcm-X.Y.Z.zip
   $ cd lcm-X.Y.Z

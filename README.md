@@ -33,15 +33,22 @@ The LCM project is active again. The current near-term plan is to:
 
 * Platforms:
   * GNU/Linux
-  * OS X
-  * Windows
-  * Any POSIX-1.2001 system (e.g., Cygwin, Solaris, BSD, etc.)
+      * Ubuntu (20.04 and 22.04)
+      * Fedora (37)
+  * macOS (11 and 12)
+  * Windows (2019 and 2022) via MSYS2
 * Languages
   * C
   * C++
-  * C#
-  * Go
   * Java
   * Lua
   * MATLAB
   * Python
+
+## Unmaintained languages
+
+The following languages are currently unmaintained. PRs for these languages are still welcome and if
+you are interested in maintaining them please let us know.
+
+ * Go
+ * C#/.NET
