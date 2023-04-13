@@ -173,7 +173,7 @@ static int impl_hash_tobytes(lua_State *L)
 
     uint8_t *bytes = (uint8_t *) &hashu->hash;
 
-    int i;
+    size_t i;
     for (i = 0; i < sizeof(hashu->hash); i++) {
         lua_pushinteger(L, bytes[i]);
     }
