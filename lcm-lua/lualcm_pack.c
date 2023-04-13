@@ -11,19 +11,10 @@
 #include "stdbool.h"
 #endif
 
-/*
- * WARNING! This code assumes you have a normal lua build, where lua_Number
- * is a double. Packing and unpacking will be very awkward if lua_Number isn't
- * a floating point type. If lua_Number is float, that's ok, but it won't be
- * able to represent the full range of a 32 bit int.
- *
- * TODO Add warning for non floating point lua_Number.
- *
- * TODO Add warning for large ints that don't fit in a double.
- *
- * TODO Add warning for large ints that don't fit in a float (if lua_Number is
- * defined as float).
- */
+/* WARNING! This code assumes you have a normal lua build, where lua_Number is a
+ * double. Packing and unpacking will be very awkward if lua_Number isn't a
+ * floating point type. If lua_Number is float, that's ok, but it won't be able
+ * to represent the full range of a 32 bit int. */
 
 /* functions */
 static int impl_unpack(lua_State *);
@@ -35,7 +26,6 @@ static int impl_utf8_check(lua_State *);
 /* supporting types */
 
 typedef enum impl_datatype {
-    DATATYPE_UNKNOWN,
     DATATYPE_INT8,
     DATATYPE_INT16,
     DATATYPE_INT32,
@@ -73,29 +63,29 @@ static bool impl_is_machine_little_endian(void);
 static void impl_swap_bytes(uint8_t *, size_t);
 
 /* unpack helper functions */
-static void impl_unpack_int8_t(lua_State *, const uint8_t *, size_t *, size_t, bool);
+static void impl_unpack_int8_t(lua_State *, const uint8_t *, size_t *, size_t);
 static void impl_unpack_int16_t(lua_State *, const uint8_t *, size_t *, size_t, bool);
 static void impl_unpack_int32_t(lua_State *, const uint8_t *, size_t *, size_t, bool);
 static void impl_unpack_uint32_t(lua_State *, const uint8_t *, size_t *, size_t, bool);
 static void impl_unpack_int64_t(lua_State *, const uint8_t *, size_t *, size_t, bool);
 static void impl_unpack_float(lua_State *, const uint8_t *, size_t *, size_t, bool);
 static void impl_unpack_double(lua_State *, const uint8_t *, size_t *, size_t, bool);
-static void impl_unpack_string(lua_State *, const uint8_t *, size_t *, size_t, bool);
-static void impl_unpack_boolean(lua_State *, const uint8_t *, size_t *, size_t, bool);
-static void impl_unpack_byte(lua_State *, const uint8_t *, size_t *, size_t, bool);
+static void impl_unpack_string(lua_State *, const uint8_t *, size_t *, size_t);
+static void impl_unpack_boolean(lua_State *, const uint8_t *, size_t *, size_t);
+static void impl_unpack_byte(lua_State *, const uint8_t *, size_t *, size_t);
 static void impl_unpack_hash(lua_State *, const uint8_t *, size_t *, size_t, bool);
 
 /* pack helper functions */
-static void impl_pack_int8_t(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
+static void impl_pack_int8_t(lua_State *, uint8_t *, size_t *, int *, size_t);
 static void impl_pack_int16_t(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
 static void impl_pack_int32_t(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
 static void impl_pack_uint32_t(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
 static void impl_pack_int64_t(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
 static void impl_pack_float(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
 static void impl_pack_double(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
-static void impl_pack_string(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
-static void impl_pack_boolean(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
-static void impl_pack_byte(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
+static void impl_pack_string(lua_State *, uint8_t *, size_t *, int *, size_t);
+static void impl_pack_boolean(lua_State *, uint8_t *, size_t *, int *, size_t);
+static void impl_pack_byte(lua_State *, uint8_t *, size_t *, int *, size_t);
 static void impl_pack_hash(lua_State *, uint8_t *, size_t *, int *, size_t, bool);
 
 /* forward declaration, from utf8_check.c */
@@ -139,8 +129,6 @@ int impl_unpack(lua_State *L)
 
     /* get number of values */
     const int num_values = impl_get_required_stack_size(ops, num_ops);
-
-    /* TODO offer packing/unpacking into lua tables? */
 
     /* check the stack size, since some users may try to unpack many values */
     luaL_checkstack(L, num_values, "Does it look like I have infinite stack?!");
@@ -200,12 +188,9 @@ int impl_pack(lua_State *L)
         luaL_error(L, "error packing buffer: %s", error_message);
     }
 
-    /* at this point, buf_size and actual_buf_size should/will be the same */
-    /* we only need to use actual_buf_size if we didn't know how big the buffer
-     * was going to be */
-
-    /* printf("buf_size: %d, actual_buf_size: %d\n", buf_size, actual_buf_size);
-     */
+    /* at this point, buf_size and actual_buf_size should/will be the same we
+     * only need to use actual_buf_size if we didn't know how big the buffer was
+     * going to be */
 
     /* push the buffer */
     lua_pushlstring(L, (const char *) buf, actual_buf_size);
@@ -342,7 +327,7 @@ static bool impl_format_to_ops(impl_pack_op_t *ops, size_t max_num_ops, size_t *
                 ops[*num_ops].repeat = 1;
             }
 
-            (*num_ops)++;
+            ++(*num_ops);
             repeat_set = false;
 
             c = *(++format);
@@ -378,8 +363,8 @@ static size_t impl_get_required_buffer_size(impl_pack_op_t *ops, size_t num_ops)
 {
     size_t buf_size = 0;
 
-    int i;
-    for (i = 0; i < num_ops; i++) {
+    size_t i;
+    for (i = 0; i < num_ops; ++i) {
         switch (ops[i].datatype) {
         case DATATYPE_INT8:
             buf_size += ops[i].repeat * sizeof(int8_t);
@@ -414,9 +399,6 @@ static size_t impl_get_required_buffer_size(impl_pack_op_t *ops, size_t num_ops)
         case DATATYPE_HASH:
             buf_size += ops[i].repeat * sizeof(uint64_t);
             break;
-        case DATATYPE_UNKNOWN:
-            fprintf(stderr, "WARNING! Encountered unknown datatype.\n");
-            break;
         }
     }
 
@@ -427,8 +409,8 @@ static int impl_get_required_stack_size(impl_pack_op_t *ops, size_t num_ops)
 {
     int num_values = 0;
 
-    int i;
-    for (i = 0; i < num_ops; i++) {
+    size_t i;
+    for (i = 0; i < num_ops; ++i) {
         switch (ops[i].datatype) {
         case DATATYPE_INT8:
             num_values += ops[i].repeat;
@@ -462,10 +444,6 @@ static int impl_get_required_stack_size(impl_pack_op_t *ops, size_t num_ops)
             break;
         case DATATYPE_HASH:
             num_values += ops[i].repeat;
-            break;
-        case DATATYPE_UNKNOWN:
-            fprintf(stderr, "WARNING! Encountered unknown datatype.\n");
-            num_values += 1;
             break;
         }
     }
@@ -492,11 +470,11 @@ static bool impl_unpack_buffer(lua_State *L, impl_pack_op_t *ops, size_t num_ops
 
     size_t offset = 0;
 
-    int i;
-    for (i = 0; i < num_ops; i++) {
+    size_t i;
+    for (i = 0; i < num_ops; ++i) {
         switch (ops[i].datatype) {
         case DATATYPE_INT8:
-            impl_unpack_int8_t(L, buf, &offset, ops[i].repeat, swap);
+            impl_unpack_int8_t(L, buf, &offset, ops[i].repeat);
             break;
         case DATATYPE_INT16:
             impl_unpack_int16_t(L, buf, &offset, ops[i].repeat, swap);
@@ -517,19 +495,16 @@ static bool impl_unpack_buffer(lua_State *L, impl_pack_op_t *ops, size_t num_ops
             impl_unpack_double(L, buf, &offset, ops[i].repeat, swap);
             break;
         case DATATYPE_STRING:
-            impl_unpack_string(L, buf, &offset, ops[i].repeat, swap);
+            impl_unpack_string(L, buf, &offset, ops[i].repeat);
             break;
         case DATATYPE_BOOLEAN:
-            impl_unpack_boolean(L, buf, &offset, ops[i].repeat, swap);
+            impl_unpack_boolean(L, buf, &offset, ops[i].repeat);
             break;
         case DATATYPE_BYTE:
-            impl_unpack_byte(L, buf, &offset, ops[i].repeat, swap);
+            impl_unpack_byte(L, buf, &offset, ops[i].repeat);
             break;
         case DATATYPE_HASH:
             impl_unpack_hash(L, buf, &offset, ops[i].repeat, swap);
-            break;
-        case DATATYPE_UNKNOWN:
-            fprintf(stderr, "WARNING! Encountered unknown datatype.\n");
             break;
         }
     }
@@ -564,11 +539,11 @@ static bool impl_pack_buffer(lua_State *L, impl_pack_op_t *ops, size_t num_ops,
     size_t offset = 0;
     int stack_pos = -req_stack_size; /* remember, the top of the stack is position = -1 */
 
-    int i;
-    for (i = 0; i < num_ops; i++) {
+    size_t i;
+    for (i = 0; i < num_ops; ++i) {
         switch (ops[i].datatype) {
         case DATATYPE_INT8:
-            impl_pack_int8_t(L, buf, &offset, &stack_pos, ops[i].repeat, swap);
+            impl_pack_int8_t(L, buf, &offset, &stack_pos, ops[i].repeat);
             break;
         case DATATYPE_INT16:
             impl_pack_int16_t(L, buf, &offset, &stack_pos, ops[i].repeat, swap);
@@ -589,28 +564,22 @@ static bool impl_pack_buffer(lua_State *L, impl_pack_op_t *ops, size_t num_ops,
             impl_pack_double(L, buf, &offset, &stack_pos, ops[i].repeat, swap);
             break;
         case DATATYPE_STRING:
-            impl_pack_string(L, buf, &offset, &stack_pos, ops[i].repeat, swap);
+            impl_pack_string(L, buf, &offset, &stack_pos, ops[i].repeat);
             break;
         case DATATYPE_BOOLEAN:
-            impl_pack_boolean(L, buf, &offset, &stack_pos, ops[i].repeat, swap);
+            impl_pack_boolean(L, buf, &offset, &stack_pos, ops[i].repeat);
             break;
         case DATATYPE_BYTE:
-            impl_pack_byte(L, buf, &offset, &stack_pos, ops[i].repeat, swap);
+            impl_pack_byte(L, buf, &offset, &stack_pos, ops[i].repeat);
             break;
         case DATATYPE_HASH:
             impl_pack_hash(L, buf, &offset, &stack_pos, ops[i].repeat, swap);
             break;
-        case DATATYPE_UNKNOWN:
-            fprintf(stderr, "WARNING! Encountered unknown datatype.\n");
-            break;
         }
     }
 
-    /* at this point, req_buf_size and offset will be the same */
-    /* if offset is greater than req_buf_size, then we should worry about a
-     * segfault */
-
-    /* printf("offset: %d, req_sz: %d\n", offset, req_buf_size); */
+    /* at this point, req_buf_size and offset will be the same if offset is
+     * greater than req_buf_size, then we should worry about a segfault */
 
     *buf_size = offset; /* or req_buf_size */
 
@@ -640,8 +609,7 @@ static void impl_swap_bytes(uint8_t *buffer, size_t num)
     }
 }
 
-static void impl_unpack_int8_t(lua_State *L, const uint8_t *buf, size_t *offset, size_t repeat,
-                               bool swap)
+static void impl_unpack_int8_t(lua_State *L, const uint8_t *buf, size_t *offset, size_t repeat)
 {
     while (repeat-- > 0) {
         int8_t n = *((int8_t *) (buf + *offset));
@@ -732,16 +700,14 @@ static void impl_unpack_double(lua_State *L, const uint8_t *buf, size_t *offset,
     }
 }
 
-static void impl_unpack_string(lua_State *L, const uint8_t *buf, size_t *offset, size_t str_size,
-                               bool swap)
+static void impl_unpack_string(lua_State *L, const uint8_t *buf, size_t *offset, size_t str_size)
 {
     const char *str = (const char *) (buf + *offset);
     lua_pushlstring(L, str, str_size);
     *offset += str_size * sizeof(char);
 }
 
-static void impl_unpack_boolean(lua_State *L, const uint8_t *buf, size_t *offset, size_t repeat,
-                                bool swap)
+static void impl_unpack_boolean(lua_State *L, const uint8_t *buf, size_t *offset, size_t repeat)
 {
     while (repeat-- > 0) {
         uint8_t n = *((uint8_t *) (buf + *offset));
@@ -750,12 +716,11 @@ static void impl_unpack_boolean(lua_State *L, const uint8_t *buf, size_t *offset
     }
 }
 
-static void impl_unpack_byte(lua_State *L, const uint8_t *buf, size_t *offset, size_t bytes_size,
-                             bool swap)
+static void impl_unpack_byte(lua_State *L, const uint8_t *buf, size_t *offset, size_t bytes_size)
 {
     /* unpack as a Lua "byte string" which is really just a string */
-    const uint8_t *bytes = (const uint8_t *) (buf + *offset);
-    lua_pushlstring(L, (const char *) bytes, bytes_size);
+    const char *bytes = (const char *) (buf + *offset);
+    lua_pushlstring(L, bytes, bytes_size);
     *offset += bytes_size * sizeof(uint8_t);
 }
 
@@ -772,7 +737,7 @@ static void impl_unpack_hash(lua_State *L, const uint8_t *buf, size_t *offset, s
 }
 
 static void impl_pack_int8_t(lua_State *L, uint8_t *buf, size_t *offset, int *stack_pos,
-                             size_t repeat, bool swap)
+                             size_t repeat)
 {
     while (repeat-- > 0) {
         int8_t n = (int8_t) luaL_checknumber(L, *stack_pos);
@@ -861,14 +826,14 @@ static void impl_pack_double(lua_State *L, uint8_t *buf, size_t *offset, int *st
 }
 
 static void impl_pack_string(lua_State *L, uint8_t *buf, size_t *offset, int *stack_pos,
-                             size_t str_size, bool swap)
+                             size_t str_size)
 {
     size_t other_str_size;
     const char *other_str = luaL_checklstring(L, *stack_pos, &other_str_size);
     char *str = (char *) (buf + *offset);
 
-    int i;
-    for (i = 0; i < str_size; i++) {
+    size_t i;
+    for (i = 0; i < str_size; ++i) {
         if (i < other_str_size) {
             str[i] = other_str[i];
         } else {
@@ -882,11 +847,11 @@ static void impl_pack_string(lua_State *L, uint8_t *buf, size_t *offset, int *st
 }
 
 static void impl_pack_boolean(lua_State *L, uint8_t *buf, size_t *offset, int *stack_pos,
-                              size_t repeat, bool swap)
+                              size_t repeat)
 {
     while (repeat-- > 0) {
-        luaL_checkany(L, *stack_pos); /* because lua_toboolean also returns 0 on
-                                         invalid stack index */
+        /* because lua_toboolean also returns 0 on invalid stack index */
+        luaL_checkany(L, *stack_pos);
         uint8_t n = (uint8_t) lua_toboolean(L, *stack_pos);
         *((uint8_t *) (buf + *offset)) = n;
         *offset += sizeof(uint8_t);
@@ -895,15 +860,15 @@ static void impl_pack_boolean(lua_State *L, uint8_t *buf, size_t *offset, int *s
 }
 
 static void impl_pack_byte(lua_State *L, uint8_t *buf, size_t *offset, int *stack_pos,
-                           size_t bytes_size, bool swap)
+                           size_t bytes_size)
 {
     size_t other_bytes_size;
     const uint8_t *other_bytes =
         (const uint8_t *) luaL_checklstring(L, *stack_pos, &other_bytes_size);
     uint8_t *bytes = (uint8_t *) (buf + *offset);
 
-    int i;
-    for (i = 0; i < bytes_size; i++) {
+    size_t i;
+    for (i = 0; i < bytes_size; ++i) {
         if (i < other_bytes_size) {
             bytes[i] = other_bytes[i];
         } else {

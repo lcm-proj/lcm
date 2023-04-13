@@ -60,11 +60,6 @@ void ll_hash_makemetatable(lua_State *L)
     luaX_registertable(L, methods);
     lua_rawset(L, -3);
 
-    /* TODO hide metatable */
-    /*lua_pushstring(L, "__metatable");
-    lua_pushnil(L);
-    lua_rawset(L, -3);*/
-
     /* pop the metatable */
     lua_pop(L, 1);
 }
@@ -131,8 +126,8 @@ static int impl_hash_new(lua_State *L)
     /* first arg is a string containing the provider */
     const char *hash_str = luaL_checkstring(L, 1);
 
-    /* use sscanf to parse the string */
-    /* should use uint64_t here, but it causes a warning  with sscanf */
+    /* use sscanf to parse the string, should use uint64_t here, but it causes a
+     * warning with sscanf */
     unsigned long long hash = 0;
     int matches = sscanf(hash_str, "%llx", &hash);
     if (matches != 1) {
@@ -151,8 +146,6 @@ static int impl_hash_new(lua_State *L)
 
 /**
  * Convert the hash userdata to bytes.
- *
- * TODO Endianness?
  *
  * @pre The Lua arguments on the stack:
  *     A hash userdata (self).
@@ -173,7 +166,7 @@ static int impl_hash_tobytes(lua_State *L)
 
     uint8_t *bytes = (uint8_t *) &hashu->hash;
 
-    int i;
+    size_t i;
     for (i = 0; i < sizeof(hashu->hash); i++) {
         lua_pushinteger(L, bytes[i]);
     }
@@ -276,9 +269,8 @@ static int impl_hash_tostring(lua_State *L)
     /* get the hash userdata */
     impl_hash_userdata_t *hashu = impl_hash_checkudata(L, 1);
 
-    /* convert uint64_t to string */
-    /* use snprintf because lua_pushfstring can't handle %llx */
-    /* have to cast uint64_t to avoid warning with snprintf */
+    /* convert uint64_t to string, use snprintf because lua_pushfstring can't
+     * handle %llx, have to cast uint64_t to avoid warning with snprintf */
     char hash_str[20];
 #ifndef WIN32
     snprintf(hash_str, 20, "0x%llx", (unsigned long long) hashu->hash);
