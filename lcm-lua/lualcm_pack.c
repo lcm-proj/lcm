@@ -11,19 +11,10 @@
 #include "stdbool.h"
 #endif
 
-/*
- * WARNING! This code assumes you have a normal lua build, where lua_Number
- * is a double. Packing and unpacking will be very awkward if lua_Number isn't
- * a floating point type. If lua_Number is float, that's ok, but it won't be
- * able to represent the full range of a 32 bit int.
- *
- * TODO Add warning for non floating point lua_Number.
- *
- * TODO Add warning for large ints that don't fit in a double.
- *
- * TODO Add warning for large ints that don't fit in a float (if lua_Number is
- * defined as float).
- */
+/* WARNING! This code assumes you have a normal lua build, where lua_Number is a
+ * double. Packing and unpacking will be very awkward if lua_Number isn't a
+ * floating point type. If lua_Number is float, that's ok, but it won't be able
+ * to represent the full range of a 32 bit int. */
 
 /* functions */
 static int impl_unpack(lua_State *);
@@ -139,8 +130,6 @@ int impl_unpack(lua_State *L)
     /* get number of values */
     const int num_values = impl_get_required_stack_size(ops, num_ops);
 
-    /* TODO offer packing/unpacking into lua tables? */
-
     /* check the stack size, since some users may try to unpack many values */
     luaL_checkstack(L, num_values, "Does it look like I have infinite stack?!");
 
@@ -199,12 +188,9 @@ int impl_pack(lua_State *L)
         luaL_error(L, "error packing buffer: %s", error_message);
     }
 
-    /* at this point, buf_size and actual_buf_size should/will be the same */
-    /* we only need to use actual_buf_size if we didn't know how big the buffer
-     * was going to be */
-
-    /* printf("buf_size: %d, actual_buf_size: %d\n", buf_size, actual_buf_size);
-     */
+    /* at this point, buf_size and actual_buf_size should/will be the same we
+     * only need to use actual_buf_size if we didn't know how big the buffer was
+     * going to be */
 
     /* push the buffer */
     lua_pushlstring(L, (const char *) buf, actual_buf_size);
@@ -592,11 +578,8 @@ static bool impl_pack_buffer(lua_State *L, impl_pack_op_t *ops, size_t num_ops,
         }
     }
 
-    /* at this point, req_buf_size and offset will be the same */
-    /* if offset is greater than req_buf_size, then we should worry about a
-     * segfault */
-
-    /* printf("offset: %d, req_sz: %d\n", offset, req_buf_size); */
+    /* at this point, req_buf_size and offset will be the same if offset is
+     * greater than req_buf_size, then we should worry about a segfault */
 
     *buf_size = offset; /* or req_buf_size */
 
@@ -867,8 +850,8 @@ static void impl_pack_boolean(lua_State *L, uint8_t *buf, size_t *offset, int *s
                               size_t repeat)
 {
     while (repeat-- > 0) {
-        luaL_checkany(L, *stack_pos); /* because lua_toboolean also returns 0 on
-                                         invalid stack index */
+        /* because lua_toboolean also returns 0 on invalid stack index */
+        luaL_checkany(L, *stack_pos);
         uint8_t n = (uint8_t) lua_toboolean(L, *stack_pos);
         *((uint8_t *) (buf + *offset)) = n;
         *offset += sizeof(uint8_t);

@@ -121,11 +121,6 @@ void ll_lcm_makemetatable(lua_State *L)
     luaX_registertable(L, methods);
     lua_rawset(L, -3);
 
-    /* TODO hide metatable */
-    /*lua_pushstring(L, "__metatable");
-    lua_pushnil(L);
-    lua_rawset(L, -3);*/
-
     /* pop the metatable */
     lua_pop(L, 1);
 }
