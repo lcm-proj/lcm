@@ -264,10 +264,10 @@ static int _recv_message_fragment(lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
 
     // if this is the first packet, set some values
     char *channel = NULL;
+    int channel_sz = 0;
     if (hdr->fragment_no == 0) {
         channel = (char *) (hdr + 1);
-        char *channel = (char *) (hdr + 1);
-        int channel_sz = strlen(channel);
+        channel_sz = strlen(channel);
         if (channel_sz > LCM_MAX_CHANNEL_NAME_LENGTH) {
             dbg(DBG_LCM, "bad channel name length\n");
             lcm->udp_discarded_bad++;
@@ -284,7 +284,7 @@ static int _recv_message_fragment(lcm_udpm_t *lcm, lcm_buf_t *lcmb, uint32_t sz)
     }
 
     if (channel != NULL) {
-        memcpy(fbuf->channel, channel, sizeof(fbuf->channel));
+        memcpy(fbuf->channel, channel, channel_sz + 1);
     }
 
 #ifdef __linux__
