@@ -9,7 +9,7 @@ This is primarily a bugfix and maintenance release.
     - Several bug fixes
     - Fixed general and deprecation warnings on recent versions of Python and Java
 - Build system
-    - CMake now now imports GLib via pkg-config
+    - Updated CMake to fix warnings
 - Docs
     - Now built through Sphinx with a ReadTheDocs theme
     - Automatically updated and deployed via CI/CD
