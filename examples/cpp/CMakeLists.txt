@@ -2,27 +2,29 @@ cmake_minimum_required(VERSION 3.1)
 
 project(lcm_cpp_example)
 
-# Import LCM via pkgconfig.
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LCM REQUIRED lcm)
+find_package(lcm REQUIRED)
+include(${LCM_USE_FILE})
 
-# Use lcm-gen to generate headers.
-find_program(LCM_GEN_EXECUTABLE lcm-gen)
-add_custom_target(exlcm
-  COMMAND ${LCM_GEN_EXECUTABLE} -x ../../types/*.lcm)
-include_directories("${lcm_cpp_example_BINARY_DIR}")
+# Put all message definition files in the type directory in one list
+FILE(GLOB example_message_definitions "${CMAKE_CURRENT_LIST_DIR}/../types/*.lcm")
 
-# Everything from here on needs these flags.
-include_directories(${LCM_INCLUDE_DIRS})
-link_libraries(${LCM_LDFLAGS})
+# Generate headers from message definition
+lcm_wrap_types(CPP_HEADERS cpp_headers
+  ${example_message_definitions})
 
-# Create executables for the example programs.
+# Create library from all the messages
+lcm_add_library(example_messages-cpp CPP ${cpp_headers})
+target_include_directories(example_messages-cpp INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
+
+# Create executables for the three example programs, linking all of them to our
+# messages library and lcm
 
 add_executable(listener "listener.cpp")
-add_dependencies(listener exlcm)
+lcm_target_link_libraries(listener example_messages-cpp ${LCM_NAMESPACE}lcm)
 
 add_executable(send_message "send_message.cpp")
-add_dependencies(send_message exlcm)
-                                       
+lcm_target_link_libraries(send_message example_messages-cpp ${LCM_NAMESPACE}lcm)
+
 add_executable(read_log "read_log.cpp")
-add_dependencies(read_log exlcm)
+lcm_target_link_libraries(read_log example_messages-cpp ${LCM_NAMESPACE}lcm)
