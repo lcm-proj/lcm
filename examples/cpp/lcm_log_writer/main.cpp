@@ -5,8 +5,8 @@
 #include <cmath>
 #include <fstream>
 #include <iostream>
-#include <joint_state_t.hpp>
 #include <lcm/lcm-cpp.hpp>
+#include <pronto/joint_state_t.hpp>
 #include <string>
 
 using namespace std;
