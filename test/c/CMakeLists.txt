@@ -10,8 +10,7 @@ add_executable(test-c-memq_test memq_test.cpp common.c)
 target_link_libraries(test-c-memq_test ${test_c_libs})
 
 add_executable(test-c-eventlog_test eventlog_test.cpp common.c)
-target_link_libraries(test-c-eventlog_test ${GLIB_LDFLAGS} ${test_c_libs})
-target_include_directories(test-c-eventlog_test PRIVATE ${GLIB_INCLUDE_DIRS})
+target_link_libraries(test-c-eventlog_test GLib2::glib ${test_c_libs})
 
 add_executable(test-c-udpm_test udpm_test.cpp common.c)
 target_link_libraries(test-c-udpm_test ${test_c_libs})

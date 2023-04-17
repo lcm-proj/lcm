@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.1)
 
+if(POLICY CMP0111)
+  cmake_policy(SET CMP0111 NEW)
+endif()
+
 project(lcm)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
@@ -7,8 +11,7 @@ if(CMAKE_VERSION VERSION_LESS 3.7)
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/3.7")
 endif()
 
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(GLIB REQUIRED glib-2.0)
+find_package(GLib2 REQUIRED)
 
 # Configuration and utility functions
 include(lcm-cmake/config.cmake NO_POLICY_SCOPE)
