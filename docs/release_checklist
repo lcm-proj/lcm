@@ -9,17 +9,6 @@
 5. Commit the above changes and create the vX.Y.Z git tag.
   $ git commit -a -m "Release X.Y.Z"
   $ git tag vX.Y.Z
-6. Create the release artifact
-  $ git archive --format zip -o lcm-X.Y.Z.zip --prefix lcm-X.Y.Z/ vX.Y.Z
-7. Take the resulting artifact, extract it, build it, install it, make sure
-  the basic executables run
-  $ unzip lcm-X.Y.Z.zip
-  $ cd lcm-X.Y.Z
-  $ mkdir build
-  $ cd build
-  $ cmake ..
-  $ make
-  $ make install
 
 # Test
 
