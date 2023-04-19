@@ -51,7 +51,7 @@ add_subdirectory(docs)
 lcm_option(
   LCM_ENABLE_JAVA
   "Build Java bindings and utilities"
-  JAVA_FOUND Java 1.6)
+  JAVA_FOUND Java 1.8)
 if(LCM_ENABLE_JAVA)
   add_subdirectory(lcm-java)
   add_custom_target(lcm-spy DEPENDS lcm-spy-alias)

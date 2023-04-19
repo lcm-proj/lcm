@@ -89,17 +89,8 @@ make install
 
 ## Windows
 
-Requirements:
- - GLib for Windows ([http://www.gtk.org](http://www.gtk.org)).  You'll need the following packages
-  - GLib (Run-time, dev)
-  - gettext-runtime (Run-time)
-
-Building:
-  1. Follow the instructions in WinSpecific/README.txt to setup GLib.
-  2. Use the CMake GUI to configure LCM.
-  3. Open the VS Solution created by CMake and build it.
-
-LCM is officially supported on Visual Studio 2015.
+LCM is officially supported on MSYS2. There is some residual support for Visual Studio that is
+unmaintained. Please see WinSpecific/README.md for more information on building on Windows.
 
 ## Other / General
 

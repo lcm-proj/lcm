@@ -1,3 +1,24 @@
+April 19, 2023
+==============
+
+Release 1.5.0
+
+This is primarily a bugfix and maintenance release.
+
+- General
+    - Several bug fixes
+    - Fixed general and deprecation warnings on recent versions of Python and Java
+- Build system
+    - Updated CMake to fix warnings
+- Docs
+    - Now built through Sphinx with a ReadTheDocs theme
+    - Automatically updated and deployed via CI/CD
+    - Location has moved from https://lcm-proj.github.io/ to https://lcm-proj.github.io/lcm/
+- Windows support
+    - Moved from supporting Visual Studio to supporting a MSYS2 MGW64 environment
+- Java 
+    - Version 1.8 or later is now required
+
 August 30, 2018
 ==============
 
