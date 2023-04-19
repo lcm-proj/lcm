@@ -1,8 +1,8 @@
 add_executable(lcm-sink lcm-sink.c)
-target_link_libraries(lcm-sink lcm)
+target_link_libraries(lcm-sink lcm GLib2::glib)
 
 add_executable(lcm-source lcm-source.c)
-target_link_libraries(lcm-source lcm)
+target_link_libraries(lcm-source lcm GLib2::glib)
 
 add_executable(lcm-tester lcm-tester.c)
 target_link_libraries(lcm-tester lcm GLib2::glib)
@@ -11,7 +11,7 @@ if(WIN32)
 endif()
 
 add_executable(lcm-example lcm-example.c)
-target_link_libraries(lcm-example lcm)
+target_link_libraries(lcm-example lcm GLib2::glib)
 if(WIN32)
   target_link_libraries(lcm-example ws2_32)
 endif()
