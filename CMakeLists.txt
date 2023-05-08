@@ -37,9 +37,15 @@ endif()
 
 # Python
 lcm_option(
+  LCM_USE_PYTHON2
+  "Use Python 2 instead of Python 3"
+  PYTHON2_FOUND Python2)
+
+lcm_option(
   LCM_ENABLE_PYTHON
   "Build Python bindings and utilities"
   PYTHON_FOUND Python)
+
 if(LCM_ENABLE_PYTHON)
   add_subdirectory(lcm-python)
 endif()

@@ -28,8 +28,15 @@ if (WIN32 AND NOT CYGWIN)
   set_target_properties(lcm-python PROPERTIES SUFFIX .pyd)
 endif ()
 
-find_package (Python COMPONENTS Interpreter Development)
+if (LCM_USE_PYTHON2)
+  find_package (Python2 COMPONENTS Interpreter Development)
+  set(Python_LIBRARIES ${Python2_LIBRARIES})
+  set(Python_INCLUDE_DIRS ${Python2_INCLUDE_DIRS})
+else()
+  find_package (Python COMPONENTS Interpreter Development)
+endif()
 
+message(STATUS "python include dirs: ${Python_INCLUDE_DIRS}")
 target_include_directories(lcm-python PRIVATE
   ${Python_INCLUDE_DIRS}
 )
