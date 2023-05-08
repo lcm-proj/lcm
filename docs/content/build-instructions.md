@@ -42,6 +42,7 @@ Required packages:
 
 Optional packages (e.g., for language-specific support or building documentation):
   - default-jdk
+  - libjchart2d-java
   - doxygen
   - liblua5.3-dev
   - lua5.3
