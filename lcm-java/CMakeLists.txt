@@ -21,7 +21,7 @@ elseif (Java_VERSION VERSION_LESS 1.9)
   endif()
 endif()
 
-find_jar(jchart2d_JAR jchart2d)
+add_subdirectory(jchart2d-code)
 
 set(lcm_java_sources
   lcm/util/JImage.java
@@ -59,7 +59,7 @@ set(lcm_java_sources
 )
 
 add_jar(lcm-java
-  INCLUDE_JARS ${jchart2d_JAR}
+  INCLUDE_JARS jchart2d
   SOURCES ${lcm_java_sources}
   OUTPUT_NAME lcm
 )

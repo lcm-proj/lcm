@@ -1,0 +1,104 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--#include virtual="./head.shtml" -->
+<script language="javascript">
+  var update="16/04/2011";
+ </script>
+<body id="feature">
+<div id="wrapper">
+<div id="main"><!-- Header --> <!--#include virtual="./header.shtml" -->
+
+
+<!--#include virtual="./navigation.shtml" --> <!-- Navigation -->
+<div id="content">
+
+<h2>Features</h2>
+<p>
+<ol>
+	<li>Easy usage: only a few lines of code are necessary to use a chart.
+	No complex specification of data points, labels or grids necessary.
+	This is done per default and may optionally be configured.</li>
+	<li>Multiple traces with different behavior may be added to a single
+	chart.</li>
+	<li>Performance. JChart2D is designed for dynamic rendering. Rescaling
+	is done per axis only and only if bounds are exceeded. New points
+	within bounds are scaled without affecting old scalings. Minimum and
+	maximum bounds of traces are cached and updated upon events. Invisible
+	traces are not scaled and don't affect bounds. <br />
+	AWT is the bottleneck: Non-visible calculations (scaling, rounding,
+	event-handling, label calculation) do not impose high load even if a
+	point is added with bounds changes every 2ms. But enlarging the window
+	does. So scaling is bound to painting and the adapting painting
+	frequency is limited to a configurable amount of milliseconds. For rendering
+	traces polylines are drawn by default (instead of many calls to
+	drawline for connecting points). No comparisons to other libraries
+	available.</li>
+	<li>Automatic choice of the unit - prefix (multiplier) according to the
+	scientific unit system (nano , milli, tera, ..).</li>
+	<li>Label formatter for scale labels via java.text.NumberFormat or
+	java.text.DateFormat.</li>
+	<li>Chooseable display of grids, labels, labeled scalepoints, coordinate 
+	tooltips, ... .</li>
+	<li>Toolbox of UI controls for chart and traces via popup menus and
+	menu bar. See the applet demo. Tip: right-click on the label of the
+	trace to get controls for it.</li>
+	<li>Traces may be rendered via lines, discs, dots (is a disc with
+	radius 1) or filled polygons. Additionally strokes may be specified
+	(only useful for lines I think). An open interface for further
+	graphical representations of traces exists.</li>
+	<li>Different axis implementations (settable from UI): linear, log e
+	and log 10.</li>
+	<li>Multiple axes on top,bottom, left and right side. Traces may be 
+	assigned to an x and an y axis that has been assigned to the chart and 
+	will be related to them.</li>
+	<li>Different viewport implementations: Zooming (ZoomableChart),
+	enforcing visible bounds even if data does not fill them,... .</li>
+	<li>Exact visualisation of labeled scalepoints. No label of a
+	scalepoint is ever rounded to the next current chosen decimal, instead
+	the scalepoint is shifted to a position which represents an exact
+	decimal.</li>
+	<li>Fully resizable. The amount of labeled scalepoints may increase on
+	choosing a bigger size.</li>
+	<li>Deadlock - safe. Even this is hard to claim because testing depends
+	on runtime behaviour of the current system, i did not encounter a
+	deadlock situation while letting several threads modifiy traces all
+	contained in the same chart (only the awt painting system may get
+	pretty busy).</li>
+	<li>Trace - implementations with different behaviour: unordered,
+	ringbuffered, ordered, bijective, ...</li>
+	<li>Highly configurable error bar API.</li>
+	<li>Support for zooming (ZoomableChart)</li>
+	<li>Charts may be saved as images (jpeg, gif, jpg,... depending on the 
+	image writers of the java VM implementation), a snapshot UI control 
+    allows this. 
+    </li>
+	<li>Charts may be saved as encapsulated postscript files (eps) thanks to <a target="_blank" href="http://xmlgraphics.apache.org/commons/">Apache XML Graphics Commons</a>. 
+    </li>
+	<li>Charts may be printed (which allows to print them to a pdf driver too). 
+    </li>
+</ol>
+</p>
+
+
+<h2>Request new features</h2>
+<p>JChart2D is quite stable now. But still some features are missing and
+may be desirable. Ideas are: image - snapshots, triggers for exceeded
+bounds or custom painters on trace level. <em>But features will only be
+implemented by contributors or requests for features</em>. Open source
+is not paid and personally I do it for feedback and the knowledge, that
+anyone has a benefit out of it. <br>
+It will be tried to add features in a clever order: First the basic
+features that will be needed by the more advanced ones. This allows to
+keeps it clean and stable without long terms of blind development
+(unable to perform a build).</p>
+<p>Regardless of the unofficial road map it is important to know, which
+features are most desirable for the users. <br>
+So it is important to let us (by now only me) know about it: <br>
+<a href="https://sourceforge.net/tracker/?group_id=50440&atid=459737"
+	target="blank"> Request a feature</a>.</p>
+</div>
+<!-- End of contents div --> <!-- The counter --> <!--#include virtual="./footer.shtml" -->
+</div>
+<!-- End of main div --></div>
+<!-- End of wrapper div -->
+</body>
+</html>

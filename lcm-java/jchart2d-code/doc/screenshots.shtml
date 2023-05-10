@@ -1,0 +1,177 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<!--#include virtual="./head.shtml" -->
+<!--
+  Some trick: setting the date here allows to include it (client - side) 
+  by the generic footer via a "document.write(update);" - script.
+ -->
+<script language="javascript">
+  var update="06/03/2008";
+ </script>
+<body id="screenshot">
+<div id="wrapper">
+<div id="main"><!-- Header --> <!--#include virtual="./header.shtml" -->
+
+
+<!--#include virtual="./navigation.shtml" --> <!-- Navigation -->
+<div id="content">
+
+<table border="0">
+	<tr id="hspace">
+		<td colspan="3">&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td>
+		<h2>Screenshots</h2>
+		<br>
+		</td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img src="./img/pp16-gui.w2000.png" width="1031px" height="600px"
+			alt="NutDAC,  a framework for creating generic real time data acquisition and control applications for embedded systems (http://autsys.tkk.fi/nutdac/)" /><br>
+		<br>
+		<font size="2">NutDAC,  a framework for creating generic real time data acquisition and control applications for embedded systems (<a target="_blank"href="http://autsys.tkk.fi/nutdac/">http://autsys.tkk.fi/nutdac/</a>)</font></td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr id="vspacer">
+		<td colspan="3">&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img src="./img/asemon-sample3.png" width="1555px" height="1022px"
+			alt="Performance Monitor for Sybase ASE (http://www.asemon.se/screenshots.html)" /><br>
+		<br>
+		<font size="2">Performance Monitor for Sybase ASE (<a target="_blank"href="http://www.asemon.se/screenshots.html">http://www.asemon.se/screenshots.html</a>)</font></td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr id="vspacer">
+		<td colspan="3">&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img src="./img/Client-Screenshot.gif" width="1684px" height="1050px"
+			alt="Telemetry client (http://www.lionsracing.de)" /><br>
+		<br>
+		<font size="2">Telemetry client (<a target="_blank" href="http://www.lionsracing.de">http://www.lionsracing.de</a>)</font></td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr id="vspacer">
+		<td colspan="3">&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img src="./img/saison_2008_lr08_fahrwerk_001_1_20080530_1194722016.jpg" width="856px" height="724px"
+			alt="Acceleration tracking (http://www.lionsracing.de)" /><br>
+		<br>
+		<font size="2">Acceleration tracking (http://www.lionsracing.de)</font></td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr id="vspacer">
+		<td colspan="3">&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img src="./img/multiaxes.png" width="600px" height="600px"
+			alt="Chart with multiple x and y axes." /><br>
+		<br>
+		<font size="2">Chart with multiple x and y axes.</font></td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr id="vspacer">
+		<td colspan="3">&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img src="./img/errorbars-relative.png" width="598px" height="600px"
+			alt="Relative error bars in positive and negative y direction." /><br>
+		<br>
+		<font size="2">Relative errorbars (0.2) configured for positive and negative y direction.</font></td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr id="vspacer">
+		<td colspan="3">&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img src="./img/zoomchart-1.png" width="640" height="480px"
+			alt="ZoomableChart with logarithmic Y axis." /><br>
+		<br>
+		<font size="2"> ZoomableChart with TracePainterDisc and
+		TracePainterLine that uses a logarithmic Y axis.</font></td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img src="./img/zoomchart-2.png" width="639" height="479px"
+			alt="Zoomed ZoomableChart." /><br>
+		<br>
+		<font size="2"> Zoomed ZoomableChart. </font></td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr id="vspacer">
+		<td colspan="3">&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img src="./img/staticchartdiscs.png" width="468px" height="339px"
+			alt="A chart with a trace that uses TracePainterDisc." /><br>
+		<br>
+		<font size="2">A chart showing it's context menu and a trace that
+		uses TracePainterDisc.</font></td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr id="vspacer">
+		<td colspan="3">&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img src="./img/runningchart1.01.gif" width="700px" height="376px"
+			alt="Running chart [dynamic]with limited amount of values." /><br>
+		<br>
+		<font size="2">Running chart [dynamic]with limited amount of values.</font>
+		</td>
+		<td>&nbsp;</td>
+	</tr>
+
+	<tr id="vspacer">
+		<td colspan="3">&nbsp;</td>
+	</tr>
+
+	<tr>
+		<td>&nbsp;</td>
+		<td><img border="0" src="./img/multitracing.png" width="516px"
+			height="436px" alt="Multiple Threads painting." /><br>
+		<br>
+		<font size="2">Multiple Threads concurrently paint to the same chart.</font></td>
+		<td>&nbsp;</td>
+	</tr>
+</table>
+
+</div>
+<!-- End of contents div --> <!-- The counter --> <!--#include virtual="./footer.shtml" -->
+</div>
+<!-- End of main div --></div>
+<!-- End of wrapper div -->
+</body>
+</html>

@@ -1,0 +1,38 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ <!--#include virtual="./head.shtml" -->
+ <!--
+  Some trick: seting the date here allows to include it (client - side) 
+  by the generic footer via a "document.write(update);" - script.
+ -->
+ <script language="javascript">
+  var update="12/09/2004";
+ </script>
+ <body id="mailing">
+  <div id="wrapper">
+   <div id="main">
+    <!-- Header -->
+    <!--#include virtual="./header.shtml" -->
+
+    
+    <!--#include virtual="./navigation.shtml" -->
+    <!-- Navigation -->
+    <div id="content">
+     
+      <h2>Keep me up to date about JChart2D</h2>
+      <p>
+       If you want to be informed by mail about new releases or changes of 
+       JChart2D, feel free to sign up to one of the mailing lists at the 
+       following page:<br>
+       <a href="http://lists.sourceforge.net/lists/listinfo/jchart2d-release" target="_blank">Sign up to JChart2D release mailing list</a>.
+      </p>
+      
+     </div>     
+    <!-- End of contents div -->
+    <!-- The counter -->
+    <!--#include virtual="./footer.shtml" -->
+   </div>
+   <!-- End of main div -->
+  </div>	
+  <!-- End of wrapper div -->
+ </body>
+</html>

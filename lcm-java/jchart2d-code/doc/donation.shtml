@@ -1,0 +1,73 @@
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+ <!--#include virtual="./head.shtml" -->
+ <script language="javascript">
+  var update="09/01/2004";
+ </script>
+ <body id="donation">
+  <div id="wrapper">
+   <div id="main">
+    <!-- Header -->
+    <!--#include virtual="./header.shtml" -->
+
+    
+    <!--#include virtual="./navigation.shtml" -->
+    <!-- Navigation -->
+    <div id="content">
+    
+      <h2>Donations for JChart2D</h2>
+      <p>
+       JChart2D has been made for fun. It was originally written in fall of 
+        2000 and put to the files. 
+        In April 2002 i took the time to rewrite it, in the hope to share it with 
+        the open source community. 
+      </p>
+      <p>
+       It has to be pointed out, that JChart2D is free for everyone. 
+       Nevertheless some effort and hours were spent to make it clean 
+       and stable.
+       If you are incredible rich or think that the effort on jchart2d should 
+       be rewarded (or both) you are encouraged to donate money.
+      </p>
+      <h3>Why donate?</h3>
+      <p>
+       <ol>
+       	<li>
+       	 Reward the programmers of JChart2D. They will be encouraged to 
+       	 continue development by adding requested features and improving 
+       	 stability.
+       	<li>
+       	 Reward Sourceforge and the Open Source Initiative with 
+       	 each 5% of your donations. Especially sourceforge earns some 
+       	 money for providing many open source projects with a complete 
+       	 project - management solution including downloads, concurrent versioning 
+       	 systems, free web-hosting, ... .
+       </ol>
+      </p>
+      <h3>How to donate?</h3>
+      <p>
+       Just click the following link and follow the instructions. 
+       You might have to sign up to paypal, an international payment system 
+       based on your email address. But it does not take much time and does 
+       not introduce security issues.
+      </p>
+      <p align="center">
+       <a href="http://sourceforge.net/donate/index.php?group_id=50440"><img src="http://images.sourceforge.net/images/project-support.jpg" width="88" height="32" border="0" alt="Support This Project" /></a>
+      </p>
+  
+      <h3>Recent donors:</h3>
+      <p>
+       <object style="border:0;" data="http://sourceforge.net/export/html_projdonors.php?group_id=50440&button=none&show_comments=1&nostyle=0" type="text/html" width="200" height="200">
+        Unfortunately your browser cannot display the embedded object...
+       </object>
+      </p>
+      
+    </div>
+    <!-- End of contents div -->
+    <!-- The counter -->
+    <!--#include virtual="./footer.shtml" -->
+   </div>
+   <!-- End of main div -->
+  </div>	
+  <!-- End of wrapper div -->
+ </body>
+</html>
