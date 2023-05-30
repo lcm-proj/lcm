@@ -18,7 +18,7 @@ struct tokenize {
     char *token;
 
     // bytes allocated for token.
-    int token_capacity;
+    size_t token_capacity;
 
     int token_line, token_column;
 
