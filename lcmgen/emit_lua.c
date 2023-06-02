@@ -751,10 +751,20 @@ static int emit_package(lcmgen_t *lcm, _package_contents_t *pc)
     int have_package = dirs[0] != NULL;
     int write_init_lua = !getopt_get_bool(lcm->gopt, "lua-no-init");
 
-    sprintf(package_dir_prefix, "%s%s", getopt_get_string(lcm->gopt, "lpath"),
-            strlen(getopt_get_string(lcm->gopt, "lpath")) > 0 ? G_DIR_SEPARATOR_S : "");
-    sprintf(package_dir, "%s%s%s", package_dir_prefix, pdname,
-            have_package ? G_DIR_SEPARATOR_S : "");
+    int ret = snprintf(package_dir_prefix, PATH_MAX, "%s%s", getopt_get_string(lcm->gopt, "lpath"),
+                       strlen(getopt_get_string(lcm->gopt, "lpath")) > 0 ? G_DIR_SEPARATOR_S : "");
+    if (ret >= PATH_MAX || ret < 0) {
+        free(pdname);
+        err("Could not create package directory prefix string\n");
+        return -1;
+    }
+    ret = snprintf(package_dir, PATH_MAX, "%s%s%s", package_dir_prefix, pdname,
+                   have_package ? G_DIR_SEPARATOR_S : "");
+    if (ret >= PATH_MAX || ret < 0) {
+        free(pdname);
+        err("Could not create package directory string\n");
+        return -1;
+    }
     free(pdname);
     if (strlen(package_dir)) {
         if (!g_file_test(package_dir, G_FILE_TEST_EXISTS)) {

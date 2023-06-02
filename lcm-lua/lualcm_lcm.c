@@ -566,7 +566,7 @@ static int impl_lcm_unsubscribe(lua_State *L)
     int ref_num = luaL_checkint(L, 2);
 
     /* get subscription table entry, this pushes the handler on the stack */
-    lcm_subscription_t *subscription;
+    lcm_subscription_t *subscription = NULL;
     if (!impl_lcm_removefromsubscriptiontable(L, 1, ref_num, &subscription)) {
         /* made up reference number */
         lua_pushstring(L, "subscription number invalid");

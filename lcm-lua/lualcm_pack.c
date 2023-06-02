@@ -178,7 +178,7 @@ int impl_pack(lua_State *L)
     lua_remove(L, 1);
 
     /* use ops to pack */
-    size_t actual_buf_size;
+    size_t actual_buf_size = 0;
     success = impl_pack_buffer(L, ops, num_ops, is_little_endian, buf, buf_size, &actual_buf_size,
                                &error_message);
 
