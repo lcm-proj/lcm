@@ -9,7 +9,7 @@ set(lcm_lua_sources
 
 add_library(lcm-lua MODULE ${lcm_lua_sources})
 set_target_properties(lcm-lua PROPERTIES OUTPUT_NAME "lcm" PREFIX "")
-target_compile_options(lcm-lua PRIVATE -Werror -Wall -Wextra)
+target_compile_options(lcm-lua PRIVATE -Wall -Wextra)
 
 target_include_directories(lcm-lua PRIVATE
   ${LUA_INCLUDE_DIR}

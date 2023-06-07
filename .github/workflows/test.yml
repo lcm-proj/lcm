@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-20.04, ubuntu-22.04]
+        build_type: [Debug, Release]
 
     runs-on: ${{ matrix.os }}
 
@@ -22,7 +23,7 @@ jobs:
         sudo apt install liblua5.3-dev lua5.3 libjchart2d-java
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}}
+      run: cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build
