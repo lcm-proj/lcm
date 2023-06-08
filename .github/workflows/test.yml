@@ -20,7 +20,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
-        sudo apt install liblua5.3-dev lua5.3
+        sudo apt install liblua5.3-dev lua5.3 libjchart2d-java
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
