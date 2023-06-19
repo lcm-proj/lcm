@@ -8,11 +8,10 @@ variety of programming languages.
 
 # Roadmap
 
-The LCM project is active again. The current near-term plan is to:
-
-* Clear deprecation warnings from build for all language targets
-* Flush backlog of PRs
-* Cut a new release
+The LCM project is active again. The current long-term plan is to focus on stability and maintenance
+patches to fix longstanding issues. Longer term we're open to evolution of LCM to have additional
+features (as long as backwards compatibility is enforced). We're very open to community
+feedback and involvement on new features.
 
 # Quick Links
 
