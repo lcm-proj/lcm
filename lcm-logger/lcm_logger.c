@@ -424,64 +424,71 @@ int main(int argc, char *argv[])
     logger.append = 0;
 
     char *lcmurl = NULL;
-    char *optstring = "fic:shm:vu:qa";
-    int c;
+
+    // Arg Parsing: 
+    // https://www.gnu.org/software/libc/manual/html_node/Getopt.html
+    char *optstring = "ac:fhil:m:qsu:v";
+
+    // Keep sorted based on the 4th (`val`) arg which needs to be a unique character (int) per
+    // option.
+    // If a short option is desired, it must be placed above in the optstring.
     struct option long_opts[] = {
+        {"append", no_argument, 0, 'a'},
         {"split-mb", required_argument, 0, 'b'},
         {"channel", required_argument, 0, 'c'},
         {"force", no_argument, 0, 'f'},
         {"increment", required_argument, 0, 'i'},
         {"lcm-url", required_argument, 0, 'l'},
         {"max-unwritten-mb", required_argument, 0, 'm'},
+        {"quiet", no_argument, 0, 'q'},
         {"rotate", required_argument, 0, 'r'},
         {"strftime", required_argument, 0, 's'},
-        {"quiet", no_argument, 0, 'q'},
-        {"append", no_argument, 0, 'a'},
-        {"invert-channels", no_argument, 0, 'v'},
         {"flush-interval", required_argument, 0, 'u'},
+        {"invert-channels", no_argument, 0, 'v'},
         {0, 0, 0, 0},
     };
 
+    int c;
     while ((c = getopt_long(argc, argv, optstring, long_opts, 0)) >= 0) {
         switch (c) {
-        case 'b':
+        case 'b': /* --split-mb */
             logger.auto_split_mb = strtod(optarg, NULL);
             if (logger.auto_split_mb <= 0) {
                 usage();
                 return 1;
             }
             break;
-        case 'f':
+        case 'f': /* force */
             logger.force_overwrite = 1;
             break;
-        case 'c':
+        case 'c': /* --channel */
             free(chan_regex);
             chan_regex = strdup(optarg);
             break;
-        case 'i':
+        case 'i': /* --increment */
             logger.auto_increment = 1;
             break;
-        case 's':
+        case 's': /* strftime */
             logger.use_strftime = 1;
             break;
-        case 'l':
+        case 'l': /* --lcm-url */
             free(lcmurl);
             lcmurl = strdup(optarg);
             break;
-        case 'q':
+        case 'q': /* quiet */
             logger.quiet = 1;
             break;
-        case 'v':
+        case 'v': /* --invert-channels */
             logger.invert_channels = 1;
             break;
-        case 'm':
+        case 'm': /* --invert-channels */
             max_write_queue_size_mb = strtod(optarg, NULL);
             if (max_write_queue_size_mb <= 0) {
                 usage();
                 return 1;
             }
             break;
-        case 'r': {
+        case 'r': { /* --rotate */
             char *eptr = NULL;
             logger.rotate = strtol(optarg, &eptr, 10);
             if (*eptr) {
@@ -489,18 +496,18 @@ int main(int argc, char *argv[])
                 return 1;
             }
         } break;
-        case 'u':
+        case 'u': /* --flush-interval */
             logger.fflush_interval_ms = atol(optarg);
             if (logger.fflush_interval_ms <= 0) {
                 usage();
                 return 1;
             }
             break;
-        case 'a':
+        case 'a': /* --append */
             logger.append = 1;
             break;
         case 'h':
-        default:
+        default: /* implicit --help */
             usage();
             return 1;
         };
