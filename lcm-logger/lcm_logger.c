@@ -427,6 +427,7 @@ int main(int argc, char *argv[])
 
     // Arg Parsing:
     // https://www.gnu.org/software/libc/manual/html_node/Getopt.html
+    // https://linux.die.net/man/3/getopt
     char *optstring = "ac:fhil:m:qsu:v";
 
     // Keep sorted based on the 4th (`val`) arg which needs to be a unique character (int) per
@@ -537,7 +538,7 @@ int main(int argc, char *argv[])
     }
 
     logger.time0 = g_get_real_time();
-    logger.max_write_queue_size = (int64_t)(max_write_queue_size_mb * (1 << 20));
+    logger.max_write_queue_size = (int64_t) (max_write_queue_size_mb * (1 << 20));
 
     if (0 != open_logfile(&logger))
         return 1;

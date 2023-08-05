@@ -59,7 +59,7 @@ static inline int fread64(FILE *f, int64_t *v64)
     //  See Section 5.8 paragraph 3 of the standard
     //  http://open-std.org/JTC1/SC22/WG21/docs/papers/2015/n4527.pdf
     //  use uint for shifting instead if int
-    *v64 = (int64_t)(((uint64_t) v1) << 32) | (((int64_t) v2) & 0xffffffff);
+    *v64 = (int64_t) (((uint64_t) v1) << 32) | (((int64_t) v2) & 0xffffffff);
 
     return 0;
 }

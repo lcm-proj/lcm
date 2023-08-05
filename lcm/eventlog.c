@@ -187,7 +187,7 @@ int lcm_eventlog_seek_to_timestamp(lcm_eventlog_t *l, int64_t timestamp)
 
     while (1) {
         frac = 0.5 * (frac1 + frac2);
-        off_t offset = (off_t)(frac * file_len);
+        off_t offset = (off_t) (frac * file_len);
         fseeko(l->f, offset, SEEK_SET);
         cur_time = get_event_time(l);
         if (cur_time < 0)

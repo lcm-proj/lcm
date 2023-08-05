@@ -182,7 +182,7 @@ int CheckLcmType(const lcmtest::primitives_list_t *msg, int expected)
         const lcmtest::primitives_t *ex = &msg->items[n];
         CHECK_FIELD(ex->i8, -(n % 100), "%d");
         CHECK_FIELD(ex->i16, -n * 10, "%d");
-        CHECK_FIELD(ex->i64, (int64_t)(-n * 10000), "%" PRId64);
+        CHECK_FIELD(ex->i64, (int64_t) (-n * 10000), "%" PRId64);
         CHECK_FIELD(ex->position[0], (double) -n, "%f");
         CHECK_FIELD(ex->position[1], (double) -n, "%f");
         CHECK_FIELD(ex->position[2], (double) -n, "%f");
@@ -246,7 +246,7 @@ int CheckLcmType(const lcmtest::primitives_t *msg, int expected)
     int n = expected;
     CHECK_FIELD(msg->i8, n % 100, "%d");
     CHECK_FIELD(msg->i16, n * 10, "%d");
-    CHECK_FIELD(msg->i64, (int64_t)(n * 10000), "%" PRId64);
+    CHECK_FIELD(msg->i64, (int64_t) (n * 10000), "%" PRId64);
     CHECK_FIELD(msg->position[0], (double) n, "%f");
     CHECK_FIELD(msg->position[1], (double) n, "%f");
     CHECK_FIELD(msg->position[2], (double) n, "%f");
