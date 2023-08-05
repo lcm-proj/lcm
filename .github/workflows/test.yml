@@ -218,4 +218,5 @@ jobs:
 
       - name: Check formatting
         run: |
-          ./format_code.sh --check
+          ./format_code.sh
+          git diff --exit-code
