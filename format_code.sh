@@ -6,12 +6,12 @@ set -o pipefail
 IFS=$'\n\t'
 
 # Bash script to automatically format LCM source code (currently C and C++).
-# Requires `clang-format` utilily, which is part of the LLVM project. More
+# Requires `clang-format-12` utility, which is part of the LLVM project. More
 # information can be found here: https://clang.llvm.org/docs/ClangFormat.html
 #
-# To install `clang-format` on Ubuntu do:
+# To install `clang-format-12` on Ubuntu do:
 #
-#     $ sudo apt install clang-format
+#     $ sudo apt install clang-format-12
 #
 # This script does not format Java, Python, or Lua source code. At the moment,
 # it only formats C and C++ sources, i.e., *.h, *.c, *.hpp, and *.cpp. It only
@@ -32,6 +32,8 @@ LCM_FORMAT_DIRS=(
     "${LCM_ROOT}/liblcm-test"
     "${LCM_ROOT}/test:/gtest/"
 )
+
+CLANG_FORMAT="clang-format-12"
 
 # Function: show_usage
 #
@@ -69,7 +71,7 @@ function format_c_cpp_dir_r {
     done
     find "$1" -regex '.*\.\(c\|h\)\(pp\)?' \
         | eval "grep -E -v" "${exclude_pattern_opts}" \
-        | xargs clang-format -i
+        | xargs $CLANG_FORMAT -i
 }
 
 # Function: check_format_c_cpp_dir_r DIR [EXCUDE_PATTERN...]
@@ -94,7 +96,7 @@ function check_format_c_cpp_dir_r {
     done
     find "$1" -regex '.*\.\(c\|h\)\(pp\)?' \
         | eval "grep -E -v" "${exclude_pattern_opts}" \
-        | xargs clang-format --dry-run --Werror --ferror-limit=1 &>/dev/null
+        | xargs $CLANG_FORMAT --dry-run --Werror --ferror-limit=1 &>/dev/null
 }
 
 # Default option values
@@ -119,11 +121,11 @@ while getopts "ch" arg &>/dev/null; do
     esac
 done
 
-# Check for clang-format
-if ! command -v clang-format &>/dev/null; then
-    echo "ERROR: Can not find clang-format!" 1>&2
-    echo "Please add clang-format to your PATH" 1>&2
-    echo "On Ubuntu, install it with: sudo apt install clang-format" 1>&2
+# Check for $CLANG_FORMAT
+if ! command -v $CLANG_FORMAT &>/dev/null; then
+    echo "ERROR: Can not find $CLANG_FORMAT!" 1>&2
+    echo "Please add $CLANG_FORMAT to your PATH" 1>&2
+    echo "On Ubuntu, install it with: sudo apt install $CLANG_FORMAT" 1>&2
     exit 1
 fi
 
