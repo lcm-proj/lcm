@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from lcm import _lcm
 from lcm._lcm import LCM, LCMSubscription
@@ -52,6 +53,9 @@ to next() returning the next L{Event<lcm.Event>} in the log.
                     "unless overwrite is set to True")
 
         self.mode = mode
+
+        if isinstance(path, Path):
+            path = str(path)
 
         self.c_eventlog = _lcm.EventLog (path, mode)
         self.f = None
