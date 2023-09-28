@@ -1,5 +1,22 @@
 import os
-from pathlib import Path
+import sys
+
+# Attempt to be backwards compatible
+if sys.version_info >= (3, 4):
+    from pathlib import Path
+else:
+    # All we do to the Path is call str on it, so this is a harmless fallback.
+    Path = str 
+
+if sys.version_info >= (3, 5):
+    import typing
+    if sys.version_info >= (3, 6):
+        PathArgument = typing.Union[str, bytes, os.PathLike]
+    else: 
+        PathArgument = typing.Union[str, bytes, Path]
+else:
+    PathArgument = object
+
 
 from lcm import _lcm
 from lcm._lcm import LCM, LCMSubscription
@@ -34,7 +51,7 @@ to next() returning the next L{Event<lcm.Event>} in the log.
 
 @undocumented: __iter__
     """
-    def __init__ (self, path, mode = "r", overwrite = False):
+    def __init__ (self, path:PathArgument, mode = "r", overwrite = False):
         """
         Initializer
 
