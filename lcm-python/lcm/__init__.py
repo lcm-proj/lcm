@@ -2,18 +2,19 @@ import os
 import sys
 
 # Attempt to be backwards compatible
-if sys.version_info >= (3, 4):
-    from pathlib import Path
+if sys.version_info >= (3, 6):
+    from os import PathLike
+elif sys.version_info >= (3, 4):
+    from pathlib import Path as PathLike
 else:
     # All we do to the Path is call str on it, so this is a harmless fallback.
-    Path = str 
+    PathLike = str 
 
 if sys.version_info >= (3, 5):
     import typing
-    if sys.version_info >= (3, 6):
-        PathArgument = typing.Union[str, bytes, os.PathLike]
-    else: 
-        PathArgument = typing.Union[str, bytes, Path]
+    # Not including `bytes` like other APIs in the union as the native interface does not accept a byte string.
+    # Makes more sense for the user to .decode(encoding) the bytes than us.
+    PathArgument = typing.Union[str, PathLike]
 else:
     PathArgument = object
 
@@ -71,7 +72,7 @@ to next() returning the next L{Event<lcm.Event>} in the log.
 
         self.mode = mode
 
-        if isinstance(path, Path):
+        if isinstance(path, PathLike):
             path = str(path)
 
         self.c_eventlog = _lcm.EventLog (path, mode)
