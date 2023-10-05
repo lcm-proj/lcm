@@ -834,10 +834,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                 "DO NOT MODIFY BY HAND!!!!\n"
                 "\"\"\"\n"
                 "\n"
-                "try:\n"
-                "    import cStringIO.StringIO as BytesIO\n"
-                "except ImportError:\n"
-                "    from io import BytesIO\n"
+                "from io import BytesIO\n"
                 "import struct\n\n");
 
         // enums always encoded as int32
@@ -919,10 +916,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *pc)
                 "DO NOT MODIFY BY HAND!!!!\n"
                 "\"\"\"\n"
                 "\n"
-                "try:\n"
-                "    import cStringIO.StringIO as BytesIO\n"
-                "except ImportError:\n"
-                "    from io import BytesIO\n"
+                "from io import BytesIO\n"
                 "import struct\n\n");
 
         emit_python_dependencies(lcm, f, ls);
