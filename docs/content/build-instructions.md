@@ -122,7 +122,7 @@ or if you installed LCM to a different, non-standard prefix, you may wish to
 create a `ld.so.conf` file for lcm:
 
 ```shell
-echo $LCM_LIBRARY_DIR > /etc/ld.so.conf.d/lcm.conf
+echo $LCM_LIBRARY_DIR | sudo tee -a /etc/ld.so.conf.d/lcm.conf
 ```
 
 Python users may need to add the lcm install location to Python's site packages
