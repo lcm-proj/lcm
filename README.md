@@ -43,7 +43,7 @@ The LCM project is active again. The current near-term plan is to:
   * Java
   * Lua
   * MATLAB
-  * Python
+  * Python (3.6 and later)
 
 ## Unmaintained languages
 
