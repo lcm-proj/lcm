@@ -220,12 +220,12 @@ static void *write_thread(void *user_data)
             return NULL;
         }
         // nope.  write the event to disk
-        lcm_eventlog_event_t *le = (lcm_eventlog_event_t *) msg;
-        int64_t sz = sizeof(lcm_eventlog_event_t) + le->channellen + 1 + le->datalen;
+        lcm_eventlog_event_t *log_event = (lcm_eventlog_event_t *) msg;
+        int64_t sz = sizeof(lcm_eventlog_event_t) + log_event->channellen + 1 + log_event->datalen;
         logger->write_queue_size -= sz;
         g_mutex_unlock(&logger->mutex);
 
-        if (0 != lcm_eventlog_write_event(logger->log, le)) {
+        if (0 != lcm_eventlog_write_event(logger->log, log_event)) {
             static int64_t last_spew_utime = 0;
             char *reason = strdup(strerror(errno));
             int64_t now = g_get_real_time();
@@ -234,7 +234,7 @@ static void *write_thread(void *user_data)
                 last_spew_utime = now;
             }
             free(reason);
-            free(le);
+            free(log_event);
             if (errno == ENOSPC) {
                 exit(1);
             } else {
@@ -242,22 +242,22 @@ static void *write_thread(void *user_data)
             }
         }
         if (logger->fflush_interval_ms >= 0 &&
-            (le->timestamp - logger->last_fflush_time) > logger->fflush_interval_ms * 1000) {
+            (log_event->timestamp - logger->last_fflush_time) > logger->fflush_interval_ms * 1000) {
             fflush(logger->log->f);
 #ifndef WIN32
             // Perform a full fsync operation after flush
             fdatasync(fileno(logger->log->f));
 #endif
-            logger->last_fflush_time = le->timestamp;
+            logger->last_fflush_time = log_event->timestamp;
         }
 
         // bookkeeping, cleanup
-        int64_t offset_utime = le->timestamp - logger->time0;
+        int64_t offset_utime = log_event->timestamp - logger->time0;
         logger->nevents++;
         logger->events_since_last_report++;
-        logger->logsize += 4 + 8 + 8 + 4 + le->channellen + 4 + le->datalen;
+        logger->logsize += 4 + 8 + 8 + 4 + log_event->channellen + 4 + log_event->datalen;
 
-        free(le);
+        free(log_event);
 
         if (!logger->quiet && (offset_utime - logger->last_report_time > 1000000)) {
             double dt = (offset_utime - logger->last_report_time) / 1000000.0;
@@ -319,21 +319,21 @@ static void message_handler(const lcm_recv_buf_t *rbuf, const char *channel, voi
     }
 
     // queue up the message for writing to disk by the write thread
-    lcm_eventlog_event_t *le = (lcm_eventlog_event_t *) malloc(mem_sz);
-    memset(le, 0, mem_sz);
+    lcm_eventlog_event_t *log_event = (lcm_eventlog_event_t *) malloc(mem_sz);
+    memset(log_event, 0, mem_sz);
 
-    le->timestamp = rbuf->recv_utime;
-    le->channellen = channellen;
-    le->datalen = rbuf->data_size;
+    log_event->timestamp = rbuf->recv_utime;
+    log_event->channellen = channellen;
+    log_event->datalen = rbuf->data_size;
     // log_write_event will handle le.eventnum.
 
-    le->channel = ((char *) le) + sizeof(lcm_eventlog_event_t);
-    strcpy(le->channel, channel);
-    le->data = le->channel + channellen + 1;
-    assert((char *) le->data + rbuf->data_size == (char *) le + mem_sz);
-    memcpy(le->data, rbuf->data, rbuf->data_size);
+    log_event->channel = ((char *) log_event) + sizeof(lcm_eventlog_event_t);
+    strcpy(log_event->channel, channel);
+    log_event->data = log_event->channel + channellen + 1;
+    assert((char *) log_event->data + rbuf->data_size == (char *) log_event + mem_sz);
+    memcpy(log_event->data, rbuf->data, rbuf->data_size);
 
-    g_async_queue_push(logger->write_queue, le);
+    g_async_queue_push(logger->write_queue, log_event);
 }
 
 #ifdef USE_SIGHUP
