@@ -212,7 +212,7 @@ lcm_struct_t *lcm_find_struct(lcmgen_t *lcm, lcm_member_t *lm)
  * Calculates the fingerprint during code generation.
  *
  * Algorithm as described in:
- *     https://lcm-proj.github.io/lcm/type_specification.html
+ *     https://lcm-proj.github.io/lcm/content/lcm-type-ref.html#fingerprint-computation
  *
  * Returns calculated fingerprint or 0 on error
  */
@@ -1181,7 +1181,7 @@ static void emit_go_lcm_unmarshal_binary(FILE *f, lcmgen_t *lcm, lcm_struct_t *l
  * Emits code to calculate the fingerprint in runtime.
  *
  * Algorithm as described in:
- *     https://lcm-proj.github.io/lcm/type_specification.html
+ *     https://lcm-proj.github.io/lcm/content/lcm-type-ref.html#fingerprint-computation
  */
 static void emit_go_lcm_fingerprint(FILE *f, lcmgen_t *lcm, lcm_struct_t *ls,
                                     const char *const typename, const char *const gotype,
