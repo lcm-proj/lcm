@@ -151,6 +151,14 @@ sending a message to the `mailing list <http://groups.google.com/group/lcm-users
    content/lua-api.md
    python/index.rst
 
+.. toctree::
+   :maxdepth: 1
+   :caption: Contributing
+   :glob:
+
+   content/contributing.md
+   content/contributing-c.md
+   content/contributing-java.md
 
 Indices and tables
 ==================
