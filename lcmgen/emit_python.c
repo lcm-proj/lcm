@@ -566,7 +566,12 @@ static void emit_member_initializer(const lcmgen_t *lcm, FILE *f, lcm_member_t *
         if (initializer != NULL) {
             fprintf(f, "%s", initializer);
         } else {
-            fprintf(f, "%s()", type_name);
+            /* `type_name` is package.struct_file.
+             * In general this works because package.py reexports structs.
+             * It would also work here, but some python tools (pylance) will fail to understand it.
+             * Instead we emit the fully qualified package.struct_file.struct.
+             */
+            fprintf(f, "%s.%s()", type_name, structure_member->type->shortname);
         }
         return;
     }
