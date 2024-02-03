@@ -38,7 +38,7 @@ public class Spy
         }
         String title = "LCM Spy";
         {
-            String spacer = "  •  ";
+            String spacer = "  \u2022  ";
             if (null != titleOptions.label) {
                 title += spacer + titleOptions.label;
             }

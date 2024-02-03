@@ -1120,7 +1120,7 @@ public class LogPlayer extends JComponent
             }
 
             {
-                String spacer = "  •  ";
+                String spacer = "  \u2022  ";
                 String filename = p.logName.getText();
 
                 String title = "LogPlayer";
