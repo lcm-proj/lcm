@@ -162,31 +162,22 @@ static void _emit_decode_one(const lcmgen_t *lcm, FILE *f, lcm_struct_t *structu
         emit(indent, "__%s_len = struct.unpack('>I', buf.read(4))[0]", member_name);
         emit(indent, "%sbuf.read(__%s_len)[:-1].decode('utf-8', 'replace')%s", accessor,
              member_name, sfx);
-
     } else if (!strcmp("byte", type_name)) {
         emit(indent, "%sstruct.unpack('B', buf.read(1))[0]%s", accessor, sfx);
-
     } else if (!(strcmp("boolean", type_name))) {
         emit(indent, "%sbool(struct.unpack('b', buf.read(1))[0])%s", accessor, sfx);
-
     } else if (!strcmp("int8_t", type_name)) {
         emit(indent, "%sstruct.unpack('b', buf.read(1))[0]%s", accessor, sfx);
-
     } else if (!strcmp("int16_t", type_name)) {
         emit(indent, "%sstruct.unpack('>h', buf.read(2))[0]%s", accessor, sfx);
-
     } else if (!strcmp("int32_t", type_name)) {
         emit(indent, "%sstruct.unpack('>i', buf.read(4))[0]%s", accessor, sfx);
-
     } else if (!strcmp("int64_t", type_name)) {
         emit(indent, "%sstruct.unpack('>q', buf.read(8))[0]%s", accessor, sfx);
-
     } else if (!strcmp("float", type_name)) {
         emit(indent, "%sstruct.unpack('>f', buf.read(4))[0]%s", accessor, sfx);
-
     } else if (!strcmp("double", type_name)) {
         emit(indent, "%sstruct.unpack('>d', buf.read(8))[0]%s", accessor, sfx);
-
     } else {
         if (is_same_type(structure_member->type, structure->structname)) {
             emit(indent, "%s%s._decode_one(buf)%s", accessor, short_name, sfx);
@@ -207,7 +198,6 @@ static void _emit_decode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *struct
     }
     if (!strcmp("byte", type_name)) {
         emit(indent, "%sbuf.read(%s%s)%s", accessor, fixed_len ? "" : "self.", len, suffix);
-
     } else if (!strcmp("boolean", type_name)) {
         if (fixed_len) {
             emit(indent, "%s[bool(x) for x in struct.unpack('>%s%c', buf.read(%d))]%s", accessor,
@@ -655,16 +645,26 @@ static void emit_python_fingerprint(const lcmgen_t *lcm, FILE *f, lcm_struct_t *
 }
 
 static void
-emit_python_dependencies (const lcmgen_t *lcm, FILE *f, lcm_struct_t *structure)
+emit_python_dependencies (const lcmgen_t *lcm, FILE *f, lcm_struct_t *structure, int write_init_py )
 {
     GHashTable *dependencies = g_hash_table_new (g_str_hash, g_str_equal);
     for (unsigned int m=0; m < structure->members->len; m++) {
         lcm_member_t *member = (lcm_member_t *) g_ptr_array_index (structure->members, m);
-        
-        if (! lcm_is_primitive_type (member->type->lctypename) &&
-            ! g_hash_table_lookup (dependencies, member->type->lctypename)) {
-            g_hash_table_insert (dependencies, member->type->lctypename,
-                                 member->type->lctypename);
+        if (write_init_py) {   
+            // pyright (The vscode python static analyzer) refuses to understand
+            // `import foo.bar` in cases where `import foo` works.
+            // https://github.com/microsoft/pyright/issues/6674
+            if (! lcm_is_primitive_type (member->type->lctypename) &&
+                ! g_hash_table_lookup (dependencies, member->type->package)) {
+                g_hash_table_insert (dependencies, member->type->package,
+                                    member->type->package);
+            }
+        } else {        
+            if (! lcm_is_primitive_type (member->type->lctypename) &&
+                ! g_hash_table_lookup (dependencies, member->type->lctypename)) {
+                g_hash_table_insert (dependencies, member->type->lctypename,
+                                    member->type->lctypename);
+            }
         }
     }
 
@@ -944,7 +944,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
                 "from io import BytesIO\n"
                 "import struct\n\n");
 
-        emit_python_dependencies(lcm, f, structure);
+        emit_python_dependencies(lcm, f, structure, write_init_py);
 
         fprintf(f, "class %s(object):\n", structure->structname->shortname);
         fprintf(f, "    __slots__ = [");
