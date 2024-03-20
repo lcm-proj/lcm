@@ -647,27 +647,33 @@ static void emit_python_fingerprint(const lcmgen_t *lcm, FILE *f, lcm_struct_t *
 static void
 emit_python_dependencies (const lcmgen_t *lcm, FILE *f, lcm_struct_t *structure, int write_init_py )
 {
+    // Find the set of types to import
     GHashTable *dependencies = g_hash_table_new (g_str_hash, g_str_equal);
     for (unsigned int m=0; m < structure->members->len; m++) {
         lcm_member_t *member = (lcm_member_t *) g_ptr_array_index (structure->members, m);
-        if (write_init_py) {   
+        if (lcm_is_primitive_type(member->type->lctypename)){
+            continue;
+        }
+        int no_package = g_str_equal(member->type->package, "");
+        if (write_init_py && !no_package) {   
             // pyright (The vscode python static analyzer) refuses to understand
             // `import foo.bar` in cases where `import foo` works.
             // https://github.com/microsoft/pyright/issues/6674
-            if (! lcm_is_primitive_type (member->type->lctypename) &&
-                ! g_hash_table_lookup (dependencies, member->type->package)) {
+            // Therefore, when __init__.py is generated, import only the package name.
+            if (! g_hash_table_lookup (dependencies, member->type->package)) {
                 g_hash_table_insert (dependencies, member->type->package,
                                     member->type->package);
             }
-        } else {        
-            if (! lcm_is_primitive_type (member->type->lctypename) &&
-                ! g_hash_table_lookup (dependencies, member->type->lctypename)) {
+        } else {
+            // Otherwise import each full type.
+            if (! g_hash_table_lookup (dependencies, member->type->lctypename)) {
                 g_hash_table_insert (dependencies, member->type->lctypename,
                                     member->type->lctypename);
             }
         }
     }
 
+    // Emit the set of imports.
     GPtrArray *deps = _hash_table_get_vals (dependencies);
     for (int i=0; i < deps->len; i++) {
         const char *package = (char *) g_ptr_array_index (deps, i);
