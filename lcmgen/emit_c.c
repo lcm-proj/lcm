@@ -161,9 +161,7 @@ static void emit_comment(FILE *f, int indent, const char *comment)
         return;
 
     gchar **lines = g_strsplit(comment, "\n", 0);
-    int num_lines = 0;
-    for (num_lines = 0; lines[num_lines]; num_lines++) {
-    }
+    int num_lines = g_strv_length(lines);
 
     if (num_lines == 1) {
         emit(indent, "/// %s", lines[0]);
