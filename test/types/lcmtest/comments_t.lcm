@@ -29,14 +29,24 @@ comments_t // comment after struct name
       /* */
       ;
 
+    double field_f; // Comment at end of line is applied to the next field. Comments should not go here.
+
+    double field_g;
+
+    // const_field_no_comment should have no comment
+    const int8_t const_field = 4;
+
     const // comment after const keyword
       int8_t // comment after const type specifier
-       const_field // comment after const field name
+       const_field_no_comment // comment after const field name
         = // comment after const '='
         5 // comment after const field value
         ;
 
-    int32_t array[ // comment after array opening brace
+    // array_no_comment should have no comment
+    int32_t array[field_a];
+
+    int32_t array_no_comment[ // comment after array opening brace
       field_a // comment after array length
       ] // comment after array closing bace.
       ;

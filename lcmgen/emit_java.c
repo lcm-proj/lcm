@@ -93,6 +93,28 @@ static primitive_info_t *prim(char *storage, char *decode, char *encode)
     return p;
 }
 
+static void emit_comment(FILE *f, int indent, const char *comment)
+{
+    if (!comment)
+        return;
+
+    gchar **lines = g_strsplit(comment, "\n", 0);
+    int num_lines = g_strv_length(lines);
+
+    {
+        emit(indent, "/**");
+        for (int line_ind = 0; lines[line_ind]; line_ind++) {
+            if (strlen(lines[line_ind])) {
+                emit(indent, " * %s", lines[line_ind]);
+            } else {
+                emit(indent, " *");
+            }
+        }
+        emit(indent, " */");
+    }
+    g_strfreev(lines);
+}
+
 static int jdefaultpkg_warned = 0;
 
 const char *make_fqn(lcmgen_t *lcm, const char *type_name)
@@ -369,15 +391,15 @@ int emit_java(lcmgen_t *lcm)
     //////////////////////////////////////////////////////////////
     // ENUMS
     for (unsigned int en = 0; en < g_ptr_array_size(lcm->enums); en++) {
-        lcm_enum_t *le = (lcm_enum_t *) g_ptr_array_index(lcm->enums, en);
+        lcm_enum_t *enumeration = (lcm_enum_t *) g_ptr_array_index(lcm->enums, en);
 
-        const char *classname = make_fqn(lcm, le->enumname->lctypename);
+        const char *classname = make_fqn(lcm, enumeration->enumname->lctypename);
         char *path = g_strdup_printf(
             "%s%s%s.java", getopt_get_string(lcm->gopt, "jpath"),
             strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? G_DIR_SEPARATOR_S : "",
             dots_to_slashes(classname));
 
-        if (!lcm_needs_generation(lcm, le->lcmfile, path))
+        if (!lcm_needs_generation(lcm, enumeration->lcmfile, path))
             continue;
 
         if (getopt_get_bool(lcm->gopt, "jmkdir"))
@@ -387,8 +409,8 @@ int emit_java(lcmgen_t *lcm)
         if (f == NULL)
             return -1;
 
-        if (strlen(le->enumname->package) > 0)
-            emit(0, "package %s;", le->enumname->package);
+        if (strlen(enumeration->enumname->package) > 0)
+            emit(0, "package %s;", enumeration->enumname->package);
         else
             emit(0, "package %s;", getopt_get_string(lcm->gopt, "jdefaultpkg"));
 
@@ -398,23 +420,29 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "import java.util.*;");
         emit(0, " ");
 
+        // There is no comment on enum
+        // emit_comment(f, 0, enumeration.comment)
         emit(0, "public final class %s %s",
-             le->enumname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
+             enumeration->enumname->shortname, getopt_get_string(lcm->gopt, "jdecl"));
 
         emit(0, "{");
         emit(1, "public int value;");
         emit(0, " ");
         // clang-format on
 
-        for (unsigned int v = 0; v < g_ptr_array_size(le->values); v++) {
-            lcm_enum_value_t *lev = (lcm_enum_value_t *) g_ptr_array_index(le->values, v);
-            emit(1, "public static final int %-16s = %i;", lev->valuename, lev->value);
+        for (unsigned int v = 0; v < g_ptr_array_size(enumeration->values); v++) {
+            lcm_enum_value_t *enum_field =
+                (lcm_enum_value_t *) g_ptr_array_index(enumeration->values, v);
+            // Also no comment on enum fields
+            // emit_comment(f, 1, enum_field.comment);
+            emit(1, "public static final int %-16s = %i;", enum_field->valuename,
+                 enum_field->value);
         }
         emit(0, " ");
 
         // clang-format off
         emit(1, "public %s(int value) { this.value = value; }",
-             le->enumname->shortname);
+             enumeration->enumname->shortname);
         emit(0, " ");
 
         emit(1, "public int getValue() { return value; }");
@@ -434,10 +462,10 @@ int emit_java(lcmgen_t *lcm)
         emit(0, " ");
 
         emit(1, "public static %s _decodeRecursiveFactory(DataInput ins) throws IOException",
-             make_fqn(lcm, le->enumname->lctypename));
+             make_fqn(lcm, enumeration->enumname->lctypename));
         emit(1, "{");
         emit(2,     "%s o = new %s(0);",
-             make_fqn(lcm, le->enumname->lctypename), make_fqn(lcm, le->enumname->lctypename));
+             make_fqn(lcm, enumeration->enumname->lctypename), make_fqn(lcm, enumeration->enumname->lctypename));
         emit(2,     "o._decodeRecursive(ins);");
         emit(2,     "return o;");
         emit(1, "}");
@@ -449,7 +477,7 @@ int emit_java(lcmgen_t *lcm)
         emit(1, "}");
         emit(0, " ");
 
-        emit(1, "public %s(DataInput ins) throws IOException", le->enumname->shortname);
+        emit(1, "public %s(DataInput ins) throws IOException", enumeration->enumname->shortname);
         emit(1, "{");
         emit(2,     "long hash = ins.readLong();");
         emit(2,     "if (hash != LCM_FINGERPRINT)");
@@ -469,7 +497,7 @@ int emit_java(lcmgen_t *lcm)
         emit(2,     "return LCM_FINGERPRINT;");
         emit(1, "}");
         emit(0, " ");
-        emit(1, "public static final long LCM_FINGERPRINT = 0x%016"PRIx64"L;", le->hash);
+        emit(1, "public static final long LCM_FINGERPRINT = 0x%016"PRIx64"L;", enumeration->hash);
         emit(0, "}");
         // clang-format on
 
@@ -477,15 +505,15 @@ int emit_java(lcmgen_t *lcm)
     }
 
     for (unsigned int st = 0; st < g_ptr_array_size(lcm->structs); st++) {
-        lcm_struct_t *lr = (lcm_struct_t *) g_ptr_array_index(lcm->structs, st);
+        lcm_struct_t *structure = (lcm_struct_t *) g_ptr_array_index(lcm->structs, st);
 
-        const char *classname = make_fqn(lcm, lr->structname->lctypename);
+        const char *classname = make_fqn(lcm, structure->structname->lctypename);
         char *path = g_strdup_printf(
             "%s%s%s.java", getopt_get_string(lcm->gopt, "jpath"),
             strlen(getopt_get_string(lcm->gopt, "jpath")) > 0 ? G_DIR_SEPARATOR_S : "",
             dots_to_slashes(classname));
 
-        if (!lcm_needs_generation(lcm, lr->lcmfile, path))
+        if (!lcm_needs_generation(lcm, structure->lcmfile, path))
             continue;
 
         if (getopt_get_bool(lcm->gopt, "jmkdir"))
@@ -501,8 +529,8 @@ int emit_java(lcmgen_t *lcm)
              " * DO NOT MODIFY BY HAND!!!!\n"
              " */\n");
 
-        if (strlen(lr->structname->package) > 0)
-            emit(0, "package %s;", lr->structname->package);
+        if (strlen(structure->structname->package) > 0)
+            emit(0, "package %s;", structure->structname->package);
         else
             emit(0, "package %s;", getopt_get_string(lcm->gopt, "jdefaultpkg"));
 
@@ -512,8 +540,8 @@ int emit_java(lcmgen_t *lcm)
         if (0) {
             // Determine if we even need the java.nio.* package.
             int usenio = 0;
-            for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-                lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+            for (unsigned int member = 0; member < g_ptr_array_size(structure->members); member++) {
+                lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(structure->members, member);
                 primitive_info_t *pinfo =
                     (primitive_info_t *) g_hash_table_lookup(type_table, lm->type->lctypename);
                 if (pinfo != NULL && !strcmp(pinfo->storage, "float")) {
@@ -528,37 +556,41 @@ int emit_java(lcmgen_t *lcm)
         emit(0, "import java.util.*;");
         emit(0, "import lcm.lcm.*;");
         emit(0, " ");
-        emit(0, "public final class %s %s", lr->structname->shortname,
+        emit_comment(f, 0, structure->comment);
+        emit(0, "public final class %s %s", structure->structname->shortname,
              getopt_get_string(lcm->gopt, "jdecl"));
         emit(0, "{");
 
-        for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+        for (unsigned int member_index = 0; member_index < g_ptr_array_size(structure->members);
+             member_index++) {
+            lcm_member_t *member =
+                (lcm_member_t *) g_ptr_array_index(structure->members, member_index);
             primitive_info_t *pinfo =
-                (primitive_info_t *) g_hash_table_lookup(type_table, lm->type->lctypename);
+                (primitive_info_t *) g_hash_table_lookup(type_table, member->type->lctypename);
 
+            emit_comment(f, 1, member->comment);
             emit_start(1, "public ");
 
             if (pinfo == NULL) {
-                emit_continue("%s", make_fqn(lcm, lm->type->lctypename));
+                emit_continue("%s", make_fqn(lcm, member->type->lctypename));
             } else {
                 emit_continue("%s", pinfo->storage);
             }
 
-            emit_continue(" %s", lm->membername);
-            for (unsigned int i = 0; i < g_ptr_array_size(lm->dimensions); i++)
+            emit_continue(" %s", member->membername);
+            for (unsigned int i = 0; i < g_ptr_array_size(member->dimensions); i++)
                 emit_continue("[]");
-            emit_end(";");
+            emit_end(";\n");
         }
         emit(0, " ");
 
         // public constructor
-        emit(1, "public %s()", lr->structname->shortname);
+        emit(1, "public %s()", structure->structname->shortname);
         emit(1, "{");
 
         // pre-allocate any fixed-size arrays.
-        for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+        for (unsigned int member = 0; member < g_ptr_array_size(structure->members); member++) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(structure->members, member);
             primitive_info_t *pinfo =
                 (primitive_info_t *) g_hash_table_lookup(type_table, lm->type->lctypename);
 
@@ -581,32 +613,41 @@ int emit_java(lcmgen_t *lcm)
         emit(0, " ");
 
         emit(1, "public static final long LCM_FINGERPRINT;");
-        emit(1, "public static final long LCM_FINGERPRINT_BASE = 0x%016" PRIx64 "L;", lr->hash);
+        emit(1, "public static final long LCM_FINGERPRINT_BASE = 0x%016" PRIx64 "L;",
+             structure->hash);
         emit(0, " ");
 
         //////////////////////////////////////////////////////////////
         // CONSTANTS
-        for (unsigned int cn = 0; cn < g_ptr_array_size(lr->constants); cn++) {
-            lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(lr->constants, cn);
-            assert(lcm_is_legal_const_type(lc->lctypename));
+        for (unsigned int cn = 0; cn < g_ptr_array_size(structure->constants); cn++) {
+            lcm_constant_t *const_field =
+                (lcm_constant_t *) g_ptr_array_index(structure->constants, cn);
+            assert(lcm_is_legal_const_type(const_field->lctypename));
 
-            if (!strcmp(lc->lctypename, "int8_t")) {
-                emit(1, "public static final byte %s = (byte) %s;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->lctypename, "int16_t")) {
-                emit(1, "public static final short %s = (short) %s;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->lctypename, "int32_t")) {
-                emit(1, "public static final int %s = %s;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->lctypename, "int64_t")) {
-                emit(1, "public static final long %s = %sL;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->lctypename, "float")) {
-                emit(1, "public static final float %s = %sf;", lc->membername, lc->val_str);
-            } else if (!strcmp(lc->lctypename, "double")) {
-                emit(1, "public static final double %s = %s;", lc->membername, lc->val_str);
+            emit_comment(f, 1, const_field->comment);
+            if (!strcmp(const_field->lctypename, "int8_t")) {
+                emit(1, "public static final byte %s = (byte) %s;", const_field->membername,
+                     const_field->val_str);
+            } else if (!strcmp(const_field->lctypename, "int16_t")) {
+                emit(1, "public static final short %s = (short) %s;", const_field->membername,
+                     const_field->val_str);
+            } else if (!strcmp(const_field->lctypename, "int32_t")) {
+                emit(1, "public static final int %s = %s;", const_field->membername,
+                     const_field->val_str);
+            } else if (!strcmp(const_field->lctypename, "int64_t")) {
+                emit(1, "public static final long %s = %sL;", const_field->membername,
+                     const_field->val_str);
+            } else if (!strcmp(const_field->lctypename, "float")) {
+                emit(1, "public static final float %s = %sf;", const_field->membername,
+                     const_field->val_str);
+            } else if (!strcmp(const_field->lctypename, "double")) {
+                emit(1, "public static final double %s = %s;", const_field->membername,
+                     const_field->val_str);
             } else {
                 assert(0);
             }
         }
-        if (g_ptr_array_size(lr->constants) > 0)
+        if (g_ptr_array_size(structure->constants) > 0)
             emit(0, "");
 
         ///////////////// compute fingerprint //////////////////
@@ -619,15 +660,15 @@ int emit_java(lcmgen_t *lcm)
 
         emit(1, "public static long _hashRecursive(ArrayList<Class<?>> classes)");
         emit(1, "{");
-        emit(2,     "if (classes.contains(%s.class))", make_fqn(lcm, lr->structname->lctypename));
+        emit(2,     "if (classes.contains(%s.class))", make_fqn(lcm, structure->structname->lctypename));
         emit(3,         "return 0L;");
         emit(0, " ");
-        emit(2,     "classes.add(%s.class);", make_fqn(lcm, lr->structname->lctypename));
+        emit(2,     "classes.add(%s.class);", make_fqn(lcm, structure->structname->lctypename));
         emit(2,     "long hash = LCM_FINGERPRINT_BASE");
         // clang-format on
 
-        for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+        for (unsigned int member = 0; member < g_ptr_array_size(structure->members); member++) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(structure->members, member);
             primitive_info_t *pinfo =
                 (primitive_info_t *) g_hash_table_lookup(type_table, lm->type->lctypename);
 
@@ -659,12 +700,12 @@ int emit_java(lcmgen_t *lcm)
         emit(1, "public void _encodeRecursive(DataOutput outs) throws IOException");
         emit(1, "{");
 
-        if (struct_has_string_member(lr))
+        if (struct_has_string_member(structure))
             emit(2, "char[] __strbuf = null;");
         char accessor[1024];
 
-        for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+        for (unsigned int member = 0; member < g_ptr_array_size(structure->members); member++) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(structure->members, member);
             primitive_info_t *pinfo =
                 (primitive_info_t *) g_hash_table_lookup(type_table, lm->type->lctypename);
             make_accessor(lm, "this", accessor);
@@ -679,13 +720,13 @@ int emit_java(lcmgen_t *lcm)
         ///////////////// decode //////////////////
 
         // clang-format off
-        emit(1, "public %s(byte[] data) throws IOException", lr->structname->shortname);
+        emit(1, "public %s(byte[] data) throws IOException", structure->structname->shortname);
         emit(1, "{");
         emit(2,     "this(new LCMDataInputStream(data));");
         emit(1, "}");
         emit(0, " ");
 
-        emit(1, "public %s(DataInput ins) throws IOException", lr->structname->shortname);
+        emit(1, "public %s(DataInput ins) throws IOException", structure->structname->shortname);
         emit(1, "{");
         emit(2,     "if (ins.readLong() != LCM_FINGERPRINT)");
         emit(3,         "throw new IOException(\"LCM Decode error: bad fingerprint\");");
@@ -695,10 +736,10 @@ int emit_java(lcmgen_t *lcm)
         emit(0, " ");
 
         emit(1, "public static %s _decodeRecursiveFactory(DataInput ins) throws IOException",
-             make_fqn(lcm, lr->structname->lctypename));
+             make_fqn(lcm, structure->structname->lctypename));
         emit(1, "{");
         emit(2,     "%s o = new %s();",
-             make_fqn(lcm, lr->structname->lctypename), make_fqn(lcm, lr->structname->lctypename));
+             make_fqn(lcm, structure->structname->lctypename), make_fqn(lcm, structure->structname->lctypename));
         emit(2,     "o._decodeRecursive(ins);");
         emit(2,     "return o;");
         emit(1, "}");
@@ -708,10 +749,10 @@ int emit_java(lcmgen_t *lcm)
         emit(1, "public void _decodeRecursive(DataInput ins) throws IOException");
         emit(1, "{");
 
-        if (struct_has_string_member(lr))
+        if (struct_has_string_member(structure))
             emit(2, "char[] __strbuf = null;");
-        for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+        for (unsigned int member = 0; member < g_ptr_array_size(structure->members); member++) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(structure->members, member);
             primitive_info_t *pinfo =
                 (primitive_info_t *) g_hash_table_lookup(type_table, lm->type->lctypename);
 
@@ -748,8 +789,8 @@ int emit_java(lcmgen_t *lcm)
         emit(2,     "%s outobj = new %s();", classname, classname);
         // clang-format on
 
-        for (unsigned int member = 0; member < g_ptr_array_size(lr->members); member++) {
-            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
+        for (unsigned int member = 0; member < g_ptr_array_size(structure->members); member++) {
+            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(structure->members, member);
             primitive_info_t *pinfo =
                 (primitive_info_t *) g_hash_table_lookup(type_table, lm->type->lctypename);
             make_accessor(lm, "", accessor);
