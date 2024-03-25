@@ -155,6 +155,59 @@ static void emit_header_bottom(lcmgen_t *lcm, FILE *f)
     fprintf(f, "#endif\n");
 }
 
+static void emit_type_comment(FILE *f, lcm_member_t *structure_member)
+{
+    /* Might be nicer to construct a string. Eh. */
+    fprintf(f, "LCM Type: %s", structure_member->type->lctypename);
+    for (guint dim_num = 0; dim_num < structure_member->dimensions->len; dim_num++) {
+        lcm_dimension_t *dim =
+            (lcm_dimension_t *) g_ptr_array_index(structure_member->dimensions, dim_num);
+        fprintf(f, "[%s]", dim->size);
+    }
+}
+
+// comment: May be null
+// structure_member: Not null
+static void emit_member_comment(FILE *f, int indent, const char *comment,
+                                lcm_member_t *structure_member)
+{
+    /* Array lengths are lost
+     * Preserve this info after the type author's comments.
+     */
+    assert(structure_member != NULL);
+
+    // Don't treat strings as scalars -- always emit type: string
+    gboolean scalar = (0 == structure_member->dimensions->len) &&
+                      (!g_str_equal("string", structure_member->type->lctypename));
+    if (!comment && scalar) {
+        return;
+    }
+
+    gchar **lines = NULL;
+    int num_lines = 0;
+    emit(0, "");
+    emit(indent, "/**");
+    if (comment) {
+        lines = g_strsplit(comment, "\n", 0);
+        num_lines = g_strv_length(lines);
+
+        for (int line_ind = 0; lines[line_ind]; line_ind++) {
+            if (strlen(lines[line_ind])) {
+                emit(indent, " * %s", lines[line_ind]);
+            } else {
+                emit(indent, " *");
+            }
+        }
+    }
+    if (!scalar) {
+        fprintf(f, "%*s", INDENT(indent), "");
+        fprintf(f, " * ");
+        emit_type_comment(f, structure_member);
+        fprintf(f, "\n");
+    }
+    emit(indent, " */");
+}
+
 static void emit_comment(FILE *f, int indent, const char *comment)
 {
     if (!comment)
@@ -166,6 +219,7 @@ static void emit_comment(FILE *f, int indent, const char *comment)
     if (num_lines == 1) {
         emit(indent, "/// %s", lines[0]);
     } else {
+        emit(0, "");
         emit(indent, "/**");
         for (int line_ind = 0; lines[line_ind]; line_ind++) {
             if (strlen(lines[line_ind])) {
@@ -222,7 +276,7 @@ static void emit_header_struct(lcmgen_t *lcm, FILE *f, lcm_struct_t *structure)
     for (unsigned int m = 0; m < g_ptr_array_size(structure->members); m++) {
         lcm_member_t *member = (lcm_member_t *) g_ptr_array_index(structure->members, m);
 
-        emit_comment(f, 1, member->comment);
+        emit_member_comment(f, 1, member->comment, member);
 
         int ndim = g_ptr_array_size(member->dimensions);
         if (ndim == 0) {
