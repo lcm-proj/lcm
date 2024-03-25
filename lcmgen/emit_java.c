@@ -93,6 +93,56 @@ static primitive_info_t *prim(char *storage, char *decode, char *encode)
     return p;
 }
 
+static void emit_type_comment(FILE *f, lcm_member_t *structure_member)
+{
+    /* Might be nicer to construct a string. Eh. */
+    fprintf(f, "LCM Type: %s", structure_member->type->lctypename);
+    for (guint dim_num = 0; dim_num < structure_member->dimensions->len; dim_num++) {
+        lcm_dimension_t *dim =
+            (lcm_dimension_t *) g_ptr_array_index(structure_member->dimensions, dim_num);
+        fprintf(f, "[%s]", dim->size);
+    }
+}
+
+// comment: May be null
+// structure_member: Not null
+static void emit_member_comment(FILE *f, int indent, const char *comment,
+                                lcm_member_t *structure_member)
+{
+    /* Array lengths are lost
+     * Preserve this info after the type author's comments.
+     */
+    assert(structure_member != NULL);
+
+    gboolean scalar = 0 == structure_member->dimensions->len;
+    if (!comment && scalar) {
+        return;
+    }
+
+    gchar **lines = NULL;
+    int num_lines = 0;
+    emit(indent, "/**");
+    if (comment) {
+        lines = g_strsplit(comment, "\n", 0);
+        num_lines = g_strv_length(lines);
+
+        for (int line_ind = 0; lines[line_ind]; line_ind++) {
+            if (strlen(lines[line_ind])) {
+                emit(indent, " * %s", lines[line_ind]);
+            } else {
+                emit(indent, " *");
+            }
+        }
+    }
+    if (!scalar) {
+        fprintf(f, "%*s", INDENT(indent), "");
+        fprintf(f, " * ");
+        emit_type_comment(f, structure_member);
+        fprintf(f, "\n");
+    }
+    emit(indent, " */");
+}
+
 static void emit_comment(FILE *f, int indent, const char *comment)
 {
     if (!comment)
@@ -101,17 +151,16 @@ static void emit_comment(FILE *f, int indent, const char *comment)
     gchar **lines = g_strsplit(comment, "\n", 0);
     int num_lines = g_strv_length(lines);
 
-    {
-        emit(indent, "/**");
-        for (int line_ind = 0; lines[line_ind]; line_ind++) {
-            if (strlen(lines[line_ind])) {
-                emit(indent, " * %s", lines[line_ind]);
-            } else {
-                emit(indent, " *");
-            }
+    emit(indent, "/**");
+    for (int line_ind = 0; lines[line_ind]; line_ind++) {
+        if (strlen(lines[line_ind])) {
+            emit(indent, " * %s", lines[line_ind]);
+        } else {
+            emit(indent, " *");
         }
-        emit(indent, " */");
     }
+    emit(indent, " */");
+
     g_strfreev(lines);
 }
 
@@ -568,7 +617,7 @@ int emit_java(lcmgen_t *lcm)
             primitive_info_t *pinfo =
                 (primitive_info_t *) g_hash_table_lookup(type_table, member->type->lctypename);
 
-            emit_comment(f, 1, member->comment);
+            emit_member_comment(f, 1, member->comment, member);
             emit_start(1, "public ");
 
             if (pinfo == NULL) {
