@@ -57,6 +57,88 @@ static void mkdir_with_parents(const char *path, mode_t mode)
 #endif
 }
 
+static void emit_type_comment(FILE *f, lcm_member_t *structure_member)
+{
+    /* Might be nicer to construct a string. Eh. */
+    // fprintf(f, "%*s", INDENT(2), "");
+    fprintf(f, "LCM Type: %s", structure_member->type->lctypename);
+    for (guint dim_num = 0; dim_num < structure_member->dimensions->len; dim_num++) {
+        lcm_dimension_t *dim =
+            (lcm_dimension_t *) g_ptr_array_index(structure_member->dimensions, dim_num);
+        fprintf(f, "[%s]", dim->size);
+    }
+    // fprintf(f, "\n");
+}
+
+static void emit_comment(FILE *f, int indent, const char *comment)
+{
+    if (!comment)
+        return;
+
+    gchar **lines = g_strsplit(comment, "\n", 0);
+    int num_lines = g_strv_length(lines);
+
+    if (num_lines == 1) {
+        // Pad s with spaces in case it starts or ends with a ".
+        // Will break if the comment contains """.
+        emit(indent, "\"\"\" %s \"\"\"", lines[0]);
+    } else {
+        emit(indent, "\"\"\"");
+        for (int line_ind = 0; lines[line_ind]; line_ind++) {
+            if (strlen(lines[line_ind])) {
+                emit(indent, "%s", lines[line_ind]);
+            } else {
+                emit(indent, "");
+            }
+        }
+        emit(indent, "\"\"\"");
+    }
+    g_strfreev(lines);
+}
+
+// comment: May be null
+// structure_member: Not null
+static void emit_member_comment(FILE *f, int indent, const char *comment,
+                                lcm_member_t *structure_member)
+{
+    /* Numeric and array types are lost in the python type system.
+     * Preserve this info after the type author's comments.
+     */
+    assert(structure_member != NULL);
+
+    gchar **lines = NULL;
+    int num_lines = 0;
+    if (comment) {
+        lines = g_strsplit(comment, "\n", 0);
+        num_lines = g_strv_length(lines);
+    }
+
+    if (num_lines == 0) {
+        fprintf(f, "%*s", INDENT(2), "");
+        fprintf(f, "\"\"\" ");
+        emit_type_comment(f, structure_member);
+        fprintf(f, " \"\"\"");
+
+    } else {
+        emit(indent, "\"\"\"");
+
+        for (int line_ind = 0; lines[line_ind]; line_ind++) {
+            if (strlen(lines[line_ind])) {
+                emit(indent, "%s", lines[line_ind]);
+            } else {
+                emit(indent, "");
+            }
+        }
+
+        fprintf(f, "%*s", INDENT(2), "");
+        emit_type_comment(f, structure_member);
+        fprintf(f, "\n");
+
+        emit(indent, "\"\"\"");
+    }
+    g_strfreev(lines);
+}
+
 static char *build_filenamev(char **parts)
 {
     char **p = parts;
@@ -588,6 +670,8 @@ static void emit_python_init(const lcmgen_t *lcm, FILE *f, lcm_struct_t *structu
 
         emit_member_initializer(lcm, f, member, 0);
         fprintf(f, "\n");
+        emit_member_comment(f, 2, member->comment, member);
+        fprintf(f, "\n");
     }
     if (0 == m) {
         fprintf(f, "        pass\n");
@@ -947,6 +1031,9 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
         emit_python_dependencies(lcm, f, structure, write_init_py);
 
         fprintf(f, "class %s(object):\n", structure->structname->shortname);
+        emit_comment(f, 1, structure->comment);
+        fprintf(f, "\n");
+
         fprintf(f, "    __slots__ = [");
         for (unsigned int m = 0; m < structure->members->len; m++) {
             lcm_member_t *member = (lcm_member_t *) g_ptr_array_index(structure->members, m);
@@ -992,6 +1079,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
                 (lcm_constant_t *) g_ptr_array_index(structure->constants, i);
             assert(lcm_is_legal_const_type(constant->lctypename));
             emit(1, "%s = %s", constant->membername, constant->val_str);
+            emit_comment(f, 1, constant->comment);
         }
         if (g_ptr_array_size(structure->constants) > 0)
             emit(0, "");
