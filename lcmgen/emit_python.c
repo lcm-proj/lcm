@@ -57,6 +57,19 @@ static void mkdir_with_parents(const char *path, mode_t mode)
 #endif
 }
 
+static void emit_type_comment(FILE *f, lcm_member_t *structure_member)
+{
+    /* Might be nicer to construct a string. Eh. */
+    // fprintf(f, "%*s", INDENT(2), "");
+    fprintf(f, "LCM Type: %s", structure_member->type->lctypename);
+    for (guint dim_num = 0; dim_num < structure_member->dimensions->len; dim_num++) {
+        lcm_dimension_t *dim =
+            (lcm_dimension_t *) g_ptr_array_index(structure_member->dimensions, dim_num);
+        fprintf(f, "[%s]", dim->size);
+    }
+    // fprintf(f, "\n");
+}
+
 static void emit_comment(FILE *f, int indent, const char *comment)
 {
     if (!comment)
@@ -78,6 +91,49 @@ static void emit_comment(FILE *f, int indent, const char *comment)
                 emit(indent, "");
             }
         }
+        emit(indent, "\"\"\"");
+    }
+    g_strfreev(lines);
+}
+
+// comment: May be null
+// structure_member: Not null
+static void emit_member_comment(FILE *f, int indent, const char *comment,
+                                lcm_member_t *structure_member)
+{
+    /* Numeric and array types are lost in the python type system.
+     * Preserve this info after the type author's comments.
+     */
+    assert(structure_member != NULL);
+
+    gchar **lines = NULL;
+    int num_lines = 0;
+    if (comment) {
+        lines = g_strsplit(comment, "\n", 0);
+        num_lines = g_strv_length(lines);
+    }
+
+    if (num_lines == 0) {
+        fprintf(f, "%*s", INDENT(2), "");
+        fprintf(f, "\"\"\" ");
+        emit_type_comment(f, structure_member);
+        fprintf(f, " \"\"\"");
+
+    } else {
+        emit(indent, "\"\"\"");
+
+        for (int line_ind = 0; lines[line_ind]; line_ind++) {
+            if (strlen(lines[line_ind])) {
+                emit(indent, "%s", lines[line_ind]);
+            } else {
+                emit(indent, "");
+            }
+        }
+
+        fprintf(f, "%*s", INDENT(2), "");
+        emit_type_comment(f, structure_member);
+        fprintf(f, "\n");
+
         emit(indent, "\"\"\"");
     }
     g_strfreev(lines);
@@ -614,7 +670,7 @@ static void emit_python_init(const lcmgen_t *lcm, FILE *f, lcm_struct_t *structu
 
         emit_member_initializer(lcm, f, member, 0);
         fprintf(f, "\n");
-        emit_comment(f, 2, member->comment);
+        emit_member_comment(f, 2, member->comment, member);
         fprintf(f, "\n");
     }
     if (0 == m) {
