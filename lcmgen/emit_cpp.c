@@ -153,6 +153,56 @@ static void emit_auto_generated_warning(FILE *f)
             " **/\n\n");
 }
 
+static void emit_type_comment(FILE *f, lcm_member_t *structure_member)
+{
+    /* Might be nicer to construct a string. Eh. */
+    fprintf(f, "LCM Type: %s", structure_member->type->lctypename);
+    for (guint dim_num = 0; dim_num < structure_member->dimensions->len; dim_num++) {
+        lcm_dimension_t *dim =
+            (lcm_dimension_t *) g_ptr_array_index(structure_member->dimensions, dim_num);
+        fprintf(f, "[%s]", dim->size);
+    }
+}
+
+// comment: May be null
+// structure_member: Not null
+static void emit_member_comment(FILE *f, int indent, const char *comment,
+                                lcm_member_t *structure_member)
+{
+    /* Array lengths are lost
+     * Preserve this info after the type author's comments.
+     */
+    assert(structure_member != NULL);
+
+    gboolean scalar = 0 == structure_member->dimensions->len;
+    if (!comment && scalar) {
+        return;
+    }
+
+    gchar **lines = NULL;
+    int num_lines = 0;
+    emit(indent, "/**");
+    if (comment) {
+        lines = g_strsplit(comment, "\n", 0);
+        num_lines = g_strv_length(lines);
+
+        for (int line_ind = 0; lines[line_ind]; line_ind++) {
+            if (strlen(lines[line_ind])) {
+                emit(indent, " * %s", lines[line_ind]);
+            } else {
+                emit(indent, " *");
+            }
+        }
+    }
+    if (!scalar) {
+        fprintf(f, "%*s", INDENT(indent), "");
+        fprintf(f, " * ");
+        emit_type_comment(f, structure_member);
+        fprintf(f, "\n");
+    }
+    emit(indent, " */");
+}
+
 static void emit_comment(FILE *f, int indent, const char *comment)
 {
     if (!comment)
@@ -199,10 +249,10 @@ static void emit_package_namespace_close(lcmgen_t *lcmgen, FILE *f, lcm_struct_t
 }
 
 /** Emit header file **/
-static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
+static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *structure)
 {
-    char *tn = ls->structname->lctypename;
-    char *sn = ls->structname->shortname;
+    char *tn = structure->structname->lctypename;
+    char *sn = structure->structname->shortname;
     char *tn_ = dots_to_underscores(tn);
 
     emit_auto_generated_warning(f);
@@ -219,8 +269,8 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     // do we need to #include <vector> and/or <string>?
     int emit_include_vector = 0;
     int emit_include_string = 0;
-    for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
-        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
+    for (unsigned int mind = 0; mind < g_ptr_array_size(structure->members); mind++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(structure->members, mind);
         if (g_ptr_array_size(lm->dimensions) != 0 && !lcm_is_constant_size_array(lm) &&
             !emit_include_vector) {
             emit(0, "#include <vector>");
@@ -233,11 +283,11 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     }
 
     // include header files for other LCM types
-    for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
-        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
+    for (unsigned int mind = 0; mind < g_ptr_array_size(structure->members); mind++) {
+        lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(structure->members, mind);
 
         if (!lcm_is_primitive_type(lm->type->lctypename) &&
-            strcmp(lm->type->lctypename, ls->structname->lctypename)) {
+            strcmp(lm->type->lctypename, structure->structname->lctypename)) {
             char *other_tn = dots_to_slashes(lm->type->lctypename);
             emit(
                 0, "#include \"%s%s%s.hpp\"", getopt_get_string(lcmgen->gopt, "cpp-include"),
@@ -248,31 +298,31 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     }
 
     fprintf(f, "\n");
-    emit_package_namespace_start(lcmgen, f, ls);
+    emit_package_namespace_start(lcmgen, f, structure);
 
     // define the class
     emit(0, "");
-    emit_comment(f, 0, ls->comment);
+    emit_comment(f, 0, structure->comment);
     emit(0, "class %s", sn);
     emit(0, "{");
 
     // data members
-    if (g_ptr_array_size(ls->members)) {
+    if (g_ptr_array_size(structure->members)) {
         emit(1, "public:");
-        for (unsigned int mind = 0; mind < g_ptr_array_size(ls->members); mind++) {
-            lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(ls->members, mind);
+        for (unsigned int mind = 0; mind < g_ptr_array_size(structure->members); mind++) {
+            lcm_member_t *member = (lcm_member_t *) g_ptr_array_index(structure->members, mind);
 
-            emit_comment(f, 2, lm->comment);
-            char *mapped_typename = map_type_name(lm->type->lctypename);
-            int ndim = g_ptr_array_size(lm->dimensions);
+            emit_member_comment(f, 2, member->comment, member);
+            char *mapped_typename = map_type_name(member->type->lctypename);
+            int ndim = g_ptr_array_size(member->dimensions);
             if (ndim == 0) {
-                emit(2, "%-10s %s;", mapped_typename, lm->membername);
+                emit(2, "%-10s %s;", mapped_typename, member->membername);
             } else {
-                if (lcm_is_constant_size_array(lm)) {
-                    emit_start(2, "%-10s %s", mapped_typename, lm->membername);
+                if (lcm_is_constant_size_array(member)) {
+                    emit_start(2, "%-10s %s", mapped_typename, member->membername);
                     for (unsigned int d = 0; d < ndim; d++) {
                         lcm_dimension_t *ld =
-                            (lcm_dimension_t *) g_ptr_array_index(lm->dimensions, d);
+                            (lcm_dimension_t *) g_ptr_array_index(member->dimensions, d);
                         emit_continue("[%s]", ld->size);
                     }
                     emit_end(";");
@@ -283,11 +333,11 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
                     emit_continue("%s", mapped_typename);
                     for (unsigned int d = 0; d < ndim; d++)
                         emit_continue(" >");
-                    emit_end(" %s;", lm->membername);
+                    emit_end(" %s;", member->membername);
                 }
             }
             free(mapped_typename);
-            if (mind < g_ptr_array_size(ls->members) - 1) {
+            if (mind < g_ptr_array_size(structure->members) - 1) {
                 emit(0, "");
             }
         }
@@ -295,10 +345,10 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     }
 
     // constants
-    if (g_ptr_array_size(ls->constants) > 0) {
+    if (g_ptr_array_size(structure->constants) > 0) {
         emit(1, "public:");
-        for (unsigned int i = 0; i < g_ptr_array_size(ls->constants); i++) {
-            lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, i);
+        for (unsigned int i = 0; i < g_ptr_array_size(structure->constants); i++) {
+            lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(structure->constants, i);
             assert(lcm_is_legal_const_type(lc->lctypename));
 
             emit_comment(f, 2, lc->comment);
@@ -375,7 +425,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *ls)
     emit(2, "inline static int64_t getHash();");
     emit(0, "");
     emit(2, "/**");
-    emit(2, " * Returns \"%s\"", ls->structname->shortname);
+    emit(2, " * Returns \"%s\"", structure->structname->shortname);
     emit(2, " */");
     emit(2, "inline static const char* getTypeName();");
 
