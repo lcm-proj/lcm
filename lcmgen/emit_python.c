@@ -3,6 +3,7 @@
 #include <fcntl.h>
 #include <glib.h>
 #include <inttypes.h>
+#include <lcm/lcm_version.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,7 +12,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include "../lcm/lcm_version.h"
 #include "lcmgen.h"
 
 #define INDENT(n) (4 * (n))

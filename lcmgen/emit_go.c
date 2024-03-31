@@ -12,7 +12,8 @@
 #define __STDC_FORMAT_MACROS  // Enable integer types
 #endif
 
-#include "../lcm/lcm_version.h"
+#include <lcm/lcm_version.h>
+
 #include "lcmgen.h"
 
 #define TABS "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t"
