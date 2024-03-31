@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <inttypes.h>
+#include <lcm/lcm_version.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +8,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "../lcm/lcm_version.h"
 #include "getopt.h"
 #include "lcmgen.h"
 

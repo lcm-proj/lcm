@@ -45,6 +45,8 @@ endif()
 add_executable(lcm-gen ${lcm-gen_sources})
 target_link_libraries(lcm-gen PRIVATE GLib2::glib)
 
+target_include_directories(${lcm_lib} lcm-gen PRIVATE ${lcm_SOURCE_DIR})
+
 install(TARGETS lcm-gen
   EXPORT lcmTargets
   RUNTIME DESTINATION bin

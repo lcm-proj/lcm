@@ -10,10 +10,10 @@
 #include <unistd.h> /* _exit */
 #endif
 #include <inttypes.h>
+#include <lcm/lcm_version.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
-#include "../lcm/lcm_version.h"
 #include "lcmgen.h"
 
 #define INDENT(n) (4 * (n))

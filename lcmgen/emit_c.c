@@ -8,8 +8,8 @@
 #define __STDC_FORMAT_MACROS  // Enable integer types
 #endif
 #include <inttypes.h>
+#include <lcm/lcm_version.h>
 
-#include "../lcm/lcm_version.h"
 #include "lcmgen.h"
 
 #define INDENT(n) (4 * (n))
