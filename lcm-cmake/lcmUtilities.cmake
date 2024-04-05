@@ -27,12 +27,7 @@
 #   lcm_install_python([DESTINATION <PATH>]
 #                      <FILE> [<FILE>...])
 
-if(WIN32)
-  # Need 'cmake -E env'
-  cmake_minimum_required(VERSION 3.1.0)
-else()
-  cmake_minimum_required(VERSION 2.8.12)
-endif()
+cmake_minimum_required(VERSION 3.5.0)
 include(CMakeParseArguments)
 
 #------------------------------------------------------------------------------
