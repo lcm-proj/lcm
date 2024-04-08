@@ -692,6 +692,7 @@ static void emit_c_decode_array_cleanup(lcmgen_t *lcm, FILE *f, lcm_struct_t *st
 
     emit(0, "int __%s_decode_array_cleanup(%s *p, int elements)", type_name, type_name);
     emit(0, "{");
+    emit(1, "(void)p;");
     emit(1, "int element;");
     emit(1, "for (element = 0; element < elements; element++) {");
     emit(0, "");
@@ -1062,7 +1063,7 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *struct
             "    int status = lcm_unsubscribe (lcm, hid->lc_h);\n"
             "    if (0 != status) {\n"
             "        fprintf(stderr,\n"
-            "           \"couldn't unsubscribe %s_handler %%p!\\n\", hid);\n"
+            "           \"couldn't unsubscribe %s_handler %%p!\\n\", (void*)hid);\n"
             "        return -1;\n"
             "    }\n"
             "    free (hid);\n"
