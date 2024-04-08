@@ -1062,7 +1062,7 @@ static void emit_c_struct_subscribe(lcmgen_t *lcm, FILE *f, lcm_struct_t *struct
             "    int status = lcm_unsubscribe (lcm, hid->lc_h);\n"
             "    if (0 != status) {\n"
             "        fprintf(stderr,\n"
-            "           \"couldn't unsubscribe %s_handler %%p!\\n\", hid);\n"
+            "           \"couldn't unsubscribe %s_handler %%p!\\n\", (void*)hid);\n"
             "        return -1;\n"
             "    }\n"
             "    free (hid);\n"
