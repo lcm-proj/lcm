@@ -105,8 +105,9 @@ lcmgen_t *lcmgen_create()
     lcmgen_t *lcmgen = (lcmgen_t *) calloc(1, sizeof(lcmgen_t));
     lcmgen->structs = g_ptr_array_new();
     lcmgen->enums = g_ptr_array_new();
-    lcmgen->package = strdup("");
-    lcmgen->comment_doc = NULL;
+    lcmgen->parse_cache.package = strdup("");
+    lcmgen->parse_cache.comment_doc = NULL;
+    lcmgen->parse_cache.file_comment = NULL;
 
     return lcmgen;
 }
@@ -116,9 +117,9 @@ lcmgen_t *lcmgen_create()
 // "package" directive, like in Java.
 lcm_typename_t *lcm_typename_create(lcmgen_t *lcmgen, const char *lctypename)
 {
-    lcm_typename_t *lt = (lcm_typename_t *) calloc(1, sizeof(lcm_typename_t));
+    lcm_typename_t *type_name = (lcm_typename_t *) calloc(1, sizeof(lcm_typename_t));
 
-    lt->lctypename = strdup(lctypename);
+    type_name->lctypename = strdup(lctypename);
 
     // package name: everything before the last ".", or "" if there is no "."
     //
@@ -128,29 +129,31 @@ lcm_typename_t *lcm_typename_create(lcmgen_t *lcmgen, const char *lctypename)
     char *tmp = strdup(lctypename);
     char *rtmp = strrchr(tmp, '.');
     if (rtmp == NULL) {
-        lt->shortname = tmp;
-        if (lcm_is_primitive_type(lt->shortname)) {
-            lt->package = strdup("");
+        type_name->shortname = tmp;
+        if (lcm_is_primitive_type(type_name->shortname)) {
+            type_name->package = strdup("");
         } else {
             // we're overriding the package name using the last directive.
-            lt->package = strdup(lcmgen->package);
-            lt->lctypename = g_strdup_printf("%s%s%s", lt->package,
-                                             strlen(lcmgen->package) > 0 ? "." : "", lt->shortname);
+            type_name->package = strdup(lcmgen->parse_cache.package);
+            type_name->lctypename = g_strdup_printf(
+                "%s%s%s", type_name->package, strlen(lcmgen->parse_cache.package) > 0 ? "." : "",
+                type_name->shortname);
         }
     } else {
-        lt->package = tmp;
+        type_name->package = tmp;
         *rtmp = 0;
-        lt->shortname = &rtmp[1];
+        type_name->shortname = &rtmp[1];
     }
 
     const char *package_prefix = getopt_get_string(lcmgen->gopt, "package-prefix");
-    if (strlen(package_prefix) > 0 && !lcm_is_primitive_type(lt->shortname)) {
-        lt->package = g_strdup_printf("%s%s%s", package_prefix, strlen(lt->package) > 0 ? "." : "",
-                                      lt->package);
-        lt->lctypename = g_strdup_printf("%s.%s", lt->package, lt->shortname);
+    if (strlen(package_prefix) > 0 && !lcm_is_primitive_type(type_name->shortname)) {
+        type_name->package =
+            g_strdup_printf("%s%s%s", package_prefix, strlen(type_name->package) > 0 ? "." : "",
+                            type_name->package);
+        type_name->lctypename = g_strdup_printf("%s.%s", type_name->package, type_name->shortname);
     }
 
-    return lt;
+    return type_name;
 }
 
 lcm_struct_t *lcm_struct_create(lcmgen_t *lcmgen, const char *lcmfile, const char *structname)
@@ -317,22 +320,27 @@ void parse_error(tokenize_t *t, const char *fmt, ...)
 }
 
 // Consume any available comments and store them in lcmgen->comment_doc
+// Comments are allowed in most positions in the lcm grammar.
+// However they are only significant in specific positions.
+// Call with store_comment_doc=0 to discard any parsed comments.
+// Call with store_comment_doc=1 to save the parsed comment to lcmgen->comment_doc.
+//   This frees the previous value of lcmgen->comment_doc.
 void parse_try_consume_comment(lcmgen_t *lcmgen, tokenize_t *t, int store_comment_doc)
 {
     if (store_comment_doc) {
-        g_free(lcmgen->comment_doc);
-        lcmgen->comment_doc = NULL;
+        g_free(lcmgen->parse_cache.comment_doc);
+        lcmgen->parse_cache.comment_doc = NULL;
     }
 
     while (tokenize_peek(t) != EOF && t->token_type == LCM_TOK_COMMENT) {
         tokenize_next(t);
 
         if (store_comment_doc) {
-            if (!lcmgen->comment_doc) {
-                lcmgen->comment_doc = g_strdup(t->token);
+            if (!lcmgen->parse_cache.comment_doc) {
+                lcmgen->parse_cache.comment_doc = g_strdup(t->token);
             } else {
-                gchar *orig = lcmgen->comment_doc;
-                lcmgen->comment_doc = g_strdup_printf("%s\n%s", orig, t->token);
+                gchar *orig = lcmgen->parse_cache.comment_doc;
+                lcmgen->parse_cache.comment_doc = g_strdup_printf("%s\n%s", orig, t->token);
                 g_free(orig);
             }
         }
@@ -413,9 +421,9 @@ another_constant:
     lcm_constant_t *lc = lcm_constant_create(lctypename, membername, t->token);
 
     // Attach the last comment if one was defined.
-    if (lcmgen->comment_doc) {
-        lc->comment = lcmgen->comment_doc;
-        lcmgen->comment_doc = NULL;
+    if (lcmgen->parse_cache.comment_doc) {
+        lc->comment = lcmgen->parse_cache.comment_doc;
+        lcmgen->parse_cache.comment_doc = NULL;
     }
 
     char *endptr = NULL;
@@ -526,9 +534,9 @@ int parse_member(lcmgen_t *lcmgen, lcm_struct_t *lr, tokenize_t *t)
         lcm_member_t *lm = lcm_member_create();
         lm->type = lt;
         lm->membername = strdup(t->token);
-        if (lcmgen->comment_doc) {
-            lm->comment = lcmgen->comment_doc;
-            lcmgen->comment_doc = NULL;
+        if (lcmgen->parse_cache.comment_doc) {
+            lm->comment = lcmgen->parse_cache.comment_doc;
+            lcmgen->parse_cache.comment_doc = NULL;
         }
         g_ptr_array_add(lr->members, lm);
 
@@ -656,11 +664,16 @@ lcm_struct_t *parse_struct(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
     tokenize_next_or_fail(t, "struct name");
     name = strdup(t->token);
 
-    lcm_struct_t *lr = lcm_struct_create(lcmgen, lcmfile, name);
+    lcm_struct_t *structure = lcm_struct_create(lcmgen, lcmfile, name);
 
-    if (lcmgen->comment_doc) {
-        lr->comment = lcmgen->comment_doc;
-        lcmgen->comment_doc = NULL;
+    if (lcmgen->parse_cache.file_comment) {
+        structure->file_comment = lcmgen->parse_cache.file_comment;
+        lcmgen->parse_cache.file_comment = NULL;
+    }
+
+    if (lcmgen->parse_cache.comment_doc) {
+        structure->comment = lcmgen->parse_cache.comment_doc;
+        lcmgen->parse_cache.comment_doc = NULL;
     }
 
     parse_require(t, "{");
@@ -672,13 +685,13 @@ lcm_struct_t *parse_struct(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
         if (parse_try_consume(t, "}")) {
             break;
         }
-        parse_member(lcmgen, lr, t);
+        parse_member(lcmgen, structure, t);
     }
 
-    lr->hash = lcm_struct_hash(lr);
+    structure->hash = lcm_struct_hash(structure);
 
     free(name);
-    return lr;
+    return structure;
 }
 
 /** assumes the "enum" token is already consumed **/
@@ -726,28 +739,32 @@ int parse_entity(lcmgen_t *lcmgen, const char *lcmfile, tokenize_t *t)
         return EOF;
 
     if (!strcmp(t->token, "package")) {
+        lcmgen->parse_cache.file_comment = lcmgen->parse_cache.comment_doc;
+
+        lcmgen->parse_cache.comment_doc = NULL;
+
         parse_try_consume_comment(lcmgen, t, 0);
         tokenize_next_or_fail(t, "package name");
-        lcmgen->package = strdup(t->token);
+        lcmgen->parse_cache.package = strdup(t->token);
         parse_require(t, ";");
         return 0;
     }
 
     if (!strcmp(t->token, "struct")) {
-        lcm_struct_t *lr = parse_struct(lcmgen, lcmfile, t);
+        lcm_struct_t *structure = parse_struct(lcmgen, lcmfile, t);
 
         // check for duplicate types
         const lcm_struct_t *prior =
-            find_struct(lcmgen, lr->structname->package, lr->structname->shortname);
+            find_struct(lcmgen, structure->structname->package, structure->structname->shortname);
         if (prior) {
-            printf("ERROR:  duplicate type %s declared in %s\n", lr->structname->lctypename,
+            printf("ERROR:  duplicate type %s declared in %s\n", structure->structname->lctypename,
                    lcmfile);
-            printf("        %s was previously declared in %s\n", lr->structname->lctypename,
+            printf("        %s was previously declared in %s\n", structure->structname->lctypename,
                    prior->lcmfile);
             // TODO destroy lr.
             return 1;
         } else {
-            g_ptr_array_add(lcmgen->structs, lr);
+            g_ptr_array_add(lcmgen->structs, structure);
         }
         return 0;
     }

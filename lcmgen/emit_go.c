@@ -1558,7 +1558,7 @@ int emit_go(lcmgen_t *lcm)
         goto ret;
     }
 
-    if (!strlen(lcm->package)) {
+    if (!strlen(lcm->parse_cache.package)) {
         fprintf(stderr, "Not yet implemented: go-default-package\n");
         res = -1;
         goto ret;
