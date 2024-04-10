@@ -76,9 +76,13 @@ struct lcm_struct {
     char *lcmfile;  // file/path of function that declared it
     int64_t hash;
 
-    // Comments in the LCM type defition immediately before a struct is declared
+    // Comments in the LCM type defintion immediately before a struct is declared
     // are attached to that struct.
     char *comment;
+
+    // Comments in the LCM type defintion before the package statement
+    // are placed at the top of the file after the "generated with lcm" statement.
+    char *file_comment;
 };
 
 /////////////////////////////////////////////////
@@ -142,12 +146,19 @@ struct lcm_enum {
 typedef struct lcmgen lcmgen_t;
 
 struct lcmgen {
-    char *package;  // remembers the last-specified package name, which is prepended to other types.
+    // State used while parsing. Shouldn't be used during code generation.
+    struct {
+        // remembers the last-specified package name, which is prepended to other types.
+        char *package;
+        // Last parsed comment, waiting to be attached to the next parsed thing.
+        gchar *comment_doc;
+        // Comment at the top of the LCM file. Waiting to be attached to a struct
+        char *file_comment;
+    } parse_cache;
+
     getopt_t *gopt;
     GPtrArray *structs;  // lcm_struct_t
     GPtrArray *enums;    // lcm_enum_t (declared at top level)
-
-    gchar *comment_doc;
 };
 
 /////////////////////////////////////////////////
