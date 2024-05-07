@@ -16,4 +16,4 @@ target_include_directories(pjs_messages-cpp INTERFACE
 
 # Create executable
 add_executable(lcm_log_writer "main.cpp")
-lcm_target_link_libraries(lcm_log_writer pjs_messages-cpp ${LCM_NAMESPACE}lcm)
+lcm_target_link_libraries(lcm_log_writer pjs_messages-cpp ${LCM_NAMESPACE}lcm-static)
