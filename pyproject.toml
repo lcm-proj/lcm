@@ -1,0 +1,33 @@
+[build-system]
+requires = ["scikit-build-core"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "lcm"
+version = "1.5.0"
+description = "Lightweight Communication and Marshalling"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+  'Development Status :: 4 - Beta',
+  'Topic :: Communications',
+  'Framework :: Robot Framework',
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.scikit-build]
+cmake.args = ["-DLCM_INSTALL_PKGCONFIG=OFF"]
+wheel.expand-macos-universal-tags = true
+build.tool-args = ["-j4"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+log_cli_level = "INFO"
+filterwarnings = ["error"]
+
+[tool.cibuildwheel]
+build-verbosity = 1
