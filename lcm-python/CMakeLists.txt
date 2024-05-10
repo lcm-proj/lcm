@@ -28,11 +28,19 @@ if (WIN32 AND NOT CYGWIN)
   set_target_properties(lcm-python PROPERTIES SUFFIX .pyd)
 endif ()
 
-find_package(Python3 COMPONENTS Interpreter Development.Module)
+if (WIN32)
+  find_package(Python COMPONENTS Interpreter Development.Module)
 
-target_include_directories(lcm-python PRIVATE
+  target_include_directories(lcm-python PRIVATE
+    ${Python_INCLUDE_DIRS}
+  )
+else ()
+  find_package(Python3 COMPONENTS Interpreter Development.Module)
+
+  target_include_directories(lcm-python PRIVATE
   ${Python3_INCLUDE_DIRS}
-)
+  )
+endif ()
 
 target_link_libraries(lcm-python PRIVATE
   lcm-static
