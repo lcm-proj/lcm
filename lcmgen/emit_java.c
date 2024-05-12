@@ -580,6 +580,7 @@ int emit_java(lcmgen_t *lcm)
              " * lcm-gen " LCM_VERSION_STRING
              "\n"
              " */\n");
+        emit_comment(f, 0, structure->file_comment);
 
         if (strlen(structure->structname->package) > 0)
             emit(0, "package %s;", structure->structname->package);
