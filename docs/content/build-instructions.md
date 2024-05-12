@@ -33,6 +33,14 @@ generators. To users familiar with CMake, we recommend using
 A detailed description of how to use CMake is not specific to LCM and is beyond
 the scope of these instructions.
 
+By default CMake is configured to produce a release build. To build with debug symbols instead, use:
+
+```shell
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+```
+
+when configuring a build directory in the following sections.
+
 ## Ubuntu and Debian
 
 Required packages:
