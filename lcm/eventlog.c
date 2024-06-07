@@ -96,16 +96,18 @@ lcm_eventlog_event_t *lcm_eventlog_read_next_event(lcm_eventlog_t *l)
     }
 
     // Check that there's a valid event or the EOF after this event.
-    int32_t next_magic;
-    if (0 == fread32(l->f, &next_magic)) {
-        if (next_magic != MAGIC) {
-            fprintf(stderr, "Invalid header after log data\n");
-            free(le->channel);
-            free(le->data);
-            free(le);
-            return NULL;
+    if (fseeko(l->f, 0, SEEK_CUR) == 0) {   // check seekable
+        int32_t next_magic;
+        if (0 == fread32(l->f, &next_magic)) {
+            if (next_magic != MAGIC) {
+                fprintf(stderr, "Invalid header after log data\n");
+                free(le->channel);
+                free(le->data);
+                free(le);
+                return NULL;
+            }
+            fseeko(l->f, -4, SEEK_CUR);
         }
-        fseeko(l->f, -4, SEEK_CUR);
     }
     return le;
 }
