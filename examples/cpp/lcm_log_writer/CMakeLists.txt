@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 3.5)
 
 project(lcm_log_writer)
 
+# Include this directory for finding GLib2, using the file FindGLib2.cmake.
+# **WARNING** If you want to reuse this example, you will need to copy
+# FindGLib2.cmake to your new project and adjust your CMAKE_MODULE_PATH.
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/../../../cmake")
+
+find_package(GLib2 REQUIRED)
+
 find_package(lcm REQUIRED)
 include(${LCM_USE_FILE})
 
