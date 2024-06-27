@@ -97,7 +97,7 @@ jobs:
   macos:
     strategy:
       matrix:
-        os: [macos-11, macos-12]
+        os: [macos-13, macos-14]
 
     runs-on: ${{ matrix.os }}
 
