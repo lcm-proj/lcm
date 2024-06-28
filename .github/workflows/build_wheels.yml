@@ -10,13 +10,18 @@ jobs:
       matrix:
         # macos-13 is an intel runner, macos-14 is apple silicon
         os: [ubuntu-latest, macos-13, macos-14]
+        include:
+          - os: macos-13
+            macos_deployment_target: 13
+          - os: macos-14
+            macos_deployment_target: 14
 
     steps:
       - uses: actions/checkout@v4
       - name: Build wheels
         uses: pypa/cibuildwheel@v2.19.1
-        # env:
-        #   CIBW_SOME_OPTION: value
+        env:
+          MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_deployment_target }}
         #    ...
         # with:
         #   package-dir: .
