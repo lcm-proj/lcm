@@ -1,13 +1,22 @@
 # FindPython added in 3.12
 cmake_minimum_required(VERSION 3.12)
 
-execute_process(
-  COMMAND "${Python_EXECUTABLE}" -c "if True:
-    from sysconfig import get_path
-    from os.path import sep
-    print(get_path('platlib').replace(get_path('data') + sep, ''))"
-  OUTPUT_VARIABLE PYTHON_SITE
-  OUTPUT_STRIP_TRAILING_WHITESPACE)
+option(LCM_PIP_BUILD "When true, adjusts install path to something appropriate for a Python wheel" OFF)
+
+if (NOT LCM_PIP_BUILD)
+  execute_process(
+    COMMAND "${Python_EXECUTABLE}" -c "if True:
+      from sysconfig import get_path
+      from os.path import sep
+      print(get_path('platlib').replace(get_path('data') + sep, ''))"
+    OUTPUT_VARIABLE PYTHON_SITE
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+    set(PYTHON_INSTALL_DIR ${PYTHON_SITE}/lcm)
+else()
+    set(PYTHON_INSTALL_DIR lcm)
+endif()
+
 
 set(lcm_python_sources
   module.c
@@ -55,8 +64,8 @@ else()
 endif()
 
 install(TARGETS lcm-python
-  RUNTIME DESTINATION ${PYTHON_SITE}/lcm
-  LIBRARY DESTINATION ${PYTHON_SITE}/lcm
+  RUNTIME DESTINATION ${PYTHON_INSTALL_DIR}
+  LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}
 )
 
 lcm_copy_file_target(lcm-python-init
@@ -64,4 +73,4 @@ lcm_copy_file_target(lcm-python-init
   ${CMAKE_BINARY_DIR}/python/lcm/__init__.py
 )
 
-install(FILES lcm/__init__.py DESTINATION ${PYTHON_SITE}/lcm)
+install(FILES lcm/__init__.py DESTINATION ${PYTHON_INSTALL_DIR})
