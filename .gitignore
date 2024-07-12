@@ -1,6 +1,7 @@
 build*/
 __pycache__
 docs/_build/
+meson/
 
 .vscode/
 .idea/
@@ -9,3 +10,4 @@ docs/_build/
 .classpath
 .venv
 .DS_Store
+.cache/
