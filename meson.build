@@ -37,10 +37,10 @@ if get_option('lcm_enable_lua').enabled()
   subdir('lcm-lua')
 endif
 
-# # Unit tests
-# if get_option('lcm_enable_tests').enabled()
-#   subdir('test')
-# endif
+# Unit tests
+if get_option('lcm_enable_tests').enabled()
+  subdir('test')
+endif
 
 # # M4 Macros
 # if get_option('lcm_install_m4macros').enabled()
