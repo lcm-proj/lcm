@@ -1,4 +1,3 @@
-subdir('gtest')
 subdir('types')
 subdir('c')
 subdir('cpp')
