@@ -15,6 +15,9 @@ subdir('lcm-logger')
 # Documentation (Main, C/C++, .NET)
 subdir('docs')
 
+# Doesn't seem to compile examples but compiles tests?
+# We don't want to compile examples, which makes this option misleading, but it
+# is how it is in the CMakeLists.txt file.
 # Examples
 if get_option('lcm_enable_examples').enabled()
   subdir('liblcm-test')
@@ -37,6 +40,7 @@ if get_option('lcm_enable_lua').enabled()
   subdir('lcm-lua')
 endif
 
+# Disabled because require pro meson wizardry to support without user-defined functions
 # Unit tests
 # if get_option('lcm_enable_tests').enabled()
 #   subdir('test')
