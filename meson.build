@@ -42,10 +42,10 @@ endif
 #   subdir('test')
 # endif
 
-# # M4 Macros
-# if get_option('lcm_install_m4macros').enabled()
-#   subdir('m4macros')
-# endif
+# M4 Macros
+if get_option('lcm_install_m4macros').enabled()
+  subdir('m4macros')
+endif
 
 # # pkg-config
 # if get_option('lcm_install_pkgconfig').enabled()
