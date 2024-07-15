@@ -1,4 +1,5 @@
 project('lcm', 'c', 'cpp', 
+  version : '1.5.0',
   default_options : ['default_library=static',
                      'buildtype=release',
                      'c_std=gnu99',
@@ -51,7 +52,7 @@ if get_option('lcm_install_m4macros').enabled()
   subdir('m4macros')
 endif
 
-# # pkg-config
-# if get_option('lcm_install_pkgconfig').enabled()
-#   subdir('lcm-pkgconfig')
-# endif
+# pkg-config
+if get_option('lcm_install_pkgconfig').enabled()
+  subdir('lcm-pkgconfig')
+endif
