@@ -35,6 +35,12 @@ lcm_lib_dep = declare_dependency(
   link_with : lcm_lib,
   dependencies : glib_dep,
   include_directories : include_directories('..'))
+
 lcm_static_lib = static_library('lcm-static', lcm_sources,
   dependencies : glib_dep)
+lcm_static_lib_dep = declare_dependency(
+  link_with : lcm_static_lib,
+  dependencies : glib_dep,
+  include_directories : include_directories('..'))
+
 lcm_coretypes_lib = declare_dependency() # 'lcm-coretypes'
