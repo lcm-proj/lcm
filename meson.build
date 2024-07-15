@@ -30,11 +30,11 @@ if get_option('lcm_enable_python').enabled()
 endif
 
 # Java
-if get_option('lcm_enable_java').enabled()
-  subdir('lcm-java')
-  # add_custom_target(['lcm-spy', 'DEPENDS', 'lcm-spy-alias'])
-  # add_custom_target(['lcm-logplayer-gui', 'DEPENDS', 'lcm-logplayer-gui-alias'])
-endif
+# if get_option('lcm_enable_java').enabled()
+#   subdir('lcm-java')
+#   # add_custom_target(['lcm-spy', 'DEPENDS', 'lcm-spy-alias'])
+#   # add_custom_target(['lcm-logplayer-gui', 'DEPENDS', 'lcm-logplayer-gui-alias'])
+# endif
 
 # Lua
 if get_option('lcm_enable_lua').enabled()
