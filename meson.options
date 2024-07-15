@@ -1,5 +1,5 @@
 option('lcm_enable_examples', type : 'feature', value : 'enabled', description : 'Build test and example programs')
-option('lcm_enable_python', type : 'feature', value : 'auto', description : 'Build Python bindings and utilities')
+option('lcm_enable_python', type : 'feature', value : 'enabled', description : 'Build Python bindings and utilities')
 option('lcm_enable_java', type : 'feature', value : 'auto', description : 'Build Java bindings and utilities')
 option('lcm_enable_lua', type : 'feature', value : 'auto', description : 'Build Lua bindings and utilities')
 option('lcm_enable_tests', type : 'feature', value : 'enabled', description : 'Build unit tests')
