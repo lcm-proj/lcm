@@ -4,4 +4,5 @@ lua_dep = dependency('lua')
   
 lcm_lua_lib = library('lcm-lua', lcm_lua_sources,
   c_args : '-Wextra',
-  dependencies : [lcm_lib_dep, lua_dep])
+  dependencies : [lcm_lib_dep, lua_dep],
+  install : true)

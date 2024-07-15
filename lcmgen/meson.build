@@ -3,5 +3,4 @@ lcm_gen_sources = ['emit_c.c', 'emit_csharp.c', 'emit_cpp.c', 'emit_go.c', 'emit
 
 lcm_gen_exe = executable('lcm-gen', lcm_gen_sources,
   dependencies : [glib_dep, lcm_lib_dep],
-  install : true,
-  install_dir : 'bin')
+  install : true)
