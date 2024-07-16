@@ -14,6 +14,18 @@ classifiers = [
   'Framework :: Robot Framework',
 ]
 
+[project.scripts]
+lcm-example = "lcm:run_example"
+lcm-gen = "lcm:run_gen"
+lcm-logfilter = "lcm:run_logfilter"
+lcm-logger = "lcm:run_logger"
+lcm-logplayer = "lcm:run_logplayer"
+lcm-logplayer-gui = "lcm:run_logplayer_gui"
+lcm-sink = "lcm:run_sink"
+lcm-source = "lcm:run_source"
+lcm-spy = "lcm:run_spy"
+lcm-tester = "lcm:run_tester"
+
 [project.optional-dependencies]
 test = ["pytest"]
 

@@ -1,5 +1,6 @@
 import os
 import sys
+import subprocess
 
 # Attempt to be backwards compatible
 if sys.version_info >= (3, 6):
@@ -164,3 +165,38 @@ to next() returning the next L{Event<lcm.Event>} in the log.
         @rtype: int
         """
         return self.c_eventlog.ftell ()
+    
+LCM_BIN_DIR = os.path.join(os.path.dirname(__file__), '..', 'bin')
+    
+def run_script(name: str, args) -> int:
+    return subprocess.call([os.path.join(LCM_BIN_DIR, name), *args], close_fds=False)
+
+def run_example():
+    raise SystemExit(run_script('lcm-example', sys.argv[1:]))
+
+def run_gen():
+    raise SystemExit(run_script('lcm-gen', sys.argv[1:]))
+
+def run_logfilter():
+    raise SystemExit(run_script('lcm-logfilter', sys.argv[1:]))
+
+def run_logger():
+    raise SystemExit(run_script('lcm-logger', sys.argv[1:]))
+
+def run_logplayer():
+    raise SystemExit(run_script('lcm-logplayer', sys.argv[1:]))
+
+def run_logplayer_gui():
+    raise SystemExit(run_script('lcm-logplayer-gui', sys.argv[1:]))
+
+def run_sink():
+    raise SystemExit(run_script('lcm-sink', sys.argv[1:]))
+
+def run_source():
+    raise SystemExit(run_script('lcm-source', sys.argv[1:]))
+
+def run_spy():
+    raise SystemExit(run_script('lcm-spy', sys.argv[1:]))
+
+def run_tester():
+    raise SystemExit(run_script('lcm-tester', sys.argv[1:]))
