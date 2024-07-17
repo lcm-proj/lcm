@@ -1,4 +1,4 @@
-doxygen = find_program('doxygen')
+doxygen = find_program('doxygen', required : false)
 if not doxygen.found()
   warning('Doxygen was not found; documentation generation will be incomplete')
 endif
