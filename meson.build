@@ -3,7 +3,8 @@ project('lcm', 'c', 'cpp',
   default_options : ['default_library=static',
                      'buildtype=release',
                      'c_std=gnu99',
-                     'c_args=-Wall -Wshadow -Wuninitialized -Wunused-variable -Werror=return-type -Wno-unused-parameter -Wno-format-zero-length'])
+                     'warning_level=0',
+                     'c_args=-Wno-format-zero-length -Wno-unused-result'])
 
 # Dependencies
 glib_dep = dependency('glib-2.0')
