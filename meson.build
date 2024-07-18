@@ -35,7 +35,7 @@ if get_option('lcm_enable_python').enabled()
   subdir('lcm-python')
 endif
 
-# Java
+# Java (Work in progress)
 if get_option('lcm_enable_java').enabled()
   add_languages('java')
   subdir('lcm-java')
