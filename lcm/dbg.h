@@ -104,10 +104,9 @@ extern "C" {
 { DBG_14, _BBLUE_ }, \
 { DBG_15, _BMAGENTA_ }, \
 { DBG_16, _BWHITE_ } \
-// clang-format on
+    // clang-format on
 
-#define DBG_ENV     "LCM_DBG"
-
+#define DBG_ENV "LCM_DBG"
 
 // ===================  do not modify after this line ==================
 
@@ -124,29 +123,21 @@ typedef struct dbg_mode_color {
     const char *color;
 } dbg_mode_color_t;
 
+static dbg_mode_color_t dbg_colortab[] = {DBG_COLORTAB};
 
-static dbg_mode_color_t dbg_colortab[] = {
-    DBG_COLORTAB
-};
+static dbg_mode_t dbg_nametab[] = {DBG_NAMETAB};
 
-static dbg_mode_t dbg_nametab[] = {
-    DBG_NAMETAB
-};
-
-static inline 
-const char* DCOLOR(unsigned long long d_mode)
+static inline const char *DCOLOR(unsigned long long d_mode)
 {
     dbg_mode_color_t *mode;
 
-    for (mode = dbg_colortab; mode->d_mode != 0; mode++)
-    {
+    for (mode = dbg_colortab; mode->d_mode != 0; mode++) {
         if (mode->d_mode & d_mode)
             return mode->color;
     }
 
     return _BWHITE_;
 }
-
 
 static void dbg_init()
 {
@@ -162,33 +153,31 @@ static void dbg_init()
         char env[256];
         strncpy(env, dbg_env, sizeof(env));
         env[sizeof(env) - 1] = '\0';
-        for (char *name = strtok(env,","); name; name = strtok(NULL, ",")) {
+        for (char *name = strtok(env, ","); name; name = strtok(NULL, ",")) {
             int cancel;
             dbg_mode_t *mode;
 
             if (*name == '-') {
                 cancel = 1;
                 name++;
-            }
-            else
+            } else
                 cancel = 0;
 
             for (mode = dbg_nametab; mode->d_name != NULL; mode++)
                 if (strcmp(name, mode->d_name) == 0)
                     break;
             if (mode->d_name == NULL) {
-                fprintf(stderr, "Warning: Unknown debug option: "
-                        "\"%s\"\n", name);
+                fprintf(stderr,
+                        "Warning: Unknown debug option: "
+                        "\"%s\"\n",
+                        name);
                 return;
             }
 
-            if (cancel) 
-            {
+            if (cancel) {
                 dbg_modes &= ~mode->d_mode;
-            }
-            else
-            {
-                dbg_modes = dbg_modes | mode->d_mode;    
+            } else {
+                dbg_modes = dbg_modes | mode->d_mode;
             }
         }
     }
@@ -196,28 +185,32 @@ static void dbg_init()
 
 #ifndef NO_DBG
 
-#define dbg(mode, ...) { \
-    if( !dbg_initiated) dbg_init(); \
-    if( dbg_modes & (mode) ) { \
-        printf("%s", DCOLOR(mode)); \
-        printf(__VA_ARGS__); \
-        printf(_NORMAL_); \
-    } \
-}
+#define dbg(mode, ...)                  \
+    {                                   \
+        if (!dbg_initiated)             \
+            dbg_init();                 \
+        if (dbg_modes & (mode)) {       \
+            printf("%s", DCOLOR(mode)); \
+            printf(__VA_ARGS__);        \
+            printf(_NORMAL_);           \
+        }                               \
+    }
 #define dbg_active(mode) (dbg_modes & (mode))
 
 #else
 
-#define dbg(mode, ...) 
+#define dbg(mode, ...)
 #define dbg_active(mode) false
-#define cdbg(mode,color,dtag,arg) 
+#define cdbg(mode, color, dtag, arg)
 
 #endif
 
-#define cprintf(color, ...) { printf(color); printf(__VA_ARGS__); \
-    printf(_NORMAL_); }
-
-
+#define cprintf(color, ...)  \
+    {                        \
+        printf(color);       \
+        printf(__VA_ARGS__); \
+        printf(_NORMAL_);    \
+    }
 
 #ifdef __cplusplus
 }
