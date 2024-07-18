@@ -4,7 +4,7 @@ project('lcm', 'c', 'cpp',
                      'buildtype=release',
                      'c_std=gnu99',
                      'warning_level=0',
-                     'c_args=-Wno-format-zero-length -Wno-unused-result'])
+                     'c_args=-Wno-format-zero-length'])
 
 # Dependencies
 glib_dep = dependency('glib-2.0')
