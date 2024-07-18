@@ -10,9 +10,14 @@ project('lcm', 'c', 'cpp',
 glib_dep = dependency('glib-2.0')
 
 # Core modules
+# lcm-gen compiles with warnings that cannot be disabled when lcm is used
+# as a Meson subproject in a parent project with more warnings enabled. Allow
+# parent projects to disable compilation of lcm-gen to fix warnings as needed.
 subdir('lcm')
-subdir('lcmgen')
 subdir('lcm-logger')
+if get_option('lcm_enable_lcmgen').enabled()
+  subdir('lcmgen')
+endif
 
 # Documentation (Main, C/C++, .NET)
 subdir('docs')
