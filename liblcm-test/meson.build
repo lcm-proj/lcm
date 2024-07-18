@@ -1,6 +1,7 @@
 if windows
-  wsock32 = dependency('wsock32')
-  ws2_32 = dependency('ws2_32')
+  cpp = meson.get_compiler('cpp')
+  wsock32 = cpp.find_library('wsock32')
+  ws2_32 = cpp.find_library('ws2_32')
 endif
 
 lcm_sink_exe = executable('lcm-sink', 'lcm-sink.c',
