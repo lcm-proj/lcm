@@ -200,7 +200,7 @@ jobs:
           make doc
 
       - name: Archive Docs
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: archived-docs
           path: build/docs/_build
