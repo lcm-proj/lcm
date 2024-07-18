@@ -1,0 +1,96 @@
+name: test_meson
+
+on: [push, pull_request]
+
+jobs:
+
+  ubuntu:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, ubuntu-22.04]
+        build_type: [Debug, Release]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        sudo apt install liblua5.3-dev lua5.3 libjchart2d-java libglib2.0-dev meson
+
+    - name: Setup Meson
+      run: meson setup ${{github.workspace}}/build
+
+    - name: Build
+      run: ninja -C ${{github.workspace}}/build
+
+  fedora:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build and Start Container
+      run: |
+        docker build -f docker/Dockerfile.fedora -t lcm-fedora docker
+        docker run -v $(pwd):/work -d --rm -it --name lcm-fedora lcm-fedora /bin/bash
+
+    - name: Setup Build 
+      run: docker exec lcm-fedora meson setup ${{github.workspace}}/build
+
+    - name: Build
+      run: docker exec lcm-fedora ninja -C ${{github.workspace}}/build
+
+  macos:
+    strategy:
+      matrix:
+        os: [macos-13, macos-14]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        brew install lua meson
+
+    - name: Setup Meson
+      run: meson setup ${{github.workspace}}/build
+
+    - name: Build
+      run: ninja -C ${{github.workspace}}/build
+
+  windows:
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: mingw64
+        update: false
+        install: >-
+          git
+          make
+        pacboy: >-
+          toolchain:p
+          cmake:p
+          glib2:p
+          gtest:p
+          meson:p
+  
+    - name: Setup Meson
+      run: meson setup build
+
+    - name: Build
+      run: ninja -C build
