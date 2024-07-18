@@ -191,7 +191,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          sudo apt install doxygen liblua5.4-dev lua5.4 python3-sphinx-rtd-theme python3-sphinx python3-myst-parser
+          sudo apt install doxygen liblua5.4-dev lua5.4 python3-sphinx-rtd-theme python3-sphinx python3-myst-parser libglib2.0-dev
 
       - name: Build Docs
         run: |
