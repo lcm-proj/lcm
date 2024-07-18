@@ -6,12 +6,12 @@ set -o pipefail
 IFS=$'\n\t'
 
 # Bash script to automatically format LCM source code (currently C and C++).
-# Requires `clang-format-12` utility, which is part of the LLVM project. More
+# Requires `clang-format-15` utility, which is part of the LLVM project. More
 # information can be found here: https://clang.llvm.org/docs/ClangFormat.html
 #
-# To install `clang-format-12` on Ubuntu do:
+# To install `clang-format-15` on Ubuntu do:
 #
-#     $ sudo apt install clang-format-12
+#     $ sudo apt install clang-format-15
 #
 # This script does not format Java, Python, or Lua source code. At the moment,
 # it only formats C and C++ sources, i.e., *.h, *.c, *.hpp, and *.cpp. It only
@@ -33,7 +33,7 @@ LCM_FORMAT_DIRS=(
     "${LCM_ROOT}/test:/gtest/"
 )
 
-CLANG_FORMAT="clang-format-12"
+CLANG_FORMAT="clang-format-15"
 
 # Function: show_usage
 #

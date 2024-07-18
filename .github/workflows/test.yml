@@ -207,14 +207,14 @@ jobs:
           path: build/docs/_build
 
   formatting:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Install Dependencies
         run: |
-          sudo apt install clang-format-12
+          sudo apt install clang-format-15
 
       - name: Check formatting
         run: |
