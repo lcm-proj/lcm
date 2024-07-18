@@ -9,6 +9,15 @@ project('lcm', 'c', 'cpp',
 # Dependencies
 glib_dep = dependency('glib-2.0')
 
+# set windows dependencies
+unix = host_machine.system() != 'windows'
+windows = not unix
+if windows
+  cpp = meson.get_compiler('cpp')
+  wsock32 = cpp.find_library('wsock32')
+  ws2_32 = cpp.find_library('ws2_32')
+endif
+
 # Core modules
 # lcm-gen compiles with warnings that cannot be disabled when lcm is used
 # as a Meson subproject in a parent project with more warnings enabled. Allow

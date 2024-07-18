@@ -1,9 +1,3 @@
-if windows
-  cpp = meson.get_compiler('cpp')
-  wsock32 = cpp.find_library('wsock32')
-  ws2_32 = cpp.find_library('ws2_32')
-endif
-
 lcm_sink_exe = executable('lcm-sink', 'lcm-sink.c',
   dependencies : lcm_lib_dep,
   install : true)
