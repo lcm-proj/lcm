@@ -21,6 +21,14 @@ release or the latest `master`, we recommend referring to the copy of this
 document (`docs/content/build-instructions.md`) found in your source
 distribution.
 
+## Installing the Python module
+
+To build the Python module from source and install it, run:
+
+```
+pip3 install -v .
+```
+
 ## CMake Overview
 
 These instructions assume that you will build in a directory named `build` as
