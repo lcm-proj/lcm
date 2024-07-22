@@ -29,7 +29,8 @@ endif
 if windows
   lcm_lib = shared_library('lcm', lcm_sources,
     dependencies : [glib_dep, wsock32, ws2_32],
-    c_args : '-Dlcm_EXPORTS')
+    c_args : '-Dlcm_EXPORTS',
+    install : true)
   lcm_lib_dep = declare_dependency(
     link_with : lcm_lib,
     dependencies : [glib_dep, wsock32, ws2_32],
@@ -43,7 +44,8 @@ if windows
     include_directories : include_directories('..'))
 else
   lcm_lib = shared_library('lcm', lcm_sources,
-    dependencies : glib_dep)
+    dependencies : glib_dep,
+    install : true)
   lcm_lib_dep = declare_dependency(
     link_with : lcm_lib,
     dependencies : glib_dep,
