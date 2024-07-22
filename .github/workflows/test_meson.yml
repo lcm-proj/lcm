@@ -102,7 +102,7 @@ jobs:
       run: meson setup build --prefix /mingw64/
 
     - name: Build
-      run: ninja --verbose -C build
+      run: ninja -C build
     
     - name: Install
       run: ninja install -C build
