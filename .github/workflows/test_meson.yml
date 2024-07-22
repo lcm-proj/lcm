@@ -25,6 +25,9 @@ jobs:
     - name: Build
       run: ninja -C ${{github.workspace}}/build
 
+    - name: Test
+      run : '${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
+
   fedora:
     runs-on: ubuntu-24.04
 
@@ -36,11 +39,14 @@ jobs:
         docker build -f docker/Dockerfile.fedora -t lcm-fedora docker
         docker run -v $(pwd):/work -d --rm -it --name lcm-fedora lcm-fedora /bin/bash
 
-    - name: Setup Build 
+    - name: Setup Meson
       run: docker exec lcm-fedora meson setup ${{github.workspace}}/build
 
     - name: Build
       run: docker exec lcm-fedora ninja -C ${{github.workspace}}/build
+
+    - name: Test
+      run : 'docker exec lcm-fedora ${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
 
   macos:
     strategy:
@@ -61,6 +67,9 @@ jobs:
 
     - name: Build
       run: ninja -C ${{github.workspace}}/build
+
+    - name: Test
+      run : '${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
 
   windows:
     strategy:
@@ -90,7 +99,14 @@ jobs:
           meson:p
   
     - name: Setup Meson
-      run: meson setup build
+      run: meson setup build --prefix /mingw64/
 
     - name: Build
       run: ninja --verbose -C build
+    
+    - name: Install
+      run: ninja install -C build
+
+    - name: Test
+      run : |
+        lcm-tester
