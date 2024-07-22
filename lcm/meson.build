@@ -23,7 +23,7 @@ lcm_sources = ['eventlog.c',
 
 if windows 
   lcm_sources += ['windows/WinLCM.cpp', 'windows/WinPorting.cpp']
-  install_headers('windows/WinPorting.h')
+  # install_headers('windows/WinPorting.h')
 endif
 
 if windows
