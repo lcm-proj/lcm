@@ -28,7 +28,8 @@ endif
 
 if windows
   lcm_lib = shared_library('lcm', lcm_sources,
-    dependencies : [glib_dep, wsock32, ws2_32])
+    dependencies : [glib_dep, wsock32, ws2_32],
+    c_args : '-Dlcm_EXPORTS')
   lcm_lib_dep = declare_dependency(
     link_with : lcm_lib,
     dependencies : [glib_dep, wsock32, ws2_32],
