@@ -37,3 +37,5 @@ lcm_buftest_receiver_exe = executable('lcm-buftest-receiver', 'buftest-receiver.
 
 lcm_buftest_sender_exe = executable('lcm-buftest-sender', 'buftest-sender.c',
   dependencies : [glib_dep, lcm_lib_dep])
+
+install_man(['lcm-example.1', 'lcm-sink.1', 'lcm-source.1', 'lcm-tester.1'])
