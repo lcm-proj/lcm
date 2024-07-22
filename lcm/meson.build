@@ -13,17 +13,17 @@ lcm_sources = ['eventlog.c',
                'udpm_util.c',
                'lcmtypes/channel_port_map_update_t.c',
                'lcmtypes/channel_to_port_t.c']
-# install_headers('eventlog.h',
-#                 'lcm.h',
-#                 'lcm_coretypes.h',
-#                 'lcm_version.h',
-#                 'lcm-cpp.hpp',
-#                 'lcm-cpp-impl.hpp',
-#                 'lcm_export.h')
+install_headers('eventlog.h',
+                'lcm.h',
+                'lcm_coretypes.h',
+                'lcm_version.h',
+                'lcm-cpp.hpp',
+                'lcm-cpp-impl.hpp',
+                'lcm_export.h')
 
 if windows 
   lcm_sources += ['windows/WinLCM.cpp', 'windows/WinPorting.cpp']
-  # install_headers('windows/WinPorting.h')
+  install_headers('windows/WinPorting.h')
 endif
 
 if windows
