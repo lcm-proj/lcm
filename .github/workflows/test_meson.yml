@@ -108,5 +108,4 @@ jobs:
       run: ninja install -C build
 
     - name: Test
-      run : |
-        lcm-tester
+      run : 'lcm-tester | grep "LCM: OK"'

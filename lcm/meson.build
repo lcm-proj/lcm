@@ -37,7 +37,8 @@ if windows
     include_directories : include_directories('..'))
 
   lcm_static_lib = static_library('lcm-static', lcm_sources,
-    dependencies : [glib_dep, wsock32, ws2_32])
+    dependencies : [glib_dep, wsock32, ws2_32],
+    install : true)
   lcm_static_lib_dep = declare_dependency(
     link_with : lcm_static_lib,
     dependencies : [glib_dep, wsock32, ws2_32],
@@ -52,7 +53,8 @@ else
     include_directories : include_directories('..'))
 
   lcm_static_lib = static_library('lcm-static', lcm_sources,
-    dependencies : glib_dep)
+    dependencies : glib_dep,
+    install : true)
   lcm_static_lib_dep = declare_dependency(
     link_with : lcm_static_lib,
     dependencies : glib_dep,
