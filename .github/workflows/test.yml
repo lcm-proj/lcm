@@ -170,7 +170,7 @@ jobs:
       run: cmake -B build -DPython_FIND_REGISTRY=NEVER
 
     - name: Build
-      run: cmake --build build
+      run: cmake --build build -v
 
     # Needs to be installed for the tests to be able to find DLLs.
     - name: Install
