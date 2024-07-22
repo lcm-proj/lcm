@@ -93,4 +93,4 @@ jobs:
       run: meson setup build
 
     - name: Build
-      run: ninja -C build
+      run: ninja --verbose -C build
