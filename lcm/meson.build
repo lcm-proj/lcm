@@ -35,12 +35,12 @@ if windows
     dependencies : [glib_dep, wsock32, ws2_32],
     include_directories : include_directories('..'))
 
-  # lcm_static_lib = static_library('lcm-static', lcm_sources,
-  #   dependencies : [glib_dep, wsock32, ws2_32])
-  # lcm_static_lib_dep = declare_dependency(
-  #   link_with : lcm_static_lib,
-  #   dependencies : [glib_dep, wsock32, ws2_32],
-  #   include_directories : include_directories('..'))
+  lcm_static_lib = static_library('lcm-static', lcm_sources,
+    dependencies : [glib_dep, wsock32, ws2_32])
+  lcm_static_lib_dep = declare_dependency(
+    link_with : lcm_static_lib,
+    dependencies : [glib_dep, wsock32, ws2_32],
+    include_directories : include_directories('..'))
 else
   lcm_lib = shared_library('lcm', lcm_sources,
     dependencies : glib_dep)
