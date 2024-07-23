@@ -19,7 +19,8 @@ install_headers('eventlog.h',
                 'lcm_version.h',
                 'lcm-cpp.hpp',
                 'lcm-cpp-impl.hpp',
-                'lcm_export.h')
+                'lcm_export.h',
+                subdir : 'lcm')
 
 if windows 
   lcm_sources += ['windows/WinLCM.cpp', 'windows/WinPorting.cpp']
