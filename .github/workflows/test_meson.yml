@@ -29,7 +29,7 @@ jobs:
       run : '${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
 
     - name: Install
-      run : sudo ninja -C build install
+      run : sudo ninja -C ${{github.workspace}}/build install
 
     - name : Build C Example
       working-directory: ${{github.workspace}}/examples/c
@@ -58,12 +58,12 @@ jobs:
       run : 'docker exec lcm-fedora ${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
 
     - name: Install
-      run : docker exec lcm-fedora ninja -C build install
+      run : docker exec lcm-fedora ninja -C ${{github.workspace}}/build install
 
     - name : Build C Example
       run: |
-        docker exec lcm-fedora --workdir examples/c meson setup build
-        docker exec lcm-fedora --workdir examples/c ninja -C build
+        docker exec lcm-fedora --workdir ${{github.workspace}}/examples/c meson setup build
+        docker exec lcm-fedora --workdir ${{github.workspace}}/examples/c ninja -C build
 
   macos:
     strategy:
@@ -89,7 +89,7 @@ jobs:
       run : '${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
 
     - name: Install
-      run : sudo ninja -C build install
+      run : sudo ninja -C ${{github.workspace}}/build install
 
     - name : Build C Example
       working-directory: ${{github.workspace}}/examples/c
