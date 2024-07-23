@@ -37,6 +37,19 @@ jobs:
         meson setup build
         ninja -C build
 
+    - name: Build C++ Example
+      working-directory: ${{github.workspace}}/examples/cpp
+      run: |
+        meson setup build
+        ninja -C build
+
+    - name: Build and Run C++ Log Writer Example
+      working-directory: ${{github.workspace}}/examples/cpp/lcm_log_writer
+      run: |
+        meson setup build
+        ninja -C build
+        LD_LIBRARY_PATH=/usr/local/lib/ build/lcm_log_writer build/example.log
+
   fedora:
     runs-on: ubuntu-24.04
 
@@ -64,6 +77,18 @@ jobs:
       run: |
         docker exec --workdir /work/examples/c lcm-fedora meson setup build
         docker exec --workdir /work/examples/c lcm-fedora ninja -C build
+
+    - name: Build C++ Example
+      run: |
+        docker exec --workdir /work/examples/cpp lcm-fedora meson setup build
+        docker exec --workdir /work/examples/cpp lcm-fedora ninja -C build
+
+    - name: Build and Run C++ Log Writer Example
+      working-directory: ${{github.workspace}}/examples/cpp/lcm_log_writer
+      run: |
+        docker exec --workdir /work/examples/cpp/lcm_log_writer lcm-fedora meson setup build
+        docker exec --workdir /work/examples/cpp/lcm_log_writer lcm-fedora ninja -C build
+        docker exec --workdir /work/examples/cpp/lcm_log_writer -e LD_LIBRARY_PATH=/usr/local/lib64/ lcm-fedora build/lcm_log_writer build/example.log
 
   macos:
     strategy:
@@ -96,6 +121,19 @@ jobs:
       run: |
         meson setup build
         ninja -C build
+
+    - name: Build C++ Example
+      working-directory: ${{github.workspace}}/examples/cpp
+      run: |
+        meson setup build
+        ninja -C build
+
+    - name: Build and Run C++ Log Writer Example
+      working-directory: ${{github.workspace}}/examples/cpp/lcm_log_writer
+      run: |
+        meson setup build
+        ninja -C build
+        build/lcm_log_writer build/example.log
 
   windows:
     strategy:
