@@ -62,8 +62,8 @@ jobs:
 
     - name : Build C Example
       run: |
-        docker exec lcm-fedora --workdir ${{github.workspace}}/examples/c meson setup build
-        docker exec lcm-fedora --workdir ${{github.workspace}}/examples/c ninja -C build
+        docker exec --workdir /work/examples/c lcm-fedora meson setup build
+        docker exec --workdir /work/examples/c lcm-fedora ninja -C build
 
   macos:
     strategy:
@@ -135,9 +135,3 @@ jobs:
 
     - name: Test
       run : 'lcm-tester | grep "LCM: OK"'
-
-    - name : Build C Example
-      run: |
-        cd examples/c
-        meson setup build
-        ninja -C build
