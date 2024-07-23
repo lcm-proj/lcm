@@ -28,6 +28,12 @@ jobs:
     - name: Test
       run : '${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
 
+    - name : Build C Example
+      working-directory: ${{github.workspace}}/examples/c
+      run: |
+        meson setup build
+        ninja -C build
+
   fedora:
     runs-on: ubuntu-24.04
 
@@ -47,6 +53,11 @@ jobs:
 
     - name: Test
       run : 'docker exec lcm-fedora ${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
+
+    - name : Build C Example
+      run: |
+        docker exec --workdir examples/c meson setup build
+        docker exec --workdir examples/c ninja -C build
 
   macos:
     strategy:
@@ -70,6 +81,12 @@ jobs:
 
     - name: Test
       run : '${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
+
+    - name : Build C Example
+      working-directory: ${{github.workspace}}/examples/c
+      run: |
+        meson setup build
+        ninja -C build
 
   windows:
     strategy:
@@ -109,3 +126,9 @@ jobs:
 
     - name: Test
       run : 'lcm-tester | grep "LCM: OK"'
+
+    - name : Build C Example
+      run: |
+        cd examples/c
+        meson setup build
+        ninja -C build
