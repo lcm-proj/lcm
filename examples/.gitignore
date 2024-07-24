@@ -9,6 +9,14 @@
 /c/exlcm_example_t.c
 /c/exlcm_example_t.h
 /c/listener-async
+/c/exlcm_example_list_t.c
+/c/exlcm_example_list_t.h
+/c/exlcm_exampleconst_t.c
+/c/exlcm_exampleconst_t.h
+/c/exlcm_muldim_array_t.c
+/c/exlcm_muldim_array_t.h
+/c/exlcm_node_t.c
+/c/exlcm_node_t.h
 /cpp/lcm_log_writer/pronto/
 /java/temperature_demo_java/lcmtypes/
 !/go/listener/
