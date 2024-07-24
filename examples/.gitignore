@@ -9,5 +9,6 @@
 /c/exlcm_example_t.c
 /c/exlcm_example_t.h
 /c/listener-async
+/cpp/lcm_log_writer/pronto/
 /java/temperature_demo_java/lcmtypes/
 !/go/listener/
