@@ -79,3 +79,14 @@ endif
 if not get_option('lcm_install_pkgconfig').disabled()
   subdir('lcm-pkgconfig')
 endif
+
+summary({'Build test and example programs': get_option('lcm_enable_examples'),
+        'Build Python bindings and utilities': get_option('lcm_enable_python'),
+        'Build Java bindings and utilities': get_option('lcm_enable_java'),
+        'Build Lua bindings and utilities': get_option('lcm_enable_lua'),
+        'Build unit tests': get_option('lcm_enable_tests'),
+        'Install autotools support M4 macros': get_option('lcm_install_m4macros'),
+        'Install pkg-config files': get_option('lcm_install_pkgconfig'),
+        'Build shared libraries': get_option('build_shared_libs'),
+        'Build lcmgen core modules': get_option('lcm_enable_lcmgen'),
+        }, section : 'Options')
