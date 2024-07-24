@@ -28,8 +28,9 @@ if get_option('lcm_enable_lcmgen').enabled()
   subdir('lcmgen')
 endif
 
+# Not implemented yet
 # Documentation (Main, C/C++, .NET)
-subdir('docs')
+# subdir('docs')
 
 # Doesn't seem to compile examples but compiles tests?
 # We don't want to compile examples, which makes this option misleading, but it
