@@ -24,7 +24,7 @@ endif
 # parent projects to disable compilation of lcm-gen to fix warnings as needed.
 subdir('lcm')
 subdir('lcm-logger')
-if get_option('lcm_enable_lcmgen').enabled()
+if not get_option('lcm_enable_lcmgen').disabled()
   subdir('lcmgen')
 endif
 
@@ -36,17 +36,17 @@ endif
 # We don't want to compile examples, which makes this option misleading, but it
 # is how it is in the CMakeLists.txt file.
 # Examples
-if get_option('lcm_enable_examples').enabled()
+if not get_option('lcm_enable_examples').disabled()
   subdir('liblcm-test')
 endif
 
 # Python
-if get_option('lcm_enable_python').enabled()
+if not get_option('lcm_enable_python').disabled()
   subdir('lcm-python')
 endif
 
 # Java (Work in progress)
-if get_option('lcm_enable_java').enabled()
+if not get_option('lcm_enable_java').disabled()
   add_languages('java')
   subdir('lcm-java')
   # add_custom_target(['lcm-spy', 'DEPENDS', 'lcm-spy-alias'])
@@ -54,22 +54,22 @@ if get_option('lcm_enable_java').enabled()
 endif
 
 # Lua
-if get_option('lcm_enable_lua').enabled()
+if not get_option('lcm_enable_lua').disabled()
   subdir('lcm-lua')
 endif
 
 # Disabled because require pro meson wizardry to support without user-defined functions
 # Unit tests
-# if get_option('lcm_enable_tests').enabled()
+# if not get_option('lcm_enable_tests').disabled()
 #   subdir('test')
 # endif
 
 # M4 Macros
-if get_option('lcm_install_m4macros').enabled()
+if not get_option('lcm_install_m4macros').disabled()
   subdir('m4macros')
 endif
 
 # pkg-config
-if get_option('lcm_install_pkgconfig').enabled()
+if not get_option('lcm_install_pkgconfig').disabled()
   subdir('lcm-pkgconfig')
 endif
