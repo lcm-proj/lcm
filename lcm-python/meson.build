@@ -8,7 +8,6 @@ if windows
   lcm_python_lib = py_installation.extension_module('lcm-python', lcm_python_sources,
     dependencies : lcm_static_lib_dep,
     include_directories : include_directories(python_include),
-    name_suffix : '.pyd',
     install : true)
 elif host_machine.system() == 'darwin' #macos
   lcm_python_lib = py_installation.extension_module('lcm-python', lcm_python_sources,
