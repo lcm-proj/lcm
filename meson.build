@@ -40,7 +40,8 @@ if not get_option('lcm_enable_examples').disabled()
   subdir('liblcm-test')
 endif
 
-# Python
+# Python (Work in progress)
+# Currently doesn't compile for Windows
 if not get_option('lcm_enable_python').disabled()
   pymod = import('python', required : get_option('lcm_enable_python'))
   if pymod.found()
@@ -49,6 +50,7 @@ if not get_option('lcm_enable_python').disabled()
 endif
 
 # Java (Work in progress)
+# Not working and need jchart2d dependencies or subproject build
 # if not get_option('lcm_enable_java').disabled()
 #   add_languages('java')
 #   subdir('lcm-java')
