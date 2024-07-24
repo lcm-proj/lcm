@@ -42,7 +42,10 @@ endif
 
 # Python
 if not get_option('lcm_enable_python').disabled()
-  subdir('lcm-python')
+  pymod = import('python', required : get_option('lcm_enable_python'))
+  if pymod.found()
+    subdir('lcm-python')
+  endif
 endif
 
 # Java (Work in progress)
@@ -55,7 +58,10 @@ endif
 
 # Lua
 if not get_option('lcm_enable_lua').disabled()
-  subdir('lcm-lua')
+  lua_dep = dependency('lua', required : get_option('lcm_enable_lua'))
+  if lua_dep.found()
+    subdir('lcm-lua')
+  endif
 endif
 
 # Disabled because require pro meson wizardry to support without user-defined functions
