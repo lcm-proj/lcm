@@ -11,23 +11,21 @@ example_messages_c_lib = library('example_messages-c',
                                   example_messages_source,
                                   dependencies : lcm_dep)
 
-listener_exe = executable('listener',
-  'listener.c',
-  link_with : example_messages_c_lib,
-  dependencies : lcm_dep)
-listener_async_exe = executable('listener-async',
-  'listener-async.c',
-  link_with : example_messages_c_lib,
-  dependencies : lcm_dep)
-listener_glib_exe = executable('listener-glib',
-  'listener-glib.c',
-  link_with : example_messages_c_lib,
-  dependencies : [lcm_dep, glib_dep])
-send_message_exe = executable('send_message',
-  'send_message.c',
-  link_with : example_messages_c_lib,
-  dependencies : lcm_dep)
-read_log_exe = executable('read_log',
-  'read_log.c',
-  link_with : example_messages_c_lib,
-  dependencies : lcm_dep)
+example_messages_c_dep = declare_dependency(link_with : example_messages_c_lib,
+                                            dependencies : lcm_dep)
+
+executable('listener',
+           'listener.c',
+           dependencies : example_messages_c_dep)
+executable('listener-async',
+           'listener-async.c',
+           dependencies : example_messages_c_dep)
+executable('listener-glib',
+           'listener-glib.c',
+           dependencies : [example_messages_c_dep, glib_dep])
+executable('send_message',
+           'send_message.c',
+           dependencies : example_messages_c_dep)
+executable('read_log',
+           'read_log.c',
+           dependencies : example_messages_c_dep)
