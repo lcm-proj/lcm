@@ -1,4 +1,3 @@
-pymod = import('python')
 py_installation = pymod.find_installation()
 python_site = py_installation.get_path('platlib').replace(py_installation.get_path('data') / '', '')
 python_include = py_installation.get_path('include')
