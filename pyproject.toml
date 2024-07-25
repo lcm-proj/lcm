@@ -43,3 +43,10 @@ filterwarnings = ["error"]
 
 [tool.cibuildwheel]
 build-verbosity = 1
+
+[tool.cibuildwheel.linux]
+before-all = "yum install java-1.8.0-openjdk-devel -y"
+
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux*"
+before-all = ""
