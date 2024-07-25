@@ -1,7 +1,6 @@
 build*/
 __pycache__
 docs/_build/
-meson/
 
 .vscode/
 .idea/
