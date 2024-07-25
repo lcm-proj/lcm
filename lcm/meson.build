@@ -22,36 +22,26 @@ install_headers('eventlog.h',
                 'lcm_export.h',
                 subdir : 'lcm')
 
+lcm_extra_deps = []
+lcm_c_args = []
 if windows 
   lcm_sources += ['windows/WinLCM.cpp', 'windows/WinPorting.cpp']
   install_headers('windows/WinPorting.h')
+  lcm_extra_deps = [wsock32, ws2_32]
+  lcm_c_args = ['-Dlcm_EXPORTS']
 endif
 
-if windows
-  lcm_lib = both_libraries('lcm', lcm_sources,
-    dependencies : [glib_dep, wsock32, ws2_32],
-    c_args : '-Dlcm_EXPORTS',
-    install : true)
-  lcm_lib_dep = declare_dependency(
-    link_with : lcm_lib.get_shared_lib(),
-    dependencies : [glib_dep, wsock32, ws2_32],
-    include_directories : include_directories('..'))
-  lcm_static_lib_dep = declare_dependency(
-    link_with : lcm_lib.get_static_lib(),
-    dependencies : [glib_dep, wsock32, ws2_32],
-    include_directories : include_directories('..'))
-else
-  lcm_lib = both_libraries('lcm', lcm_sources,
-    dependencies : glib_dep,
-    install : true)
-  lcm_lib_dep = declare_dependency(
-    link_with : lcm_lib.get_shared_lib(),
-    dependencies : glib_dep,
-    include_directories : include_directories('..'))
-  lcm_static_lib_dep = declare_dependency(
-    link_with : lcm_lib.get_static_lib(),
-    dependencies : glib_dep,
-    include_directories : include_directories('..'))
-endif
+lcm_lib = both_libraries('lcm', lcm_sources,
+  dependencies : [glib_dep] + lcm_extra_deps,
+  c_args : lcm_c_args,
+  install : true)
+lcm_lib_dep = declare_dependency(
+  link_with : lcm_lib.get_shared_lib(),
+  dependencies : [glib_dep] + lcm_extra_deps,
+  include_directories : include_directories('..'))
+lcm_static_lib_dep = declare_dependency(
+  link_with : lcm_lib.get_static_lib(),
+  dependencies : [glib_dep] + lcm_extra_deps,
+  include_directories : include_directories('..'))
 
 lcm_coretypes_lib = declare_dependency() # 'lcm-coretypes'
