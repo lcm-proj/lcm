@@ -39,14 +39,15 @@ if not get_option('lcm_enable_examples').disabled()
   subdir('liblcm-test')
 endif
 
-### Extra modules ###
-# Python (Work in progress)
-# Currently doesn't compile for Windows
+### Extra modules (Work in progress / not working) ###
+# Python
+# Currently doesn't compile for Windows and creates ImportError everywhere
 subdir('lcm-python')
-# Java (Work in progress)
-# Not working and need jchart2d dependencies or subproject build
+# Java
+# Needs jchart2d dependencies or subproject build
 subdir('lcm-java')
 # Lua
+# Errors loading module
 subdir('lcm-lua')
 
 # Disabled because require pro meson wizardry to support without user-defined functions
