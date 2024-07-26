@@ -15,9 +15,13 @@ else
 endif
 
 if not is_disabler(proceed_build)
-  lcm_lua_lib = library('lcm-lua', lcm_lua_sources,
-    c_args : '-Wextra',
+  lua_version = '.'.join(lua_dep.version().split('.')[0], lua_dep.version().split('.')[1])
+  lua_libdir = '/usr' / get_option('libdir') / 'lua' /  lua_version
+  lcm_lua_lib = library('lcm', lcm_lua_sources,
+    c_args : ['-Wextra', '-Dlcm_lua_EXPORTS'],
     dependencies : [lcm_lib_dep, lua_dep],
+    name_prefix : '',
+    install_dir: lua_libdir,
     install : true)
 endif
 
