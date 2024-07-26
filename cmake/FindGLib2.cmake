@@ -70,6 +70,24 @@ endfunction()
 
 ###############################################################################
 
+find_package(PkgConfig)
+
+if(${PkgConfig_FOUND})
+
+  pkg_check_modules(GLIB glib-2.0)
+
+  if(${GLIB_FOUND})
+    add_library(GLib2::glib UNKNOWN IMPORTED)
+    set_target_properties(GLib2::glib PROPERTIES
+      IMPORTED_LOCATION "${pkgcfg_lib_GLIB_glib-2.0}"
+      INTERFACE_COMPILE_OPTIONS "${GLIB_CFLAGS_OTHER}"
+      INTERFACE_INCLUDE_DIRECTORIES "${GLIB_INCLUDE_DIRS}"
+    )
+    return()
+  endif()
+
+endif()
+
 _glib2_find_library(GLIB glib)
 _glib2_find_include(GLIB glib.h)
 _glib2_find_include(GLIBCONFIG glibconfig.h GLIB)
