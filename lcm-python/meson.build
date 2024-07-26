@@ -15,13 +15,14 @@ else
 endif
 
 if not is_disabler(proceed_build)
-  py_installation = pymod.find_installation(pure : false)
+  py_installation = pymod.find_installation()
+  python_site = py_installation.get_path('platlib').replace(py_installation.get_path('data') / '', '')
   python_include = py_installation.get_path('include')
   if windows
     # lcm_python_lib = py_installation.extension_module('_lcm', lcm_python_sources,
     #   dependencies : lcm_static_lib_dep,
     #   include_directories : include_directories(python_include),
-    #   subdir : 'lcm',
+    #   install_dir : python_site / 'lcm',
     #   install : true)
     error_messages += ['Python not currently supported in this LCM build for Windows! Not building.']
   elif host_machine.system() == 'darwin' #macos
@@ -29,17 +30,17 @@ if not is_disabler(proceed_build)
       dependencies : lcm_static_lib_dep,
       include_directories : include_directories(python_include),
       link_args : '-undefined dynamic_lookup -Wl,-no_fixup_chains',
-      subdir : 'lcm',
+      install_dir : python_site / 'lcm',
       install : true)
   else
     lcm_python_lib = py_installation.extension_module('_lcm', lcm_python_sources,
       dependencies : lcm_static_lib_dep,
       include_directories : include_directories(python_include),
-      subdir : 'lcm',
+      install_dir : python_site / 'lcm',
       install : true)
   endif
 
-  py_installation.install_sources('lcm/__init__.py', subdir : 'lcm',)
+  py_installation.install_sources('lcm/__init__.py', subdir : 'lcm', pure : false)
 endif
 
 summary({'Build Python bindings and utilities' : not is_disabler(proceed_build)},
