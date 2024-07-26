@@ -21,15 +21,15 @@ if not is_disabler(proceed_build)
     c_args : ['-Wextra', '-Dlcm_lua_EXPORTS'],
     dependencies : [lcm_lib_dep, lua_dep],
     name_prefix : '',
-    install_dir: lua_libdir,
+    install_dir : lua_libdir,
     install : true)
 endif
 
-summary({'Build Lua bindings and utilities': not is_disabler(proceed_build)},
+summary({'Build Lua bindings and utilities' : not is_disabler(proceed_build)},
         section: 'Options',
         bool_yn: true)
 if error_messages.length() > 0
-    summary({'- Build Lua bindings and utilities error(s)': error_messages},
+    summary({'- Build Lua bindings and utilities error(s)' : error_messages},
         section: 'Options')
 endif
 
