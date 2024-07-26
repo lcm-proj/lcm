@@ -1,7 +1,6 @@
 project('lcm', 'c', 'cpp',
   version : '1.5.0',
-  default_options : ['default_library=static',
-                     'buildtype=release',
+  default_options : ['buildtype=release',
                      'c_std=gnu99',
                      'warning_level=0',
                      'c_args=-Wno-format-zero-length'])
@@ -70,7 +69,6 @@ enabled_options = {'Build test and example programs': get_option('lcm_enable_exa
                     'Build unit tests': get_option('lcm_enable_tests'),
                     'Install autotools support M4 macros': get_option('lcm_install_m4macros'),
                     'Install pkg-config files': get_option('lcm_install_pkgconfig'),
-                    'Build shared libraries': get_option('build_shared_libs'),
                     'Build lcmgen core modules': get_option('lcm_enable_lcmgen')}
 
 summary_reference = {}
