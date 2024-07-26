@@ -22,7 +22,7 @@ if not is_disabler(proceed_build)
     dependencies : [lcm_lib_dep, lua_dep],
     name_prefix : '',
     # install_dir : lua_libdir,
-    install_dir : 'lua' / lua_version,
+    install_dir : get_option('libdir') / 'lua' / lua_version,
     install : true)
 endif
 
