@@ -22,11 +22,6 @@ jobs:
         uses: pypa/cibuildwheel@v2.19.1
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_deployment_target }}
-        #    ...
-        # with:
-        #   package-dir: .
-        #   output-dir: wheelhouse
-        #   config-file: "{package}/pyproject.toml"
 
       - uses: actions/upload-artifact@v4
         with:
