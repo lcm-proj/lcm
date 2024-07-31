@@ -258,6 +258,7 @@ static void emit_header_start(lcmgen_t *lcmgen, FILE *f, lcm_struct_t *structure
     char *tn_ = dots_to_underscores(tn);
 
     emit_auto_generated_warning(f);
+    emit_comment(f, 0, structure->file_comment);
 
     fprintf(f, "#ifndef __%s_hpp__\n", tn_);
     fprintf(f, "#define __%s_hpp__\n", tn_);
@@ -847,9 +848,9 @@ int emit_cpp(lcmgen_t *lcmgen)
 {
     // iterate through all defined message types
     for (unsigned int i = 0; i < g_ptr_array_size(lcmgen->structs); i++) {
-        lcm_struct_t *lr = (lcm_struct_t *) g_ptr_array_index(lcmgen->structs, i);
+        lcm_struct_t *structure = (lcm_struct_t *) g_ptr_array_index(lcmgen->structs, i);
 
-        const char *tn = lr->structname->lctypename;
+        const char *tn = structure->structname->lctypename;
         char *tn_ = dots_to_slashes(tn);
 
         // compute the target filename
@@ -858,33 +859,33 @@ int emit_cpp(lcmgen_t *lcmgen)
             strlen(getopt_get_string(lcmgen->gopt, "cpp-hpath")) > 0 ? G_DIR_SEPARATOR_S : "", tn_);
 
         // generate code if needed
-        if (lcm_needs_generation(lcmgen, lr->lcmfile, header_name)) {
+        if (lcm_needs_generation(lcmgen, structure->lcmfile, header_name)) {
             make_dirs_for_file(header_name);
 
             FILE *f = fopen(header_name, "w");
             if (f == NULL)
                 return -1;
 
-            emit_header_start(lcmgen, f, lr);
-            emit_encode(lcmgen, f, lr);
-            emit_decode(lcmgen, f, lr);
-            emit_encoded_size(lcmgen, f, lr);
-            emit_get_hash(lcmgen, f, lr);
+            emit_header_start(lcmgen, f, structure);
+            emit_encode(lcmgen, f, structure);
+            emit_decode(lcmgen, f, structure);
+            emit_encoded_size(lcmgen, f, structure);
+            emit_get_hash(lcmgen, f, structure);
 
             // clang-format off
-            emit(0, "const char* %s::getTypeName()", lr->structname->shortname);
+            emit(0, "const char* %s::getTypeName()", structure->structname->shortname);
             emit(0, "{");
-            emit(1,     "return \"%s\";", lr->structname->shortname);
+            emit(1,     "return \"%s\";", structure->structname->shortname);
             emit(0, "}");
             emit(0, "");
             // clang-format on
 
-            emit_encode_nohash(lcmgen, f, lr);
-            emit_decode_nohash(lcmgen, f, lr);
-            emit_encoded_size_nohash(lcmgen, f, lr);
-            emit_compute_hash(lcmgen, f, lr);
+            emit_encode_nohash(lcmgen, f, structure);
+            emit_decode_nohash(lcmgen, f, structure);
+            emit_encoded_size_nohash(lcmgen, f, structure);
+            emit_compute_hash(lcmgen, f, structure);
 
-            emit_package_namespace_close(lcmgen, f, lr);
+            emit_package_namespace_close(lcmgen, f, structure);
             emit(0, "#endif");
 
             fclose(f);

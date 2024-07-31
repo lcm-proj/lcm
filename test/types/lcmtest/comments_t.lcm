@@ -1,3 +1,13 @@
+/* 
+ * File level comments come before the package statement. 
+Written by LCM contributors. 
+ * This goes directly bellow the generated with lcm statement.
+ * Documentation for the type should go on the struct itself.
+ */
+// Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+// labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
+// nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate
+// velit esse cillum dolore eu fugiat nulla pariatur.
 package // comments after package keyword
 lcmtest // comments after package name
 ;

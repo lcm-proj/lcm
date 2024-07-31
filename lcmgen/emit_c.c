@@ -100,62 +100,6 @@ static const char *map_type_name(const char *type_name)
     return dots_to_underscores(type_name);
 }
 
-void setup_c_options(getopt_t *gopt)
-{
-    getopt_add_string(gopt, 0, "c-cpath", ".", "Location for .c files");
-    getopt_add_string(gopt, 0, "c-hpath", ".", "Location for .h files");
-    getopt_add_string(gopt, 0, "c-export-include", "", "#include that provides the export symbol");
-    getopt_add_string(gopt, 0, "c-export-symbol", "", "ABI export decoration symbol");
-    getopt_add_string(gopt, 0, "cinclude", "", "Generated #include lines reference this folder");
-    getopt_add_bool(gopt, 0, "c-no-pubsub", 0, "Do not generate _publish and _subscribe functions");
-    getopt_add_bool(gopt, 0, "c-typeinfo", 0, "Generate typeinfo functions for each type");
-}
-
-/** Emit output that is common to every header file **/
-static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name)
-{
-    emit_auto_generated_warning(f);
-
-    fprintf(f, "#ifndef _%s_h\n", name);
-    fprintf(f, "#define _%s_h\n", name);
-    fprintf(f, "\n");
-
-    fprintf(f, "#include <stdint.h>\n");
-    fprintf(f, "#include <stdlib.h>\n");
-    if (getopt_get_bool(lcm->gopt, "use-quotes-for-includes"))
-        fprintf(f, "#include \"lcm/lcm_coretypes.h\"\n");
-    else
-        fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
-
-    if (!getopt_get_bool(lcm->gopt, "c-no-pubsub")) {
-        if (getopt_get_bool(lcm->gopt, "use-quotes-for-includes"))
-            fprintf(f, "#include \"lcm/lcm.h\"\n");
-        else
-            fprintf(f, "#include <lcm/lcm.h>\n");
-    }
-    if (strlen(getopt_get_string(lcm->gopt, "c-export-include"))) {
-        fprintf(f, "#include \"%s%s%s\"\n", getopt_get_string(lcm->gopt, "cinclude"),
-                strlen(getopt_get_string(lcm->gopt, "cinclude")) > 0 ? "/" : "",
-                getopt_get_string(lcm->gopt, "c-export-include"));
-    }
-    fprintf(f, "\n");
-
-    fprintf(f, "#ifdef __cplusplus\n");
-    fprintf(f, "extern \"C\" {\n");
-    fprintf(f, "#endif\n");
-    fprintf(f, "\n");
-}
-
-/** Emit output that is common to every header file **/
-static void emit_header_bottom(lcmgen_t *lcm, FILE *f)
-{
-    fprintf(f, "#ifdef __cplusplus\n");
-    fprintf(f, "}\n");
-    fprintf(f, "#endif\n");
-    fprintf(f, "\n");
-    fprintf(f, "#endif\n");
-}
-
 static void emit_type_comment(FILE *f, lcm_member_t *structure_member)
 {
     /* Might be nicer to construct a string. Eh. */
@@ -232,6 +176,63 @@ static void emit_comment(FILE *f, int indent, const char *comment)
         emit(indent, " */");
     }
     g_strfreev(lines);
+}
+
+void setup_c_options(getopt_t *gopt)
+{
+    getopt_add_string(gopt, 0, "c-cpath", ".", "Location for .c files");
+    getopt_add_string(gopt, 0, "c-hpath", ".", "Location for .h files");
+    getopt_add_string(gopt, 0, "c-export-include", "", "#include that provides the export symbol");
+    getopt_add_string(gopt, 0, "c-export-symbol", "", "ABI export decoration symbol");
+    getopt_add_string(gopt, 0, "cinclude", "", "Generated #include lines reference this folder");
+    getopt_add_bool(gopt, 0, "c-no-pubsub", 0, "Do not generate _publish and _subscribe functions");
+    getopt_add_bool(gopt, 0, "c-typeinfo", 0, "Generate typeinfo functions for each type");
+}
+
+/** Emit output that is common to every header file **/
+static void emit_header_top(lcmgen_t *lcm, FILE *f, char *name, char *file_comment)
+{
+    emit_auto_generated_warning(f);
+    emit_comment(f, 0, file_comment);
+
+    fprintf(f, "#ifndef _%s_h\n", name);
+    fprintf(f, "#define _%s_h\n", name);
+    fprintf(f, "\n");
+
+    fprintf(f, "#include <stdint.h>\n");
+    fprintf(f, "#include <stdlib.h>\n");
+    if (getopt_get_bool(lcm->gopt, "use-quotes-for-includes"))
+        fprintf(f, "#include \"lcm/lcm_coretypes.h\"\n");
+    else
+        fprintf(f, "#include <lcm/lcm_coretypes.h>\n");
+
+    if (!getopt_get_bool(lcm->gopt, "c-no-pubsub")) {
+        if (getopt_get_bool(lcm->gopt, "use-quotes-for-includes"))
+            fprintf(f, "#include \"lcm/lcm.h\"\n");
+        else
+            fprintf(f, "#include <lcm/lcm.h>\n");
+    }
+    if (strlen(getopt_get_string(lcm->gopt, "c-export-include"))) {
+        fprintf(f, "#include \"%s%s%s\"\n", getopt_get_string(lcm->gopt, "cinclude"),
+                strlen(getopt_get_string(lcm->gopt, "cinclude")) > 0 ? "/" : "",
+                getopt_get_string(lcm->gopt, "c-export-include"));
+    }
+    fprintf(f, "\n");
+
+    fprintf(f, "#ifdef __cplusplus\n");
+    fprintf(f, "extern \"C\" {\n");
+    fprintf(f, "#endif\n");
+    fprintf(f, "\n");
+}
+
+/** Emit output that is common to every header file **/
+static void emit_header_bottom(lcmgen_t *lcm, FILE *f)
+{
+    fprintf(f, "#ifdef __cplusplus\n");
+    fprintf(f, "}\n");
+    fprintf(f, "#endif\n");
+    fprintf(f, "\n");
+    fprintf(f, "#endif\n");
 }
 
 /** Emit header file output specific to a particular type of struct. **/
@@ -1087,7 +1088,7 @@ int emit_enum(lcmgen_t *lcmgen, lcm_enum_t *enumeration)
         if (f == NULL)
             return -1;
 
-        emit_header_top(lcmgen, f, type_name);
+        emit_header_top(lcmgen, f, type_name, NULL);
 
         char *tn_upper = g_ascii_strup(type_name, strlen(type_name));
 
@@ -1278,7 +1279,7 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *structure)
         if (f == NULL)
             return -1;
 
-        emit_header_top(lcmgen, f, type_name);
+        emit_header_top(lcmgen, f, type_name, structure->file_comment);
         emit_header_struct(lcmgen, f, structure);
         emit_header_prototypes(lcmgen, f, structure);
 
@@ -1293,6 +1294,7 @@ int emit_struct(lcmgen_t *lcmgen, lcm_struct_t *structure)
             return -1;
 
         emit_auto_generated_warning(f);
+        emit_comment(f, 0, structure->file_comment);
         fprintf(f, "#include <string.h>\n");
         fprintf(f, "#include \"%s%s%s.h\"\n", getopt_get_string(lcmgen->gopt, "cinclude"),
                 strlen(getopt_get_string(lcmgen->gopt, "cinclude")) > 0 ? "/" : "", type_name);
