@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   unix:
-    name: Build wheels on ${{ matrix.os }}
+    name: ${{ matrix.os }} | ${{ matrix.arch }} | ${{ matrix.python }}
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
