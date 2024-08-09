@@ -79,8 +79,9 @@ foreach option, state: enabled_options
     summary_reference += {option: false}
     if not get_option('lcm_enable_tests').disabled()
       summary_reference += {'- Build unit tests errors(s)': 'Unit tests are currently unsupported!'}
+    else
+      summary_reference += {'- Build unit tests errors(s)': 'Meson configured with -Dlcm_enable_tests=disabled'}
     endif
-    summary_reference += {'- Build unit tests errors(s)': 'Meson configured with -Dlcm_enable_tests=disabled'}
   else 
     summary_reference += {option: not state.disabled()}
   endif
