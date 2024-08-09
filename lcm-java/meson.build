@@ -6,7 +6,7 @@ error_messages = ['Java is not currently supported! Try at your own risk.']
 
 if get_option('lcm_enable_java').disabled()
   proceed_build = disabler()
-  error_messages += ['Meson configured with -Dlcm_enable_java=disabled']
+  error_messages = ['Meson configured with -Dlcm_enable_java=disabled']
 elif not add_languages('java', required : get_option('lcm_enable_java').enabled())
   proceed_build = disabler()
   error_messages += ['Missing dependency java']
