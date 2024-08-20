@@ -34,6 +34,29 @@
         fprintf(f, "\n");                 \
     } while (0)
 
+// ----------------------------------------------------------------------------
+
+static void emit_comment(FILE *f, int indent, const char *comment)
+{
+    if (!comment)
+        return;
+
+    gchar **lines = g_strsplit(comment, "\n", 0);
+    int num_lines = g_strv_length(lines);
+
+    emit(indent, "/**");
+    for (int line_ind = 0; lines[line_ind]; line_ind++) {
+        if (strlen(lines[line_ind])) {
+            emit(indent, " * %s", lines[line_ind]);
+        } else {
+            emit(indent, " *");
+        }
+    }
+    emit(indent, " */");
+
+    g_strfreev(lines);
+}
+
 static char *dots_to_slashes(const char *s)
 {
     char *p = strdup(s);
@@ -351,6 +374,8 @@ int emit_csharp(lcmgen_t *lcm)
              "\n"
              " * DO NOT MODIFY BY HAND!!!!\n"
              " */\n");
+
+        emit_comment(f, 0, lr->file_comment);
 
         emit(0, "using System;");
         emit(0, "using System.Collections.Generic;");

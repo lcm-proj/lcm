@@ -568,9 +568,10 @@ static void emit_go_array_loops_end(FILE *f, unsigned int n)
 /*
  * Emits the header of the .go file.
  */
-static void emit_go_header(FILE *f, const char *const gopackage)
+static void emit_go_header(FILE *f, const char *const gopackage, char *file_comment)
 {
     emit_auto_generated_warning(f);
+    emit_comment(f, 0, file_comment);
     emit(0, "package %s", gopackage);
     emit_nl();
 }
@@ -1340,7 +1341,7 @@ int emit_go_lcm(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir, int64_t 
     }
 
     // Header
-    emit_go_header(f, gopackage);
+    emit_go_header(f, gopackage, ls->file_comment);
 
     // Imports
     emit_go_lcm_imports(f, lcm, ls);
@@ -1415,7 +1416,7 @@ int emit_go_gopacket(lcmgen_t *lcm, lcm_struct_t *ls, const char *const dir, int
         return -1;
 
     // Header
-    emit_go_header(f, gopackage);
+    emit_go_header(f, gopackage, ls->file_comment);
 
     // Imports
     emit(0, "import (");
