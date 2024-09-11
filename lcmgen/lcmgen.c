@@ -857,7 +857,7 @@ void lcm_enum_dump(lcm_enum_t *le)
 
 void lcm_struct_dump(lcm_struct_t *lr)
 {
-    printf("struct %s [hash=0x%16" PRId64 "]\n", lr->structname->lctypename, lr->hash);
+    printf("struct %s [hash=0x%16" PRIx64 "]\n", lr->structname->lctypename, lr->hash);
     for (unsigned int i = 0; i < g_ptr_array_size(lr->members); i++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, i);
         lcm_member_dump(lm);
