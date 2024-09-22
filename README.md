@@ -32,9 +32,9 @@ feedback and involvement on new features.
 
 * Platforms:
   * GNU/Linux
-      * Ubuntu (20.04 and 22.04)
-      * Fedora (37)
-  * macOS (11 and 12)
+      * Ubuntu (22.04 and 24.04)
+      * Fedora (40)
+  * macOS (13 and 14)
   * Windows (2019 and 2022) via MSYS2
 * Languages
   * C

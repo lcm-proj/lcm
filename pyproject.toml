@@ -1,0 +1,52 @@
+[build-system]
+requires = ["scikit-build-core"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "lcm"
+version = "1.5.0"
+description = "Lightweight Communication and Marshalling"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+  'Development Status :: 4 - Beta',
+  'Topic :: Communications',
+  'Framework :: Robot Framework',
+]
+
+[project.scripts]
+lcm-example = "lcm:run_example"
+lcm-gen = "lcm:run_gen"
+lcm-logfilter = "lcm:run_logfilter"
+lcm-logger = "lcm:run_logger"
+lcm-logplayer = "lcm:run_logplayer"
+lcm-logplayer-gui = "lcm:run_logplayer_gui"
+lcm-sink = "lcm:run_sink"
+lcm-source = "lcm:run_source"
+lcm-spy = "lcm:run_spy"
+lcm-tester = "lcm:run_tester"
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.scikit-build]
+cmake.args = ["-DLCM_INSTALL_PKGCONFIG=OFF", "-DLCM_PIP_BUILD=ON"]
+wheel.expand-macos-universal-tags = true
+build.tool-args = ["-j4"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
+xfail_strict = true
+log_cli_level = "INFO"
+filterwarnings = ["error"]
+
+[tool.cibuildwheel]
+build-verbosity = 1
+
+[tool.cibuildwheel.linux]
+before-all = "yum install java-1.8.0-openjdk-devel -y"
+
+[[tool.cibuildwheel.overrides]]
+select = "*-musllinux*"
+before-all = ""

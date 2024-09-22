@@ -7,3 +7,5 @@ docs/_build/
 .settings/
 .project
 .classpath
+.venv
+.DS_Store

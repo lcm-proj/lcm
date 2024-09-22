@@ -21,6 +21,14 @@ release or the latest `master`, we recommend referring to the copy of this
 document (`docs/content/build-instructions.md`) found in your source
 distribution.
 
+## Installing the Python module
+
+To build the Python module from source and install it, run:
+
+```
+pip3 install -v .
+```
+
 ## CMake Overview
 
 These instructions assume that you will build in a directory named `build` as
@@ -32,6 +40,14 @@ generators. To users familiar with CMake, we recommend using
 
 A detailed description of how to use CMake is not specific to LCM and is beyond
 the scope of these instructions.
+
+By default CMake is configured to produce a release build. To build with debug symbols instead, use:
+
+```shell
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+```
+
+when configuring a build directory in the following sections.
 
 ## Ubuntu and Debian
 

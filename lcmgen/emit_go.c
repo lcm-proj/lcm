@@ -343,9 +343,7 @@ static char *go_typename(const char *const package, const char *const typepackag
         g_string_append_printf(name, "_%" PRIu64, (uint64_t) fingerprint);
     }
 
-    char *ret = name->str;
-    g_string_free(name, FALSE);
-    return ret;
+    return g_string_free(name, FALSE);
 }
 
 /*

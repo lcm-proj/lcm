@@ -1,4 +1,4 @@
-FROM fedora:37
+FROM fedora:40
 
 # cmake3: To build LCM
 # clang: For compiling code with Clang

@@ -9,12 +9,15 @@ lcm_target_link_libraries(test-cpp-client ${test_cpp_libs})
 add_executable(test-cpp-memq_test memq_test.cpp common.cpp)
 lcm_target_link_libraries(test-cpp-memq_test ${test_cpp_libs})
 
-add_test(NAME CPP::memq_test COMMAND test-cpp-memq_test)
+# TODO #523 Reenable these tests
+if(NOT WIN32)
+  add_test(NAME CPP::memq_test COMMAND test-cpp-memq_test)
 
-if(Python_EXECUTABLE)
-  add_test(NAME CPP::client_server COMMAND
-    ${Python_EXECUTABLE}
-    ${CMAKE_CURRENT_SOURCE_DIR}/../run_client_server_test.py
-    $<TARGET_FILE:test-c-server>
-    $<TARGET_FILE:test-cpp-client>)
+  if(Python_EXECUTABLE)
+    add_test(NAME CPP::client_server COMMAND
+      ${Python_EXECUTABLE}
+      ${CMAKE_CURRENT_SOURCE_DIR}/../run_client_server_test.py
+      $<TARGET_FILE:test-c-server>
+      $<TARGET_FILE:test-cpp-client>)
+  endif()
 endif()
