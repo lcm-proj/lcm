@@ -76,7 +76,7 @@ struct lcm_struct {
     char *lcmfile;  // file/path of function that declared it
     int64_t hash;
 
-    // Comments in the LCM type defintion immediately before a struct is declared
+    // Comments in the LCM type definition immediately before a struct is declared
     // are attached to that struct.
     char *comment;
 
