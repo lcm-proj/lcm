@@ -7,7 +7,7 @@ if get_option('lcm_enable_python').disabled()
   proceed_build = disabler()
   error_messages += ['Meson configured with -Dlcm_enable_python=disabled']
 else
-  pymod = import('python', required : get_option('lcm_enable_lua').enabled())
+  pymod = import('python', required : get_option('lcm_enable_python').enabled())
   if not pymod.found()
     proceed_build = disabler()
     error_messages += ['Missing dependency python']
