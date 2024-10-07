@@ -53,28 +53,29 @@ struct logger {
     lcm_t *lcm;
 
     int64_t max_write_queue_size;
-    int auto_increment;
+    int auto_increment;  // bool
     int next_increment_num;
     double auto_split_mb;
-    int force_overwrite;
-    int use_strftime;
+    int force_overwrite;  // bool
+    int use_strftime;     // bool
     int fflush_interval_ms;
     int rotate;
-    int quiet;
-    int append;
+    int quiet;   // bool
+    int append;  // bool
 
     GThread *write_thread;
     GAsyncQueue *write_queue;
     GMutex mutex;
 
-    // variables for inverted matching (e.g., logging all but some channels)
+    // bool for inverted matching (e.g., logging all but some channels)
     int invert_channels;
     GRegex *regex;
 
     // these members controlled by mutex
-    int64_t write_queue_size;
-    int write_thread_exit_flag;
-
+    struct {
+        int64_t write_queue_size;
+        int write_thread_exit_flag;  // bool
+    } sync;
     // these members controlled by write thread
     int64_t nevents;
     int64_t logsize;
@@ -213,18 +214,27 @@ static void *write_thread(void *user_data)
             logger->last_report_logsize = 0;
         }
 
-        // Should the write thread exit?
-        g_mutex_lock(&logger->mutex);
-        if (msg == &logger->write_thread_exit_flag) {
-            g_mutex_unlock(&logger->mutex);
-            return NULL;
+        {
+            // Looking at the address of write_thread_exit_flag instead of its value.
+            void *sentinel_msg = &(logger->sync.write_thread_exit_flag);
+            // Should the write thread exit?
+            if (msg == sentinel_msg) {
+                return NULL;
+            }
         }
-        // nope.  write the event to disk
-        lcm_eventlog_event_t *log_event = (lcm_eventlog_event_t *) msg;
-        int64_t sz = sizeof(lcm_eventlog_event_t) + log_event->channellen + 1 + log_event->datalen;
-        logger->write_queue_size -= sz;
-        g_mutex_unlock(&logger->mutex);
 
+        lcm_eventlog_event_t *log_event = (lcm_eventlog_event_t *) msg;
+        {  // LOCK
+            g_mutex_lock(&logger->mutex);
+
+            // Track the pop
+            int64_t sz =
+                sizeof(lcm_eventlog_event_t) + log_event->channellen + 1 + log_event->datalen;
+            logger->sync.write_queue_size -= sz;
+            g_mutex_unlock(&logger->mutex);
+        }
+
+        // Write the event to disk
         if (0 != lcm_eventlog_write_event(logger->log, log_event)) {
             static int64_t last_spew_utime = 0;
             char *reason = strdup(strerror(errno));
@@ -241,6 +251,7 @@ static void *write_thread(void *user_data)
                 continue;
             }
         }
+
         if (logger->fflush_interval_ms >= 0 &&
             (log_event->timestamp - logger->last_fflush_time) > logger->fflush_interval_ms * 1000) {
             fflush(logger->log->f);
@@ -290,47 +301,58 @@ static void message_handler(const lcm_recv_buf_t *rbuf, const char *channel, voi
 
     int channellen = strlen(channel);
 
-    // check if the backlog of unwritten messages is too big.  If so, then
+    // Check if the backlog of unwritten messages is too big.  If so, then
     // ignore this event
-    int64_t mem_sz = sizeof(lcm_eventlog_event_t) + channellen + 1 + rbuf->data_size;
-    g_mutex_lock(&logger->mutex);
-    int64_t mem_required = mem_sz + logger->write_queue_size;
+    int64_t event_sz = sizeof(lcm_eventlog_event_t) + channellen + 1 + rbuf->data_size;
+    {  // LOCK
+        g_mutex_lock(&logger->mutex);
+        int64_t pending_queue_mem = event_sz + logger->sync.write_queue_size;
 
-    if (mem_required > logger->max_write_queue_size) {
-        // can't write to logfile fast enough.  drop packet.
-        g_mutex_unlock(&logger->mutex);
+        if (pending_queue_mem > logger->max_write_queue_size) {
+            g_mutex_unlock(&logger->mutex);
 
-        // maybe print an informational message to stdout
-        int64_t now = g_get_real_time();
-        logger->dropped_packets_count++;
-        int rc = logger->dropped_packets_count - logger->last_drop_report_count;
+            // Can't write to logfile fast enough. Drop packet.
+            logger->dropped_packets_count++;
 
-        if (now - logger->last_drop_report_utime > 1000000 && rc > 0) {
-            if (!logger->quiet)
-                printf("Can't write to log fast enough.  Dropped %d packet%s\n", rc,
-                       rc == 1 ? "" : "s");
-            logger->last_drop_report_utime = now;
-            logger->last_drop_report_count = logger->dropped_packets_count;
+            // maybe print an informational message to stdout
+            int64_t now = g_get_real_time();
+            int rc = logger->dropped_packets_count - logger->last_drop_report_count;
+
+            if (now - logger->last_drop_report_utime > 1000000 && rc > 0) {
+                if (!logger->quiet)
+                    printf("Can't write to log fast enough.  Dropped %d packet%s\n", rc,
+                           rc == 1 ? "" : "s");
+                logger->last_drop_report_utime = now;
+                logger->last_drop_report_count = logger->dropped_packets_count;
+            }
+            return;
+        } else {
+            logger->sync.write_queue_size = pending_queue_mem;
+
+            g_mutex_unlock(&logger->mutex);
         }
-        return;
-    } else {
-        logger->write_queue_size = mem_required;
-        g_mutex_unlock(&logger->mutex);
     }
 
-    // queue up the message for writing to disk by the write thread
-    lcm_eventlog_event_t *log_event = (lcm_eventlog_event_t *) malloc(mem_sz);
-    memset(log_event, 0, mem_sz);
+    // Queue up the message for writing to disk by the write thread
 
+    // Make a flat allocation for both an event_t and its data buffers.
+    lcm_eventlog_event_t *log_event = (lcm_eventlog_event_t *) malloc(event_sz);
+    memset(log_event, 0, event_sz);
+
+    // Store the channel just past the end of the struct
+    log_event->channel = ((char *) log_event) + sizeof(lcm_eventlog_event_t);
+    // Store the data past the channel.
+    log_event->data = log_event->channel + channellen + 1;
+    assert((char *) log_event->data + rbuf->data_size == (char *) log_event + event_sz);
+
+    //
     log_event->timestamp = rbuf->recv_utime;
     log_event->channellen = channellen;
     log_event->datalen = rbuf->data_size;
     // log_write_event will handle le.eventnum.
 
-    log_event->channel = ((char *) log_event) + sizeof(lcm_eventlog_event_t);
     strcpy(log_event->channel, channel);
-    log_event->data = log_event->channel + channellen + 1;
-    assert((char *) log_event->data + rbuf->data_size == (char *) log_event + mem_sz);
+
     memcpy(log_event->data, rbuf->data, rbuf->data_size);
 
     g_async_queue_push(logger->write_queue, log_event);
@@ -543,10 +565,31 @@ int main(int argc, char *argv[])
     if (0 != open_logfile(&logger))
         return 1;
 
+    /* THREADING:
+     *
+     * 1 (main):
+     *      `g_main_loop_run(_mainloop)` electively does
+     *      `while (not_interrupted) lcm_handle(logger.lcm);`.
+     *      That in turn calls message_handler for every message.
+     *      Messages are copied into a logger_event_t and pushed into
+     *      the logger.write_queue.
+     *      When a stop signal (Ctrl+C) is received, glib returns control to `main`.
+     *      A sentinel value is then pushed to the write_queue to indicate that
+     *      the write thread should stop.
+     *
+     * 2 (logger.write_thread):
+     *      Dumps the write_queue to disk.
+     *      Stops when the sentinel value is found in the queue.
+     *
+     * The address of logger.sync.write_thread_exit_flag is used as the sentinel value.
+     * The value itself is not being used...
+     *
+     */
+
     // create write thread
-    logger.write_thread_exit_flag = 0;
+    logger.sync.write_thread_exit_flag = 0;
     g_mutex_init(&logger.mutex);
-    logger.write_queue_size = 0;
+    logger.sync.write_queue_size = 0;
     logger.write_queue = g_async_queue_new();
     logger.write_thread = g_thread_new(NULL, write_thread, &logger);
 
@@ -591,12 +634,17 @@ int main(int argc, char *argv[])
 
     fprintf(stderr, "Logger exiting\n");
 
-    // stop the write thread
-    g_mutex_lock(&logger.mutex);
-    logger.write_thread_exit_flag = 1;
-    g_mutex_unlock(&logger.mutex);
-    g_async_queue_push(logger.write_queue, &logger.write_thread_exit_flag);
+    {  // LOCK
+        // stop the write thread
+        g_mutex_lock(&logger.mutex);
+        logger.sync.write_thread_exit_flag = 1;
+        g_mutex_unlock(&logger.mutex);
+    }
+
+    void *stop_sentinel = &(logger.sync.write_thread_exit_flag);
+    g_async_queue_push(logger.write_queue, stop_sentinel);
     g_thread_join(logger.write_thread);
+
     g_mutex_clear(&logger.mutex);
 
     // cleanup.  This isn't strictly necessary, do it to be pedantic and so that
@@ -607,7 +655,7 @@ int main(int argc, char *argv[])
 
     for (void *msg = g_async_queue_try_pop(logger.write_queue); msg;
          msg = g_async_queue_try_pop(logger.write_queue)) {
-        if (msg == &logger.write_thread_exit_flag)
+        if (msg == &logger.sync.write_thread_exit_flag)
             continue;
         free(msg);
     }
