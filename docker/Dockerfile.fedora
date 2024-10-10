@@ -10,6 +10,7 @@ RUN dnf install -y \
     clang \
     glib2-devel \
     java-17-openjdk-devel \
-    python3-devel
+    python3-devel \
+    meson
 
 WORKDIR /work
