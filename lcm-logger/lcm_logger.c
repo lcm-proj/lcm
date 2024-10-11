@@ -40,9 +40,10 @@
 
 GMainLoop *_mainloop;
 
-// Force a log to close when a SIGHUP is received.
-// [2024-10-08 judfs: Why specifically that signal?]
-static int _reset_logfile = 0;
+// Force rotating logs when a SIGHUP is received.
+// It is common practice for programs running as service/daemon to restart itself
+// in some way in response to SIGHUP. lcm-logger responds by rotating logs.
+static int _reset_logfile = 0;  // bool
 
 static inline int64_t timestamp_seconds(int64_t v)
 {
@@ -621,6 +622,7 @@ static void usage()
             "\n"
             "    Moving to a new file happens either when the current log file size exceeds\n"
             "    the limit specified by --split-mb, or when lcm-logger receives a SIGHUP.\n"
+            "    A user may send SIGHUP with the kill command to trigger rotating logs.\n"
             "\n");
 }
 
@@ -809,7 +811,7 @@ int main(int argc, char *argv[])
     /* THREADING:
      *
      * 1 (main):
-     *      `g_main_loop_run(_mainloop)` electively does
+     *      `g_main_loop_run(_mainloop)` effectively does
      *      `while (not_interrupted) lcm_handle(logger.lcm);`.
      *      That in turn calls message_handler for every message.
      *      Messages are copied into a logger_event_t and pushed into
