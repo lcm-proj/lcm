@@ -8,6 +8,9 @@ import java.awt.geom.*;
 import java.awt.image.*;
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.regex.*;
@@ -135,6 +138,16 @@ public class LogPlayer extends JComponent {
 
     public int compareTo(Filter f) {
       return inchannel.compareTo(f.inchannel);
+    }
+
+    boolean isDefault() {
+      return enabled && (inchannel.equals(outchannel));
+    }
+
+    @Override
+    public String toString() {
+      String box = this.enabled ? "[✔️]" : "[ ]";
+      return box + " " + inchannel + " -> " + outchannel;
     }
   }
 
@@ -463,12 +476,30 @@ public class LogPlayer extends JComponent {
   void savePreferences() throws IOException {
     if (currentLogPath == null) return;
 
-    String path = currentLogPath + ".jlp";
-
-    FileWriter fouts = new FileWriter(path);
-    BufferedWriter outs = new BufferedWriter(fouts);
+    /* Preferred for JDK >= 11 */
+    // Path path = Path.of(currentLogPath + ".jlp");
+    Path path = Paths.get(currentLogPath + ".jlp");
 
     ArrayList<JScrubber.Bookmark> bookmarks = js.getBookmarks();
+
+    /* Don't clutter the user's directory if none of the gui's features were used. */
+    boolean avoidWrite =
+        true
+            && !Files.exists(path)
+            && bookmarks.size() == 0
+            /* This doesn't hold true for just opening and closing a log.
+             * Not a critical setting anyway. */
+            // && js.getZoomFraction() == JScrubber.DEFAULT_ZOOM_FRAC
+            && filters.stream().allMatch(Filter::isDefault);
+
+    if (avoidWrite) {
+      return;
+    }
+
+    FileWriter fouts = new FileWriter(path.toString());
+
+    BufferedWriter outs = new BufferedWriter(fouts);
+
     for (JScrubber.Bookmark b : bookmarks) {
       String type = "PLAIN";
       if (b.type == JScrubber.BOOKMARK_LREPEAT) type = "LREPEAT";

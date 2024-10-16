@@ -23,7 +23,8 @@ public class JScrubber extends JComponent
 
     double position = 0.5;
 
-    double zoomfrac = 0.1;
+    static final double DEFAULT_ZOOM_FRAC = 0.1;
+    double zoomfrac = DEFAULT_ZOOM_FRAC;
     double zoom0, zoom1; // positions (0,1) representing the left and right end of the zoom scrubber
     int cy, cy2;
 
