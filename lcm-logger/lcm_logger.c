@@ -671,7 +671,7 @@ int main(int argc, char *argv[])
         {"max-unwritten-mb", required_argument, 0, 'm'},
         {"quiet", no_argument, 0, 'q'},
         {"rotate", required_argument, 0, 'r'},
-        {"strftime", required_argument, 0, 's'},
+        {"strftime", no_argument, 0, 's'},
         {"flush-interval", required_argument, 0, 'u'},
         {"invert-channels", no_argument, 0, 'v'},
         {"disk-quota", required_argument, 0, 128},
