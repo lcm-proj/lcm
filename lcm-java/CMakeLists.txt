@@ -21,6 +21,8 @@ elseif (Java_VERSION VERSION_LESS 1.9)
   endif()
 endif()
 
+set(CMAKE_JAVA_COMPILE_FLAGS  ${CMAKE_JAVA_COMPILE_FLAGS} -encoding utf8)
+
 # Use system version of jchart2d if available
 find_jar(jchart2d_JAR jchart2d)
 if(NOT jchart2d_JAR)
