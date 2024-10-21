@@ -56,9 +56,17 @@ static int64_t get_free_disk_bytes(const char *path_on_disk)
     // Not implemented; logger->disk_quota should be 0.
     assert(false);
 #else
+    /*
+     * > f_bsize:  Filesystem block size
+     * > f_frsize: Fragment size
+     * https://man7.org/linux/man-pages/man3/statvfs.3.html
+     *
+     * Both work on Ubuntu, but f_bsize is used differently on macOS.
+     * Must use f_frsize.
+     */
     struct statvfs fs;
     statvfs(path_on_disk, &fs);
-    int64_t free_bytes = (int64_t) fs.f_bsize * (int64_t) fs.f_bavail;
+    int64_t free_bytes = (int64_t) fs.f_frsize * (int64_t) fs.f_bavail;
     return free_bytes;
 
 #endif
@@ -467,6 +475,8 @@ static void *write_thread(void *user_data)
                 printf("Disk quota exceeded. Exiting logger.\n");
                 // @Review: How should this exit? For now going with a graceful exit.
                 // But maybe this case warrants more urgency.
+
+                // Akin to ctrl-c. Stops the glib loop and returns control to our `main`.
                 g_main_loop_quit(_mainloop);
             }
         }
@@ -552,6 +562,8 @@ static void sighup_handler(int signum)
 static void usage()
 {
     // Manually wrapped to 80cols Leaves 52 for flag help.
+    // The following command may help you when editing a long help block:
+    // fold -w 52 -s /tmp/qqq.txt > /tmp/sink && cp /tmp/sink /tmp/qqq.txt
     // "--------------------------------------------------------------------------------\n"
     fprintf(stderr,
             "usage: lcm-logger [options] [FILE]\n"
@@ -596,19 +608,24 @@ static void usage()
             "  -s, --strftime             Format FILE with strftime.\n"
             "  -v, --invert-channels      Invert channels.  Log everything that CHAN\n"
             "                             does not match.\n"
-            "      --disk-quota=SIZE      Minimum amount of free space the disk written to\n"
-            "                             must maintain. lcm-logger will exit if the quota is\n"
-            "                             exceeded. This is NOT an explicit limit on how much\n"
-            "                             lcm-logger is allowed to write.\n"
+            "\n"
+            "      --disk-quota=SIZE      Minimum amount of free space to reserve on the disk\n"
+            "                             being written to. lcm-logger will exit when it sees\n"
+            "                             the current free disk space has fallen below the\n"
+            "                             quota minimum.\n"
+            "                             For example, given `du -H` reports 15 GB free, and\n"
+            "                             that nothing else is changing the target disk,\n"
+            "                             --disk-quota=10GB means that lcm-logger will not\n"
+            "                             write more than 5 GB before it exits.\n"
             "                             Units accepted: B\n"
             "                             1024: K,   M,   G,   T,   P,   E,\n"
             "                                   Ki,  Mi,  Gi,  Ti,  Pi,  Ei,\n"
             "                                   KiB, MiB, GiB, TiB, PiB, EiB\n"
             "                             1000: KB, MB, GB, TB, PB, EB\n"
             "                             e.g. \"50G\" or \"0.05 TiB\". \n"
-            "                             Note: for `df`, -h is 1024 and -H is 1000 units.\n"
             "                             Units are treated case insensitively. gb is treated\n"
             "                             as GB (gigabytes) and not as gigabits.\n"
+            "                             Note for `df`: -h is 1024 and -H is 1000 units.\n"
             "                             NOT currently supported on Windows!\n"
             "\n"
             "Rotating / splitting log files\n"
@@ -781,9 +798,17 @@ int main(int argc, char *argv[])
         // HOWEVER, `df -h` (--human-readable) does 1024. -H (--si) uses 1000, but that is less
         // common?
 
-        char *free_str = g_format_size_full(get_free_disk_bytes(logger.write_directory), fflags);
+        int64_t free_bytes = get_free_disk_bytes(logger.write_directory);
+        char *free_str = g_format_size_full(free_bytes, fflags);
         char *quota_str = g_format_size_full(logger.disk_quota, fflags);
         printf("There is currently %s free on disk.\n", free_str);
+        if (free_bytes < logger.disk_quota) {
+            printf("\nAttention:\n");
+            printf("\tThat is less than the quota of %s.\n", quota_str);
+            printf(
+                "\tRefusing to log anything. Please clean up disk space or decrease the quota.\n");
+            return 1;
+        }
         printf("lcm-logger will exit should that value reach %s.\n", quota_str);
 
         g_free(free_str);
