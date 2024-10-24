@@ -48,13 +48,17 @@ static inline void ringbuf_self_test(lcm_ringbuf_t *ring)
         return;
     }
 
+#if !defined(NDEBUG)
     int total_length = 0;
+#endif
 
     while (1) {
         assert(rec->prev == prev);
         assert(rec->magic == MAGIC);
 
+#if !defined(NDEBUG)
         total_length += rec->length;
+#endif
 
         if (!rec->next)
             break;
@@ -66,7 +70,9 @@ static inline void ringbuf_self_test(lcm_ringbuf_t *ring)
     }
 
     assert(ring->tail == rec);
+#if !defined(NDEBUG)
     assert(total_length == ring->used);
+#endif
 
     // check for loops?
 }

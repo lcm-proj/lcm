@@ -12,6 +12,7 @@ function(lcm_add_c_flags)
       check_c_compiler_flag("${flag}" CMAKE_C_COMPILER_SUPPORTS_${varname})
       if(CMAKE_C_COMPILER_SUPPORTS_${varname})
         set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}" PARENT_SCOPE)
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${flag}")
       endif()
     endif()
   endforeach()
@@ -27,6 +28,7 @@ function(lcm_add_cxx_flags)
       check_cxx_compiler_flag("${flag}" CMAKE_CXX_COMPILER_SUPPORTS_${varname})
       if(CMAKE_CXX_COMPILER_SUPPORTS_${varname})
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}" PARENT_SCOPE)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag}")
       endif()
     endif()
   endforeach()
@@ -65,5 +67,6 @@ if(NOT MSVC)
     -Werror=return-type
     -Wno-unused-parameter
     -Wno-format-zero-length
+    -Wno-stringop-truncation
   )
 endif()

@@ -930,8 +930,8 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
         lcm_enum_t *enumeration = (lcm_enum_t *) g_ptr_array_index (package->enums, i);
 
         char path[PATH_MAX];
-        int ret = snprintf(path, sizeof(path), "%s%s.py", package_dir, enumeration->enumname->shortname);
-        if (ret < 0) {
+        int return_value = snprintf(path, sizeof(path), "%s%s.py", package_dir, enumeration->enumname->shortname);
+        if (return_value < 0) {
             fprintf(stderr, "Error: failed to create path string");
             return -1;
         }
@@ -1015,9 +1015,9 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
         lcm_struct_t *structure = (lcm_struct_t *) g_ptr_array_index(package->structs, i);
 
         char path[PATH_MAX];
-        int ret =
+        int return_value =
             snprintf(path, sizeof(path), "%s%s.py", package_dir, structure->structname->shortname);
-        if (ret < 0) {
+        if (return_value < 0) {
             fprintf(stderr, "Error: failed to create path string");
             return -1;
         }
@@ -1093,9 +1093,9 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
         fprintf(f, "]\n\n");
 
         // CONSTANTS
-        for (unsigned int i = 0; i < g_ptr_array_size(structure->constants); i++) {
+        for (unsigned int ii = 0; ii < g_ptr_array_size(structure->constants); ii++) {
             lcm_constant_t *constant =
-                (lcm_constant_t *) g_ptr_array_index(structure->constants, i);
+                (lcm_constant_t *) g_ptr_array_index(structure->constants, ii);
             assert(lcm_is_legal_const_type(constant->lctypename));
             emit(1, "%s = %s", constant->membername, constant->val_str);
             emit_comment(f, 1, constant->comment);

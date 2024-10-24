@@ -168,7 +168,6 @@ class LambdaTest {
 
     bool Run(void)
     {
-        LcmType msg;
         int response_count = 0;
         lcm::LCM::HandlerFunction<LcmType> handler =
             [&response_count](const lcm::ReceiveBuffer *, const std::string &, const LcmType *msg) {
@@ -178,6 +177,7 @@ class LambdaTest {
             };
         lcm::Subscription *subscription = lcm_.subscribe(test_channel_ + "_reply", handler);
         bool result = true;
+        LcmType msg;
         for (int trial = 0; trial < num_trials_ && result; trial++) {
             FillLcmType(trial, &msg);
             lcm_.publish(test_channel_, &msg);

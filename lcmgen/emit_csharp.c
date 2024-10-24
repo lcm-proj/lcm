@@ -42,7 +42,6 @@ static void emit_comment(FILE *f, int indent, const char *comment)
         return;
 
     gchar **lines = g_strsplit(comment, "\n", 0);
-    int num_lines = g_strv_length(lines);
 
     emit(indent, "/**");
     for (int line_ind = 0; lines[line_ind]; line_ind++) {

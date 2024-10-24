@@ -129,12 +129,10 @@ static void emit_member_comment(FILE *f, int indent, const char *comment,
     }
 
     gchar **lines = NULL;
-    int num_lines = 0;
     emit(0, "");
     emit(indent, "/**");
     if (comment) {
         lines = g_strsplit(comment, "\n", 0);
-        num_lines = g_strv_length(lines);
 
         for (int line_ind = 0; lines[line_ind]; line_ind++) {
             if (strlen(lines[line_ind])) {
