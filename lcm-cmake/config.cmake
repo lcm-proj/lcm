@@ -67,5 +67,6 @@ if(NOT MSVC)
     -Werror=return-type
     -Wno-unused-parameter
     -Wno-format-zero-length
+    -Wno-stringop-truncation
   )
 endif()
