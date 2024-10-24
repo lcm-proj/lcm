@@ -17,11 +17,16 @@ class LCMSubscription:
     def set_queue_capacity(self, num_messages: int) -> None: ...
 
 class Event:
+    data: bytes
+    channel: str
+    eventnum: int
+    timestamp: int
     def __init__(
         self, eventnum: int, timestamp: int, channel: str, data: bytes
     ) -> None: ...
 
 class EventLog:
+    mode: str
     def __init__(
         self, path: str | PathLike[str], mode: str = "r", overwrite: bool = False
     ) -> None: ...
