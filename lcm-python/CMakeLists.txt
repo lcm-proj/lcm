@@ -79,3 +79,9 @@ lcm_copy_file_target(lcm-python-stub
   ${CMAKE_BINARY_DIR}/python/lcm/__init__.pyi
 )
 install(FILES lcm/__init__.pyi DESTINATION ${PYTHON_INSTALL_DIR})
+
+lcm_copy_file_target(lcm-python-typed
+  ${CMAKE_CURRENT_SOURCE_DIR}/lcm/py.typed
+  ${CMAKE_BINARY_DIR}/python/lcm/py.typed
+)
+install(FILES lcm/py.typed DESTINATION ${PYTHON_INSTALL_DIR})
