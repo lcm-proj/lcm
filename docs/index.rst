@@ -9,6 +9,7 @@ in a variety of programming languages.
 Quick links
 ===========
 
+* :ref:`Installing LCM`
 * `Downloads <https://github.com/lcm-proj/lcm/releases>`_
 * :ref:`Build Instructions`
 * :ref:`Tutorial and examples`
@@ -115,6 +116,7 @@ sending a message to the `mailing list <http://groups.google.com/group/lcm-users
    :caption: Contents
    :glob:
 
+   content/install-instructions.md
    content/build-instructions.md
    content/java-notes.md
    content/lcm-type-ref.md
