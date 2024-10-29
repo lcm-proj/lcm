@@ -55,6 +55,7 @@ static int64_t get_free_disk_bytes(const char *path_on_disk)
 #ifdef WIN32
     // Not implemented; logger->disk_quota should be 0.
     assert(false);
+    return -1;
 #else
     /*
      * > f_bsize:  Filesystem block size
