@@ -416,9 +416,6 @@ static void *write_thread(void *user_data)
             }
         }
 
-        // [2024-10-08 judfs: This asserted condition was in the needs_flushed condition.
-        // This seems to always be true?]
-        // @Review remove this assert + comment
         assert(logger->fflush_interval_ms >= 0);
         gboolean needs_flushed =
             (log_event->timestamp - logger->last_fflush_time) > (logger->fflush_interval_ms * 1000);
@@ -461,20 +458,22 @@ static void *write_thread(void *user_data)
             logger->last_report_logsize = logger->logsize;
         }
 
-        // ---
-        // Disk Quota @Review: This whole section
-
-        // judfs: Should this be its own thread?
-        // Should the interval be a flag?
-        const int64_t quota_check_interval = 1e6;
+        /* Disk Quota
+         * There is no strong motivation for performing this check at this point in the code.
+         * For now, avoiding the complication of checking on an additional thread.
+         */
+        const int64_t quota_check_interval = 1e6;  // Microsec
         if (logger->disk_quota && (offset_utime - logger->last_quota_time > quota_check_interval)) {
             logger->last_quota_time = offset_utime;
 
             int64_t free_bytes = get_free_disk_bytes(logger->write_directory);
             if (free_bytes < logger->disk_quota) {
                 printf("Disk quota exceeded. Exiting logger.\n");
-                // @Review: How should this exit? For now going with a graceful exit.
-                // But maybe this case warrants more urgency.
+
+                /* How should this exit? For now going with a graceful exit.
+                 * But maybe this case warrants more urgency.
+                 * Make a PR if you feel this change.
+                 */
 
                 // Akin to ctrl-c. Stops the glib loop and returns control to our `main`.
                 g_main_loop_quit(_mainloop);
