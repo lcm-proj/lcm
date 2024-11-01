@@ -568,10 +568,10 @@ static void usage()
     fprintf(stderr,
             "usage: lcm-logger [options] [FILE]\n"
             "\n"
-            "    LCM message logging utility.  Subscribes to all channels on an LCM\n"
-            "    network, and records all messages received on that network to\n"
-            "    FILE.  If FILE is not specified, then a filename is automatically\n"
-            "    chosen.\n"
+            "LCM message logging utility. Subscribes to all channels on an LCM\n"
+            "network, and records all messages received on that network to\n"
+            "FILE. If FILE is not specified, then a filename is automatically\n"
+            "chosen.\n"
             "\n"
             "Options:\n"
             "\n"
@@ -683,6 +683,7 @@ int main(int argc, char *argv[])
         {"split-mb", required_argument, 0, 'b'},
         {"channel", required_argument, 0, 'c'},
         {"force", no_argument, 0, 'f'},
+        {"help", no_argument, 0, 'h'},
         {"increment", required_argument, 0, 'i'},
         {"lcm-url", required_argument, 0, 'l'},
         {"max-unwritten-mb", required_argument, 0, 'm'},
