@@ -1,0 +1,41 @@
+name: check_man_pages
+
+on: [push, pull_request]
+
+jobs:
+  generate_man_pages:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Dependencies
+        run: sudo apt install help2man libglib2.0-dev
+
+      - name: Configure CMake
+        run: cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: cmake --build ${{github.workspace}}/build
+
+      - name: Generate man pages
+        run: ${{github.workspace}}/docs/generate_man_pages.sh
+
+      - name: Check result
+        run: |
+          set -xe
+          EXIT_CODE=0
+          # Match any line that begins with '+' and does not contain a month name. grep will return
+          # a nonzero exit code if there's no matches, but that's what we want. In that case, the
+          # bit after '||' will execute and prevent the job from failing.
+          git diff | grep -Po '(?!.*(January|February|March|April|May|June|July|August|September|October|November|December))^\+[^\+].*' || EXIT_CODE=$?
+          # If there was a match, then grep returns a zero exit code and we want to return a nonzero exit code.
+          if [ "$EXIT_CODE" == 0 ]; then
+              echo "Manual pages are out of sync. Please regenerate with 'docs/generate_man_pages.sh' or apply the following diff:"
+              git diff | cat
+              exit 1
+          else
+              exit 0
+          fi
+        shell: bash
+
