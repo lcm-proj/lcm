@@ -22,6 +22,10 @@ jobs:
         exclude:
           - os: macos-13
             arch: aarch64
+          - os: macos-13
+            python: cp37-*
+          - os: macos-13
+            python: cp310-*
           - os: macos-14
             arch: aarch64
           - os: macos-14
