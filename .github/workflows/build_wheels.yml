@@ -43,6 +43,8 @@ jobs:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_deployment_target }}
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_BUILD: ${{ matrix.python }}
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: "pytest {project}"
 
       - uses: actions/upload-artifact@v4
         with:

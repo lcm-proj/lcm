@@ -40,6 +40,7 @@ addopts = ["-ra", "--showlocals", "--strict-markers", "--strict-config"]
 xfail_strict = true
 log_cli_level = "INFO"
 filterwarnings = ["error"]
+python_files = "test/python/test_python_module.py"
 
 [tool.cibuildwheel]
 build-verbosity = 1
