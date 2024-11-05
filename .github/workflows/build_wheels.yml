@@ -12,7 +12,7 @@ jobs:
         # macos-13 is an intel runner, macos-14 is apple silicon
         os: [ubuntu-latest, macos-13, macos-14]
         arch: [auto, aarch64]
-        python: [cp37-*, cp38-*, cp39-*, cp310-*, cp311-*, cp312-*]
+        python: [cp37-*, cp38-*, cp39-*, cp310-*, cp311-*, cp312-*, cp313-*]
         include:
           - os: macos-13
             macos_deployment_target: 13
@@ -40,7 +40,7 @@ jobs:
           platforms: all
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.19.2
+        uses: pypa/cibuildwheel@v2.21.3
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_deployment_target }}
           CIBW_ARCHS: ${{ matrix.arch }}
