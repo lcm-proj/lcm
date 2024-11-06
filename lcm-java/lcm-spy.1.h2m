@@ -2,6 +2,23 @@
 .TP 5
 \fBlcm-spy \fI[options]\fR
 
+[DESCRIPTION]
+.nf
+
+\fBlcm-spy\fR collects the following statistics for each channel:
+.IP - 2
+Channel name
+.IP - 2
+Number of messages received
+.IP - 2
+Message Rate (Hz)
+.IP - 2
+Bandwidth (KB/s)
+
+.RE
+On its own, this information can often be used to verify that messages are being transmitted on the
+expected channels, and at the expected data rates.
+
 [SEE ALSO]
 .BR lcm-gen (1)
 
