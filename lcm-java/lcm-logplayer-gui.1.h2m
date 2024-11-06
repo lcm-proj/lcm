@@ -2,6 +2,9 @@
 .TP 5
 \fBlcm-logplayer-gui \fI[options]\fR \fI[FILE]\fR
 
+[CAVEATS]
+IPv6 is disabled.
+
 [SEE ALSO]
 .BR lcm-logger (1)
 .BR lcm-logplayer (1)
