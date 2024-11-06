@@ -26,8 +26,8 @@ static void usage(char *cmd)
 {
     fprintf(stderr,
             "\
-Usage: %s [OPTION...] FILE\n\
-  Reads packets from an LCM log file and publishes them to LCM.\n\
+Usage: %s [OPTION...] FILE\n\n\
+Reads packets from an LCM log file and publishes them to LCM.\n\
 \n\
 Options:\n\
   -v, --verbose       Print information about each packet.\n\
