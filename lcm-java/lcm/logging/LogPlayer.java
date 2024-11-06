@@ -25,7 +25,6 @@ public class LogPlayer extends JComponent
     static
     {
         System.setProperty("java.net.preferIPv4Stack", "true");
-        System.out.println("LC: Disabling IPV6 support");
     }
 
     Log log;
