@@ -32,16 +32,16 @@ if windows
 endif
 
 lcm_lib = both_libraries('lcm', lcm_sources,
-  dependencies : [glib_dep] + lcm_extra_deps,
+  dependencies : [glib_dep, thread_dep] + lcm_extra_deps,
   c_args : lcm_c_args,
   install : true)
 lcm_lib_dep = declare_dependency(
   link_with : lcm_lib.get_shared_lib(),
-  dependencies : [glib_dep] + lcm_extra_deps,
+  dependencies : [glib_dep, thread_dep] + lcm_extra_deps,
   include_directories : include_directories('..'))
 lcm_static_lib_dep = declare_dependency(
   link_with : lcm_lib.get_static_lib(),
-  dependencies : [glib_dep] + lcm_extra_deps,
+  dependencies : [glib_dep, thread_dep] + lcm_extra_deps,
   include_directories : include_directories('..'))
 
 lcm_coretypes_lib = declare_dependency() # 'lcm-coretypes'
