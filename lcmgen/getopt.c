@@ -291,7 +291,7 @@ void getopt_do_usage(getopt_t *gopt)
             if (goo->help == NULL || strlen(goo->help) == 0)
                 printf("\n");
             else
-                printf("\n%*s%s\n\n", leftmargin, "", goo->help);
+                printf("\n%s\n\n", goo->help);
             continue;
         }
 
