@@ -30,7 +30,3 @@
   a. Associate the release with tag vX.Y.Z
   b. Name the release title "vX.Y.Z"
   c. Add release notes from the NEWS file
-
-# Notify the mailing list
-
-1. Send e-mail to lcm-users@googlegroups.com
