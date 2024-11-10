@@ -1,3 +1,45 @@
+December 23, 2024
+=================
+
+Release 1.5.1
+
+- General
+    - Various bug fixes
+        - Fixed a bug where `-l` option didn't work in lcm-logger
+        - Fixed a bug where not all compiler flags were being set
+        - Fixed a command in the post-install instructions for linux
+        - Fixed various compiler warnings
+    - Added `CONTRIBUTING.md`
+    - Added documentation for installing LCM
+- Build system
+    - No longer built with `-Werror` flags by default
+    - Builds with release flags by default
+    - Installed version of `libchar-2d` will be used if possible, rather than always building from
+      source
+    - Encoding no longer needs to be set in locale (e.g. the `LANG` environment variable) in order
+      to build the Java component
+    - Finding Glib with pkgconfig is now supported
+    - Added a missing library for lcm-lua on Windows
+    - Added meson build system support for some components
+- Python
+    - Minimum required version is 3.7
+    - `EventLog` now supports a Path argument, rather than just a string
+    - Added PEP-517 support (users can now `pip3 install .`)
+    - New wheels uploaded to PyPi, which support for newer versions of Python, macOS, and musl-based
+      linux (like Alpine)
+    - Typing information now supported via a stub file
+    - SIGINT no longer produces an exception when shutting down LCM executables installed via a
+      wheel
+- lcm-gen
+    - Python output uses absolute (package-level) import paths where possible rather than relative
+      import paths
+    - More comments are included in the generated output for C, C++, Python, and Java
+    - The version of lcm-gen is now included in the output
+    - Python output now uses the `@staticmethod` decorator rather than `= staticmethod()`
+    - Python output now exports symbols using Python's redundant alias convention
+- lcm-logger
+    - Added `--disk-quota` option
+
 April 19, 2023
 ==============
 
@@ -16,7 +58,7 @@ This is primarily a bugfix and maintenance release.
     - Location has moved from https://lcm-proj.github.io/ to https://lcm-proj.github.io/lcm/
 - Windows support
     - Moved from supporting Visual Studio to supporting a MSYS2 MGW64 environment
-- Java 
+- Java
     - Version 1.8 or later is now required
 
 August 30, 2018
