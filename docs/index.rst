@@ -44,7 +44,7 @@ Supported platforms / languages
   * Java
   * Lua
   * MATLAB
-  * Python (3.6 and later)
+  * Python (3.7 and later)
 
 Forks
 ========
