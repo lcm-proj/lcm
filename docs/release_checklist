@@ -30,3 +30,11 @@
   a. Associate the release with tag vX.Y.Z
   b. Name the release title "vX.Y.Z"
   c. Add release notes from the NEWS file
+
+# PyPi Release
+
+1. Download all wheels generated from CI job from the latest push
+2. Test a macOS wheel and a Linux wheel
+    - Run `test/python/test_python_module.py`
+    - Run `lcm-logplayer-gui`
+3. Upload all wheels to PyPi
