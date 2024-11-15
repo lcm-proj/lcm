@@ -938,7 +938,8 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
 
         if(init_py_fp && 
            !g_hash_table_lookup(init_py_imports, enumeration->enumname->shortname))
-            fprintf(init_py_fp, "from .%s import %s\n", 
+            fprintf(init_py_fp, "from .%s import %s as %s\n", 
+                    enumeration->enumname->shortname,
                     enumeration->enumname->shortname,
                     enumeration->enumname->shortname);
 
@@ -1023,8 +1024,8 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
         }
 
         if (init_py_fp && !g_hash_table_lookup(init_py_imports, structure->structname->shortname))
-            fprintf(init_py_fp, "from .%s import %s\n", structure->structname->shortname,
-                    structure->structname->shortname);
+            fprintf(init_py_fp, "from .%s import %s as %s\n", structure->structname->shortname,
+                    structure->structname->shortname, structure->structname->shortname);
 
         if (!lcm_needs_generation(lcm, structure->lcmfile, path))
             continue;
