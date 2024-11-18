@@ -85,6 +85,7 @@ Publications and application notes
     - `Technical Report MIT-CSAIL-TR-2009-041, Massachusetts Institute of Technology, 2009`
  - :ref:`UDP Multicast Setup`
  - :ref:`Java application notes`
+ - :ref:`Python application notes`
 
 Who uses LCM?
 =============
@@ -119,6 +120,7 @@ sending a message to the `mailing list <http://groups.google.com/group/lcm-users
    content/install-instructions.md
    content/build-instructions.md
    content/java-notes.md
+   content/python-notes.md
    content/lcm-type-ref.md
    content/log-file-format.md
    content/multicast-setup.md
