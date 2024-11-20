@@ -10,7 +10,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install Dependencies
-        run: sudo apt install help2man libglib2.0-dev
+        run: |
+          sudo apt update
+          sudo apt install help2man libglib2.0-dev
 
       - name: Configure CMake
         run: cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}

@@ -20,6 +20,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
+        sudo apt update
         sudo apt install liblua5.3-dev lua5.3 libjchart2d-java libglib2.0-dev
 
     - name: Configure CMake
@@ -191,6 +192,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          sudo apt update
           sudo apt install doxygen liblua5.4-dev lua5.4 python3-sphinx-rtd-theme python3-sphinx python3-myst-parser libglib2.0-dev
 
       - name: Build Docs
@@ -213,6 +215,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
+          sudo apt update
           sudo apt install clang-format-15
 
       - name: Check formatting
