@@ -43,7 +43,7 @@ feedback and involvement on new features.
   * Java
   * Lua
   * MATLAB
-  * Python (3.6 and later)
+  * Python (3.7 and later)
 
 ## Unmaintained languages
 
