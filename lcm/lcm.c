@@ -237,7 +237,7 @@ int lcm_handle_timeout(lcm_t *lcm, int timeout_milis)
     }
 }
 
-int lcm_handle_timeout_microseconds(lcm_t *lcm, int timeout_micros)
+int lcm_handle_timeout_us(lcm_t *lcm, int timeout_micros)
 {
     fd_set fds;
     FD_ZERO(&fds);
