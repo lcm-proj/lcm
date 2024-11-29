@@ -99,6 +99,15 @@ TEST(LCM_CPP, MemqTimeout)
     // Invalid timeout specification should result in an error.
     EXPECT_GT(0, lcm.handleTimeout(-1));
 
+    // No messages available.  Call should timeout immediately.
+    EXPECT_EQ(0, lcm.handleTimeoutMicroseconds(0));
+
+    // No messages available.  Call should timeout in a few ms.
+    EXPECT_EQ(0, lcm.handleTimeoutMicroseconds(10));
+
+    // Invalid timeout specification should result in an error.
+    EXPECT_GT(0, lcm.handleTimeoutMicroseconds(-1));
+
     // Subscribe to and publish on a channel.  Expect that the message gets
     // handled with an ample timeout.
     bool msg_handled = false;
