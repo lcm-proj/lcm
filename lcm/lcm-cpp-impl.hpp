@@ -221,7 +221,7 @@ inline int LCM::handleTimeoutUs(int timeout_micros)
         fprintf(stderr, "LCM instance not initialized.  Ignoring call to handle()\n");
         return -1;
     }
-    return lcm_handle_timeout_microseconds(this->lcm, timeout_micros);
+    return lcm_handle_timeout_us(this->lcm, timeout_micros);
 }
 
 template <class MessageType, class MessageHandlerClass>

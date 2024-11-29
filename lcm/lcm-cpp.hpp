@@ -149,9 +149,9 @@ class LCM {
      *
      * @return >0 if a message was handled, 0 if the function timed out,
      * and <0 if an error occured.
-     * @sa lcm_handle_timeout_microseconds()
+     * @sa lcm_handle_timeout_us()
      */
-    inline int handleTimeoutMicroseconds(int timeout_micros);
+    inline int handleTimeoutUs(int timeout_micros);
 
     /**
      * @brief Subscribes a callback method of an object to a channel, with

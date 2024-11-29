@@ -344,7 +344,7 @@ int lcm_handle_timeout(lcm_t *lcm, int timeout_millis);
  * an error occured.
  */
 LCM_EXPORT
-int lcm_handle_timeout_microseconds(lcm_t *lcm, int timeout_micros);
+int lcm_handle_timeout_us(lcm_t *lcm, int timeout_micros);
 
 /**
  * @brief Adjusts the maximum number of received messages that can be queued up
