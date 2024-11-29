@@ -215,7 +215,7 @@ inline int LCM::handleTimeout(int timeout_millis)
     return lcm_handle_timeout(this->lcm, timeout_millis);
 }
 
-inline int LCM::handleTimeoutMicroseconds(int timeout_micros)
+inline int LCM::handleTimeoutUs(int timeout_micros)
 {
     if (!this->lcm) {
         fprintf(stderr, "LCM instance not initialized.  Ignoring call to handle()\n");
