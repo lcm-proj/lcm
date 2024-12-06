@@ -1,5 +1,5 @@
 package = "lcm"
-version = "1.5.0-0"
+version = "1.5.1-0"
 source = {
   url = "http://github.com/lcm-proj/lcm"
 }
