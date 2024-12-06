@@ -67,7 +67,7 @@ jobs:
         docker run -v $(pwd):/work -d --rm -it --name lcm-fedora lcm-fedora /bin/bash
 
     - name: Configure CMake
-      run: docker exec lcm-fedora cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}} -DCMAKE_BUILD_TYPE=Debug
+      run: docker exec lcm-fedora cmake -B ${{github.workspace}}/build ${{env.CMAKE_FLAGS}}
 
     - name: Build
       run: docker exec lcm-fedora cmake --build ${{github.workspace}}/build
