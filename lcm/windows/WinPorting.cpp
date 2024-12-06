@@ -218,7 +218,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)  // tz is not used in 
     UNIXStart.wSecond = 0;
     UNIXStart.wMilliseconds = 0;
 
-    BOOL Did = SystemTimeToFileTime(&UNIXStart, (FILETIME *) &ftUNIXTime);
+    SystemTimeToFileTime(&UNIXStart, (FILETIME *) &ftUNIXTime);
 
     GetSystemTimeAsFileTime((LPFILETIME) &ftNow);
     ftNow -= ftUNIXTime;
