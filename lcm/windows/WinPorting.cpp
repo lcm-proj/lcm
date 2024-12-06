@@ -11,9 +11,13 @@
 #define ARBITRARY_START_PORT 10000
 //	The following data allows multiple processes to access the LastSocket variable
 //	and always choose a valid new socket to use a UNIX pipe() emulation
+#ifdef _MSC_VER
 #pragma data_seg(".winlcm")
+#endif
 volatile LONG LastSocket = ARBITRARY_START_PORT;
+#ifdef _MSC_VER
 #pragma data_seg()
+#endif
 
 extern "C" {
 GUID WSARecvMsg_GUID = WSAID_WSARECVMSG;
