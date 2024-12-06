@@ -162,7 +162,7 @@ int fcntl(int fd, int flag1, ...)  // Fake out F_GETFL, set socket to block or n
 
 size_t recvmsg(SOCKET s, struct msghdr *msg, int flags)
 {
-    DWORD nRead, status;
+    DWORD nRead;
 
     WSAMSG tmp_wsamsg;
     tmp_wsamsg.name = msg->msg_name;
@@ -174,7 +174,7 @@ size_t recvmsg(SOCKET s, struct msghdr *msg, int flags)
     tmp_wsamsg.dwFlags = msg->msg_flags;
 
     if (WSARecvMsg == NULL) {
-        status =
+        int status =
             WSAIoctl((SOCKET) s, SIO_GET_EXTENSION_FUNCTION_POINTER, &WSARecvMsg_GUID,
                      sizeof WSARecvMsg_GUID, &WSARecvMsg, sizeof WSARecvMsg, &nRead, NULL, NULL);
         if (status == SOCKET_ERROR) {
