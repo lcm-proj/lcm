@@ -440,7 +440,7 @@ static void emit_python_decode(const lcmgen_t *lcm, FILE *f, lcm_struct_t *struc
 {
     // clang-format off
     emit(1, "@staticmethod");
-    emit(1, "def decode(data):");
+    emit(1, "def decode(data: bytes):");
     emit(2,     "if hasattr(data, 'read'):");
     emit(3,         "buf = data");
     emit(2,     "else:");
@@ -712,8 +712,8 @@ static void emit_python_fingerprint(const lcmgen_t *lcm, FILE *f, lcm_struct_t *
     emit(2,     "tmphash  = (((tmphash<<1)&0xffffffffffffffff) + "
                              "(tmphash>>63)) & 0xffffffffffffffff");
     emit(2,     "return tmphash");
-    
-    
+
+
     emit(1, "_packed_fingerprint = None");
     emit(0, "");
 
@@ -743,7 +743,7 @@ emit_python_dependencies (const lcmgen_t *lcm, FILE *f, lcm_struct_t *structure,
             continue;
         }
         int no_package = g_str_equal(member->type->package, "");
-        if (write_init_py && !no_package) {   
+        if (write_init_py && !no_package) {
             // pyright (The vscode python static analyzer) refuses to understand
             // `import foo.bar` in cases where `import foo` works.
             // https://github.com/microsoft/pyright/issues/6674
@@ -833,7 +833,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
 
     // write the package __init__.py files, if necessary
     FILE *init_py_fp = NULL;
-    GHashTable * init_py_imports = g_hash_table_new_full(g_str_hash, 
+    GHashTable * init_py_imports = g_hash_table_new_full(g_str_hash,
             g_str_equal, free, NULL);
     if (have_package && write_init_py) {
         int ndirs = 0;
@@ -912,7 +912,7 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
                         continue;
                     if(!strcmp(words[0], "from") && !strcmp(words[2], "import")) {
                         char *module_name = strdup(words[1]+1); // ignore leading dot
-                        g_hash_table_replace(init_py_imports, module_name, 
+                        g_hash_table_replace(init_py_imports, module_name,
                                 module_name);
                     }
 
@@ -936,9 +936,9 @@ emit_package (lcmgen_t *lcm, _package_contents_t *package)
             return -1;
         }
 
-        if(init_py_fp && 
+        if(init_py_fp &&
            !g_hash_table_lookup(init_py_imports, enumeration->enumname->shortname))
-            fprintf(init_py_fp, "from .%s import %s as %s\n", 
+            fprintf(init_py_fp, "from .%s import %s as %s\n",
                     enumeration->enumname->shortname,
                     enumeration->enumname->shortname,
                     enumeration->enumname->shortname);
