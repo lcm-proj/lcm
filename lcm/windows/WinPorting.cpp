@@ -11,9 +11,13 @@
 #define ARBITRARY_START_PORT 10000
 //	The following data allows multiple processes to access the LastSocket variable
 //	and always choose a valid new socket to use a UNIX pipe() emulation
+#ifdef _MSC_VER
 #pragma data_seg(".winlcm")
+#endif
 volatile LONG LastSocket = ARBITRARY_START_PORT;
+#ifdef _MSC_VER
 #pragma data_seg()
+#endif
 
 extern "C" {
 GUID WSARecvMsg_GUID = WSAID_WSARECVMSG;
@@ -162,7 +166,7 @@ int fcntl(int fd, int flag1, ...)  // Fake out F_GETFL, set socket to block or n
 
 size_t recvmsg(SOCKET s, struct msghdr *msg, int flags)
 {
-    DWORD nRead, status;
+    DWORD nRead;
 
     WSAMSG tmp_wsamsg;
     tmp_wsamsg.name = msg->msg_name;
@@ -174,7 +178,7 @@ size_t recvmsg(SOCKET s, struct msghdr *msg, int flags)
     tmp_wsamsg.dwFlags = msg->msg_flags;
 
     if (WSARecvMsg == NULL) {
-        status =
+        int status =
             WSAIoctl((SOCKET) s, SIO_GET_EXTENSION_FUNCTION_POINTER, &WSARecvMsg_GUID,
                      sizeof WSARecvMsg_GUID, &WSARecvMsg, sizeof WSARecvMsg, &nRead, NULL, NULL);
         if (status == SOCKET_ERROR) {
@@ -218,7 +222,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz)  // tz is not used in 
     UNIXStart.wSecond = 0;
     UNIXStart.wMilliseconds = 0;
 
-    BOOL Did = SystemTimeToFileTime(&UNIXStart, (FILETIME *) &ftUNIXTime);
+    SystemTimeToFileTime(&UNIXStart, (FILETIME *) &ftUNIXTime);
 
     GetSystemTimeAsFileTime((LPFILETIME) &ftNow);
     ftNow -= ftUNIXTime;
