@@ -174,16 +174,8 @@ jobs:
     - name: Build
       run: cmake --build build
 
-    # Needs to be installed for the tests to be able to find DLLs.
-    - name: Install
-      run: cmake --install build --prefix /mingw64/
-
     - name: Test
-      run: |
-        cd build
-        # Copy DLLs that don't get installed into the directories of the tests that need them.
-        cp test/types/liblcm-test-types.dll test/c/
-        ctest --output-on-failure
+      run: ctest --output-on-failure
 
   docs:
     runs-on: ubuntu-24.04
