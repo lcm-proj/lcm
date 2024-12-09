@@ -1,6 +1,6 @@
 import lcm
-from os import path, remove
-from tempfile import NamedTemporaryFile
+from os import path
+from tempfile import TemporaryDirectory
 
 CHANNEL = 'test/channel'
 DATA = bytes(3)
@@ -34,8 +34,8 @@ def test_event():
 
 
 def test_event_log():
-    with NamedTemporaryFile() as f:
-        filename = f.name
+    with TemporaryDirectory() as temp_dir:
+        filename = f'{temp_dir}/test.log'
         # Create a log, write an event, and close it.
         log = lcm.EventLog(filename, 'w', True)
         assert log.mode == 'w'
