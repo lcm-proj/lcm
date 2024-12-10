@@ -9,7 +9,7 @@ elif sys.version_info >= (3, 4):
     from pathlib import Path as PathLike
 else:
     # All we do to the Path is call str on it, so this is a harmless fallback.
-    PathLike = str 
+    PathLike = str
 
 if sys.version_info >= (3, 5):
     import typing
@@ -165,9 +165,9 @@ to next() returning the next L{Event<lcm.Event>} in the log.
         @rtype: int
         """
         return self.c_eventlog.ftell ()
-    
+
 LCM_BIN_DIR = os.path.join(os.path.dirname(__file__), '..', 'bin')
-    
+
 def run_script(name: str, args) -> int:
     return subprocess.call([os.path.join(LCM_BIN_DIR, name), *args], close_fds=False)
 
