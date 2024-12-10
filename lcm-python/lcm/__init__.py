@@ -169,7 +169,10 @@ to next() returning the next L{Event<lcm.Event>} in the log.
 LCM_BIN_DIR = os.path.join(os.path.dirname(__file__), '..', 'bin')
 
 def run_script(name: str, args) -> int:
-    return subprocess.call([os.path.join(LCM_BIN_DIR, name), *args], close_fds=False)
+    try:
+        return subprocess.call([os.path.join(LCM_BIN_DIR, name), *args], close_fds=False)
+    except KeyboardInterrupt:
+        return 0
 
 def run_example():
     raise SystemExit(run_script('lcm-example', sys.argv[1:]))
