@@ -40,6 +40,8 @@ if not get_option('lcm_enable_examples').disabled()
 endif
 
 ### Extra modules (Work in progress) ###
+# These 3 modules are nested to reduce clutter in the top level meson.build.
+# They contain logic to print detailed messages about the status of the module.
 # Python
 # Currently doesn't compile for Windows
 subdir('lcm-python')
