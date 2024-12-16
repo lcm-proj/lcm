@@ -166,7 +166,8 @@ jobs:
           cmake:p
           glib2:p
           gtest:p
-  
+          lua:p
+
     - name: Configure CMake
       run: cmake -B build -DPython_FIND_REGISTRY=NEVER
 
