@@ -16,6 +16,10 @@ target_include_directories(lcm-lua PRIVATE
 )
 
 target_link_libraries(lcm-lua lcm ${LUA_LIBRARY})
+if (WIN32)
+  target_link_libraries(lcm-lua ws2_32)
+endif()
+
 
 install(TARGETS lcm-lua
   DESTINATION lib${LIB_SUFFIX}/lua/${LUA_VERSION_MAJOR}.${LUA_VERSION_MINOR}
