@@ -7,7 +7,7 @@ the necessary dependencies, you can run:
 
 ```shell
 pacman -S pactoys git make
-pacboy -S git make toolchain cmake glib2 gtest python-pip
+pacboy -S make toolchain cmake glib2 gtest python-pip
 ```
 
 ## Java
