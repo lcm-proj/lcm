@@ -29,36 +29,43 @@ To build the Python module from source and install it, run:
 pip3 install -v .
 ```
 
-## CMake Overview
+## CMake and Meson overview
 
 These instructions assume that you will build in a directory named `build` as
 a direct subdirectory of the source directory, and that you will use the
-default generator. CMake permits the build directory to be almost anywhere
-(although in-source builds are strongly discouraged), and supports multiple
-generators. To users familiar with CMake, we recommend using
-[Ninja](https://ninja-build.org/).
+default generator. CMake and Meson support multiple generators and permit the
+build directory to be almost anywhere (although in-source builds are strongly
+discouraged for both and are prohibited in Meson). To users familiar with
+CMake, we recommend using [Ninja](https://ninja-build.org/).
 
-A detailed description of how to use CMake is not specific to LCM and is beyond
-the scope of these instructions.
+A detailed description of how to use CMake or Meson is not specific to LCM and
+is beyond the scope of these instructions.
 
-By default CMake is configured to produce a release build. To build with debug symbols instead, use:
+By default CMake and Meson are configured to produce a release build. To build with debug symbols instead, use:
 
 ```shell
 cmake .. -DCMAKE_BUILD_TYPE=Debug
 ```
 
-when configuring a build directory in the following sections.
+for CMake, and use:
+
+```shell
+meson setup build -Dbuildtype=debug
+```
+
+for Meson when configuring a build directory in the following sections.
 
 ## Ubuntu and Debian
 
 Required packages:
   - build-essential
-  - cmake
+  - cmake # note: if using CMake
+  - meson # note: if using Meson
   - libglib2.0-dev
 
 Optional packages (e.g., for language-specific support or building documentation):
   - default-jdk
-  - libjchart2d-java # note: if not installed, jchart2d will be built from source
+  - libjchart2d-java # note: if not installed, jchart2d will be built from source in CMake
   - doxygen
   - liblua5.3-dev
   - lua5.3
@@ -69,7 +76,7 @@ Python packages needed for building documentation:
   - myst-parser
   - sphinx-rtd-theme
 
-From a terminal, run the following commands.
+From a terminal, run the following commands for CMake:
 
 ```shell
 mkdir build
@@ -79,6 +86,15 @@ make
 sudo make install
 ```
 
+or run the following commands for Meson:
+
+```shell
+meson setup build
+cd build
+meson compile
+sudo meson install
+```
+
 ## OS X
 
 There are several ways to build LCM on OS X, none of which are necessarily
@@ -86,7 +102,7 @@ better than the others.
 
 ### Homebrew
 
-Install Homebrew packages
+Install Homebrew packages (swap `cmake` for `meson` if building with Meson)
 
 ```shell
 brew install glib pkg-config cmake
@@ -96,12 +112,23 @@ Install Java.  Type `javac` in a terminal, then follow the instructions.
 
 Download and build LCM.
 
+For CMake, run:
+
 ```shell
 mkdir build
 cd build
 cmake ..
 make
 make install
+```
+
+For Meson, run:
+
+```shell
+meson setup build
+cd build
+meson compile
+meson install
 ```
 
 ## Windows

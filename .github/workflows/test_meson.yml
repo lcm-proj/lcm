@@ -1,0 +1,175 @@
+name: test_meson
+
+on: [push, pull_request]
+
+jobs:
+
+  ubuntu:
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, ubuntu-22.04]
+        build_type: [Debug, Release]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        sudo apt install liblua5.3-dev lua5.3 libjchart2d-java libglib2.0-dev meson
+
+    - name: Setup Meson
+      run: meson setup ${{github.workspace}}/build
+
+    - name: Build
+      run: ninja -C ${{github.workspace}}/build
+
+    - name: Test
+      run : '${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
+
+    - name: Install
+      run : sudo ninja -C ${{github.workspace}}/build install
+
+    - name : Build C Example
+      working-directory: ${{github.workspace}}/examples/c
+      run: |
+        meson setup build
+        ninja -C build
+
+    - name: Build C++ Example
+      working-directory: ${{github.workspace}}/examples/cpp
+      run: |
+        meson setup build
+        ninja -C build
+
+    - name: Build and Run C++ Log Writer Example
+      working-directory: ${{github.workspace}}/examples/cpp/lcm_log_writer
+      run: |
+        meson setup build
+        ninja -C build
+        LD_LIBRARY_PATH=/usr/local/lib/ build/lcm_log_writer build/example.log
+
+  fedora:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Build and Start Container
+      run: |
+        docker build -f docker/Dockerfile.fedora -t lcm-fedora docker
+        docker run -v $(pwd):/work -d --rm -it --name lcm-fedora lcm-fedora /bin/bash
+
+    - name: Setup Meson
+      run: docker exec lcm-fedora meson setup ${{github.workspace}}/build
+
+    - name: Build
+      run: docker exec lcm-fedora ninja -C ${{github.workspace}}/build
+
+    - name: Test
+      run : 'docker exec lcm-fedora ${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
+
+    - name: Install
+      run : docker exec lcm-fedora ninja -C ${{github.workspace}}/build install
+
+    - name : Build C Example
+      run: |
+        docker exec --workdir /work/examples/c lcm-fedora meson setup build
+        docker exec --workdir /work/examples/c lcm-fedora ninja -C build
+
+    - name: Build C++ Example
+      run: |
+        docker exec --workdir /work/examples/cpp lcm-fedora meson setup build
+        docker exec --workdir /work/examples/cpp lcm-fedora ninja -C build
+
+    - name: Build and Run C++ Log Writer Example
+      working-directory: ${{github.workspace}}/examples/cpp/lcm_log_writer
+      run: |
+        docker exec --workdir /work/examples/cpp/lcm_log_writer lcm-fedora meson setup build
+        docker exec --workdir /work/examples/cpp/lcm_log_writer lcm-fedora ninja -C build
+        docker exec --workdir /work/examples/cpp/lcm_log_writer -e LD_LIBRARY_PATH=/usr/local/lib64/ lcm-fedora build/lcm_log_writer build/example.log
+
+  macos:
+    strategy:
+      matrix:
+        os: [macos-13, macos-14]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install Dependencies
+      run: |
+        brew install lua meson
+
+    - name: Setup Meson
+      run: meson setup ${{github.workspace}}/build
+
+    - name: Build
+      run: ninja -C ${{github.workspace}}/build
+
+    - name: Test
+      run : '${{github.workspace}}/build/liblcm-test/lcm-tester | grep "LCM: OK!"'
+
+    - name: Install
+      run : sudo ninja -C ${{github.workspace}}/build install
+
+    - name : Build C Example
+      working-directory: ${{github.workspace}}/examples/c
+      run: |
+        meson setup build
+        ninja -C build
+
+    - name: Build C++ Example
+      working-directory: ${{github.workspace}}/examples/cpp
+      run: |
+        meson setup build
+        ninja -C build
+
+    - name: Build and Run C++ Log Writer Example
+      working-directory: ${{github.workspace}}/examples/cpp/lcm_log_writer
+      run: |
+        meson setup build
+        ninja -C build
+        build/lcm_log_writer build/example.log
+
+  windows:
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+
+    runs-on: ${{ matrix.os }}
+
+    defaults:
+      run:
+        shell: msys2 {0}
+
+    steps:
+    - uses: actions/checkout@v3
+    - uses: msys2/setup-msys2@v2
+      with:
+        msystem: mingw64
+        update: false
+        install: >-
+          git
+          make
+        pacboy: >-
+          toolchain:p
+          cmake:p
+          glib2:p
+          gtest:p
+          meson:p
+  
+    - name: Setup Meson
+      run: meson setup build --prefix /mingw64/
+
+    - name: Build
+      run: ninja -C build
+    
+    - name: Install
+      run: ninja -C build install
+
+    - name: Test
+      run : 'lcm-tester | grep "LCM: OK"'
