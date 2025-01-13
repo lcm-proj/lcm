@@ -44,7 +44,7 @@ jobs:
           platforms: all
 
       - name: Build wheels
-        uses: pypa/cibuildwheel@v2.21.3
+        uses: pypa/cibuildwheel@v2.22.0
         env:
           MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macos_deployment_target }}
           CIBW_ARCHS: ${{ matrix.arch }}
