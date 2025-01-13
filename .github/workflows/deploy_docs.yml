@@ -22,7 +22,7 @@ jobs:
       - name: Install Dependencies
         run: |
           sudo apt update
-          sudo apt install doxygen liblua5.4-dev
+          sudo apt install doxygen liblua5.4-dev libglib2.0-dev
           pip install sphinx-rtd-theme Sphinx myst-parser
 
       - name: Build Docs
