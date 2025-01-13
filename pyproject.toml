@@ -51,3 +51,8 @@ before-all = "yum install java-1.8.0-openjdk-devel -y"
 [[tool.cibuildwheel.overrides]]
 select = "*-musllinux*"
 before-all = ""
+
+# Experimental armv7l manylinux image is Ubuntu-based
+[[tool.cibuildwheel.overrides]]
+select = "*-manylinux_armv7l*"
+before-all = "apt update && apt install libglib2.0-dev openjdk-8-jdk -y"
