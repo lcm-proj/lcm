@@ -10,8 +10,8 @@ jobs:
       fail-fast: false
       matrix:
         # macos-13 is an intel runner, macos-14 is apple silicon
-        os: [ubuntu-latest, macos-13, macos-14]
-        arch: [auto, aarch64, armv7l]
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-13, macos-14]
+        arch: [auto, armv7l]
         python: [cp37-*, cp38-*, cp39-*, cp310-*, cp311-*, cp312-*, cp313-*]
         include:
           - os: macos-13
@@ -19,16 +19,14 @@ jobs:
           - os: macos-14
             macos_deployment_target: 14
         exclude:
-          - os: macos-13
-            arch: aarch64
+          - os: ubuntu-24.04
+            arch: armv7l
           - os: macos-13
             arch: armv7l
           - os: macos-13
             python: cp37-*
           - os: macos-13
             python: cp310-*
-          - os: macos-14
-            arch: aarch64
           - os: macos-14
             arch: armv7l
           - os: macos-14
