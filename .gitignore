@@ -1,6 +1,8 @@
 build*/
 __pycache__
 docs/_build/
+bazel-*
+MODULE.bazel.lock
 
 .vscode/
 .idea/

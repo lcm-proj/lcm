@@ -20,3 +20,6 @@
 /cpp/lcm_log_writer/pronto/
 /java/temperature_demo_java/lcmtypes/
 !/go/listener/
+
+# Don't ignore the bazel/exlcm source file symlinks.
+!bazel/exlcm/

@@ -1,0 +1,31 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
+
+cc_binary(
+    name = "lcm-gen",
+    srcs = [
+        "emit_c.c",
+        "emit_cpp.c",
+        "emit_csharp.c",
+        "emit_go.c",
+        "emit_java.c",
+        "emit_lua.c",
+        "emit_python.c",
+        "getopt.c",
+        "getopt.h",
+        "lcmgen.c",
+        "lcmgen.h",
+        "main.c",
+        "tokenize.c",
+        "tokenize.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//lcm:lcm-version",
+        "@glib//glib",
+    ],
+)

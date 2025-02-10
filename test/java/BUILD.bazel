@@ -1,0 +1,84 @@
+load("@rules_java//java:java_binary.bzl", "java_binary")
+load("@rules_java//java:java_library.bzl", "java_library")
+load("@rules_java//java:java_test.bzl", "java_test")
+load("@rules_python//python:py_test.bzl", "py_test")
+load("//lcm-bazel:lcm_java_library_srcs.bzl", "lcm_java_library_srcs")
+
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
+
+lcm_java_library_srcs(
+    name = "lcmtest",
+    testonly = True,
+    src = "//test/types:lcmtest",
+)
+
+lcm_java_library_srcs(
+    name = "lcmtest2",
+    testonly = True,
+    src = "//test/types:lcmtest2",
+)
+
+lcm_java_library_srcs(
+    name = "lcmtest3",
+    testonly = True,
+    src = "//test/types:lcmtest3",
+)
+
+java_library(
+    name = "messages",
+    testonly = True,
+    srcs = [
+        ":lcmtest",
+        ":lcmtest2",
+        ":lcmtest3",
+    ],
+    deps = [
+        "//lcm-java",
+    ],
+)
+
+java_test(
+    name = "junit",
+    srcs = [
+        "lcmtest/TestUDPMulticastProvider.java",
+    ],
+    test_class = "TestUDPMulticastProvider",
+    deps = [
+        ":messages",
+        "//lcm-java",
+        "@lcm_maven//:junit_junit",
+    ],
+)
+
+java_binary(
+    name = "client",
+    testonly = True,
+    srcs = ["lcmtest/LcmTestClient.java"],
+    main_class = "LcmTestClient",
+    deps = [
+        ":messages",
+        "//lcm-java",
+    ],
+)
+
+py_test(
+    name = "client_server_test",
+    srcs = ["//test:run_client_server_test.py"],
+    args = [
+        "$(rootpath //test/c:server)",
+        "$(rootpath :client)",
+    ],
+    data = [
+        ":client",
+        "//test/c:server",
+    ],
+    env = {
+        # Use a different port number for each language to avoid conflicts.
+        "LCM_DEFAULT_URL": "udpm://239.255.76.67:7604?ttl=0",
+    },
+    flaky = True,
+    main = "//test:run_client_server_test.py",
+)

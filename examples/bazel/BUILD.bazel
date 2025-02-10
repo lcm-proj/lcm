@@ -1,0 +1,132 @@
+# SPDX-License-Identifier: MIT-0
+#
+# Using LGPL-2.1 for examples leads to unnecessary hassle for users, so this
+# example is licensed under the https://spdx.org/licenses/MIT-0.html license,
+# except for the exlcm/*.lcm message definitions.
+
+load("@lcm//lcm-bazel:lcm_c_library_srcs.bzl", "lcm_c_library_srcs")
+load("@lcm//lcm-bazel:lcm_cc_library_srcs.bzl", "lcm_cc_library_srcs")
+load("@lcm//lcm-bazel:lcm_java_library_srcs.bzl", "lcm_java_library_srcs")
+load("@lcm//lcm-bazel:lcm_library.bzl", "lcm_library")
+load("@lcm//lcm-bazel:lcm_py_library_srcs.bzl", "lcm_py_library_srcs")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_java//java:java_binary.bzl", "java_binary")
+load("@rules_java//java:java_library.bzl", "java_library")
+load("@rules_license//rules:license.bzl", "license")
+load("@rules_python//python:py_library.bzl", "py_library")
+load("@rules_python//python:py_test.bzl", "py_test")
+
+package(
+    default_applicable_licenses = [":license"],
+    default_visibility = ["//visibility:public"],
+)
+
+exports_files([
+    "LICENSE.TXT",
+])
+
+license(
+    name = "license",
+    license_kinds = ["@rules_license//licenses/spdx:MIT-0"],
+    license_text = "LICENSE.TXT",
+)
+
+# Run lcm-gen on 'exlcm' for C, C++, Java, and Python.
+
+lcm_library(
+    name = "exlcm",
+    srcs = glob(["exlcm/*.lcm"]),
+    lcm_package = "exlcm",
+)
+
+lcm_c_library_srcs(
+    name = "exlcm_c_srcs",
+    src = ":exlcm",
+)
+
+cc_library(
+    name = "exlcm_c",
+    srcs = [":exlcm_c_srcs"],
+    deps = ["@lcm//lcm:lcm-static"],
+)
+
+lcm_cc_library_srcs(
+    name = "exlcm_cc_srcs",
+    src = ":exlcm",
+)
+
+cc_library(
+    name = "exlcm_cc",
+    srcs = [":exlcm_cc_srcs"],
+    deps = ["@lcm//lcm:lcm-coretypes"],
+)
+
+lcm_java_library_srcs(
+    name = "exlcm_java_srcs",
+    src = ":exlcm",
+)
+
+java_library(
+    name = "exlcm_java",
+    srcs = [":exlcm_java_srcs"],
+    deps = ["@lcm//lcm-java"],
+)
+
+lcm_py_library_srcs(
+    name = "exlcm_py_srcs",
+    src = ":exlcm",
+)
+
+py_library(
+    name = "exlcm_py",
+    srcs = [":exlcm_py_srcs"],
+    imports = ["."],
+)
+
+# Perform some basic testing on the generated messages.
+
+cc_test(
+    name = "test_c",
+    srcs = ["test_c.c"],
+    deps = [
+        ":exlcm_c",
+        "@lcm//lcm:lcm-static",
+    ],
+)
+
+cc_test(
+    name = "test_cc",
+    srcs = ["test_cc.cc"],
+    deps = [
+        ":exlcm_cc",
+        "@lcm//lcm:lcm-static",
+    ],
+)
+
+py_test(
+    name = "test_py",
+    srcs = ["test_py.py"],
+    deps = [
+        ":exlcm_py",
+        "@lcm//lcm-python",
+    ],
+)
+
+# Create aliases for the Java tools, adding our messages to the classpath.
+
+java_binary(
+    name = "lcm-spy",
+    main_class = "lcm.spy.Spy",
+    runtime_deps = [
+        ":exlcm_java",
+    ],
+)
+
+java_binary(
+    name = "lcm-logplayer-gui",
+    main_class = "lcm.logging.LogPlayer",
+    runtime_deps = [
+        ":exlcm_java",
+    ],
+)

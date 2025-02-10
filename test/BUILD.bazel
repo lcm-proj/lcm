@@ -1,0 +1,9 @@
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
+
+exports_files(
+    ["run_client_server_test.py"],
+    visibility = ["//test:__subpackages__"],
+)

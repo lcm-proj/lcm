@@ -1,0 +1,67 @@
+load("@rules_java//java:java_binary.bzl", "java_binary")
+load("@rules_java//java:java_library.bzl", "java_library")
+
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
+
+java_library(
+    name = "lcm-java",
+    srcs = [
+        "lcm/lcm/LCM.java",
+        "lcm/lcm/LCMDataInputStream.java",
+        "lcm/lcm/LCMDataOutputStream.java",
+        "lcm/lcm/LCMEncodable.java",
+        "lcm/lcm/LCMSubscriber.java",
+        "lcm/lcm/LogFileProvider.java",
+        "lcm/lcm/MemqProvider.java",
+        "lcm/lcm/MessageAggregator.java",
+        "lcm/lcm/Provider.java",
+        "lcm/lcm/TCPProvider.java",
+        "lcm/lcm/TCPService.java",
+        "lcm/lcm/UDPMulticastProvider.java",
+        "lcm/lcm/URLParser.java",
+        "lcm/logging/JScrubber.java",
+        "lcm/logging/JScrubberListener.java",
+        "lcm/logging/Log.java",
+        "lcm/logging/LogDiagnostic.java",
+        "lcm/logging/LogPlayer.java",
+        "lcm/spy/ChannelData.java",
+        "lcm/spy/ChartData.java",
+        "lcm/spy/LCMTypeDatabase.java",
+        "lcm/spy/ObjectPanel.java",
+        "lcm/spy/Spy.java",
+        "lcm/spy/SpyPlugin.java",
+        "lcm/spy/ZoomableChartScrollWheel.java",
+        "lcm/util/BufferedRandomAccessFile.java",
+        "lcm/util/ClassDiscoverer.java",
+        "lcm/util/ColorMapper.java",
+        "lcm/util/JImage.java",
+        "lcm/util/ParameterGUI.java",
+        "lcm/util/ParameterListener.java",
+        "lcm/util/TableSorter.java",
+    ],
+    javacopts = [
+        # Suppressed until lcm-proj/lcm#159 is fixed.
+        "-XepDisableAllChecks",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@lcm_maven//:net_sf_jchart2d_jchart2d",
+    ],
+)
+
+java_binary(
+    name = "lcm-spy",
+    main_class = "lcm.spy.Spy",
+    visibility = ["//visibility:public"],
+    runtime_deps = [":lcm-java"],
+)
+
+java_binary(
+    name = "lcm-logplayer-gui",
+    main_class = "lcm.logging.LogPlayer",
+    visibility = ["//visibility:public"],
+    runtime_deps = [":lcm-java"],
+)
