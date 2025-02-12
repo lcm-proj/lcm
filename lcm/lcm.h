@@ -323,6 +323,30 @@ LCM_EXPORT
 int lcm_handle_timeout(lcm_t *lcm, int timeout_millis);
 
 /**
+ * @brief Wait for and dispatch the next incoming message, up to a time limit.
+ *
+ * This function is equivalent to lcm_handle(), but if no messages are received
+ * and handled by the time @p timeout_micros microseconds elapses, then the
+ * function returns.
+ *
+ * This function largely exists for convenience, and its behavior can be
+ * replicated by using lcm_fileno() and lcm_handle() in conjunction with
+ * select() or poll().
+ *
+ * New in LCM 1.1.0.
+ *
+ * @param lcm the %LCM object
+ * @param timeout_micros the maximum amount of time to wait for a message, in
+ *        microseconds.  If 0, then dispatches any available messages and then
+ *        returns immediately.  Values less than 0 are not allowed.
+ *
+ * @return >0 if a message was handled, 0 if the function timed out, and <0 if
+ * an error occured.
+ */
+LCM_EXPORT
+int lcm_handle_timeout_us(lcm_t *lcm, int timeout_micros);
+
+/**
  * @brief Adjusts the maximum number of received messages that can be queued up
  * for a subscription.
  *

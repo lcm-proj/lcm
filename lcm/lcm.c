@@ -237,6 +237,32 @@ int lcm_handle_timeout(lcm_t *lcm, int timeout_milis)
     }
 }
 
+int lcm_handle_timeout_us(lcm_t *lcm, int timeout_micros)
+{
+    fd_set fds;
+    FD_ZERO(&fds);
+    SOCKET lcm_fd = lcm_get_fileno(lcm);
+    FD_SET(lcm_fd, &fds);
+
+    struct timeval timeout;
+    timeout.tv_sec = timeout_micros / 1000000;
+    timeout.tv_usec = timeout_micros % 1000000;
+
+    if (timeout_micros < 0) {
+        return -1;
+    }
+
+    int select_result = select(lcm_fd + 1, &fds, NULL, NULL, &timeout);
+    if (select_result > 0) {
+        int lcm_handle_result = lcm_handle(lcm);
+        return lcm_handle_result == 0 ? 1 : lcm_handle_result;
+    } else if (select_result == 0) {
+        return 0;
+    } else {
+        return select_result;
+    }
+}
+
 int lcm_get_fileno(lcm_t *lcm)
 {
     if (lcm->provider && lcm->vtable->get_fileno)
