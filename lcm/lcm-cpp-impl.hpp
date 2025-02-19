@@ -215,6 +215,15 @@ inline int LCM::handleTimeout(int timeout_millis)
     return lcm_handle_timeout(this->lcm, timeout_millis);
 }
 
+inline int LCM::handleTimeoutUs(int timeout_micros)
+{
+    if (!this->lcm) {
+        fprintf(stderr, "LCM instance not initialized.  Ignoring call to handle()\n");
+        return -1;
+    }
+    return lcm_handle_timeout_us(this->lcm, timeout_micros);
+}
+
 template <class MessageType, class MessageHandlerClass>
 Subscription *LCM::subscribe(const std::string &channel,
                              void (MessageHandlerClass::*handlerMethod)(const ReceiveBuffer *rbuf,

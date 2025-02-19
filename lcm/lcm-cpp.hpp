@@ -143,6 +143,17 @@ class LCM {
     inline int handleTimeout(int timeout_millis);
 
     /**
+     * @brief Waits for and dispatches messages, with a timeout.
+     *
+     * New in LCM 1.1.0.
+     *
+     * @return >0 if a message was handled, 0 if the function timed out,
+     * and <0 if an error occured.
+     * @sa lcm_handle_timeout_us()
+     */
+    inline int handleTimeoutUs(int timeout_micros);
+
+    /**
      * @brief Subscribes a callback method of an object to a channel, with
      * automatic message decoding.
      *
