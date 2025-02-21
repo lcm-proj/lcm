@@ -1,0 +1,45 @@
+load("//lcm-bazel:lcm_library.bzl", "lcm_library")
+
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
+
+lcm_library(
+    name = "lcmtest",
+    testonly = True,
+    srcs = [
+        "lcmtest/bools_t.lcm",
+        "lcmtest/byte_array_t.lcm",
+        "lcmtest/comments_t.lcm",
+        "lcmtest/exampleconst_t.lcm",
+        "lcmtest/multidim_array_t.lcm",
+        "lcmtest/node_t.lcm",
+        "lcmtest/primitives_list_t.lcm",
+        "lcmtest/primitives_t.lcm",
+    ],
+    lcm_package = "lcmtest",
+    visibility = ["//test:__subpackages__"],
+)
+
+lcm_library(
+    name = "lcmtest2",
+    testonly = True,
+    srcs = [
+        "lcmtest2/another_type_t.lcm",
+        "lcmtest2/cross_package_t.lcm",
+    ],
+    lcm_package = "lcmtest2",
+    visibility = ["//test:__subpackages__"],
+    deps = [":lcmtest"],
+)
+
+lcm_library(
+    name = "lcmtest3",
+    testonly = True,
+    srcs = [
+        "lcmtest3/arrays_t.lcm",
+    ],
+    lcm_package = "lcmtest3",
+    visibility = ["//test:__subpackages__"],
+)

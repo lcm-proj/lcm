@@ -6,5 +6,5 @@ package exlcm
 //go:generate lcm-gen -g ../types/exampleconst_t.lcm
 //go:generate lcm-gen -g ../types/example_list_t.lcm
 //go:generate lcm-gen -g ../types/example_t.lcm
-//go:generate lcm-gen -g ../types/multidim_array_t.lcm
+//go:generate lcm-gen -g ../types/muldim_array_t.lcm
 //go:generate lcm-gen -g ../types/node_t.lcm

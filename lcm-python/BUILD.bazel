@@ -1,0 +1,34 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_python//python:py_library.bzl", "py_library")
+
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
+
+cc_binary(
+    name = "lcm/_lcm.so",
+    srcs = [
+        "module.c",
+        "pyeventlog.c",
+        "pylcm.c",
+        "pylcm.h",
+        "pylcm_subscription.c",
+        "pylcm_subscription.h",
+    ],
+    linkshared = True,
+    visibility = ["//visibility:private"],
+    deps = [
+        "//lcm:lcm-shared",
+        "@rules_python//python/cc:current_py_cc_headers",
+        "@rules_python//python/cc:current_py_cc_libs",
+    ],
+)
+
+py_library(
+    name = "lcm-python",
+    srcs = ["lcm/__init__.py"],
+    data = [":lcm/_lcm.so"],
+    imports = ["."],
+    visibility = ["//visibility:public"],
+)

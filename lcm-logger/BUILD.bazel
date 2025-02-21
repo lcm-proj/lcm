@@ -1,0 +1,30 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
+
+cc_binary(
+    name = "lcm-logger",
+    srcs = [
+        "glib_util.c",
+        "glib_util.h",
+        "lcm_logger.c",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//lcm:lcm-static",
+    ],
+)
+
+cc_binary(
+    name = "lcm-logplayer",
+    srcs = [
+        "lcm_logplayer.c",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//lcm:lcm-static",
+    ],
+)
