@@ -1,0 +1,125 @@
+load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_test.bzl", "cc_test")
+load("@rules_python//python:py_test.bzl", "py_test")
+load("//lcm-bazel:lcm_c_library_srcs.bzl", "lcm_c_library_srcs")
+
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
+
+lcm_c_library_srcs(
+    name = "lcmtest",
+    testonly = True,
+    src = "//test/types:lcmtest",
+)
+
+lcm_c_library_srcs(
+    name = "lcmtest2",
+    testonly = True,
+    src = "//test/types:lcmtest2",
+)
+
+lcm_c_library_srcs(
+    name = "lcmtest3",
+    testonly = True,
+    src = "//test/types:lcmtest3",
+)
+
+cc_library(
+    name = "messages",
+    testonly = True,
+    srcs = [
+        ":lcmtest",
+        ":lcmtest2",
+        ":lcmtest3",
+    ],
+    includes = ["."],
+    deps = [
+        "//lcm:lcm-static",
+    ],
+)
+
+TEST_C_LIBS = [
+    ":messages",
+    "//lcm:lcm-static",
+    "@googletest//:gtest",
+    "@googletest//:gtest_main",
+]
+
+cc_test(
+    name = "memq_test",
+    srcs = [
+        "common.c",
+        "common.h",
+        "memq_test.cpp",
+    ],
+    deps = TEST_C_LIBS,
+)
+
+cc_test(
+    name = "eventlog_test",
+    srcs = [
+        "common.c",
+        "common.h",
+        "eventlog_test.cpp",
+    ],
+    deps = TEST_C_LIBS,
+)
+
+cc_test(
+    name = "udpm_test",
+    srcs = [
+        "common.c",
+        "common.h",
+        "udpm_test.cpp",
+    ],
+    deps = TEST_C_LIBS,
+)
+
+cc_binary(
+    name = "server",
+    testonly = True,
+    srcs = [
+        "common.c",
+        "common.h",
+        "server.c",
+    ],
+    linkstatic = True,
+    visibility = ["//test:__subpackages__"],
+    deps = [
+        ":messages",
+        "//lcm:lcm-static",
+    ],
+)
+
+cc_binary(
+    name = "client",
+    testonly = True,
+    srcs = [
+        "client.cpp",
+        "common.c",
+        "common.h",
+    ],
+    deps = TEST_C_LIBS,
+)
+
+py_test(
+    name = "client_server_test",
+    srcs = ["//test:run_client_server_test.py"],
+    args = [
+        "$(rootpath :server)",
+        "$(rootpath :client)",
+    ],
+    data = [
+        ":client",
+        ":server",
+    ],
+    env = {
+        # Use a different port number for each language to avoid conflicts.
+        "LCM_DEFAULT_URL": "udpm://239.255.76.67:7601?ttl=0",
+    },
+    flaky = True,
+    main = "//test:run_client_server_test.py",
+)

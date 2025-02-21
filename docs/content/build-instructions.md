@@ -192,3 +192,27 @@ In addition, `pkgconfig` can be configured to find lcm.pc:
 ```shell
 export PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$LCM_LIBRARY_DIR/pkgconfig
 ```
+
+## Bazel
+
+LCM also supports [Bazel](https://bazel.build/) for a subset of languages
+(C, C++, Java, Python). The Bazel build only provides libraries and command
+line tools; it doesn't support building wheels or documentation.
+
+If you are already a Bazel user this is a good option, but if not you will
+perhaps be happier sticking with the CMake or Meson build, explained above.
+
+The Bazel build uses very few system packages, so most of the text above about
+required packages does not apply. The only required tool is a C/C++ compiler,
+e.g., `apt install build-essential` on Ubuntu and Debian. If Java will
+be used, a local JDK is also recommended, e.g., `apt install default-jdk`.
+See the [example](https://github.com/lcm-proj/lcm/tree/master/examples/bazel)
+for details.
+
+The Bazel build is not currently tested on Windows and is probably incomplete.
+We welcome contributions of build fixes (for Windows or any other problems).
+
+To try out the Bazel build, first install
+[bazelisk](https://github.com/bazelbuild/bazelisk) to provide `bazel` on your
+PATH and then run, e.g., `bazel run //lcm-java:lcm-spy`. See also the
+sample projct at `examples/bazel` for how to use LCM as a Bazel dependency.

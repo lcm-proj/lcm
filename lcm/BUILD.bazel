@@ -1,0 +1,182 @@
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
+load("@rules_cc//cc:cc_library.bzl", "cc_library")
+load("@rules_cc//cc:cc_shared_library.bzl", "cc_shared_library")
+load("//lcm-bazel/private:copts.bzl", "WARNINGS_COPTS")
+
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
+
+# The following constants are congruent with the CMakeLists.txt.
+
+LCM_SOURCES = [
+    "eventlog.c",
+    "lcm.c",
+    "lcm_file.c",
+    "lcm_memq.c",
+    "lcm_mpudpm.c",
+    "lcm_tcpq.c",
+    "lcm_udpm.c",
+    "ringbuffer.c",
+    "udpm_util.c",
+    "lcmtypes/channel_port_map_update_t.c",
+    "lcmtypes/channel_to_port_t.c",
+]
+
+LCM_INSTALL_HEADERS = [
+    "eventlog.h",
+    "lcm.h",
+    "lcm_coretypes.h",
+    "lcm_version.h",
+    "lcm-cpp.hpp",
+    "lcm-cpp-impl.hpp",
+    "lcm_export.h",
+]
+
+LCM_SOURCES_WIN32 = [
+    "windows/WinLCM.cpp",
+    "windows/WinPorting.cpp",
+]
+
+LCM_INSTALL_HEADERS_WIN32 = [
+    "windows/WinPorting.h",
+]
+
+LCM_LINKOPTS_WIN32 = [
+    # TODO(jwnimmer-tri) Not sure yet how to do this in Bazel.
+    # target_link_libraries(${lcm_lib} PRIVATE wsock32 ws2_32)
+]
+
+LCM_LINKOPTS_LINUX = [
+    "-pthread",
+]
+
+LCM_COMPILE_DEFINITIONS_PRIVATE = [
+    "_FILE_OFFSET_BITS=64",
+    "_LARGEFILE_SOURCE",
+    "_REENTRANT",
+]
+
+# Declare the libraries.
+
+LCM_PRIVATE_HEADERS = [
+    "dbg.h",
+    "ioutils.h",
+    "lcm_internal.h",
+    "ringbuffer.h",
+    "udpm_util.h",
+    "lcmtypes/channel_port_map_update_t.h",
+    "lcmtypes/channel_to_port_t.h",
+]
+
+[
+    # To obtain the correct include paths `<lcm/lcm.h>`, we need to copy public
+    # headers to a subdir now and then set `strip_include_prefix` later.
+    copy_file(
+        name = "_add_hdrs_" + paths.basename(x),
+        src = x,
+        out = "hdrs/lcm/" + x,
+    )
+    for x in LCM_INSTALL_HEADERS + LCM_INSTALL_HEADERS_WIN32
+]
+
+cc_library(
+    name = "lcm-coretypes",
+    hdrs = ["hdrs/lcm/lcm_coretypes.h"],
+    strip_include_prefix = "/lcm/hdrs",
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "lcm-version",
+    hdrs = ["hdrs/lcm/lcm_version.h"],
+    strip_include_prefix = "/lcm/hdrs",
+    visibility = ["//lcmgen:__pkg__"],
+)
+
+config_setting(
+    name = "linux",
+    constraint_values = ["@platforms//os:linux"],
+)
+
+config_setting(
+    name = "windows",
+    constraint_values = ["@platforms//os:windows"],
+)
+
+SRCS = LCM_SOURCES + LCM_PRIVATE_HEADERS + select({
+    ":windows": LCM_SOURCES_WIN32,
+    "//conditions:default": [],
+})
+
+HDRS = LCM_INSTALL_HEADERS + select({
+    ":windows": LCM_INSTALL_HEADERS_WIN32,
+    "//conditions:default": [],
+})
+
+cc_library(
+    name = "_public_hdrs",
+    hdrs = [
+        "hdrs/lcm/" + x
+        for x in LCM_INSTALL_HEADERS
+    ] + select({
+        ":windows": [
+            "hdrs/lcm/" + x
+            for x in LCM_INSTALL_HEADERS_WIN32
+        ],
+        "//conditions:default": [],
+    }),
+    strip_include_prefix = "/lcm/hdrs",
+)
+
+COPTS = [
+    "-D" + x
+    for x in LCM_COMPILE_DEFINITIONS_PRIVATE
+] + WARNINGS_COPTS
+
+LINKOPTS = select({
+    ":linux": LCM_LINKOPTS_LINUX,
+    "//conditions:default": [],
+})
+
+DEPS = [
+    ":_public_hdrs",
+    "@glib//glib",
+]
+
+cc_library(
+    name = "lcm-shared",
+    srcs = SRCS,
+    hdrs = HDRS,
+    copts = COPTS,
+    linkopts = LINKOPTS,
+    visibility = ["//visibility:public"],
+    deps = DEPS,
+)
+
+cc_library(
+    name = "lcm-static",
+    srcs = SRCS,
+    hdrs = HDRS,
+    copts = COPTS,
+    defines = ["LCM_STATIC"],
+    linkopts = LINKOPTS,
+    linkstatic = True,
+    visibility = ["//visibility:public"],
+    deps = DEPS,
+)
+
+cc_shared_library(
+    name = "glib-2.0",
+    visibility = ["//visibility:public"],
+    deps = DEPS,
+)
+
+cc_shared_library(
+    name = "lcm",
+    dynamic_deps = [":glib-2.0"],
+    visibility = ["//visibility:public"],
+    deps = ["lcm-shared"],
+)

@@ -1,0 +1,134 @@
+load("@rules_python//python:py_binary.bzl", "py_binary")
+load("@rules_python//python:py_library.bzl", "py_library")
+load("@rules_python//python:py_test.bzl", "py_test")
+load("//lcm-bazel:lcm_py_library_srcs.bzl", "lcm_py_library_srcs")
+
+package(
+    default_applicable_licenses = ["//:license"],
+    default_visibility = ["//visibility:private"],
+)
+
+lcm_py_library_srcs(
+    name = "lcmtest",
+    testonly = True,
+    src = "//test/types:lcmtest",
+)
+
+lcm_py_library_srcs(
+    name = "lcmtest2",
+    testonly = True,
+    src = "//test/types:lcmtest2",
+)
+
+lcm_py_library_srcs(
+    name = "lcmtest3",
+    testonly = True,
+    src = "//test/types:lcmtest3",
+)
+
+py_library(
+    name = "messages",
+    testonly = True,
+    srcs = [
+        ":lcmtest",
+        ":lcmtest2",
+        ":lcmtest3",
+    ],
+    imports = ["."],
+)
+
+py_test(
+    name = "bool_test",
+    srcs = ["bool_test.py"],
+    deps = [
+        ":messages",
+    ],
+)
+
+py_test(
+    name = "byte_array_test",
+    srcs = ["byte_array_test.py"],
+    deps = [
+        ":messages",
+    ],
+)
+
+py_test(
+    name = "lcm_file_test",
+    srcs = [
+        "client.py",
+        "lcm_file_test.py",
+    ],
+    deps = [
+        ":messages",
+        "//lcm-python",
+    ],
+)
+
+py_test(
+    name = "lcm_memq_test",
+    srcs = ["lcm_memq_test.py"],
+    deps = [
+        ":messages",
+        "//lcm-python",
+    ],
+)
+
+py_test(
+    name = "lcm_thread_test",
+    srcs = ["lcm_thread_test.py"],
+    deps = [
+        ":messages",
+        "//lcm-python",
+    ],
+)
+
+py_test(
+    name = "lcm_udpm_queue_issue_test",
+    srcs = ["lcm_udpm_queue_issue_test.py"],
+    deps = [
+        ":messages",
+        "//lcm-python",
+    ],
+)
+
+py_test(
+    name = "lcm_eventlog",
+    srcs = ["lcm_eventlog.py"],
+    data = [
+        "example.lcmlog",
+    ],
+    deps = [
+        ":messages",
+        "//lcm-python",
+    ],
+)
+
+py_binary(
+    name = "client",
+    testonly = True,
+    srcs = ["client.py"],
+    deps = [
+        ":messages",
+        "//lcm-python",
+    ],
+)
+
+py_test(
+    name = "client_server_test",
+    srcs = ["//test:run_client_server_test.py"],
+    args = [
+        "$(rootpath //test/c:server)",
+        "$(rootpath :client)",
+    ],
+    data = [
+        ":client",
+        "//test/c:server",
+    ],
+    env = {
+        # Use a different port number for each language to avoid conflicts.
+        "LCM_DEFAULT_URL": "udpm://239.255.76.67:7606?ttl=0",
+    },
+    flaky = True,
+    main = "//test:run_client_server_test.py",
+)
