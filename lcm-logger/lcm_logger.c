@@ -23,6 +23,10 @@
 #include <unistd.h> /* fdatasync */
 #endif
 
+#ifdef _MSC_VER
+#include <lcm/windows/WinPorting.h>
+#endif
+
 #ifndef WIN32
 #include <sys/statvfs.h>
 #endif

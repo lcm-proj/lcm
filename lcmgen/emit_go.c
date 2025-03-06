@@ -6,7 +6,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 #ifdef WIN32
 #define F_OK 0                /* Test for existence.  */
 #define __STDC_FORMAT_MACROS  // Enable integer types

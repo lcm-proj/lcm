@@ -19,9 +19,16 @@ if sys.version_info >= (3, 5):
 else:
     PathArgument = object
 
-
-from lcm import _lcm
-from lcm._lcm import LCM, LCMSubscription
+try:
+    from lcm import _lcm
+    from lcm._lcm import LCM, LCMSubscription
+# MSVC uses one build directory for multiple build types, burying binaries in Debug/ and Release/
+except ImportError:
+    from .Release import _lcm
+    from .Release._lcm import LCM, LCMSubscription
+except ImportError:
+    from .Debug import _lcm
+    from .Debug._lcm import LCM, LCMSubscription
 
 class Event(object):
     """Data structure representing a single event in an LCM EventLog

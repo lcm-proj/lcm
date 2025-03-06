@@ -133,8 +133,8 @@ meson install
 
 ## Windows
 
-LCM is officially supported on MSYS2. There is some residual support for Visual Studio that is
-unmaintained. Please see WinSpecific/README.md for more information on building on Windows.
+LCM is officially supported on MSYS2 and MSVC with vcpkg. Please see WinSpecific/README.md for more
+information on building on Windows.
 
 ## Other / General
 

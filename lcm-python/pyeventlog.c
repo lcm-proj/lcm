@@ -12,6 +12,11 @@
 #define PyBytes_FromString PyString_FromString
 #endif
 
+#ifdef _MSC_VER
+#define fseeko _fseeki64
+#define ftello _ftelli64
+#endif
+
 typedef struct {
     PyObject_HEAD
 
