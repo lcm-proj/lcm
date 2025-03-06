@@ -400,7 +400,7 @@ if(NOT CMAKE_VERSION VERSION_LESS 3.1)
       add_library(${NAME} ${_type} ${ARGN})
       add_dependencies(${NAME} ${NAME}.sources)
       target_link_libraries(${NAME}
-        PRIVATE ${LCM_NAMESPACE}lcm
+        PRIVATE ${LCM_NAMESPACE}lcm-static
         PUBLIC ${LCM_NAMESPACE}lcm-coretypes)
 
     # C++ library

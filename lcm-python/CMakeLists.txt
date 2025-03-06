@@ -38,7 +38,7 @@ if (WIN32 AND NOT CYGWIN)
 endif ()
 
 if (WIN32)
-  find_package(Python COMPONENTS Interpreter Development.Module)
+  find_package(Python COMPONENTS Interpreter Development)
 
   target_include_directories(lcm-python PRIVATE
     ${Python_INCLUDE_DIRS}
@@ -66,6 +66,12 @@ endif()
 install(TARGETS lcm-python
   RUNTIME DESTINATION ${PYTHON_INSTALL_DIR}
   LIBRARY DESTINATION ${PYTHON_INSTALL_DIR}
+)
+
+install(
+  DIRECTORY "${CMAKE_BINARY_DIR}/python/lcm/${CMAKE_BUILD_TYPE}/"
+  DESTINATION ${PYTHON_INSTALL_DIR}
+  FILES_MATCHING REGEX "[^\\\\/.]\\.[dD][lL][lL]$"
 )
 
 lcm_copy_file_target(lcm-python-init

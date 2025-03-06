@@ -1,0 +1,32 @@
+{
+  "version": 8,
+  "configurePresets": [
+    {
+      "name": "vcpkg-vs",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "vcpkg-vs-github",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "CMAKE_BUILD_TYPE": "Release"
+      },
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "vcpkg-build",
+      "configurePreset": "vcpkg-vs",
+      "displayName": "Build (Release)",
+      "description": "Build with vcpkg (Release)",
+      "configuration": "Release"
+  }
+  ]
+}

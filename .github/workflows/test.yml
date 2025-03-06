@@ -141,7 +141,7 @@ jobs:
         cmake --build build
         build/lcm_log_writer build/example.log
 
-  windows:
+  windows_msys2:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
@@ -176,6 +176,33 @@ jobs:
 
     - name: Test
       run: ctest --output-on-failure
+
+
+  windows_msvc:
+    runs-on: windows-2022
+
+    steps:
+    - uses: actions/checkout@v4
+
+      # Set up vcpkg, leveraging cache. This does not build any packages.
+    - name: Setup vcpkg
+      uses: lukka/run-vcpkg@v11
+      with:
+        vcpkgDirectory: '${{ runner.workspace }}/b/vcpkg'
+        vcpkgGitCommitId: 'a42af01b72c28a8e1d7b48107b33e4f286a55ef6'
+
+    # Builds dependencies using vcpkg, leveraging cache
+    - name: Run CMake
+      uses: lukka/run-cmake@v10
+      with:
+        configurePreset: 'vcpkg-vs-github'
+
+    - name: Build
+      run: cmake --build build --config Release
+
+    - name: Test
+      run: ctest --output-on-failure --test-dir build -C Release
+
 
   docs:
     runs-on: ubuntu-24.04

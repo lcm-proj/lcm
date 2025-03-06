@@ -30,9 +30,12 @@ lcm-tester = "lcm:run_tester"
 test = ["pytest"]
 
 [tool.scikit-build]
-cmake.args = ["-DLCM_INSTALL_PKGCONFIG=OFF", "-DLCM_PIP_BUILD=ON"]
 wheel.expand-macos-universal-tags = true
-build.tool-args = ["-j4"]
+ninja.make-fallback = false
+
+[tool.scikit-build.cmake.define]
+LCM_INSTALL_PKGCONFIG = "OFF"
+LCM_PIP_BUILD = "ON"
 
 [tool.pytest.ini_options]
 minversion = "6.0"

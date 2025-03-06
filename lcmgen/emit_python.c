@@ -10,7 +10,11 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#ifdef _MSC_VER
+#include <lcm/windows/WinPorting.h>
+#else
 #include <unistd.h>
+#endif
 
 #include "lcmgen.h"
 
