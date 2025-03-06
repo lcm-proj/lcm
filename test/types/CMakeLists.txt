@@ -41,6 +41,12 @@ set_target_properties(lcm-test-types-c PROPERTIES OUTPUT_NAME lcm-test-types)
 target_include_directories(lcm-test-types-c INTERFACE
   ${CMAKE_CURRENT_BINARY_DIR})
 
+lcm_add_library(lcm-test-types-c-static C STATIC ${c_sources} ${c_headers})
+generate_export_header(lcm-test-types-c-static BASE_NAME lcmtest)
+set_target_properties(lcm-test-types-c-static PROPERTIES OUTPUT_NAME lcm-test-types)
+target_include_directories(lcm-test-types-c-static INTERFACE
+  ${CMAKE_CURRENT_BINARY_DIR})
+
 lcm_add_library(lcm-test-types-cpp CPP ${cpp_headers})
 target_include_directories(lcm-test-types-cpp INTERFACE
   ${CMAKE_CURRENT_BINARY_DIR})
