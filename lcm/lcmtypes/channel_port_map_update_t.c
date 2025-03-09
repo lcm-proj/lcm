@@ -9,6 +9,7 @@
 static int __channel_port_map_update_t_hash_computed;
 static uint64_t __channel_port_map_update_t_hash;
 
+LCM_NO_EXPORT
 uint64_t __channel_port_map_update_t_hash_recursive(const __lcm_hash_ptr *p)
 {
     const __lcm_hash_ptr *fp;
@@ -30,6 +31,7 @@ uint64_t __channel_port_map_update_t_hash_recursive(const __lcm_hash_ptr *p)
     return (hash<<1) + ((hash>>63)&1);
 }
 
+LCM_NO_EXPORT
 int64_t __channel_port_map_update_t_get_hash(void)
 {
     if (!__channel_port_map_update_t_hash_computed) {
@@ -40,6 +42,7 @@ int64_t __channel_port_map_update_t_get_hash(void)
     return __channel_port_map_update_t_hash;
 }
 
+LCM_NO_EXPORT
 int __channel_port_map_update_t_encode_array(void *buf, int offset, int maxlen, const channel_port_map_update_t *p, int elements)
 {
     int pos = 0, element;
@@ -60,6 +63,7 @@ int __channel_port_map_update_t_encode_array(void *buf, int offset, int maxlen, 
     return pos;
 }
 
+LCM_NO_EXPORT
 int channel_port_map_update_t_encode(void *buf, int offset, int maxlen, const channel_port_map_update_t *p)
 {
     int pos = 0, thislen;
@@ -74,6 +78,7 @@ int channel_port_map_update_t_encode(void *buf, int offset, int maxlen, const ch
     return pos;
 }
 
+LCM_NO_EXPORT
 int __channel_port_map_update_t_encoded_array_size(const channel_port_map_update_t *p, int elements)
 {
     int size = 0, element;
@@ -89,11 +94,13 @@ int __channel_port_map_update_t_encoded_array_size(const channel_port_map_update
     return size;
 }
 
+LCM_NO_EXPORT
 int channel_port_map_update_t_encoded_size(const channel_port_map_update_t *p)
 {
     return 8 + __channel_port_map_update_t_encoded_array_size(p, 1);
 }
 
+LCM_NO_EXPORT
 int __channel_port_map_update_t_decode_array(const void *buf, int offset, int maxlen, channel_port_map_update_t *p, int elements)
 {
     int pos = 0, thislen, element;
@@ -114,6 +121,7 @@ int __channel_port_map_update_t_decode_array(const void *buf, int offset, int ma
     return pos;
 }
 
+LCM_NO_EXPORT
 int __channel_port_map_update_t_decode_array_cleanup(channel_port_map_update_t *p, int elements)
 {
     (void)p;
@@ -131,6 +139,7 @@ int __channel_port_map_update_t_decode_array_cleanup(channel_port_map_update_t *
     return 0;
 }
 
+LCM_NO_EXPORT
 int channel_port_map_update_t_decode(const void *buf, int offset, int maxlen, channel_port_map_update_t *p)
 {
     int pos = 0, thislen;
@@ -147,11 +156,13 @@ int channel_port_map_update_t_decode(const void *buf, int offset, int maxlen, ch
     return pos;
 }
 
+LCM_NO_EXPORT
 int channel_port_map_update_t_decode_cleanup(channel_port_map_update_t *p)
 {
     return __channel_port_map_update_t_decode_array_cleanup(p, 1);
 }
 
+LCM_NO_EXPORT
 int __channel_port_map_update_t_clone_array(const channel_port_map_update_t *p, channel_port_map_update_t *q, int elements)
 {
     int element;
@@ -168,6 +179,7 @@ int __channel_port_map_update_t_clone_array(const channel_port_map_update_t *p, 
     return 0;
 }
 
+LCM_NO_EXPORT
 channel_port_map_update_t *channel_port_map_update_t_copy(const channel_port_map_update_t *p)
 {
     channel_port_map_update_t *q = (channel_port_map_update_t*) malloc(sizeof(channel_port_map_update_t));
@@ -175,6 +187,7 @@ channel_port_map_update_t *channel_port_map_update_t_copy(const channel_port_map
     return q;
 }
 
+LCM_NO_EXPORT
 void channel_port_map_update_t_destroy(channel_port_map_update_t *p)
 {
     __channel_port_map_update_t_decode_array_cleanup(p, 1);

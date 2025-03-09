@@ -45,6 +45,7 @@ struct _lcm_provider_vtable_t {
     int (*get_fileno)(lcm_provider_t *);
 };
 
+LCM_NO_EXPORT
 int lcm_parse_url(const char *url, char **provider, char **target, GHashTable *args);
 
 /**
@@ -52,10 +53,31 @@ int lcm_parse_url(const char *url, char **provider, char **target, GHashTable *a
  * all the subscribers' queues are full.  The actual message contents are not
  * enqueued here, only a placeholder for the message.
  */
+LCM_NO_EXPORT
 int lcm_try_enqueue_message(lcm_t *lcm, const char *channel);
 
+LCM_NO_EXPORT
 int lcm_has_handlers(lcm_t *lcm, const char *channel);
 
+LCM_NO_EXPORT
 int lcm_dispatch_handlers(lcm_t *lcm, lcm_recv_buf_t *buf, const char *channel);
+
+// Each provider-init is defined in a separate source file; list them all here
+// so that lcm.c can call them.
+
+LCM_NO_EXPORT
+void lcm_udpm_provider_init(GPtrArray *providers);
+
+LCM_NO_EXPORT
+void lcm_logprov_provider_init(GPtrArray *providers);
+
+LCM_NO_EXPORT
+void lcm_tcpq_provider_init(GPtrArray *providers);
+
+LCM_NO_EXPORT
+void lcm_mpudpm_provider_init(GPtrArray *providers);
+
+LCM_NO_EXPORT
+void lcm_memq_provider_init(GPtrArray *providers);
 
 #endif
