@@ -159,7 +159,7 @@ static void _destroy_recv_parts(lcm_udpm_t *lcm)
     }
 }
 
-void lcm_udpm_destroy(lcm_udpm_t *lcm)
+static void lcm_udpm_destroy(lcm_udpm_t *lcm)
 {
     dbg(DBG_LCM, "closing lcm context\n");
     _destroy_recv_parts(lcm);
@@ -1053,7 +1053,7 @@ setup_recv_thread_fail:
     return -1;
 }
 
-lcm_provider_t *lcm_udpm_create(lcm_t *parent, const char *network, const GHashTable *args)
+static lcm_provider_t *lcm_udpm_create(lcm_t *parent, const char *network, const GHashTable *args)
 {
     udpm_params_t params;
     memset(&params, 0, sizeof(udpm_params_t));

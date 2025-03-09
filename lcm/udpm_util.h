@@ -122,18 +122,25 @@ typedef struct _lcm_buf_queue {
     int count;
 } lcm_buf_queue_t;
 
+LCM_NO_EXPORT
 lcm_buf_queue_t *lcm_buf_queue_new(void);
+LCM_NO_EXPORT
 lcm_buf_t *lcm_buf_dequeue(lcm_buf_queue_t *q);
+LCM_NO_EXPORT
 void lcm_buf_enqueue(lcm_buf_queue_t *q, lcm_buf_t *el);
 
+LCM_NO_EXPORT
 void lcm_buf_queue_free(lcm_buf_queue_t *q, lcm_ringbuf_t *ringbuf);
+LCM_NO_EXPORT
 int lcm_buf_queue_is_empty(lcm_buf_queue_t *q);
 
 // allocate a lcm_buf from the ringbuf. If there is no more space in the ringbuf
 // it is replaced with a bigger one. In this case, the old ringbuffer will be
 // cleaned up when lcm_buf_free_data() is called;
+LCM_NO_EXPORT
 lcm_buf_t *lcm_buf_allocate_data(lcm_buf_queue_t *inbufs_empty, lcm_ringbuf_t **ringbuf);
 
+LCM_NO_EXPORT
 void lcm_buf_free_data(lcm_buf_t *lcmb, lcm_ringbuf_t *ringbuf);
 
 /******************** fragment buffer **********************/
@@ -153,8 +160,10 @@ typedef struct _lcm_frag_buf {
     lcm_frag_key_t key;
 } lcm_frag_buf_t;
 
+LCM_NO_EXPORT
 lcm_frag_buf_t *lcm_frag_buf_new(struct sockaddr_in from, uint32_t msg_seqno, uint32_t data_size,
                                  uint16_t nfragments, int64_t first_packet_utime);
+LCM_NO_EXPORT
 void lcm_frag_buf_destroy(lcm_frag_buf_t *fbuf);
 
 /******************** fragment buffer store **********************/
@@ -165,15 +174,21 @@ typedef struct _lcm_frag_buf_store {
     GHashTable *frag_bufs;
 } lcm_frag_buf_store;
 
+LCM_NO_EXPORT
 lcm_frag_buf_store *lcm_frag_buf_store_new(uint32_t max_total_size, uint32_t max_n_frag_bufs);
+LCM_NO_EXPORT
 void lcm_frag_buf_store_destroy(lcm_frag_buf_store *store);
+LCM_NO_EXPORT
 lcm_frag_buf_t *lcm_frag_buf_store_lookup(lcm_frag_buf_store *store, lcm_frag_key_t *key);
 
+LCM_NO_EXPORT
 void lcm_frag_buf_store_remove(lcm_frag_buf_store *store, lcm_frag_buf_t *fbuf);
+LCM_NO_EXPORT
 void lcm_frag_buf_store_add(lcm_frag_buf_store *store, lcm_frag_buf_t *fbuf);
 
 /************************* Linux Specific Functions *******************/
 #ifdef __linux__
+LCM_NO_EXPORT
 void linux_check_routing_table(struct in_addr lcm_mcaddr);
 #endif
 

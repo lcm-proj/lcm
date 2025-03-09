@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "../lcm_coretypes.h"
+#include "../lcm_export.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,11 +39,13 @@ struct _channel_to_port_t
  * Create a deep copy of a channel_to_port_t.
  * When no longer needed, destroy it with channel_to_port_t_destroy()
  */
+LCM_NO_EXPORT
 channel_to_port_t* channel_to_port_t_copy(const channel_to_port_t* to_copy);
 
 /**
  * Destroy an instance of channel_to_port_t created by channel_to_port_t_copy()
  */
+LCM_NO_EXPORT
 void channel_to_port_t_destroy(channel_to_port_t* to_destroy);
 
 /**
@@ -55,6 +58,7 @@ void channel_to_port_t_destroy(channel_to_port_t* to_destroy);
  * @param msg The message to encode.
  * @return The number of bytes encoded, or <0 if an error occured.
  */
+LCM_NO_EXPORT
 int channel_to_port_t_encode(void *buf, int offset, int maxlen, const channel_to_port_t *p);
 
 /**
@@ -69,28 +73,38 @@ int channel_to_port_t_encode(void *buf, int offset, int maxlen, const channel_to
  * @param msg Output parameter where the decoded message is stored
  * @return The number of bytes decoded, or <0 if an error occured.
  */
+LCM_NO_EXPORT
 int channel_to_port_t_decode(const void *buf, int offset, int maxlen, channel_to_port_t *msg);
 
 /**
  * Release resources allocated by channel_to_port_t_decode()
  * @return 0
  */
+LCM_NO_EXPORT
 int channel_to_port_t_decode_cleanup(channel_to_port_t *p);
 
 /**
  * Check how many bytes are required to encode a message of type channel_to_port_t
  */
+LCM_NO_EXPORT
 int channel_to_port_t_encoded_size(const channel_to_port_t *p);
 
 // LCM support functions. Users should not call these
+LCM_NO_EXPORT
 int64_t __channel_to_port_t_get_hash(void);
+LCM_NO_EXPORT
 uint64_t __channel_to_port_t_hash_recursive(const __lcm_hash_ptr *p);
+LCM_NO_EXPORT
 int __channel_to_port_t_encode_array(
     void *buf, int offset, int maxlen, const channel_to_port_t *p, int elements);
+LCM_NO_EXPORT
 int __channel_to_port_t_decode_array(
     const void *buf, int offset, int maxlen, channel_to_port_t *p, int elements);
+LCM_NO_EXPORT
 int __channel_to_port_t_decode_array_cleanup(channel_to_port_t *p, int elements);
+LCM_NO_EXPORT
 int __channel_to_port_t_encoded_array_size(const channel_to_port_t *p, int elements);
+LCM_NO_EXPORT
 int __channel_to_port_t_clone_array(const channel_to_port_t *p, channel_to_port_t *q, int elements);
 
 #ifdef __cplusplus

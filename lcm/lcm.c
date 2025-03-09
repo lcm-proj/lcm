@@ -48,12 +48,6 @@ struct _lcm_subscription_t {
     int num_queued_messages;
 };
 
-extern void lcm_udpm_provider_init(GPtrArray *providers);
-extern void lcm_logprov_provider_init(GPtrArray *providers);
-extern void lcm_tcpq_provider_init(GPtrArray *providers);
-extern void lcm_mpudpm_provider_init(GPtrArray *providers);
-extern void lcm_memq_provider_init(GPtrArray *providers);
-
 lcm_t *lcm_create(const char *url)
 {
 #ifdef WIN32
@@ -349,7 +343,7 @@ int lcm_unsubscribe(lcm_t *lcm, lcm_subscription_t *subscription)
 
 /* ==== Internal API for Providers ==== */
 
-GPtrArray *lcm_get_handlers(lcm_t *lcm, const char *channel)
+static GPtrArray *lcm_get_handlers(lcm_t *lcm, const char *channel)
 {
     g_rec_mutex_lock(&lcm->mutex);
     GPtrArray *handlers = (GPtrArray *) g_hash_table_lookup(lcm->handlers_map, channel);

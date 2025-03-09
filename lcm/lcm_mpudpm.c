@@ -188,7 +188,7 @@ struct _lcm_provider_t {
 static int setup_recv_parts(lcm_mpudpm_t *lcm);
 static mpudpm_socket_t *add_recv_socket(lcm_mpudpm_t *lcm, uint16_t port);
 static void remove_recv_socket(lcm_mpudpm_t *lcm, mpudpm_socket_t *sock);
-int lcm_mpudpm_unsubscribe(lcm_mpudpm_t *lcm, const char *channel);
+static int lcm_mpudpm_unsubscribe(lcm_mpudpm_t *lcm, const char *channel);
 static int publish_message_internal(lcm_mpudpm_t *lcm, const char *channel, const void *data,
                                     unsigned int datalen);
 static void publish_channel_mapping_update(lcm_mpudpm_t *lcm);
@@ -270,7 +270,7 @@ static void destroy_recv_parts(lcm_mpudpm_t *lcm)
     }
 }
 
-void lcm_mpudpm_destroy(lcm_mpudpm_t *lcm)
+static void lcm_mpudpm_destroy(lcm_mpudpm_t *lcm)
 {
     dbg(DBG_LCM, "closing lcm context\n");
     destroy_recv_parts(lcm);
@@ -810,7 +810,7 @@ static void *recv_thread(void *user)
     return NULL;
 }
 
-int lcm_mpudpm_get_fileno(lcm_mpudpm_t *lcm)
+static int lcm_mpudpm_get_fileno(lcm_mpudpm_t *lcm)
 {
     if (setup_recv_parts(lcm) < 0) {
         return -1;
@@ -818,7 +818,7 @@ int lcm_mpudpm_get_fileno(lcm_mpudpm_t *lcm)
     return lcm->notify_pipe[0];
 }
 
-int lcm_mpudpm_subscribe(lcm_mpudpm_t *lcm, const char *channel)
+static int lcm_mpudpm_subscribe(lcm_mpudpm_t *lcm, const char *channel)
 {
     // Set up the receive thread if we need to
     if (setup_recv_parts(lcm) < 0) {
@@ -885,7 +885,7 @@ int lcm_mpudpm_subscribe(lcm_mpudpm_t *lcm, const char *channel)
     return 0;
 }
 
-int lcm_mpudpm_unsubscribe(lcm_mpudpm_t *lcm, const char *channel)
+static int lcm_mpudpm_unsubscribe(lcm_mpudpm_t *lcm, const char *channel)
 {
     g_mutex_lock(&lcm->receive_lock);
     GSList *chan_it = NULL;
@@ -1237,8 +1237,8 @@ static int publish_message_internal(lcm_mpudpm_t *lcm, const char *channel, cons
     }
 }
 
-int lcm_mpudpm_publish(lcm_mpudpm_t *lcm, const char *channel, const void *data,
-                       unsigned int datalen)
+static int lcm_mpudpm_publish(lcm_mpudpm_t *lcm, const char *channel, const void *data,
+                              unsigned int datalen)
 {
     if (is_reserved_channel(channel)) {
         fprintf(stderr,
@@ -1255,7 +1255,7 @@ int lcm_mpudpm_publish(lcm_mpudpm_t *lcm, const char *channel, const void *data,
     return status;
 }
 
-int lcm_mpudpm_handle(lcm_mpudpm_t *lcm)
+static int lcm_mpudpm_handle(lcm_mpudpm_t *lcm)
 {
     int status;
     char ch;
@@ -1640,7 +1640,7 @@ setup_recv_thread_fail:
     return -1;
 }
 
-lcm_provider_t *lcm_mpudpm_create(lcm_t *parent, const char *network, const GHashTable *args)
+static lcm_provider_t *lcm_mpudpm_create(lcm_t *parent, const char *network, const GHashTable *args)
 {
     mpudpm_params_t params;
     memset(&params, 0, sizeof(mpudpm_params_t));
