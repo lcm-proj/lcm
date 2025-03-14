@@ -16,6 +16,7 @@ feedback and involvement on new features.
 # Quick Links
 
 * [Installing LCM](https://lcm-proj.github.io/lcm/content/install-instructions.html)
+* [Building LCM from source](https://lcm-proj.github.io/lcm/content/build-instructions.html)
 * [LCM downloads](https://github.com/lcm-proj/lcm/releases)
 * [Website and documentation](https://lcm-proj.github.io/lcm)
 
