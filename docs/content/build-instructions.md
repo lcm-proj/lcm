@@ -10,18 +10,13 @@ either by unpacking a release archive or cloning the git repository, and that
 your initial working directory contains the source code. (For release archives,
 this includes descending into the top level `lcm-X.Y.Z` subdirectory.)
 
-Regardless of platform, CMake 3.12 or later is required. Binaries may be obtained from
-[https://cmake.org/download/](https://cmake.org/download/). Sufficiently recent Linux distributions
-may provide a new enough CMake via their package managers but if they don't it is often possible to
-use pip to get a more recent version.
-
 Please note that these instructions refer to the latest release of LCM. As the
 build procedure may vary from release to release, if you are building an old
 release or the latest `master`, we recommend referring to the copy of this
 document (`docs/content/build-instructions.md`) found in your source
 distribution.
 
-## Installing the Python module
+## Installing the Python module on Unix-based systems
 
 To build the Python module from source and install it, run:
 
@@ -29,7 +24,11 @@ To build the Python module from source and install it, run:
 pip3 install -v .
 ```
 
-## CMake and Meson overview
+## CMake and Meson overview for Unix-based systems
+
+When building with CMake, CMake 3.12 or later is required. Sufficiently recent Linux distributions
+may provide a new enough CMake via their package managers but if they don't it is often possible to
+use pip to get a more recent version.
 
 These instructions assume that you will build in a directory named `build` as
 a direct subdirectory of the source directory, and that you will use the
@@ -131,12 +130,7 @@ meson compile
 meson install
 ```
 
-## Windows
-
-LCM is officially supported on MSYS2 and MSVC with vcpkg. Please see WinSpecific/README.md for more
-information on building on Windows.
-
-## Other / General
+## Other Unix-based systems
 
 On other POSIX.1-2001 systems (e.g., other GNU/Linux distributions, FreeBSD,
 Solaris, etc.) the only major requirement is to install the GLib 2.x
@@ -144,9 +138,7 @@ development files and CMake.  If possible, a Java development kit and Python
 should also be installed.  Then follow the same instructions as for
 [Ubuntu / Debian](#ubuntu-and-debian).
 
-## Post Install
-
-### Linux
+## Post Install on Linux
 
 In the following, replace `$LCM_INSTALL_PREFIX` with the prefix to which
 LCM was installed (by default, `/usr/local`), and replace `$LCM_LIBRARY_DIR`
@@ -216,3 +208,113 @@ To try out the Bazel build, first install
 [bazelisk](https://github.com/bazelbuild/bazelisk) to provide `bazel` on your
 PATH and then run, e.g., `bazel run //lcm-java:lcm-spy`. See also the
 sample projct at `examples/bazel` for how to use LCM as a Bazel dependency.
+
+## Windows
+
+We currently support building on windows using an MSYS2 environment as well as MSVC. Please see the
+appropriate section below for more information on each approach.
+
+### Using MSVC with vcpkg
+
+#### Prerequisites
+
+**Warning**: If the path to the LCM directory contains spaces, you may experience issues with
+`vcpkg`. It is highly recommended to work out of a directory whose path does not contain spaces.
+
+Before starting, ensure you have installed Microsoft's Build Tools for Visual Studio. When going
+through the setup, ensure you install a Desktop development with C++. All commands in this section
+are intended to be run from a shell set up for using MSVC (e.g. `Developer PowerShell for VS 2022`).
+
+Begin by [installing
+vcpkg](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started?pivots=shell-powershell#1---set-up-vcpkg).
+Follow the linked instructions until after you have set the environment variable `VCPKG_ROOT` and
+added `vcpkg` to `PATH`.
+
+**Warning: Ensure you are in a shell that has the above modified environment variables before
+proceeding!**
+
+In many cases, it is necessary to configure a newly-installed `vcpkg` with:
+
+```shell
+vcpkg x-update-baseline --add-initial-baseline
+```
+
+before proceeding.
+
+#### Building
+
+Use the Cmake preset for vcpkg to configure a build directory:
+
+```shell
+cmake --preset=vcpkg-vs
+```
+
+Then, it is possible to build using
+
+```shell
+cmake --build build --config Release
+```
+
+Last, you can run the tests via
+
+```shell
+ctest --output-on-failure --test-dir build -C Release
+```
+
+#### Building and installing the Python module
+
+It is also possible to install the Python module using
+
+```shell
+pip install -v . --config-settings=cmake.args=--preset=vcpkg-vs
+```
+
+#### MSVC with vcpkg Errata
+
+In some cases it can be helpful to configure a build directory using a direct cmake call, then have
+pip run using that build directory. If you run into any errors with the above `pip install` command,
+you could try:
+
+```shell
+Remove-Item -Path build/ -Recurse -Force
+cmake --preset=vcpkg-vs
+pip install -v . --config-settings=cmake.args=--preset=vcpkg-vs -Cbuild-dir=build
+```
+
+Another thing to watch out for is if you have installed vcpkg on your own but Visual Studio also
+installed an instance of vcpkg. In this case, if you're using `Developer Powershell for VS 2022`
+then it will overwrite certain changes you made to your environment variables (like `VCPKG_ROOT` or
+adding your instance of vcpkg to `PATH`). If you want to use the version of vcpkg you installed
+you'll need to set those environment variables again to refer to the instance you want.
+
+### Using MSYS2
+
+We currently support and test on an [MSYS2](https://www.msys2.org/) MINGW64 environment. To install
+the necessary dependencies, you can run:
+
+```shell
+pacman -S pactoys git make
+pacboy -S make toolchain cmake glib2 gtest python-pip
+```
+
+#### MSYS2 Errata
+
+There are a few things to watch out for:
+
+1. When installing LCM, CMake defaults to the usual Windows directories rather than the MSYS2
+   environment. You can use CMake's `--prefix` option when installing to override this.
+2. If there is an installation of Python on the system in addition to the MSYS2 version, cmake may
+   pick it up instead. If that is the case, it may be necessary to set
+   `-DPython_FIND_REGISTRY=NEVER` or [one of the other
+   hints](https://cmake.org/cmake/help/latest/module/FindPython.html#hints) when configuring a build
+   directory.
+
+### Java on Windows
+
+The above does not result in an environment with Java. If you need the Java-dependent components of
+LCM (like `lcm-spy` or `lcm-logplayer-gui`), please install a JDK, delete any build directories, and
+run the above commands again.
+
+Alternatively, if you just want to use Java-dependent components of LCM provided by a pre-built
+binary (like you get from `pip install lcm`, for example) then a JDK is not required but you will
+still need at least a JRE.
