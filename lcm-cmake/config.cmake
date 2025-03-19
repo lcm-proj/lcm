@@ -70,3 +70,6 @@ if(NOT MSVC)
     -Wno-stringop-truncation
   )
 endif()
+
+# Allow the user to change the C/C++ namespace.
+set(LCM_C_NAMESPACE "lcm" CACHE STRING "The namespace of C symbols")

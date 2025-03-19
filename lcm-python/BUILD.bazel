@@ -19,6 +19,7 @@ cc_binary(
     linkshared = True,
     visibility = ["//visibility:private"],
     deps = [
+        "//lcm:dbg-header-for-python",
         "//lcm:lcm-shared",
         "@rules_python//python/cc:current_py_cc_headers",
         "@rules_python//python/cc:current_py_cc_libs",
