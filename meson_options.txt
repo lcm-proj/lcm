@@ -6,3 +6,4 @@ option('lcm_enable_tests', type : 'feature', value : 'disabled', description : '
 option('lcm_install_m4macros', type : 'feature', value : 'enabled', description : 'Install autotools support M4 macros')
 option('lcm_install_pkgconfig', type : 'feature', value : 'enabled', description : 'Install pkg-config files')
 option('lcm_enable_lcmgen', type : 'feature', value: 'enabled', description : 'Build lcmgen core module')
+option('LCM_C_NAMESPACE', type : 'string', value : 'lcm', description : 'The namespace of C symbols')

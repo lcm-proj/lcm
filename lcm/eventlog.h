@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "lcm_c_namespace.h"
+
 #ifdef LCM_PYTHON
 #define LCM_EXPORT
 #else
@@ -13,6 +15,13 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define lcm_eventlog_create LCM_C_NAMESPACED(eventlog_create)
+#define lcm_eventlog_read_next_event LCM_C_NAMESPACED(eventlog_read_next_event)
+#define lcm_eventlog_free_event LCM_C_NAMESPACED(eventlog_free_event)
+#define lcm_eventlog_seek_to_timestamp LCM_C_NAMESPACED(eventlog_seek_to_timestamp)
+#define lcm_eventlog_write_event LCM_C_NAMESPACED(eventlog_write_event)
+#define lcm_eventlog_destroy LCM_C_NAMESPACED(eventlog_destroy)
 
 /**
  * @defgroup LcmC_lcm_eventlog_t lcm_eventlog_t

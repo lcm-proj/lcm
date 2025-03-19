@@ -6,6 +6,12 @@ if unix
   lcm_extra_deps = [thread_dep]
 endif
 
+conf_data = configuration_data()
+conf_data.set('LCM_C_NAMESPACE', get_option('LCM_C_NAMESPACE'))
+lcm_c_namespace_h = configure_file(input : 'lcm_c_namespace.h.in',
+                                   output : 'lcm_c_namespace.h',
+                                   configuration : conf_data)
+
 lcm_sources = ['eventlog.c',
                'lcm.c',
                'lcm_file.c',
@@ -24,6 +30,7 @@ install_headers('eventlog.h',
                 'lcm-cpp.hpp',
                 'lcm-cpp-impl.hpp',
                 'lcm_export.h',
+                lcm_c_namespace_h,
                 subdir : 'lcm')
 
 if windows 
@@ -36,14 +43,15 @@ endif
 lcm_lib = both_libraries('lcm', lcm_sources,
   dependencies : [glib_dep] + lcm_extra_deps,
   c_args : lcm_c_args,
-  install : true)
+  install : true,
+  include_directories : include_directories('.', '..'))
 lcm_lib_dep = declare_dependency(
   link_with : lcm_lib.get_shared_lib(),
   dependencies : [glib_dep] + lcm_extra_deps,
-  include_directories : include_directories('..'))
+  include_directories : include_directories('.', '..'))
 lcm_static_lib_dep = declare_dependency(
   link_with : lcm_lib.get_static_lib(),
   dependencies : [glib_dep] + lcm_extra_deps,
-  include_directories : include_directories('..'))
+  include_directories : include_directories('.', '..'))
 
 lcm_coretypes_lib = declare_dependency() # 'lcm-coretypes'
