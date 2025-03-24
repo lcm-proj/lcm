@@ -1,0 +1,29 @@
+setlocal enableDelayedExpansion
+
+:: Determine our canonical location
+set mydir=%~dp0
+
+:: Find dependency JARs
+if exist %mydir%\lcm.jar (
+    set jars=%mydir%\lcm.jar
+    set jars=!jars!;%mydir%\jchart2d-code\jchart2d-3.2.2.jar
+    set ext=%mydir%\jchart2d-code\ext
+) else (
+    if exist %mydir%\..\share\java\lcm.jar (
+      set jars=%mydir%\..\share\java\lcm.jar
+      set jars=!jars!;%mydir%\..\share\java\jchart2d-3.2.2.jar
+      set ext=%mydir%\..\share\java
+    ) else (
+      echo "Unable to find 'lcm.jar'; please check your installation"
+      exit 1
+    )
+)
+
+set jars=%jars%:@LCM_EXT_XMLGRAPHICS_COMMONS_JAR@
+set jars=%jars%:@LCM_EXT_JIDE_OSS_JAR@
+
+:: Add user's CLASSPATH, if set
+IF NOT "%CLASSPATH%"=="" set jars=%jars%;%CLASSPATH%
+
+:: Launch the applet
+java -server -Djava.net.preferIPv4Stack=true -Xmx128m -Xms64m -ea -cp "%jars%" lcm.spy.Spy %*
