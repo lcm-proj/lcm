@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import platform
 
 # Attempt to be backwards compatible
 if sys.version_info >= (3, 6):
@@ -176,8 +177,9 @@ to next() returning the next L{Event<lcm.Event>} in the log.
 LCM_BIN_DIR = os.path.join(os.path.dirname(__file__), '..', 'bin')
 
 def run_script(name: str, args) -> int:
+    file_extension = '.bat' if platform.system() == 'Windows' else ''
     try:
-        return subprocess.call([os.path.join(LCM_BIN_DIR, name), *args], close_fds=False)
+        return subprocess.call([os.path.join(LCM_BIN_DIR, name + file_extension), *args], close_fds=False)
     except KeyboardInterrupt:
         return 0
 

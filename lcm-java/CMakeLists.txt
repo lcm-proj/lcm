@@ -71,22 +71,45 @@ add_jar(lcm-java
 
 install_jar(lcm-java DESTINATION share/java)
 
-configure_file(
-  ${CMAKE_CURRENT_SOURCE_DIR}/lcm-spy.sh.in
-  ${CMAKE_CURRENT_BINARY_DIR}/lcm-spy
-  @ONLY
-)
+if(WIN32)
 
-lcm_copy_file_target(lcm-logplayer-gui-alias
-  ${CMAKE_CURRENT_SOURCE_DIR}/lcm-logplayer-gui.sh
-  ${CMAKE_CURRENT_BINARY_DIR}/lcm-logplayer-gui
-)
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/lcm-spy.bat.in
+    ${CMAKE_CURRENT_BINARY_DIR}/lcm-spy.bat
+    @ONLY
+  )
 
-install(PROGRAMS
-  ${CMAKE_CURRENT_BINARY_DIR}/lcm-logplayer-gui
-  ${CMAKE_CURRENT_BINARY_DIR}/lcm-spy
-  DESTINATION bin
-)
+  lcm_copy_file_target(lcm-logplayer-gui-alias
+    ${CMAKE_CURRENT_SOURCE_DIR}/lcm-logplayer-gui.bat
+    ${CMAKE_CURRENT_BINARY_DIR}/lcm-logplayer-gui.bat
+  )
+
+  install(PROGRAMS
+    ${CMAKE_CURRENT_BINARY_DIR}/lcm-logplayer-gui.bat
+    ${CMAKE_CURRENT_BINARY_DIR}/lcm-spy.bat
+    DESTINATION bin
+  )
+
+else()
+
+  configure_file(
+    ${CMAKE_CURRENT_SOURCE_DIR}/lcm-spy.sh.in
+    ${CMAKE_CURRENT_BINARY_DIR}/lcm-spy
+    @ONLY
+  )
+
+  lcm_copy_file_target(lcm-logplayer-gui-alias
+    ${CMAKE_CURRENT_SOURCE_DIR}/lcm-logplayer-gui.sh
+    ${CMAKE_CURRENT_BINARY_DIR}/lcm-logplayer-gui
+  )
+
+  install(PROGRAMS
+    ${CMAKE_CURRENT_BINARY_DIR}/lcm-logplayer-gui
+    ${CMAKE_CURRENT_BINARY_DIR}/lcm-spy
+    DESTINATION bin
+  )
+
+endif()
 
 install(FILES
   lcm-logplayer-gui.1
