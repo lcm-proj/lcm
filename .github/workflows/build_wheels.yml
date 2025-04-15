@@ -120,6 +120,8 @@ jobs:
         env:
           CIBW_BUILD: ${{ matrix.python }}
           SKBUILD_CMAKE_ARGS: "--preset=vcpkg-vs-github"
+          CIBW_TEST_REQUIRES: pytest
+          CIBW_TEST_COMMAND: "pytest {project}"
 
       - uses: actions/upload-artifact@v4
         with:
