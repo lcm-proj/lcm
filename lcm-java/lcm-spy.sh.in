@@ -9,14 +9,25 @@ fi
 # Find dependency JARs
 if [ -e "$mydir/lcm.jar" ]; then
   jars="$mydir/lcm.jar"
-  jars="$jars:$mydir/jchart2d-code/jchart2d-3.2.2.jar"
-  ext="$mydir/jchart2d-code/ext"
 elif [ -e "$mydir/../share/java/lcm.jar" ]; then
   jars="$mydir/../share/java/lcm.jar"
-  jars="$jars:$mydir/../share/java/jchart2d-3.2.2.jar"
-  ext="$mydir/../share/java"
 else
   echo "Unable to find 'lcm.jar'; please check your installation" >&2
+  exit 1
+fi
+
+# Find jchart2d and its dependencies separately since it may not exist relative to lcm.jar.
+if [ -e "$mydir/jchart2d-code/jchart2d-3.2.2.jar" ]; then
+  jars="$jars:$mydir/jchart2d-code/jchart2d-3.2.2.jar"
+  ext="$mydir/jchart2d-code/ext"
+elif [ -e "$mydir/../share/java/jchart2d-3.2.2.jar" ]; then
+  jars="$jars:$mydir/../share/java/jchart2d-3.2.2.jar"
+  ext="$mydir/../share/java"
+elif [ -e "/usr/share/java/jchart2d-3.2.2.jar" ]; then
+  jars="$jars:/usr/share/java/jchart2d-3.2.2.jar"
+  ext="/usr/share/java"
+else
+  echo "Unable to find 'jchart2d-3.2.2.jar'; please check your installation" >&2
   exit 1
 fi
 
