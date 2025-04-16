@@ -180,22 +180,23 @@ jobs:
 
   windows_msvc:
     runs-on: windows-2022
+    env:
+      VCPKG_DEFAULT_BINARY_CACHE: ${{github.workspace}}\vcpkg-cache
 
     steps:
     - uses: actions/checkout@v4
-
-      # Set up vcpkg, leveraging cache. This does not build any packages.
-    - name: Setup vcpkg
-      uses: lukka/run-vcpkg@v11
+    - uses: actions/cache@v4
       with:
-        vcpkgDirectory: '${{ runner.workspace }}/b/vcpkg'
-        vcpkgGitCommitId: 'a42af01b72c28a8e1d7b48107b33e4f286a55ef6'
+        path: ${{github.workspace}}\vcpkg-cache
+        key: ${{ hashFiles('vcpkg.json') }}-vcpkg-cache
+        restore-keys: vcpkg-cache
+
+    - name: Create cache directory
+      run: mkdir ${{env.VCPKG_DEFAULT_BINARY_CACHE}} -Force
 
     # Builds dependencies using vcpkg, leveraging cache
     - name: Run CMake
-      uses: lukka/run-cmake@v10
-      with:
-        configurePreset: 'vcpkg-vs-github'
+      run: cmake --preset=vcpkg-vs-github
 
     - name: Build
       run: cmake --build build --config Release
