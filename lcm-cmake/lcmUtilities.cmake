@@ -27,7 +27,7 @@
 #   lcm_install_python([DESTINATION <PATH>]
 #                      <FILE> [<FILE>...])
 
-cmake_minimum_required(VERSION 3.5.0)
+cmake_minimum_required(VERSION 3.10.0)
 include(CMakeParseArguments)
 
 #------------------------------------------------------------------------------
@@ -346,7 +346,7 @@ function(lcm_wrap_types)
         if(DEFINED _CSHARP_SOURCES)
           if(_package_dir STREQUAL ".")
             _lcm_add_outputs(_CSHARP_SOURCES LCMTypes/${_type}.cs)
-          else()  
+          else()
             _lcm_add_outputs(_CSHARP_SOURCES ${_package_dir}/${_type}.cs)
           endif()
         endif()
