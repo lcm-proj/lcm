@@ -478,7 +478,7 @@ function(lcm_install_python)
 
   # Set default destination and relative path, if none given
   if(NOT DEFINED _DESTINATION)
-    if(NOT PYTHONINTERP_FOUND)
+    if(NOT Python_Interpreter_FOUND AND NOT PYTHONINTERP_FOUND)
       message(SEND_ERROR
         "lcm_install_python: no DESTINATION given"
         " and no Python interpreter found (required to guess DESTINATION)")
