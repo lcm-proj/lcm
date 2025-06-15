@@ -34,7 +34,7 @@ parts. Alternatively, you may want to make them `REQUIRED`.)
     find_package(lcm REQUIRED)
     include(${LCM_USE_FILE})
 
-    find_package(PythonInterp)
+    find_package(Python COMPONENTS Interpreter)
     find_package(Java)
 
     if(JAVA_FOUND)
@@ -201,7 +201,7 @@ generate these bindings always, or opportunistically when Python and/or Java
 are available, you may want to make this logic conditional, as in the approach
 shown here:
 
-    if(PYTHONINTERP_FOUND)
+    if(${Python_Interpreter_FOUND})
       set(python_args PYTHON_SOURCES python_sources)
     endif()
     if(JAVA_FOUND)
@@ -243,7 +243,7 @@ As before, if you require Java, you can omit the `JAVA_FOUND` check.
 
 First, let's revisit our variable names:
 
-    if(PYTHONINTERP_FOUND)
+    if(${Python_Interpreter_FOUND})
       set(python_args PYTHON_SOURCES python_install_sources)
     endif()
     if(JAVA_FOUND)
@@ -278,7 +278,7 @@ Now, we'll install everything:
       ${cpp_install_headers}
     )
 
-    if(PYTHONINTERP_FOUND)
+    if(${Python_Interpreter_FOUND})
       lcm_install_python(${python_install_sources})
     endif()
 
