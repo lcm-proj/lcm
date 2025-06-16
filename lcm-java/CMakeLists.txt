@@ -78,7 +78,9 @@ add_custom_command(
   OUTPUT 
     "lcm-sources.jar"
   COMMAND 
-    jar --create --file "lcm-sources.jar" -C ${CMAKE_CURRENT_SOURCE_DIR} lcm
+    # Long options are not supported on all java distributions.
+    # jar --create --file "lcm-sources.jar" -C ${CMAKE_CURRENT_SOURCE_DIR} lcm
+    jar -c -f "lcm-sources.jar" -C ${CMAKE_CURRENT_SOURCE_DIR} lcm
   DEPENDS 
     ${PROJECT_NAME}
   VERBATIM
