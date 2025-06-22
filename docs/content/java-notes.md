@@ -15,10 +15,53 @@ application, `lcm.jar` must be in your Java classpath.
 On Linux, OS/X, and other UNIX-like systems, `lcm.jar` is typically built
 automatically and installed along with the rest of LCM.  The exact location
 depends on the operating system and any configuration parameters, but it can
-often be found installed in <tt>/usr/local/share/java/</tt>. 
+often be found installed in `/usr/local/share/java/`. 
 
 Separately, `lcm.jar` can also be found in the `lcm-java` subdirectory of the
 source distribution after compiling LCM from source.
+
+A `lcm-sources.jar` is also built and installed. This can provide IDE Javadoc integration.
+
+### Gradle project
+
+An example of using LCM in a Gradle project. Assuming you have placed `my-lcm-types.jar` in `./lib`:
+
+```gradle
+// build.gradle
+String osName = System.getProperty("os.name").toLowerCase();
+project.logger.lifecycle(osName)
+repositories { 
+    mavenCentral()
+
+    flatDir {
+        if (osName.contains("linux")) {        
+            dirs '/usr/local/share/java'
+        } // else TODO
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    implementation ':lcm'
+    implementation ':my-lcm-types'
+}    
+```
+
+> Note: `flatDir` is preferred over `implementation files('/usr/local/share/java/lcm.jar')`. Both work, but IDEs may not be able to find `lcm-sources.jar` with the `files` approach.
+
+### Ant project
+TODO. Know what to do? Please contribute.
+
+### Maven project
+TODO. Know what to do? Please contribute.
+
+### Eclipse project
+https://stackoverflow.com/questions/3280353/how-to-import-a-jar-in-eclipse
+
+https://stackoverflow.com/questions/15180411/attach-the-source-in-eclipse-of-a-jar (Might need to look at multiple answers.)
+
+### InteliJ project
+https://stackoverflow.com/questions/1051640/correct-way-to-add-external-jars-lib-jar-to-an-intellij-idea-project
 
 ## Namespace issues
 
