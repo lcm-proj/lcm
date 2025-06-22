@@ -74,13 +74,15 @@ install_jar(lcm-java DESTINATION share/java)
 # Make a sources jar.
 # Starting point. Should probably provide a new answer once something more robust is put together.
 # https://stackoverflow.com/a/77086658/8954109
+set(sources_jar "lcm-sources.jar")
 add_custom_command(
   OUTPUT 
-    "lcm-sources.jar"
+    "${sources_jar}"
   COMMAND 
     # Long options are not supported on all java distributions.
-    # jar --create --file "lcm-sources.jar" -C ${CMAKE_CURRENT_SOURCE_DIR} lcm
-    jar -c -f "lcm-sources.jar" -C ${CMAKE_CURRENT_SOURCE_DIR} lcm
+    # jar --create --file "${sources_jar}" -C ${CMAKE_CURRENT_SOURCE_DIR} lcm
+    # jar cf "${sources_jar}" C ${CMAKE_CURRENT_SOURCE_DIR} lcm
+    cd "${CMAKE_CURRENT_SOURCE_DIR}" && jar cf "${sources_jar}" lcm && mv "${CMAKE_CURRENT_SOURCE_DIR}/${sources_jar}" "${CMAKE_CURRENT_BINARY_DIR}"
   DEPENDS 
     ${PROJECT_NAME}
   VERBATIM
@@ -90,9 +92,9 @@ add_custom_command(
 
 add_custom_target(lcm-java-src
   ALL
-  DEPENDS "lcm-sources.jar"
+  DEPENDS "${sources_jar}"
 )
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/lcm-sources.jar" DESTINATION share/java)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${sources_jar}" DESTINATION share/java)
 
 
 if(WIN32)
