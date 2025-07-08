@@ -81,9 +81,12 @@ add_custom_command(
     "${sources_jar}"
   COMMAND 
     # Long options are not supported on all java distributions.
-    ${Java_JAR_EXECUTABLE} --create --file "${sources_jar}" -C ${CMAKE_CURRENT_SOURCE_DIR} lcm
+    # ${Java_JAR_EXECUTABLE} --create --file "${sources_jar}" -C ${CMAKE_CURRENT_SOURCE_DIR} lcm
     # jar cf "${sources_jar}" C ${CMAKE_CURRENT_SOURCE_DIR} lcm
     # cd "${CMAKE_CURRENT_SOURCE_DIR}" && ${Java_JAR_EXECUTABLE} cf "${sources_jar}" lcm && mv "${CMAKE_CURRENT_SOURCE_DIR}/${sources_jar}" "${CMAKE_CURRENT_BINARY_DIR}"
+    ${Java_JAR_EXECUTABLE} cf "${sources_jar}" lcm && ${CMAKE_COMMAND} -E rename "${sources_jar}" "${CMAKE_CURRENT_BINARY_DIR}/${sources_jar}"
+  WORKING_DIRECTORY
+    "${CMAKE_CURRENT_SOURCE_DIR}"
   DEPENDS 
     ${lcm_java_sources}
   VERBATIM
