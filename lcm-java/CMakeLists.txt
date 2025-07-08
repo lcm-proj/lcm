@@ -28,6 +28,8 @@ if(NOT jchart2d_JAR)
   set(jchart2d_JAR jchart2d)
 endif()
 
+set(top_package lcm)
+
 set(lcm_java_sources
   lcm/util/JImage.java
   lcm/util/TableSorter.java
@@ -80,12 +82,9 @@ add_custom_command(
   OUTPUT 
     "${sources_jar}"
   COMMAND 
-    # Long options are not supported on all java distributions.
-    # ${Java_JAR_EXECUTABLE} --create --file "${sources_jar}" -C ${CMAKE_CURRENT_SOURCE_DIR} lcm
-    # jar cf "${sources_jar}" C ${CMAKE_CURRENT_SOURCE_DIR} lcm
-    # cd "${CMAKE_CURRENT_SOURCE_DIR}" && ${Java_JAR_EXECUTABLE} cf "${sources_jar}" lcm && mv "${CMAKE_CURRENT_SOURCE_DIR}/${sources_jar}" "${CMAKE_CURRENT_BINARY_DIR}"
-    # ${Java_JAR_EXECUTABLE} cf "${sources_jar}" lcm && ${CMAKE_COMMAND} -E rename "${CMAKE_CURRENT_SOURCE_DIR}/${sources_jar}" "${CMAKE_CURRENT_BINARY_DIR}/${sources_jar}"
-    ${Java_JAR_EXECUTABLE} cf "${CMAKE_CURRENT_BINARY_DIR}/${sources_jar}" lcm 
+    # -- Long options are not supported on all java distributions.
+    # -- ${Java_JAR_EXECUTABLE} --create --file "${sources_jar}" -C ${CMAKE_CURRENT_SOURCE_DIR} ${top_package}
+    ${Java_JAR_EXECUTABLE} cf "${CMAKE_CURRENT_BINARY_DIR}/${sources_jar}" ${top_package}
   WORKING_DIRECTORY
     "${CMAKE_CURRENT_SOURCE_DIR}"
   DEPENDS 
