@@ -161,13 +161,13 @@ jobs:
           glib2:p
           gtest:p
           meson:p
-  
+
     - name: Setup Meson
       run: meson setup build --prefix /mingw64/
 
     - name: Build
       run: ninja -C build
-    
+
     - name: Install
       run: ninja -C build install
 
