@@ -132,11 +132,13 @@ int signal_pipe_attach_glib(signal_pipe_glib_handler_t func, gpointer user_data)
     return 0;
 }
 
+#ifndef _WIN32
 static void spgqok_handler(int signum, void *user)
 {
     g_main_loop_quit(_mainloop);
     signal_pipe_cleanup();
 }
+#endif
 
 int signal_pipe_glib_quit_on_kill()
 {
