@@ -140,6 +140,10 @@ static void spgqok_handler(int signum, void *user)
 
 int signal_pipe_glib_quit_on_kill()
 {
+#ifdef _WIN32
+    // Windows does not support Unix-style signal handling reliably.
+    return 0;
+#else
     if (0 != signal_pipe_init())
         return -1;
 
@@ -147,6 +151,7 @@ int signal_pipe_glib_quit_on_kill()
     signal_pipe_add_signal(SIGTERM);
     signal_pipe_add_signal(SIGKILL);
     return signal_pipe_attach_glib(spgqok_handler, _mainloop);
+#endif
 }
 
 static int lcm_message_ready(GIOChannel *source, GIOCondition cond, lcm_t *lcm)
@@ -182,7 +187,11 @@ int glib_mainloop_attach_lcm(lcm_t *lcm)
 
     glib_attached_lcm_t *galcm = (glib_attached_lcm_t *) calloc(1, sizeof(glib_attached_lcm_t));
 
+#ifdef _WIN32
+    galcm->ioc = g_io_channel_win32_new_socket(lcm_get_fileno(lcm));
+#else
     galcm->ioc = g_io_channel_unix_new(lcm_get_fileno(lcm));
+#endif
     galcm->sid = g_io_add_watch(galcm->ioc, G_IO_IN, (GIOFunc) lcm_message_ready, lcm);
     galcm->lcm = lcm;
 
