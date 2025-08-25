@@ -28,7 +28,7 @@ LCM is currently not available on services like Maven Central. Your build system
 
 An example of using LCM in a Gradle project. Assuming you have placed `my-lcm-types.jar` in `./lib`:
 
-```gradle
+```groovy
 // build.gradle
 String osName = System.getProperty("os.name").toLowerCase();
 project.logger.lifecycle(osName)

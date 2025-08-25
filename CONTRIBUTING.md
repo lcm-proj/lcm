@@ -69,3 +69,6 @@ docs/generate_man_pages.sh
 
 That script makes multiple assumptions about the environment it is run in. Please see its docstrings
 for more information.
+
+## Web Docs
+Docs are not built by the default CMake build `make` command. `make doc` will build the Sphinx site and run language specific API tools (Javadoc, Doxygen). To build only the Sphinx site, run `cd ./docs; make clean html` (Not `./build/docs`). "`clean`" is important for every rebuild. You can preview the docs by running (recommended from a new terminal) `cd ./docs/_build/html; python3 -m http.server 5000` (where 5000 is a stand-in for your port of choice).

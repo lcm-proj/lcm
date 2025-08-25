@@ -12,7 +12,7 @@ Quick links
 * :ref:`Installing LCM`
 * `Downloads <https://github.com/lcm-proj/lcm/releases>`_
 * :ref:`Build Instructions`
-* :ref:`Tutorial and examples`
+* :ref:`LCM Introduction`
 * `GitHub site <https://github.com/lcm-proj/lcm>`_
 
 Features
@@ -115,8 +115,8 @@ sending a message to the `mailing list <http://groups.google.com/group/lcm-users
 .. toctree::
    :maxdepth: 1
    :caption: Contents
-   :glob:
-
+   
+   self
    content/install-instructions.md
    content/build-instructions.md
    content/java-notes.md
@@ -129,31 +129,38 @@ sending a message to the `mailing list <http://groups.google.com/group/lcm-users
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials
-   :glob:
 
+   content/tutorial.md
+   content/tutorial-lcmgen.md
    content/tutorial-cmake.md
    content/tutorial-c.md
    content/tutorial-cpp.md
    content/tutorial-dotnet.md
    content/tutorial-go.md
    content/tutorial-java.md
-   content/tutorial-lcmgen.md
    content/tutorial-lua.md
    content/tutorial-matlab.md
-   content/tutorial.md
    content/tutorial-python.md
 
 .. toctree::
    :maxdepth: 1
-   :caption: APIs
-   :glob:
+   :caption: Language APIs
 
    doxygen_output/c_cpp/html/group__LcmC
    doxygen_output/c_cpp/html/group__LcmCpp
    doxygen_output/lcm-dotnet/html/namespaces
    javadocs/index
-   content/lua-api.md
+   Lua API <content/lua-api.md>
    python/index.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Quick Links
+
+   GitHub Project <https://github.com/lcm-proj/lcm>
+   Contributing <https://github.com/lcm-proj/lcm/blob/master/CONTRIBUTING.md>
+   License <https://github.com/lcm-proj/lcm/blob/master/COPYING>
+
 
 Indices and tables
 ==================
