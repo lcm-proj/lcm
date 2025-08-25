@@ -1,0 +1,8 @@
+
+/* The "Read the Docs" theme applies `uppercase` to the table of contents headings.
+ * But this turns "APIs" into "APIS", which is less helpful. 
+ */
+.wy-menu-vertical header,
+.wy-menu-vertical p.caption {
+    text-transform: unset;
+}

@@ -1,6 +1,4 @@
-# Tutorial and examples
-
-## Introduction
+# LCM Introduction
 
 LCM is a package designed to allow multiple processes to exchange messages in
 a safe and high-performance way.   
