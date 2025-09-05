@@ -386,6 +386,7 @@ static void *write_thread(void *user_data)
             void *sentinel_msg = &(logger->sync.write_thread_exit_flag);
 
             if (msg == sentinel_msg) {
+                fflush(logger->log->f);
                 return NULL;
             }
         }
