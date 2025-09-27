@@ -20,7 +20,7 @@ def _impl(ctx):
         "--c",
         "--c-cpath=" + output_dir,
         "--c-hpath=" + output_dir,
-    ]
+    ] + ctx.attr.args
 
     # Run lcm-gen.
     ctx.actions.run(
@@ -49,5 +49,6 @@ lcm_c_library_srcs = rule(
             executable = True,
             default = Label("//lcmgen:lcm-gen"),
         ),
+        "args": attr.string_list(),
     },
 )

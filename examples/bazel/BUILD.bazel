@@ -43,6 +43,7 @@ lcm_library(
 lcm_c_library_srcs(
     name = "exlcm_c_srcs",
     src = ":exlcm",
+    args = ["--cpp-std=c++11"],
 )
 
 cc_library(

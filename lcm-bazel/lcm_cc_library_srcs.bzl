@@ -15,6 +15,7 @@ lcm_library(
 lcm_cc_library_srcs(
     name = "foo_bar_cc_srcs",
     src = ":foo_bar",
+    args = ["--cpp-std=c++11"],
 )
 
 cc_library(
