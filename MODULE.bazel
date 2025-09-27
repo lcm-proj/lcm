@@ -10,14 +10,14 @@ module(
 
 # Load bazel rules.
 
-bazel_dep(name = "apple_support", version = "1.17.1", repo_name = "build_bazel_apple_support")
-bazel_dep(name = "bazel_skylib", version = "1.7.1")
-bazel_dep(name = "platforms", version = "0.0.10")
-bazel_dep(name = "rules_cc", version = "0.0.17")
-bazel_dep(name = "rules_java", version = "8.6.1")
-bazel_dep(name = "rules_jvm_external", version = "6.6")
+bazel_dep(name = "apple_support", version = "1.23.1", repo_name = "build_bazel_apple_support")
+bazel_dep(name = "bazel_skylib", version = "1.8.2")
+bazel_dep(name = "platforms", version = "1.0.0")
+bazel_dep(name = "rules_cc", version = "0.2.8")
+bazel_dep(name = "rules_java", version = "8.16.0")
+bazel_dep(name = "rules_jvm_external", version = "6.8")
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_python", version = "0.40.0")
+bazel_dep(name = "rules_python", version = "1.6.3")
 
 # Load runtime dependencies.
 
@@ -36,4 +36,4 @@ use_repo(maven, "lcm_maven")
 
 # Load dev dependencies.
 
-bazel_dep(name = "googletest", version = "1.15.2", dev_dependency = True)
+bazel_dep(name = "googletest", version = "1.17.0.bcr.1", dev_dependency = True)
