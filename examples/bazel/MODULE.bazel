@@ -9,7 +9,7 @@ local_path_override(
     path = "../..",
 )
 
-bazel_dep(name = "rules_cc", version = "0.0.17")
-bazel_dep(name = "rules_java", version = "8.6.1")
+bazel_dep(name = "rules_cc", version = "0.2.8")
+bazel_dep(name = "rules_java", version = "8.16.0")
 bazel_dep(name = "rules_license", version = "1.0.0")
-bazel_dep(name = "rules_python", version = "0.40.0")
+bazel_dep(name = "rules_python", version = "1.6.3")
