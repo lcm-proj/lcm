@@ -1,4 +1,5 @@
 load("@rules_cc//cc:cc_binary.bzl", "cc_binary")
+load("//lcm-bazel/private:copts.bzl", "WARNINGS_COPTS")
 
 package(
     default_applicable_licenses = ["//:license"],
@@ -12,6 +13,7 @@ cc_binary(
         "glib_util.h",
         "lcm_logger.c",
     ],
+    copts = WARNINGS_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         "//lcm:lcm-static",
@@ -23,6 +25,7 @@ cc_binary(
     srcs = [
         "lcm_logplayer.c",
     ],
+    copts = WARNINGS_COPTS,
     visibility = ["//visibility:public"],
     deps = [
         "//lcm:lcm-static",
