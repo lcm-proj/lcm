@@ -31,6 +31,7 @@
   a. Associate the release with tag vX.Y.Z
   b. Name the release title "vX.Y.Z"
   c. Add release notes from the NEWS file
+  d. On the release page, download the "Source code (tar.gz)" file, then edit the release and re-upload it to the "Attach binaries" section and save.
 
 # PyPi Release
 
