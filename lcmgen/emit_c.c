@@ -658,7 +658,10 @@ static void emit_c_decode_array(lcmgen_t *lcm, FILE *f, lcm_struct_t *structure)
     emit(0, "int __%s_decode_array(const void *buf, int offset, int maxlen, %s *p, int elements)",
          type_name, type_name);
     emit(0, "{");
-    emit(1, "int pos = 0, thislen, element;");
+    emit(1, "int pos = 0, element;");
+    if (g_ptr_array_size(structure->members) > 0) {
+        emit(1, "int thislen;");
+    }
     emit(0, "");
     emit(1, "for (element = 0; element < elements; element++) {");
     emit(0, "");
