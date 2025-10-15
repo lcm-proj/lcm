@@ -35,7 +35,7 @@ feedback and involvement on new features.
 * Platforms:
   * GNU/Linux
       * Ubuntu (22.04 and 24.04)
-      * Fedora (41)
+      * Fedora (42)
   * macOS (13 and 14)
   * Windows (2019 and 2022) via MSYS2
 * Languages
