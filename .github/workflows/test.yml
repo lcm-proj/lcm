@@ -98,7 +98,7 @@ jobs:
   macos:
     strategy:
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-14, macos-15]
 
     runs-on: ${{ matrix.os }}
 
@@ -117,7 +117,7 @@ jobs:
 
     - name: Test
       working-directory: ${{github.workspace}}/build
-      run: ctest --output-on-failure
+      run: sudo ctest --output-on-failure
 
     - name: Install
       run: sudo cmake --install ${{github.workspace}}/build
