@@ -1,6 +1,6 @@
 # SPDX-License-Identifier: MIT-0
 
-bazel_dep(name = "lcm", version = "1.5.1")
+bazel_dep(name = "lcm", version = "1.5.2")
 
 # This example uses lcm from our same git checkout. In most cases, you'll want
 # to remove this override in your own projects.

@@ -4,7 +4,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "lcm"
-version = "1.5.1"
+version = "1.5.2"
 description = "Lightweight Communication and Marshalling"
 readme = "README.md"
 requires-python = ">=3.7"
