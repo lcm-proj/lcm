@@ -43,7 +43,7 @@ lcm_cc_library_srcs = rule(
             providers = [LcmInfo],
         ),
         "lcmgen": attr.label(
-            cfg = "host",
+            cfg = "exec",
             executable = True,
             default = Label("//lcmgen:lcm-gen"),
         ),
