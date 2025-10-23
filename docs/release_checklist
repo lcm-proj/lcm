@@ -7,6 +7,7 @@
   a. lcm/lcm_version.h
   b. lcm-lua/rock/lcm-<version>-0.rockspec (both filename and contents of file)
   c. pyproject.toml
+  d. examples/bazel/MODULE.bazel
 5. Commit the above changes and create the vX.Y.Z git tag.
   $ git commit -a -m "Release X.Y.Z"
   $ git tag vX.Y.Z
