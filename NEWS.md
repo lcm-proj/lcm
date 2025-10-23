@@ -1,3 +1,36 @@
+October 23, 2025
+================
+
+Release 1.5.2
+
+- General
+    - Releases now provide a stable source archive attachment
+    - Documentation improvements
+- Build system
+    - Added support for MSVC
+    - Added support for macOS 15 and dropped support for macOS 13
+    - Added support for Fedora 42 and dropped support for Fedora 41
+    - Added support for Bazel
+    - Upgraded minimum CMake version to 3.10
+    - Installed `lcm-sources.jar` for IDE Javadoc integration
+- Python
+    - Added additional Windows wheels (before there was a single MSYS2-based wheel)
+    - Added Python 3.14 wheels and dropped Python 3.7 wheels
+    - Added ARMv7 wheels (previous release had these wheels retroactively added)
+    - Switched CMake from deprecated `FindPythonInterp` to new `FindPython`
+    - Removed uses of deprecated `distutils` module
+- liblcm
+    - Now only public symbols are exported
+    - Added `LCM_C_NAMESPACE` config option to change the C ABI symbol prefix
+    - Refreshed the `channel_port_mapping` `lcmtypes` codegen
+- lcm-gen
+    - Unused variable warning avoided for empty messages
+- lcm-spy
+    - Added support for running on Windows
+    - Improved logic to find `jchart2d`
+- lcm-logplayer-gui
+    - Added support for running on Windows
+
 December 23, 2024
 =================
 
