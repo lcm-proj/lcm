@@ -177,9 +177,20 @@ to next() returning the next L{Event<lcm.Event>} in the log.
 LCM_BIN_DIR = os.path.join(os.path.dirname(__file__), '..', 'bin')
 
 def run_script(name: str, args) -> int:
-    file_extension = '.bat' if platform.system() == 'Windows' else ''
     try:
-        return subprocess.call([os.path.join(LCM_BIN_DIR, name + file_extension), *args], close_fds=False)
+        if platform.system() == 'Windows':
+            candidates = [
+                os.path.join(LCM_BIN_DIR, f"{name}.bat"),
+                os.path.join(LCM_BIN_DIR, f"{name}.exe")
+            ]
+        else:
+            candidates = [os.path.join(LCM_BIN_DIR, name)]
+
+        for executable in candidates:
+            if os.path.exists(executable):
+                return subprocess.call([executable, *args], close_fds=False)
+
+        raise FileNotFoundError(f"No executable found for {name} in {LCM_BIN_DIR}")
     except KeyboardInterrupt:
         return 0
 
