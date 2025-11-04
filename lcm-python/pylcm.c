@@ -402,7 +402,9 @@ static int pylcm_initobj(PyObject *self, PyObject *args, PyObject *kwargs)
     if (!PyArg_ParseTuple(args, "|s", &url))
         return -1;
 
+    Py_BEGIN_ALLOW_THREADS;
     lcm_obj->lcm = lcm_create(url);
+    Py_END_ALLOW_THREADS;
     if (!lcm_obj->lcm) {
         PyErr_SetString(PyExc_RuntimeError, "Couldn't create LCM");
         return -1;
