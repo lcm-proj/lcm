@@ -48,6 +48,10 @@ LCM bindings are a wrapper around the C implementation, consult the C API\n\
 documentation on how provider should be formatted.  provider may be None or \n\
 the empty string, in which case a default network is chosen.\n\
 \n\
+Changed in 1.5.3: In 1.5.2 and before, LCM(None) would raise TypeError despite\n\
+documentation suggesting otherwise. Now LCM(), LCM(''), and LCM(None) are\n\
+equivalent.\n\
+\n\
 To subscribe to a channel::\n\
 \n\
    def msg_handler(channel, data):\n\
@@ -399,7 +403,7 @@ static int pylcm_initobj(PyObject *self, PyObject *args, PyObject *kwargs)
 
     char *url = NULL;
 
-    if (!PyArg_ParseTuple(args, "|s", &url))
+    if (!PyArg_ParseTuple(args, "|z", &url))
         return -1;
 
     Py_BEGIN_ALLOW_THREADS;
