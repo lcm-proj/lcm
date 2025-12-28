@@ -17,6 +17,7 @@ jobs:
 
     - name: Install Dependencies
       run: |
+        sudo apt update
         sudo apt install liblua5.3-dev lua5.3 libjchart2d-java libglib2.0-dev meson
 
     - name: Setup Meson
