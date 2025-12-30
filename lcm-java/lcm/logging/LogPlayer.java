@@ -982,6 +982,20 @@ public class LogPlayer extends JComponent
         System.err.println("  --title-url            Display the LCM URL in the window title.");
         System.err.println("  -h, --help             Shows this help text and exits");
         System.err.println("");
+        System.err.println("Environment Variables:");
+        System.err.println("  GDK_SCALE=<N>          (Linux) Increase the size of GTK apps. ");
+        System.err.println("                         LCM uses Swing and on some systems may be too small by default.");
+        System.err.println("                         Try `GDK_SCALE=2 lcm-spy`.");
+        System.err.println("  LCM_JVM_OPT=<ARGS>     Pass args to the JVM that LCM uses.");
+        System.err.println("                         Default behavior: LCM_JVM_OPT=\"-Xmx128m -Xms64m\"");
+        System.err.println("                         Xmx is the max memory given to the app.");
+        System.err.println("");
+        System.err.println("Changelog:");
+        System.err.println("LCM 1.5.3:");
+        System.err.println("  Introduced LCM_JVM_OPT.");
+        System.err.println("LCM 1.5.1");
+        System.err.println("  Introduced --tile and --title-url.");
+        System.err.println("");
         System.exit(1);
     }
 
