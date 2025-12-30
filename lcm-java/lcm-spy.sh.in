@@ -37,5 +37,9 @@ jars="$jars:@LCM_EXT_JIDE_OSS_JAR@"
 # Add user's CLASSPATH, if set
 [ -n "$CLASSPATH" ] && jars="$jars:$CLASSPATH"
 
+[ -z "$LCM_JVM_OPT" ] && LCM_JVM_OPT="-Xmx128m -Xms64m"
+
 # Launch the applet
-exec java -server -Djava.net.preferIPv4Stack=true -Xmx128m -Xms64m -ea -cp "$jars" lcm.spy.Spy "$@"
+# shellcheck disable=SC2086
+# Intentionally splitting LCM_JVM_OPT on spaces
+exec java -server -Djava.net.preferIPv4Stack=true ${LCM_JVM_OPT} -ea -cp "$jars" lcm.spy.Spy "$@"

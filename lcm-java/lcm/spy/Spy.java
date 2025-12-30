@@ -501,7 +501,7 @@ public class Spy
         System.err.println("");
         System.err.println("lcm-spy is the Lightweight Communications and Marshalling traffic ");
         System.err.println("inspection utility.  It is a graphical tool for viewing messages received on ");
-        System.err.println("an LCM network, and is analagous to tools like Ethereal/Wireshark and tcpdump");
+        System.err.println("an LCM network, and is analogous to tools like Ethereal/Wireshark and tcpdump");
         System.err.println("in that it is able to inspect all LCM messages received and provide information");
         System.err.println("and statistics on the channels used.");
         System.err.println("");
@@ -515,6 +515,24 @@ public class Spy
         System.err.println("  -l, --lcm-url=URL      Use the specified LCM URL");
         System.err.println("  -t, --title [LABEL]    Display LABEL in the window title");
         System.err.println("  --title-url            Display the LCM URL in the title");
+        System.err.println("");
+        System.err.println("Environment Variables:");
+        System.err.println("  CLASSPATH=<PATH>       If a jar of your LCM types is on your classpath,");
+        System.err.println("                         then lcm-spy will be able to decode messages.");
+        System.err.println("  GDK_SCALE=<N>          (Linux) Increase the size of GTK apps. ");
+        System.err.println("                         LCM uses Swing and on some systems may be too small by default.");
+        System.err.println("                         Try `GDK_SCALE=2 lcm-spy`.");
+        System.err.println("  LCM_JVM_OPT=<ARGS>     Pass args to the JVM that LCM uses.");
+        System.err.println("                         Default behavior: LCM_JVM_OPT=\"-Xmx128m -Xms64m\"");
+        System.err.println("                         Xmx is the max memory given to the app.");
+        System.err.println("                         lcm-spy may freeze if this value is too low for decoding your traffic.");
+        System.err.println("");
+        System.err.println("Changelog:");
+        System.err.println("LCM 1.5.3:");
+        System.err.println("  Introduced LCM_JVM_OPT.");
+        System.err.println("LCM 1.5.1");
+        System.err.println("  Introduced --tile and --title-url.");
+        System.err.println("");
         System.err.println("");
         System.exit(1);
     }
