@@ -1,13 +1,33 @@
 #!/bin/bash
-
 # This script regenerates all non-test man pages using help2man.
 # This script assumes:
-# - help2man is installed and on the path
-# - The CWD is the LCM project root directory
-# - A build directory called `build` has been configured in the root project directory
-# - A version of grep which supports the -P argument (not macOS, it seems)
+# - help2man is installed and on the path.
+# - A build directory called `build` has been configured in the root project directory.
+#   Rebuild before running this.
+# - A version of grep which supports the -P argument (not macOS, it seems).
+#
+# help2man 1.49.3 is available from brew, conda, (and other) package mangers. 
+# ------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+# shellcheck disable=SC2002
+# SC2002 := "Useless cat"
+# grep can take the filename as an arg, but the subshell cost is negligible outside a loop
+# and cat | grep is "easier" to read.
+# ------------------------------------------------------------------------------
 
-set -xe
+
+# $0 is ./docs/generate_man_pages.sh relative to the repo.
+this_script_dir="$(dirname "$(realpath "$0")")" 
+lcm_src_root="$(dirname "$this_script_dir")"
+
+cd "$lcm_src_root"
+
+set -xe # -x := Print commands ran. -e := Exit on first error code.
+
+# Parse the version header for the version.
+MAJOR=$(cat lcm/lcm_version.h | grep -oP "(?<=LCM_VERSION_MAJOR )\d*")
+MINOR=$(cat lcm/lcm_version.h | grep -oP "(?<=LCM_VERSION_MINOR )\d*")
+PATCH=$(cat lcm/lcm_version.h | grep -oP "(?<=LCM_VERSION_PATCH )\d*")
 
 # Some non-intuitive arguments: 
 #    `--no-discard-stderr ` Necessary because executables output some stuff to stderr rather than
@@ -17,10 +37,7 @@ set -xe
 #    the user to a Texinfo manual for more information. This does not exist for all systems and does
 #    not contain additional information.
 
-# Parse the version header for the version.
-MAJOR=$(cat lcm/lcm_version.h | grep -oP "(?<=LCM_VERSION_MAJOR )\d*")
-MINOR=$(cat lcm/lcm_version.h | grep -oP "(?<=LCM_VERSION_MINOR )\d*")
-PATCH=$(cat lcm/lcm_version.h | grep -oP "(?<=LCM_VERSION_PATCH )\d*")
+
 
 help2man \
     --no-discard-stderr \
