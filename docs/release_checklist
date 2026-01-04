@@ -1,13 +1,13 @@
 # Build release archive
 
 1. Update NEWS (use Markdown syntax)
-2. Verify that all manpages are up to date
-3. Verify that supported platforms and version numbers are correct in the README
-4. Bump the version number in:
+2. Verify that supported platforms and version numbers are correct in the README
+3. Bump the version number in:
   a. lcm/lcm_version.h
   b. lcm-lua/rock/lcm-<version>-0.rockspec (both filename and contents of file)
   c. pyproject.toml
   d. examples/bazel/MODULE.bazel
+4. Regenerate manpages and commit any relevant changes
 5. Commit the above changes and create the vX.Y.Z git tag.
   $ git commit -a -m "Release X.Y.Z"
   $ git tag vX.Y.Z
