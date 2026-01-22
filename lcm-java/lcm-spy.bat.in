@@ -1,3 +1,4 @@
+@ECHO OFF
 setlocal enableDelayedExpansion
 
 :: Determine our canonical location
@@ -25,7 +26,8 @@ set jars=%jars%:@LCM_EXT_JIDE_OSS_JAR@
 :: Add user's CLASSPATH, if set
 IF NOT "%CLASSPATH%"=="" set jars=%jars%;%CLASSPATH%
 
-IF "%LCM_JVM_OPT%"=="" set LCM_JVM_OPT=="-Xmx128m -Xms64m"
+IF "%LCM_JVM_OPT%"=="" set LCM_JVM_OPT=-Xmx128m -Xms64m
 
+@ECHO ON
 :: Launch the applet
 java -server -Djava.net.preferIPv4Stack=true %LCM_JVM_OPT% -ea -cp "%jars%" lcm.spy.Spy %*
