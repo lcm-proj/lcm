@@ -75,6 +75,8 @@ Python packages needed for building documentation:
   - myst-parser
   - sphinx-rtd-theme
 
+Ex: `pip install Sphinx myst-parser sphinx-rtd-theme`
+
 From a terminal, run the following commands for CMake:
 
 ```shell
@@ -214,16 +216,42 @@ sample projct at `examples/bazel` for how to use LCM as a Bazel dependency.
 We currently support building on windows using an MSYS2 environment as well as MSVC. Please see the
 appropriate section below for more information on each approach.
 
+### Windows Dev Drive
+Using a [Windows Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) is not required to build LCM, but it is ***strongly*** recommended. When building on a normal filesystem, Windows Defender or other antivirus will *severely* slow down the build. A key feature of Dev Drives are relaxed AV policies. See the [Understanding security risks and trust in relation to Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/#understanding-security-risks-and-trust-in-relation-to-dev-drive) section for more on the implications of using a Dev Drive.
+
+Using a VHD or disk partition is a personal choice. Even a VHD on a USB SSD is a viable option.
+
+The [Storing package cache on Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/#storing-package-cache-on-dev-drive) section enumerates environment variables to consider setting. Set `VCPKG_DEFAULT_BINARY_CACHE` and consider  `PIP_CACHE_DIR`.
+
+
+### Java (Optional)
+Building the Java tools (like `lcm-spy` or `lcm-logplayer-gui`) requires an installed JDK. Ninite can be a hassle free way to install AdoptOpenJDK.
+
+Alternatively, if you just want to use Java-dependent components of LCM provided by a pre-built
+binary (like you get from `pip install lcm`) then only a JRE is required.
+
 ### Using MSVC with vcpkg
+
+Windows MSVC/vcpkg builds are much slower than Ubuntu builds as vcpkg builds `glib` and transitive dependencies from source. 
 
 #### Prerequisites
 
 **Warning**: If the path to the LCM directory contains spaces, you may experience issues with
 `vcpkg`. It is highly recommended to work out of a directory whose path does not contain spaces.
 
-Before starting, ensure you have installed Microsoft's Build Tools for Visual Studio. When going
-through the setup, ensure you install a Desktop development with C++. All commands in this section
-are intended to be run from a shell set up for using MSVC (e.g. `Developer PowerShell for VS 2022`).
+##### Visual Studio
+
+Before starting, ensure you have installed Microsoft Visual Studio. The CLI only "Build Tools for Visual Studio" is sufficient to build LCM. The full IDE is not required. 
+
+The download for the CLI tools is currently below the fold on the main [Visual Studio download page](https://visualstudio.microsoft.com/downloads/): Tools for Visual Studio -> Build Tools for Visual Studio 
+
+> Use of this tool requires a valid Visual Studio license, unless you are building open-source dependencies for your project. See the Build Tools license for more details. [Quoted Feb 2 2026]
+
+For whichever distribution of Visual Studio you have selected, in the installer select the "Desktop development with C++" Workload to install. Under "Installation details", ensure "vcpkg package manager" is unchecked. These build instructions assume vcpkg is manually installed.
+
+All commands in this section are intended to be run from a shell set up for using MSVC (e.g. `Developer PowerShell for VS 2022`).
+
+##### VCPKG
 
 Begin by [installing
 vcpkg](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started?pivots=shell-powershell#1---set-up-vcpkg).
@@ -241,7 +269,9 @@ vcpkg x-update-baseline --add-initial-baseline
 
 before proceeding.
 
-#### Building
+
+
+#### Building LCM
 
 Use the Cmake preset for vcpkg to configure a build directory:
 
@@ -309,12 +339,5 @@ There are a few things to watch out for:
    hints](https://cmake.org/cmake/help/latest/module/FindPython.html#hints) when configuring a build
    directory.
 
-### Java on Windows
 
-The above does not result in an environment with Java. If you need the Java-dependent components of
-LCM (like `lcm-spy` or `lcm-logplayer-gui`), please install a JDK, delete any build directories, and
-run the above commands again.
 
-Alternatively, if you just want to use Java-dependent components of LCM provided by a pre-built
-binary (like you get from `pip install lcm`, for example) then a JDK is not required but you will
-still need at least a JRE.
