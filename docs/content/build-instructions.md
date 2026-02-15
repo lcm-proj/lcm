@@ -216,12 +216,13 @@ sample projct at `examples/bazel` for how to use LCM as a Bazel dependency.
 We currently support building on windows using an MSYS2 environment as well as MSVC. Please see the
 appropriate section below for more information on each approach.
 
-### Windows Dev Drive
+### Windows Dev Drive (Optional)
 
 Using a [Windows Dev Drive](https://learn.microsoft.com/en-us/windows/dev-drive/) is not required to
-build LCM, but it is ***strongly*** recommended. When building on a normal filesystem, Windows
-Defender or other antivirus will *severely* slow down the build. A key feature of Dev Drives are
-relaxed AV policies. See the [Understanding security risks and trust in relation to Dev
+build LCM, but for some systems it is ***strongly*** recommended. When building on a normal
+filesystem, Windows Defender or other antivirus will *severely* slow down the build in some
+configurations. A key feature of Dev Drives are relaxed AV policies. See the [Understanding security
+risks and trust in relation to Dev
 Drive](https://learn.microsoft.com/en-us/windows/dev-drive/#understanding-security-risks-and-trust-in-relation-to-dev-drive)
 section for more on the implications of using a Dev Drive.
 
@@ -242,8 +243,9 @@ binary (like you get from `pip install lcm`) then only a JRE is required.
 
 ### Using MSVC with vcpkg
 
-Windows MSVC/vcpkg builds are much slower than Ubuntu builds as vcpkg builds `glib` and transitive
-dependencies from source.
+Windows MSVC/vcpkg builds are initially much slower than builds on other platforms with package
+managers which serve prebuilt binaries, since vcpkg builds `glib` and transitive dependencies from
+source.
 
 #### Prerequisites
 
@@ -256,22 +258,18 @@ Before starting, ensure you have installed Microsoft Visual Studio. The CLI only
 Visual Studio" is sufficient to build LCM. The full IDE is not required.
 
 The download for the CLI tools is currently below the fold on the main [Visual Studio download
-page](https://visualstudio.microsoft.com/downloads/): Tools for Visual Studio -> Build Tools for
-Visual Studio
+page](https://visualstudio.microsoft.com/downloads/). Scroll down and expand the `Tools for Visual
+Studio` section and look for `Build Tools for Visual Studio`.
 
-> Use of this tool requires a valid Visual Studio license, unless you are building open-source
-> dependencies for your project. See the Build Tools license for more details. [Quoted Feb 2 2026]
-
-For whichever distribution of Visual Studio you have selected, in the installer select the "Desktop
-development with C++" Workload to install. Under "Installation details", ensure "vcpkg package
-manager" is unchecked. These build instructions assume vcpkg is manually installed.
+For whichever distribution of Visual Studio you have selected, in the installer select the `Desktop
+development with C++` Workload to install.
 
 All commands in this section are intended to be run from a shell set up for using MSVC (e.g.
 `Developer PowerShell for VS 2022`).
 
 ##### VCPKG
 
-Begin by [installing
+If you haven't already installed VCPKG in the previous step, see [installing
 vcpkg](https://learn.microsoft.com/en-us/vcpkg/get_started/get-started?pivots=shell-powershell#1---set-up-vcpkg).
 Follow the linked instructions until after you have set the environment variable `VCPKG_ROOT` and
 added `vcpkg` to `PATH`.
