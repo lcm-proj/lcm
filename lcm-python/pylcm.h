@@ -14,11 +14,15 @@ typedef struct {
 
     int exception_raised;
 
-    PyObject *all_handlers;
+    // Set while LCM.handle() or LCM.handle_timeout() is active on this LCM.
+    // Read and written only while holding the GIL -- used for the
+    // "simultaneous calls" check. The actual suspended PyThreadState* is
+    // stored in thread-specific storage (see pylcm.c) so that
+    // pylcm_msg_handler can restore the GIL without dereferencing
+    // subs_obj->lcm_obj (which races with pylcm_unsubscribe).
+    int handle_in_progress;
 
-    // Stores the state of the thread that calls LCM.handle() or
-    // LCM.handle_timeout()
-    PyThreadState *saved_thread_state;
+    PyObject *all_handlers;
 } PyLCMObject;
 
 #ifdef __cplusplus

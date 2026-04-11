@@ -84,23 +84,70 @@ and the following usage would publish a message::\n\
 // gives redefinition error in MSVC
 // PyTypeObject pylcm_type;
 
+// Thread-local slot used to pass a suspended PyThreadState* from
+// pylcm_handle / pylcm_handle_timeout down into pylcm_msg_handler. Stored
+// in TSS (keyed by OS thread) rather than on PyLCMObject because the
+// handler runs without the GIL: reading the state from subs_obj->lcm_obj
+// would race with pylcm_unsubscribe nulling that field. TSS lookup is
+// thread-local, so it requires no synchronization with other Python
+// threads. Initialized in pylcm_module_init() (called from PyInit__lcm).
+static Py_tss_t pylcm_thread_state_key = Py_tss_NEEDS_INIT;
+
+int pylcm_module_init(void)
+{
+    // PyThread_tss_create is a no-op when the key is already initialized,
+    // so this is safe across module reloads.
+    if (PyThread_tss_create(&pylcm_thread_state_key) != 0) {
+        PyErr_SetString(PyExc_RuntimeError, "failed to create LCM thread-local storage");
+        return -1;
+    }
+    return 0;
+}
+
 // all LCM messages subscribed to by all LCM objects pass through this
 // handler first.
 static void pylcm_msg_handler(const lcm_recv_buf_t *rbuf, const char *channel, void *userdata)
 {
+    // Restore the GIL *before* touching any PyLCMSubscriptionObject field.
+    // Reading subs_obj->lcm_obj without the GIL was the original bug:
+    // pylcm_unsubscribe could set that field to NULL while we were entering
+    // here. The thread state lives in TSS so we don't have to chase it
+    // through subs_obj.
+    PyThreadState *ts = (PyThreadState *) PyThread_tss_get(&pylcm_thread_state_key);
+    if (ts) {
+        PyEval_RestoreThread(ts);
+        PyThread_tss_set(&pylcm_thread_state_key, NULL);
+    }
+    // From here on the GIL is held. pylcm_unsubscribe also holds the GIL
+    // when it mutates subs_obj->*, so any read below is synchronized.
+
     PyLCMSubscriptionObject *subs_obj = (PyLCMSubscriptionObject *) userdata;
     dbg(DBG_PYTHON, "%s %p %p\n", __FUNCTION__, subs_obj, subs_obj->lcm_obj);
 
-    // Restore the thread state before calling back into Python.
-    if (subs_obj->lcm_obj->saved_thread_state) {
-        PyEval_RestoreThread(subs_obj->lcm_obj->saved_thread_state);
-        subs_obj->lcm_obj->saved_thread_state = NULL;
+    // If unsubscribe already ran, subs_obj->lcm_obj and subs_obj->handler
+    // have been nulled. The C-level marked_for_deletion mechanism will tear
+    // down the lcm_subscription_t safely; we just skip the Python callback.
+    PyLCMObject *lcm_obj = subs_obj->lcm_obj;
+    PyObject *handler = subs_obj->handler;
+    if (!lcm_obj || !handler) {
+        return;
     }
 
     // if an exception has occurred, then abort.
     if (PyErr_Occurred()) {
         return;
     }
+
+    // The user callback may release the GIL (sleep, I/O, ...), allowing
+    // another thread to run pylcm_unsubscribe -- which would Py_DECREF
+    // subs_obj->handler and NULL subs_obj->lcm_obj. Hold local strong refs
+    // across the call so those operations don't free the objects we're
+    // still using.
+    //
+    // INVARIANT: do NOT touch subs_obj->* below this point. Use only the
+    // locals `lcm_obj` and `handler`.
+    Py_INCREF(lcm_obj);
+    Py_INCREF(handler);
 
 #if PY_MAJOR_VERSION >= 3
     PyObject *arglist = Py_BuildValue("sy#", channel,  // build from bytes
@@ -110,14 +157,17 @@ static void pylcm_msg_handler(const lcm_recv_buf_t *rbuf, const char *channel, v
                                       rbuf->data, rbuf->data_size);
 #endif
 
-    PyObject *result = PyObject_CallObject(subs_obj->handler, arglist);
+    PyObject *result = PyObject_CallObject(handler, arglist);
     Py_DECREF(arglist);
 
     if (!result) {
-        subs_obj->lcm_obj->exception_raised = 1;
+        lcm_obj->exception_raised = 1;
     } else {
         Py_DECREF(result);
     }
+
+    Py_DECREF(handler);
+    Py_DECREF(lcm_obj);
 }
 
 // =============== LCM class methods ==============
@@ -270,25 +320,30 @@ static PyObject *pylcm_handle(PyLCMObject *lcm_obj)
 {
     dbg(DBG_PYTHON, "pylcm_handle(%p)\n", lcm_obj);
 
-    if (lcm_obj->saved_thread_state) {
+    if (lcm_obj->handle_in_progress) {
         PyErr_SetString(
             PyExc_RuntimeError,
             "only one thread is allowed to call LCM.handle() or LCM.handle_timeout() at a time");
         return NULL;
     }
-    lcm_obj->saved_thread_state = PyEval_SaveThread();
+    lcm_obj->handle_in_progress = 1;
     lcm_obj->exception_raised = 0;
+
+    PyThreadState *ts = PyEval_SaveThread();
+    PyThread_tss_set(&pylcm_thread_state_key, ts);
 
     dbg(DBG_PYTHON, "calling lcm_handle(%p)\n", lcm_obj->lcm);
     int status = lcm_handle(lcm_obj->lcm);
 
-    // Restore the thread state before returning back to Python.  The thread
-    // state may have already been restored by the callback function
-    // pylcm_msg_handler()
-    if (lcm_obj->saved_thread_state) {
-        PyEval_RestoreThread(lcm_obj->saved_thread_state);
-        lcm_obj->saved_thread_state = NULL;
+    // Restore the thread state before returning back to Python. It may
+    // have already been restored (and the TSS slot cleared) by the
+    // callback function pylcm_msg_handler().
+    ts = (PyThreadState *) PyThread_tss_get(&pylcm_thread_state_key);
+    if (ts) {
+        PyEval_RestoreThread(ts);
+        PyThread_tss_set(&pylcm_thread_state_key, NULL);
     }
+    lcm_obj->handle_in_progress = 0;
 
     if (lcm_obj->exception_raised) {
         return NULL;
@@ -317,24 +372,29 @@ static PyObject *pylcm_handle_timeout(PyLCMObject *lcm_obj, PyObject *arg)
 
     dbg(DBG_PYTHON, "pylcm_handle_timeout(%p, %d)\n", lcm_obj, timeout_millis);
 
-    if (lcm_obj->saved_thread_state) {
+    if (lcm_obj->handle_in_progress) {
         PyErr_SetString(PyExc_RuntimeError,
                         "Simultaneous calls to handle() / handle_timeout() detected");
         return NULL;
     }
-    lcm_obj->saved_thread_state = PyEval_SaveThread();
+    lcm_obj->handle_in_progress = 1;
     lcm_obj->exception_raised = 0;
+
+    PyThreadState *ts = PyEval_SaveThread();
+    PyThread_tss_set(&pylcm_thread_state_key, ts);
 
     dbg(DBG_PYTHON, "calling lcm_handle_timeout(%p, %d)\n", lcm_obj->lcm, timeout_millis);
     int status = lcm_handle_timeout(lcm_obj->lcm, timeout_millis);
 
-    // Restore the thread state before returning back to Python.  The thread
-    // state may have already been restored by the callback function
-    // pylcm_msg_handler()
-    if (lcm_obj->saved_thread_state) {
-        PyEval_RestoreThread(lcm_obj->saved_thread_state);
-        lcm_obj->saved_thread_state = NULL;
+    // Restore the thread state before returning back to Python. It may
+    // have already been restored (and the TSS slot cleared) by the
+    // callback function pylcm_msg_handler().
+    ts = (PyThreadState *) PyThread_tss_get(&pylcm_thread_state_key);
+    if (ts) {
+        PyEval_RestoreThread(ts);
+        PyThread_tss_set(&pylcm_thread_state_key, NULL);
     }
+    lcm_obj->handle_in_progress = 0;
 
     if (lcm_obj->exception_raised) {
         return NULL;
@@ -413,7 +473,7 @@ static int pylcm_initobj(PyObject *self, PyObject *args, PyObject *kwargs)
         PyErr_SetString(PyExc_RuntimeError, "Couldn't create LCM");
         return -1;
     }
-    lcm_obj->saved_thread_state = NULL;
+    lcm_obj->handle_in_progress = 0;
 
     return 0;
 }

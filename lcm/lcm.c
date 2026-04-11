@@ -403,20 +403,29 @@ int lcm_dispatch_handlers(lcm_t *lcm, lcm_recv_buf_t *buf, const char *channel)
 
     GPtrArray *handlers = lcm_get_handlers(lcm, channel);
 
-    // ref the handlers to prevent them from being destroyed by an
-    // lcm_unsubscribe.  This guarantees that handlers 0-(nhandlers-1) will not
-    // be destroyed during the callbacks.  Store nhandlers in a local variable
-    // so that we don't iterate over handlers that are added during the
-    // callbacks.
+    // Snapshot the handler list. We'll release lcm->mutex below in order
+    // to call each handler -- at that point another thread can run
+    // lcm_unsubscribe, which calls map_remove_handler_callback on every
+    // per-channel array (including this one), shifting or shrinking it
+    // under us. Setting callback_scheduled=1 on the snapshotted entries
+    // keeps the lcm_subscription_t structs themselves alive (unsubscribe
+    // defers free until callback_scheduled goes back to 0), but does not
+    // prevent the array contents from being mutated. Iterating a local
+    // snapshot avoids out-of-bounds reads and skipped/duplicated
+    // dispatches.
     int nhandlers = handlers->len;
-    for (int i = 0; i < nhandlers; i++) {
-        lcm_subscription_t *subscription = (lcm_subscription_t *) g_ptr_array_index(handlers, i);
-        subscription->callback_scheduled = 1;
+    lcm_subscription_t **snapshot = NULL;
+    if (nhandlers > 0) {
+        snapshot = (lcm_subscription_t **) malloc(sizeof(lcm_subscription_t *) * nhandlers);
+        for (int i = 0; i < nhandlers; i++) {
+            snapshot[i] = (lcm_subscription_t *) g_ptr_array_index(handlers, i);
+            snapshot[i]->callback_scheduled = 1;
+        }
     }
 
     // now, call the handlers.
     for (int i = 0; i < nhandlers; i++) {
-        lcm_subscription_t *subscription = (lcm_subscription_t *) g_ptr_array_index(handlers, i);
+        lcm_subscription_t *subscription = snapshot[i];
 
         if (!subscription->marked_for_deletion && subscription->num_queued_messages > 0) {
             subscription->num_queued_messages--;
@@ -429,13 +438,17 @@ int lcm_dispatch_handlers(lcm_t *lcm, lcm_recv_buf_t *buf, const char *channel)
     // unref the handlers and check if any should be deleted
     GList *to_remove = NULL;
     for (int i = 0; i < nhandlers; i++) {
-        lcm_subscription_t *subscription = (lcm_subscription_t *) g_ptr_array_index(handlers, i);
+        lcm_subscription_t *subscription = snapshot[i];
 
         subscription->callback_scheduled = 0;
         if (subscription->marked_for_deletion)
             to_remove = g_list_prepend(to_remove, subscription);
     }
-    // actually delete handlers marked for deletion
+    free(snapshot);
+    // actually delete handlers marked for deletion. lcm_unsubscribe may
+    // already have removed these from handlers_all / handlers_map while
+    // callback_scheduled was set; g_ptr_array_remove and
+    // map_remove_handler_callback are no-ops in that case.
     for (; to_remove; to_remove = g_list_delete_link(to_remove, to_remove)) {
         lcm_subscription_t *subscription = (lcm_subscription_t *) to_remove->data;
         g_ptr_array_remove(lcm->handlers_all, subscription);
