@@ -3,7 +3,9 @@
 #define FREELIST_REF 0
 
 #if LUA_VERSION_NUM >= 502
+#ifndef lua_objlen
 #define lua_objlen(L, INDEX) lua_rawlen(L, INDEX)
+#endif
 #endif
 
 /* convert a stack index to positive */
