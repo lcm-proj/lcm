@@ -203,9 +203,10 @@ static PyObject *pylcm_unsubscribe(PyLCMObject *lcm_obj, PyObject *args)
 
     lcm_unsubscribe(lcm_obj->lcm, subs_obj->subscription);
     subs_obj->subscription = NULL;
-    Py_DECREF(subs_obj->handler);
-    subs_obj->handler = NULL;
-    subs_obj->lcm_obj = NULL;
+    // TODO: fix this memory leak https://github.com/lcm-proj/lcm/issues/619
+    // Py_DECREF(subs_obj->handler);
+    // subs_obj->handler = NULL;
+    // subs_obj->lcm_obj = NULL;
 
     Py_RETURN_NONE;
 }

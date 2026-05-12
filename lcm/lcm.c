@@ -330,10 +330,11 @@ int lcm_unsubscribe(lcm_t *lcm, lcm_subscription_t *subscription)
     if (foundit) {
         // remove the handler from all the lists in the hash table
         g_hash_table_foreach(lcm->handlers_map, map_remove_handler_callback, subscription);
-        if (!subscription->callback_scheduled)
-            lcm_handler_free(subscription);
-        else
-            subscription->marked_for_deletion = 1;
+        // TODO: fix this memory leak https://github.com/lcm-proj/lcm/issues/619
+        // if (!subscription->callback_scheduled)
+        // lcm_handler_free(subscription);
+        // else
+        // subscription->marked_for_deletion = 1;
     }
 
     g_rec_mutex_unlock(&lcm->mutex);
