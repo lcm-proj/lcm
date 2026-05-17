@@ -193,6 +193,7 @@ static void dbg_init()
             printf("%s", DCOLOR(mode)); \
             printf(__VA_ARGS__);        \
             printf(_NORMAL_);           \
+            fflush(stdout);             \
         }                               \
     }
 #define dbg_active(mode) (dbg_modes & (mode))
@@ -210,6 +211,7 @@ static void dbg_init()
         printf(color);       \
         printf(__VA_ARGS__); \
         printf(_NORMAL_);    \
+        fflush(stdout);      \
     }
 
 #ifdef __cplusplus
