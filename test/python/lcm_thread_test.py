@@ -156,6 +156,14 @@ class TestLcmThreads(unittest.TestCase):
 
         self.assertFalse(t.is_alive())
 
+    def test_python_lcm_lifetime_with_attributeeror(self):
+        # if python reference counts are incorrect, this is enough to trigger
+        # either a SEGV or an ASAN warning from PyType_Ready
+        lcm_obj = lcm.LCM("memq://")
+        with self.assertRaises(AttributeError):
+            lcm_obj.does_not_have_this_attribute
+
+
 def main():
     unittest.main()
 
