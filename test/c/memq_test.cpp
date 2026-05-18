@@ -121,18 +121,20 @@ void SelfUnsubHandler(const lcm_recv_buf_t *, const char *, void *user_data);
 
 struct SelfUnsubHandlerState {
     lcm_t *lcm;
-    lcm_subscription_t *subscription = nullptr;
-    bool fired = false;
+    lcm_subscription_t *subscription;
+    bool fired;
 
     SelfUnsubHandlerState(lcm_t *_lcm)
-        : lcm(_lcm), subscription(lcm_subscribe(lcm, "channel", SelfUnsubHandler, this))
+        : lcm(_lcm),
+          subscription(lcm_subscribe(lcm, "channel", SelfUnsubHandler, this)),
+          fired(false)
     {
     }
 };
 
 void SelfUnsubHandler(const lcm_recv_buf_t *, const char *, void *user_data)
 {
-    auto &state = *reinterpret_cast<SelfUnsubHandlerState *>(user_data);
+    SelfUnsubHandlerState &state = *(SelfUnsubHandlerState *) (user_data);
     state.fired = true;
     lcm_unsubscribe(state.lcm, state.subscription);
 }
