@@ -320,8 +320,22 @@ int lcm_unsubscribe(lcm_t *lcm, lcm_subscription_t *subscription)
 {
     g_rec_mutex_lock(&lcm->mutex);
 
+    int foundit = 0;
+
+    // when called from within an lcm_handle callback, tampering with the
+    // handlers_map will throw off the indices in lcm_dispatch_handlers, so
+    // check for the dispatch sentinels and skip the body of this function if
+    // they're present.
+    if (!subscription || subscription->marked_for_deletion)
+        goto done;
+    if (subscription->callback_scheduled) {
+        subscription->marked_for_deletion = 1;
+        foundit = 1;
+        goto done;
+    }
+
     // remove the handler from the master list
-    int foundit = g_ptr_array_remove(lcm->handlers_all, subscription);
+    foundit = g_ptr_array_remove(lcm->handlers_all, subscription);
 
     if (lcm->provider && lcm->vtable->unsubscribe) {
         lcm->vtable->unsubscribe(lcm->provider, subscription->channel);
@@ -336,6 +350,7 @@ int lcm_unsubscribe(lcm_t *lcm, lcm_subscription_t *subscription)
             subscription->marked_for_deletion = 1;
     }
 
+done:
     g_rec_mutex_unlock(&lcm->mutex);
 
     return foundit ? 0 : -1;
