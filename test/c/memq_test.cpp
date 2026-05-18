@@ -116,3 +116,39 @@ TEST(LCM_C, MemqTimeout)
 
     lcm_destroy(lcm);
 }
+
+void SelfUnsubHandler(const lcm_recv_buf_t *, const char *, void *user_data);
+
+struct SelfUnsubHandlerState {
+    lcm_t *lcm;
+    lcm_subscription_t *subscription = nullptr;
+    bool fired = false;
+
+    SelfUnsubHandlerState(lcm_t *_lcm)
+        : lcm(_lcm), subscription(lcm_subscribe(lcm, "channel", SelfUnsubHandler, this))
+    {
+    }
+};
+
+void SelfUnsubHandler(const lcm_recv_buf_t *, const char *, void *user_data)
+{
+    auto &state = *reinterpret_cast<SelfUnsubHandlerState *>(user_data);
+    state.fired = true;
+    lcm_unsubscribe(state.lcm, state.subscription);
+}
+
+TEST(LCM_C, MemqUnsubWithoutSkippingHandler)
+{
+    // Publish a single message, and make sure that a handler unsubscribing
+    // itself does not mess up delivery for subsequent messages.
+    lcm_t *lcm = lcm_create("memq://");
+
+    SelfUnsubHandlerState handler1(lcm);
+    SelfUnsubHandlerState handler2(lcm);
+    SelfUnsubHandlerState handler3(lcm);
+    lcm_publish(lcm, "channel", "", 0);
+    EXPECT_GE(lcm_handle_timeout(lcm, 1000), 0);
+    EXPECT_TRUE(handler1.fired);
+    EXPECT_TRUE(handler2.fired);
+    EXPECT_TRUE(handler3.fired);
+}
