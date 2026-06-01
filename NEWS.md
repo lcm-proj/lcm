@@ -385,7 +385,7 @@ This release adds a constructor to the C++ API, some command line options to
 lcm-logger, and incorporates a number of bugfixes.
 
 - Java
-    - workaround to accomodate recent changes in Automake.  In particular, fixes
+    - workaround to accommodate recent changes in Automake.  In particular, fixes
       lcm-java for Ubuntu 12.04.
 - C
     - add start_timestamp option to log file provider
