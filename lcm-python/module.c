@@ -18,6 +18,7 @@
 extern PyTypeObject pylcmeventlog_type;
 extern PyTypeObject pylcm_type;
 extern PyTypeObject pylcm_subscription_type;
+extern int pylcm_module_init(void);
 
 /* module initialization */
 
@@ -54,6 +55,14 @@ init_lcm(void)
     Py_SET_TYPE(&pylcm_subscription_type, &PyType_Type);
 
     MOD_DEF(m, "_lcm", lcmmod_doc, lcmmod_methods);
+
+    if (pylcm_module_init() != 0) {
+#if PY_MAJOR_VERSION >= 3
+        return NULL;
+#else
+        return;
+#endif
+    }
 
     Py_INCREF(&pylcmeventlog_type);
     if (PyModule_AddObject(m, "EventLog", (PyObject *) &pylcmeventlog_type) != 0) {
