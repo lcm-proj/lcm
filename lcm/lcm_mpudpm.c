@@ -679,8 +679,7 @@ static void *recv_thread(void *user)
         // loop over sockets and receive data on all the ones that have data
         SOCKET recv_fd = -1;
         uint16_t recv_port = -1;
-        int poll_i = 1;
-        for (GSList *it = lcm->recv_sockets; it != NULL; it = it->next, ++poll_i) {
+        for (GSList *it = lcm->recv_sockets; it != NULL; it = it->next) {
             // We should be holding receive_lock at the start of this loop
             mpudpm_socket_t *sub_socket = (mpudpm_socket_t *) it->data;
             if (!FD_ISSET(sub_socket->fd, &fds)) {
