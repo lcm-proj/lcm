@@ -16,5 +16,7 @@ if exist %mydir%\lcm.jar (
 :: Add user's CLASSPATH, if set
 IF NOT "%CLASSPATH%"=="" set jars=%jars%;%CLASSPATH%
 
+IF "%LCM_JVM_OPT%"=="" set LCM_JVM_OPT=-Xmx128m -Xms64m
+
 :: Launch the applet
-java -server -Djava.net.preferIPv4Stack=true -Xmx64m -Xms32m -ea -cp "%jars%" lcm.logging.LogPlayer %*
+java -server -Djava.net.preferIPv4Stack=true %LCM_JAVA_OPT% -ea -cp "%jars%" lcm.logging.LogPlayer %*

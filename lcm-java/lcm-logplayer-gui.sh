@@ -19,5 +19,7 @@ fi
 # Add user's CLASSPATH, if set
 [ -n "$CLASSPATH" ] && jars="$jars:$CLASSPATH"
 
+[ -z "$LCM_JVM_OPT" ] && LCM_JVM_OPT="-Xmx128m -Xms64m"
+
 # Launch the applet
-exec java -server -Xmx64m -Xms32m -ea -cp "$jars" lcm.logging.LogPlayer "$@"
+exec java -server ${LCM_JVM_OPT} -ea -cp "$jars" lcm.logging.LogPlayer "$@"
