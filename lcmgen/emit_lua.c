@@ -44,6 +44,32 @@
 
 #define err(...) fprintf(stderr, __VA_ARGS__)
 
+// LCM lets a member or constant be named after a Lua keyword (ROS's
+// geographic_msgs.RouteSegment has a field called "end", for example). Those
+// cannot be reached with dot notation, so they are emitted as t["end"].
+static const char *const lua_reserved_words[] = {
+    "and",      "break",  "do",   "else", "elseif", "end",   "false", "for",
+    "function", "goto",   "if",   "in",   "local",  "nil",   "not",   "or",
+    "repeat",   "return", "then", "true", "until",  "while", NULL};
+
+static int lua_is_reserved_word(const char *name)
+{
+    for (int i = 0; lua_reserved_words[i] != NULL; i++) {
+        if (!strcmp(name, lua_reserved_words[i]))
+            return 1;
+    }
+    return 0;
+}
+
+// Returns "<table>.<name>", or "<table>[\"<name>\"]" when <name> is a Lua
+// keyword. Caller must g_free() the result.
+static char *lua_member_ref(const char *table, const char *name)
+{
+    if (lua_is_reserved_word(name))
+        return g_strdup_printf("%s[\"%s\"]", table, name);
+    return g_strdup_printf("%s.%s", table, name);
+}
+
 static void mkdir_with_parents(const char *path, mode_t mode)
 {
 #ifdef WIN32
@@ -241,16 +267,17 @@ static void _emit_decode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls, lc
             emit(indent, "%s = {lcm._pack.unpack('>%s%c', data:read(%d))}", accessor, len,
                  _struct_format(lm), atoi(len) * _primitive_type_size(tn));
         } else {
+            char *lenref = lua_member_ref("obj", len);
             if (_primitive_type_size(tn) > 1) {
                 emit(indent,
-                     "%s = {lcm._pack.unpack(string.format('>%%d%c', obj.%s), data:read(obj.%s * "
+                     "%s = {lcm._pack.unpack(string.format('>%%d%c', %s), data:read(%s * "
                      "%d))}",
-                     accessor, _struct_format(lm), len, len, _primitive_type_size(tn));
+                     accessor, _struct_format(lm), lenref, lenref, _primitive_type_size(tn));
             } else {
-                emit(indent,
-                     "%s = {lcm._pack.unpack(string.format('>%%d%c', obj.%s), data:read(obj.%s))}",
-                     accessor, _struct_format(lm), len, len);
+                emit(indent, "%s = {lcm._pack.unpack(string.format('>%%d%c', %s), data:read(%s))}",
+                     accessor, _struct_format(lm), lenref, lenref);
             }
+            g_free(lenref);
         }
     } else {
         assert(0);
@@ -268,7 +295,9 @@ static void _flush_read_struct_fmt(const lcmgen_t *lcm, FILE *f, GQueue *formats
     int fmtsize = 0;
     while (!g_queue_is_empty(members)) {
         lcm_member_t *lm = (lcm_member_t *) g_queue_pop_head(members);
-        emit_continue("obj.%s", lm->membername);
+        char *ref = lua_member_ref("obj", lm->membername);
+        emit_continue("%s", ref);
+        g_free(ref);
         if (!g_queue_is_empty(members)) {
             emit_continue(", ");
         }
@@ -305,14 +334,16 @@ static void emit_lua_decode_one(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 g_queue_push_tail(struct_members, lm);
             } else {
                 _flush_read_struct_fmt(lcm, f, struct_fmt, struct_members);
-                char *accessor = g_strdup_printf("obj.%s", lm->membername);
+                char *accessor = lua_member_ref("obj", lm->membername);
                 _emit_decode_one(lcm, f, ls, lm, accessor, 1);
                 g_free(accessor);
             }
         } else {
             _flush_read_struct_fmt(lcm, f, struct_fmt, struct_members);
             GString *accessor = g_string_new("");
-            g_string_append_printf(accessor, "obj.%s", lm->membername);
+            char *accessor_base = lua_member_ref("obj", lm->membername);
+            g_string_append(accessor, accessor_base);
+            g_free(accessor_base);
 
             // iterate through the dimensions of the member, building up
             // an accessor string, and emitting for loops
@@ -324,7 +355,9 @@ static void emit_lua_decode_one(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 if (dim->mode == LCM_CONST) {
                     emit(1 + n, "for i%d = 1, %s do", n, dim->size);
                 } else {
-                    emit(1 + n, "for i%d = 1, obj.%s do", n, dim->size);
+                    char *dimref = lua_member_ref("obj", dim->size);
+                    emit(1 + n, "for i%d = 1, %s do", n, dimref);
+                    g_free(dimref);
                 }
                 g_string_append_printf(accessor, "[i%d]", n);
             }
@@ -348,7 +381,9 @@ static void emit_lua_decode_one(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 if (last_dim_fixed_len) {
                     emit(1 + n, "for i%d = 1, %s do", n, last_dim->size);
                 } else {
-                    emit(1 + n, "for i%d = 1, obj.%s do", n, last_dim->size);
+                    char *dimref = lua_member_ref("obj", last_dim->size);
+                    emit(1 + n, "for i%d = 1, %s do", n, dimref);
+                    g_free(dimref);
                 }
                 g_string_append_printf(accessor, "[i%d]", n);
                 _emit_decode_one(lcm, f, ls, lm, accessor->str, n + 2);
@@ -430,10 +465,12 @@ static void _emit_encode_list(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls, lc
             emit(indent, "table.insert(buf_table, lcm._pack.pack('>%s%c', unpack(%s)))", len,
                  _struct_format(lm), accessor);
         } else {
+            char *lenref = lua_member_ref("self", len);
             emit(indent,
-                 "table.insert(buf_table, lcm._pack.pack(string.format('>%%d%c', self.%s), "
+                 "table.insert(buf_table, lcm._pack.pack(string.format('>%%d%c', %s), "
                  "unpack(%s)))",
-                 _struct_format(lm), len, accessor);
+                 _struct_format(lm), lenref, accessor);
+            g_free(lenref);
         }
     } else {
         assert(0);
@@ -453,7 +490,9 @@ static void _flush_write_struct_fmt(FILE *f, GQueue *formats, GQueue *members)
     emit_continue("', ");
     while (!g_queue_is_empty(members)) {
         lcm_member_t *lm = (lcm_member_t *) g_queue_pop_head(members);
-        emit_continue("self.%s", lm->membername);
+        char *ref = lua_member_ref("self", lm->membername);
+        emit_continue("%s", ref);
+        g_free(ref);
         if (!g_queue_is_empty(members)) {
             emit_continue(", ");
         }
@@ -493,7 +532,7 @@ static void emit_lua_encode_one(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             } else {
                 // XXX not a primitive
                 _flush_write_struct_fmt(f, struct_fmt, struct_members);
-                char *accessor = g_strdup_printf("self.%s", lm->membername);
+                char *accessor = lua_member_ref("self", lm->membername);
                 _emit_encode_one(lcm, f, ls, lm, accessor, 1);
                 g_free(accessor);
             }
@@ -501,7 +540,9 @@ static void emit_lua_encode_one(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
             // XXX this is an array
             _flush_write_struct_fmt(f, struct_fmt, struct_members);
             GString *accessor = g_string_new("");
-            g_string_append_printf(accessor, "self.%s", lm->membername);
+            char *accessor_base = lua_member_ref("self", lm->membername);
+            g_string_append(accessor, accessor_base);
+            g_free(accessor_base);
 
             int n;
             for (n = 0; n < lm->dimensions->len - 1; n++) {
@@ -511,7 +552,9 @@ static void emit_lua_encode_one(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 if (dim->mode == LCM_CONST) {
                     emit(1 + n, "for i%d = 1, %s do", n, dim->size);
                 } else {
-                    emit(1 + n, "for i%d = 1, self.%s do", n, dim->size);
+                    char *dimref = lua_member_ref("self", dim->size);
+                    emit(1 + n, "for i%d = 1, %s do", n, dimref);
+                    g_free(dimref);
                 }
             }
 
@@ -528,7 +571,9 @@ static void emit_lua_encode_one(const lcmgen_t *lcm, FILE *f, lcm_struct_t *ls)
                 if (last_dim_fixed_len) {
                     emit(1 + n, "for i%d = 1, %s do", n, last_dim->size);
                 } else {
-                    emit(1 + n, "for i%d = 1, self.%s do", n, last_dim->size);
+                    char *dimref = lua_member_ref("self", last_dim->size);
+                    emit(1 + n, "for i%d = 1, %s do", n, dimref);
+                    g_free(dimref);
                 }
                 g_string_append_printf(accessor, "[i%d]", n);
                 _emit_encode_one(lcm, f, ls, lm, accessor->str, n + 2);
@@ -578,7 +623,9 @@ static void emit_member_initializer(const lcmgen_t *lcm, FILE *f, lcm_member_t *
     } else {
         emit_end("{}");
         emit(dim_num + 1, "for d%d = 1, %s do", dim_num, dim->size);
-        emit_start(dim_num + 2, "obj.%s", lm->membername);
+        char *ref = lua_member_ref("obj", lm->membername);
+        emit_start(dim_num + 2, "%s", ref);
+        g_free(ref);
         for (int i = 0; i < dim_num + 1; i++) {
             emit_continue("[d%d]", i);
         }
@@ -598,7 +645,9 @@ static void emit_lua_new(const lcmgen_t *lcm, FILE *f, lcm_struct_t *lr)
     unsigned int member;
     for (member = 0; member < lr->members->len; member++) {
         lcm_member_t *lm = (lcm_member_t *) g_ptr_array_index(lr->members, member);
-        fprintf(f, "  obj.%s = ", lm->membername);
+        char *ref = lua_member_ref("obj", lm->membername);
+        fprintf(f, "  %s = ", ref);
+        g_free(ref);
         // XXX this might need alot of work because lua doesn't have list comprehension
         emit_member_initializer(lcm, f, lm, 0);
     }
@@ -1096,7 +1145,9 @@ static int emit_package(lcmgen_t *lcm, _package_contents_t *pc)
         for (unsigned int cn = 0; cn < g_ptr_array_size(ls->constants); cn++) {
             lcm_constant_t *lc = (lcm_constant_t *) g_ptr_array_index(ls->constants, cn);
             assert(lcm_is_legal_const_type(lc->lctypename));
-            emit(1, "%s.%s = %s", ls->structname->shortname, lc->membername, lc->val_str);
+            char *ref = lua_member_ref(ls->structname->shortname, lc->membername);
+            emit(1, "%s = %s", ref, lc->val_str);
+            g_free(ref);
         }
         if (g_ptr_array_size(ls->constants) > 0)
             emit(0, "");
