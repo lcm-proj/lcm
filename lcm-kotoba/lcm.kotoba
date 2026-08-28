@@ -1,0 +1,317 @@
+;; LCM Kotoba binding (v1).
+;;
+;; This file is part of LCM (Lightweight Communications and Marshalling).
+;; Copyright (C) 2026 the LCM authors and contributors.
+;;
+;; LCM is free software: you can redistribute it and/or modify it under
+;; the terms of the GNU Lesser General Public License as published by the
+;; Free Software Foundation, either version 2.1 of the License, or (at
+;; your option) any later version. See COPYING in the repository root.
+;;
+;; Admitted surface (kotoba-lang guest-grammar / surface-status, CLI 0.7.2):
+;;   i64-only wasm32-kotoba-v1, bit-and/or/xor, * / quot wrap, if, recursion,
+;;   max 5 parameters, no FFI, no host sockets, no throw/try, no mutation.
+;; bit-shift-* has no wasm lowering; logical shifts are built from bit-and/quot.
+;;
+;; v1 is an in-language marshalling subset: message fingerprint header,
+;; type fingerprint (hash-update / rotate), and primitive encode/decode.
+;; The host owns UDP/multicast/log IO.
+
+(ns lcm
+  (:export [main
+            hash-update fingerprint-rotate
+            encode-u8 encode-i8 encode-i16 encode-i32
+            encode-i64-hi encode-i64-lo
+            decode-i8 decode-i16 decode-i32 decode-i64
+            encode-boolean decode-boolean
+            encode-string-len
+            header-hi header-lo header-join
+            fingerprint-ok
+            bool-t-hash temperature-t-hash]))
+
+;; --- unsigned / arithmetic shifts (wasm-admitted, O(1) stack) ---
+;; bit-shift-* has no wasm lowering. Logical shift uses quot on the
+;; sign-cleared magnitude, then adds the sign bit in its shifted place.
+
+(defn ushr8 [v :i64] :i64
+  (if (< v 0)
+    (+ (quot (bit-and v 9223372036854775807) 256) 36028797018963968)
+    (quot v 256)))
+
+(defn ushr16 [v :i64] :i64
+  (if (< v 0)
+    (+ (quot (bit-and v 9223372036854775807) 65536) 140737488355328)
+    (quot v 65536)))
+
+(defn ushr24 [v :i64] :i64
+  (if (< v 0)
+    (+ (quot (bit-and v 9223372036854775807) 16777216) 549755813888)
+    (quot v 16777216)))
+
+(defn ushr32 [v :i64] :i64
+  (if (< v 0)
+    (+ (quot (bit-and v 9223372036854775807) 4294967296) 2147483648)
+    (quot v 4294967296)))
+
+(defn ushr55 [v :i64] :i64
+  (if (< v 0)
+    (+ (quot (bit-and v 9223372036854775807) 36028797018963968) 256)
+    (quot v 36028797018963968)))
+
+(defn asr55 [v :i64] :i64
+  (let [u (ushr55 v)]
+    (if (< v 0)
+      (- u 512)
+      u)))
+
+(defn u32 [v :i64] :i64
+  (bit-and v 4294967295))
+
+(defn u16 [v :i64] :i64
+  (bit-and v 65535))
+
+(defn u8 [v :i64] :i64
+  (bit-and v 255))
+
+;; --- fingerprint (lcmgen hash_update / rot_left) ---
+
+(defn hash-update [v :i64 c :i64] :i64
+  (+ (bit-xor (* v 256) (asr55 v)) c))
+
+(defn fingerprint-rotate [v :i64] :i64
+  (bit-or (* v 2) (if (< v 0) 1 0)))
+
+;; --- header: fingerprint as big-endian u64 in two u32 words ---
+
+(defn header-hi [fp :i64] :i64
+  (u32 (ushr32 fp)))
+
+(defn header-lo [fp :i64] :i64
+  (u32 fp))
+
+(defn header-join [hi :i64 lo :i64] :i64
+  (bit-or (* (u32 hi) 4294967296) (u32 lo)))
+
+(defn fingerprint-ok [got :i64 expected :i64] :i64
+  (if (= got expected) 1 0))
+
+;; --- primitive encode (big-endian packed into an i64 word) ---
+
+(defn encode-u8 [v :i64] :i64
+  (u8 v))
+
+(defn encode-i8 [v :i64] :i64
+  (u8 v))
+
+(defn encode-i16 [v :i64] :i64
+  (bit-or (* (u8 (ushr8 v)) 256) (u8 v)))
+
+(defn encode-i32 [v :i64] :i64
+  (bit-or (* (u8 (ushr24 v)) 16777216)
+          (bit-or (* (u8 (ushr16 v)) 65536)
+                  (bit-or (* (u8 (ushr8 v)) 256)
+                          (u8 v)))))
+
+(defn encode-i64-hi [v :i64] :i64
+  (header-hi v))
+
+(defn encode-i64-lo [v :i64] :i64
+  (header-lo v))
+
+(defn encode-boolean [v :i64] :i64
+  (if (= v 0) 0 1))
+
+;; LCM string: int32 length including the terminating NUL, then bytes + NUL.
+(defn encode-string-len [nchars :i64] :i64
+  (encode-i32 (+ nchars 1)))
+
+;; --- primitive decode (sign-extend from an unsigned packed word) ---
+
+(defn decode-i8 [word :i64] :i64
+  (let [x (u8 word)]
+    (if (>= x 128)
+      (- x 256)
+      x)))
+
+(defn decode-i16 [word :i64] :i64
+  (let [x (u16 word)]
+    (if (>= x 32768)
+      (- x 65536)
+      x)))
+
+(defn decode-i32 [word :i64] :i64
+  (let [x (u32 word)]
+    (if (>= x 2147483648)
+      (- x 4294967296)
+      x)))
+
+(defn decode-i64 [hi :i64 lo :i64] :i64
+  (header-join hi lo))
+
+(defn decode-boolean [word :i64] :i64
+  (if (= (u8 word) 0) 0 1))
+
+;; --- hand-written type hashes (no lcm-gen) ---
+
+(defn hash-utime [v :i64] :i64
+  (hash-update
+   (hash-update
+    (hash-update
+     (hash-update
+      (hash-update
+       (hash-update v 5) 117) 116) 105) 109) 101))
+
+(defn hash-int64-name [v :i64] :i64
+  (hash-update
+   (hash-update
+    (hash-update
+     (hash-update
+      (hash-update
+       (hash-update
+        (hash-update
+         (hash-update v 7) 105) 110) 116) 54) 52) 95) 116))
+
+(defn hash-deg-celsius [v :i64] :i64
+  (hash-update
+   (hash-update
+    (hash-update
+     (hash-update
+      (hash-update
+       (hash-update
+        (hash-update
+         (hash-update
+          (hash-update
+           (hash-update
+            (hash-update v 10) 100) 101) 103) 67) 101) 108) 115) 105) 117) 115))
+
+(defn hash-double-name [v :i64] :i64
+  (hash-update
+   (hash-update
+    (hash-update
+     (hash-update
+      (hash-update
+       (hash-update
+        (hash-update v 6) 100) 111) 117) 98) 108) 101))
+
+(defn hash-enabled [v :i64] :i64
+  (hash-update
+   (hash-update
+    (hash-update
+     (hash-update
+      (hash-update
+       (hash-update
+        (hash-update
+         (hash-update v 7) 101) 110) 97) 98) 108) 101) 100))
+
+(defn hash-boolean-name [v :i64] :i64
+  (hash-update
+   (hash-update
+    (hash-update
+     (hash-update
+      (hash-update
+       (hash-update
+        (hash-update
+         (hash-update v 7) 98) 111) 111) 108) 101) 97) 110))
+
+;; struct temperature_t { int64_t utime; double degCelsius; }
+(defn temperature-t-hash [] :i64
+  (fingerprint-rotate
+   (hash-update
+    (hash-double-name
+     (hash-deg-celsius
+      (hash-update
+       (hash-int64-name
+        (hash-utime 305419896))
+       0)))
+    0)))
+
+;; struct bool_t { boolean enabled; }
+(defn bool-t-hash [] :i64
+  (fingerprint-rotate
+   (hash-update
+    (hash-boolean-name
+     (hash-enabled 305419896))
+    0)))
+
+;; --- fixtures (main returns 0 on success, nonzero case id on failure) ---
+
+(defn expect [got :i64 want :i64 code :i64] :i64
+  (if (= got want) 0 code))
+
+(defn first-fail [a :i64 b :i64] :i64
+  (if (= a 0) b a))
+
+(defn check-hash [] :i64
+  (first-fail
+   (expect (hash-update 305419896 5) 78187493381 1)
+   (expect (hash-update -1 65) 320 2)))
+
+(defn check-rotate [] :i64
+  (first-fail
+   (expect (fingerprint-rotate 3264039382222181932) 6528078764444363864 3)
+   (expect (fingerprint-rotate 5782571254458307445) -6881601564792936726 4)))
+
+(defn check-header [] :i64
+  (first-fail
+   (first-fail
+    (expect (header-hi 6528078764444363864) 1519936780 5)
+    (expect (header-lo 6528078764444363864) 2356816984 6))
+   (expect (header-join 1519936780 2356816984) 6528078764444363864 7)))
+
+(defn check-ints [] :i64
+  (first-fail
+   (first-fail
+    (first-fail
+     (expect (encode-i8 -3) 253 8)
+     (expect (decode-i8 253) -3 9))
+    (first-fail
+     (expect (encode-i16 -2) 65534 10)
+     (expect (decode-i16 65534) -2 11)))
+   (first-fail
+    (first-fail
+     (expect (encode-i32 16909060) 16909060 12)
+     (expect (decode-i32 4294967294) -2 13))
+    (first-fail
+     (expect (encode-i32 -2) 4294967294 14)
+     (expect (decode-i8 (encode-i8 127)) 127 15)))))
+
+(defn check-i64 [] :i64
+  (first-fail
+   (expect (encode-i64-hi 72623859790382856) 16909060 16)
+   (expect (encode-i64-lo 72623859790382856) 84281096 17)))
+
+(defn check-bool-string [] :i64
+  (first-fail
+   (first-fail
+    (expect (encode-boolean 7) 1 18)
+    (expect (decode-boolean 0) 0 19))
+   (first-fail
+    (expect (encode-string-len 2) 3 20)
+    (expect (fingerprint-ok 9 9) 1 21))))
+
+(defn check-types [] :i64
+  (first-fail
+   (expect (bool-t-hash) 6528078764444363864 22)
+   (expect (temperature-t-hash) -6881601564792936726 23)))
+
+(defn check-message [] :i64
+  (let [fp (bool-t-hash)
+        hi (header-hi fp)
+        lo (header-lo fp)
+        body (encode-boolean 1)
+        got (header-join hi lo)]
+    (first-fail
+     (expect (fingerprint-ok got fp) 1 24)
+     (expect body 1 25))))
+
+(defn pipe [prev :i64 next :i64] :i64
+  (if (= prev 0) next prev))
+
+(defn main [] :i64
+  (pipe
+   (pipe
+    (pipe (check-hash) (check-rotate))
+    (pipe (check-header) (check-ints)))
+   (pipe
+    (pipe (check-i64) (check-bool-string))
+    (pipe (check-types) (check-message)))))

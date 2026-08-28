@@ -45,6 +45,7 @@ Supported platforms / languages
   * Lua
   * MATLAB
   * Python (3.7 and later)
+  * Kotoba (marshalling subset; host owns transport)
 
 Forks
 ========
@@ -64,6 +65,7 @@ API Reference
  - `C# <doxygen_output/lcm-dotnet/html/namespaces.html>`_
  - `Go <https://godoc.org/github.com/lcm-proj/lcm/lcm-go/lcm>`_
  - `Java <javadocs/index.html>`_
+ - `Kotoba <https://github.com/lcm-proj/lcm/tree/master/lcm-kotoba>`_
  - :ref:`Lua <The Lua LCM API>`
  - :ref:`Python <Python API>`
 

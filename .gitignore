@@ -12,3 +12,4 @@ MODULE.bazel.lock
 .venv
 .DS_Store
 .cache/
+lcm-kotoba/*.wasm

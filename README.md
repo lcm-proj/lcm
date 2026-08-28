@@ -45,6 +45,7 @@ feedback and involvement on new features.
   * Lua
   * MATLAB
   * Python (3.7 and later)
+  * Kotoba (marshalling subset in `lcm-kotoba/`; host owns transport)
 
 ## Unmaintained languages
 
