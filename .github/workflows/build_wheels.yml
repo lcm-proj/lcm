@@ -82,22 +82,26 @@ jobs:
           path: '*.whl'
 
   windows-msvc:
-    name: windows | auto | ${{ matrix.python }}
-    runs-on: windows-2022
+    name: ${{ matrix.runner }} | ${{ matrix.python }}
+    runs-on: ${{ matrix.runner }}
     env:
       VCPKG_DEFAULT_BINARY_CACHE: ${{github.workspace}}\vcpkg-cache
     strategy:
       fail-fast: false
       matrix:
         python: [cp38-*, cp39-*, cp310-*, cp311-*, cp312-*, cp313-*, cp314-*]
+        runner: [windows-2022, windows-11-arm]
+        exclude:
+          - python: cp38-*
+            runner: windows-11-arm
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
         with:
           path: ${{github.workspace}}\vcpkg-cache
-          key: ${{ hashFiles('vcpkg.json') }}-vcpkg-wheel-cache
-          restore-keys: vcpkg-wheel-cache
+          key: ${{ hashFiles('vcpkg.json') }}-${{ matrix.runner }}-vcpkg-wheel-cache
+          restore-keys: ${{ matrix.runner }}-vcpkg-wheel-cache
 
       - name: Create cache directory
         run: mkdir ${{env.VCPKG_DEFAULT_BINARY_CACHE}} -Force
