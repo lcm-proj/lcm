@@ -48,6 +48,9 @@ python_files = "test/python/test_python_module.py"
 [tool.cibuildwheel]
 build-verbosity = 1
 
+[tool.cibuildwheel.windows]
+repair-wheel-command = ""
+
 [tool.cibuildwheel.linux]
 before-all = "yum install java-1.8.0-openjdk-devel -y"
 
