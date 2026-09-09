@@ -1,3 +1,31 @@
+September XY, 2026
+==================
+
+Release 1.5.3
+
+- Python
+    - Added additional Windows wheels (compiled with MSVC against ARM64)
+    - Added Python 3.15 wheels and dropped Python 3.8 wheels
+    - Improved GIL handling
+    - Calling `LCM(None)` gives the same behavior as `LCM()` and `LCM('')`, rather than producing a
+      `TypeError`
+    - Added `__iter__` and `__next__` to stub file (e.g. so that `for event in log:` passes static
+      type checking)
+    - Fixed race condition when unsubscribing while subscription handler was active
+- Java
+    - Added `LCM_JVM_OPT` environment variable to the Java-based utilities (e.g. can be used to
+      override `-Xmx128m `)
+    - Fixed bug in `lcm-spy.bat`
+- Documentation
+    - Added additional build instructions for Windows
+- Lua
+    - Fixed a build issue when using newer versions of the Lua dev package
+- Core C Library
+    - Improved `dbg.h` by flushing output
+    - Fixed potential overflow in UDP implementation
+- Build system
+    - Bazel: factored out deprecated spellings to prepare for Bazel 9
+
 October 23, 2025
 ================
 

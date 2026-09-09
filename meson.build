@@ -1,5 +1,5 @@
 project('lcm', 'c', 'cpp',
-  version : '1.5.0',
+  version : '1.5.3',
   default_options : ['buildtype=release',
                      'c_std=gnu99',
                      'warning_level=0',
@@ -76,7 +76,7 @@ enabled_options = {'Build test and example programs': get_option('lcm_enable_exa
 
 summary_reference = {}
 
-foreach option, state: enabled_options 
+foreach option, state: enabled_options
   if option == 'Build unit tests'
     summary_reference += {option: false}
     if not get_option('lcm_enable_tests').disabled()
@@ -84,7 +84,7 @@ foreach option, state: enabled_options
     else
       summary_reference += {'- Build unit tests errors(s)': 'Meson configured with -Dlcm_enable_tests=disabled'}
     endif
-  else 
+  else
     summary_reference += {option: not state.disabled()}
   endif
 endforeach
