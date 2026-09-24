@@ -22,7 +22,7 @@ bazel_dep(name = "rules_python", version = "1.6.3")
 # Load runtime dependencies.
 
 bazel_dep(name = "pcre2", version = "10.45")
-bazel_dep(name = "glib", version = "2.82.2.bcr.1")
+bazel_dep(name = "glib", version = "2.82.2.bcr.6")
 
 maven = use_extension("@rules_jvm_external//:extensions.bzl", "maven")
 maven.install(
