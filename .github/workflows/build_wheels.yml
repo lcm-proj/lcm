@@ -85,7 +85,7 @@ jobs:
     name: ${{ matrix.runner }} | ${{ matrix.python }}
     runs-on: ${{ matrix.runner }}
     env:
-      VCPKG_DEFAULT_BINARY_CACHE: ${{github.workspace}}\vcpkg-cache
+      VCPKG_DEFAULT_BINARY_CACHE: ${{github.workspace}}\\vcpkg-cache
     strategy:
       fail-fast: false
       matrix:
@@ -96,7 +96,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/cache@v4
         with:
-          path: ${{github.workspace}}\vcpkg-cache
+          path: ${{github.workspace}}\\vcpkg-cache
           key: ${{ hashFiles('vcpkg.json') }}-${{ matrix.runner }}-vcpkg-wheel-cache
           restore-keys: ${{ matrix.runner }}-vcpkg-wheel-cache
 
@@ -107,7 +107,7 @@ jobs:
         uses: pypa/cibuildwheel@v4.2.0
         env:
           CIBW_BUILD: ${{ matrix.python }}
-          SKBUILD_CMAKE_ARGS: "--preset=vcpkg-vs-github"
+          SKBUILD_CMAKE_ARGS: ${{ matrix.runner == 'windows-11-arm' && '--preset=vcpkg-vs-github-arm' || '--preset=vcpkg-vs-github' }}
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}"
 
