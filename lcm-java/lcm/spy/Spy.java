@@ -531,7 +531,7 @@ public class Spy
         System.err.println("LCM 1.5.3:");
         System.err.println("  Introduced LCM_JVM_OPT.");
         System.err.println("LCM 1.5.1");
-        System.err.println("  Introduced --tile and --title-url.");
+        System.err.println("  Introduced --title and --title-url.");
         System.err.println("");
         System.err.println("");
         System.exit(1);
