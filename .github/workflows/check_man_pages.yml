@@ -1,6 +1,10 @@
 name: check_man_pages
 
-on: [push, pull_request]
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 3 * * 0'
 
 jobs:
   generate_man_pages:
