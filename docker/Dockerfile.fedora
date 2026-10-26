@@ -1,4 +1,4 @@
-FROM fedora:42
+FROM fedora:44
 
 # cmake3: To build LCM
 # clang: For compiling code with Clang
@@ -6,7 +6,7 @@ FROM fedora:42
 # java-latest-openjdk-devel: Latest LTS release of Java for building lcm-spy, lcm-logplayer-gui, etc.
 # python3-devel: Support library to compile the Python Extension Module
 RUN dnf install -y \
-    cmake3 \
+    cmake \
     clang \
     glib2-devel \
     java-latest-openjdk-devel \
