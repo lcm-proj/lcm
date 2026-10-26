@@ -18,6 +18,16 @@
       },
       "generator": "Visual Studio 17 2022",
       "binaryDir": "${sourceDir}/build"
+    },
+    {
+      "name": "vcpkg-vs-github-2026",
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake",
+        "CMAKE_BUILD_TYPE": "Release",
+        "LCM_ENABLE_TESTS": "OFF"
+      },
+      "generator": "Visual Studio 18 2026",
+      "binaryDir": "${sourceDir}/build"
     }
   ],
   "buildPresets": [
@@ -27,6 +37,6 @@
       "displayName": "Build (Release)",
       "description": "Build with vcpkg (Release)",
       "configuration": "Release"
-  }
+    }
   ]
 }
