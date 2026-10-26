@@ -23,7 +23,8 @@
       "name": "vcpkg-vs-github-arm",
       "cacheVariables": {
         "CMAKE_TOOLCHAIN_FILE": "$env{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake",
-        "CMAKE_BUILD_TYPE": "Release"
+        "CMAKE_BUILD_TYPE": "Release",
+        "LCM_ENABLE_TESTS": "OFF"
       },
       "generator": "Visual Studio 18 2026",
       "binaryDir": "${sourceDir}/build-arm"
