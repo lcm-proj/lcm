@@ -107,7 +107,7 @@ jobs:
         uses: pypa/cibuildwheel@v4.2.0
         env:
           CIBW_BUILD: ${{ matrix.python }}
-          SKBUILD_CMAKE_ARGS: ${{ matrix.runner == 'windows-11-arm' && '--preset=vcpkg-vs-github-arm -DLCM_ENABLE_TESTS=OFF' || '--preset=vcpkg-vs-github' }}
+          SKBUILD_CMAKE_ARGS: ${{ matrix.runner == 'windows-11-arm' && '--preset=vcpkg-vs-github-arm' || '--preset=vcpkg-vs-github' }}
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}"
 
