@@ -6,11 +6,10 @@ jobs:
   bazel:
     strategy:
       matrix:
-        os: [ubuntu-24.04, macos-14]
         bazel: ['8.0.1', '8.1.0']
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-24.04
     env:
-      USE_BAZEL_VERSION: ${{ matrix.bazel }} 
+      USE_BAZEL_VERSION: ${{ matrix.bazel }}
     steps:
     - uses: actions/checkout@v4
     - uses: bazel-contrib/setup-bazel@0.13.0

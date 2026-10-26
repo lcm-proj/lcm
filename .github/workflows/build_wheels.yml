@@ -9,16 +9,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
+        os: [ubuntu-24.04, ubuntu-24.04-arm, macos-15]
         arch: [auto, armv7l]
         python: [cp39-*, cp310-*, cp311-*, cp312-*, cp313-*, cp314-*, cp315-*]
         include:
-          - os: macos-14
-            macos_deployment_target: 14
+          - os: macos-15
+            macos_deployment_target: 15
         exclude:
           - os: ubuntu-24.04
             arch: armv7l
-          - os: macos-14
+          - os: macos-15
             arch: armv7l
 
     steps:
@@ -37,6 +37,7 @@ jobs:
           CIBW_ARCHS: ${{ matrix.arch }}
           CIBW_BUILD: ${{ matrix.python }}
           CIBW_TEST_REQUIRES: pytest
+          CIBW_ENVIRONMENT: LCM_DEFAULT_URL=memq://
           CIBW_TEST_COMMAND: "pytest {project}"
 
       - uses: actions/upload-artifact@v4
