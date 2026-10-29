@@ -99,11 +99,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/cache@v4
+      - name: Restore vcpkg binary cache
+        uses: actions/cache/restore@v4
         with:
           path: ${{github.workspace}}\vcpkg-cache
-          key: ${{ hashFiles('vcpkg.json') }}-${{ matrix.runner }}-vcpkg-wheel-cache
-          restore-keys: ${{ matrix.runner }}-vcpkg-wheel-cache
+          key: vcpkg-wheel-${{ matrix.runner }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ strategy.job-index }}
+          restore-keys: |
+            vcpkg-wheel-${{ matrix.runner }}-${{ hashFiles('vcpkg.json') }}-
 
       - name: Create cache directory
         run: mkdir ${{env.VCPKG_DEFAULT_BINARY_CACHE}} -Force
@@ -115,6 +117,12 @@ jobs:
           SKBUILD_CMAKE_ARGS: ${{ matrix.runner == 'windows-11-arm' && '--preset=vcpkg-vs-github-2026' || '--preset=vcpkg-vs-github' }}
           CIBW_TEST_REQUIRES: pytest
           CIBW_TEST_COMMAND: "pytest {project}"
+
+      - name: Save vcpkg binary cache
+        uses: actions/cache/save@v4
+        with:
+          path: ${{github.workspace}}\vcpkg-cache
+          key: vcpkg-wheel-${{ matrix.runner }}-${{ hashFiles('vcpkg.json') }}-${{ github.run_id }}-${{ github.run_attempt }}-${{ strategy.job-index }}
 
       - uses: actions/upload-artifact@v4
         with:
