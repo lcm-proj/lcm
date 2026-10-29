@@ -189,11 +189,13 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - uses: actions/cache@v4
+    - name: Restore vcpkg binary cache
+      uses: actions/cache/restore@v4
       with:
         path: ${{github.workspace}}\vcpkg-cache
-        key: ${{ hashFiles('vcpkg.json') }}-vcpkg-cache
-        restore-keys: vcpkg-cache
+        key: vcpkg-${{ hashFiles('vcpkg.json') }}-windows-2022-${{ github.run_id }}-${{ github.run_attempt }}
+        restore-keys: |
+          vcpkg-${{ hashFiles('vcpkg.json') }}-windows-2022-
 
     - name: Create cache directory
       run: mkdir ${{env.VCPKG_DEFAULT_BINARY_CACHE}} -Force
@@ -207,6 +209,12 @@ jobs:
 
     - name: Test
       run: ctest --output-on-failure --test-dir build -C Release
+
+    - name: Save vcpkg binary cache
+      uses: actions/cache/save@v4
+      with:
+        path: ${{github.workspace}}\vcpkg-cache
+        key: vcpkg-${{ hashFiles('vcpkg.json') }}-windows-2022-${{ github.run_id }}-${{ github.run_attempt }}
 
 
   docs:
