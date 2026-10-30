@@ -10,19 +10,25 @@ jobs:
   bazel:
     strategy:
       matrix:
-        bazel: ['8.0.1', '8.1.0']
-    runs-on: ubuntu-24.04
+        os: [ubuntu-24.04, macos-26]
+        bazel: ['8.0.1', '9.3.1']
+    runs-on: ${{ matrix.os }}
     env:
       USE_BAZEL_VERSION: ${{ matrix.bazel }}
     steps:
-    - uses: actions/checkout@v4
-    - uses: bazel-contrib/setup-bazel@0.13.0
+    - uses: actions/checkout@v7
+    - uses: bazel-contrib/setup-bazel@0.19.1
       with:
         bazelisk-cache: true
         disk-cache: ${{ github.workflow }}
         repository-cache: true
+    - name: Configure multicast loopback route
+      if: runner.os == 'macOS'
+      run: |
+        sudo route -nv delete 224.0.0.0/4 || true
+        sudo route -nv add -net 224.0.0.0/4 -interface lo0
     - name: Test Main
-      run: 'bazel test //...'
+      run: 'bazel test //... --test_output=errors'
     - name: Test Example
       working-directory: examples/bazel
-      run: 'bazel test //...'
+      run: 'bazel test //... --test_output=errors'

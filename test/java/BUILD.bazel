@@ -81,4 +81,11 @@ py_test(
     },
     flaky = True,
     main = "//test:run_client_server_test.py",
+    # Skip this test on macOS. OpenJDK will never automatically pick lo0 as its
+    # default interface on macOS, so a Java client can never reach a C server
+    # running on the same machine.
+    target_compatible_with = select({
+        "@platforms//os:osx": ["@platforms//:incompatible"],
+        "//conditions:default": [],
+    }),
 )
