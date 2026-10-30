@@ -36,4 +36,4 @@ use_repo(maven, "lcm_maven")
 
 # Load dev dependencies.
 
-bazel_dep(name = "googletest", version = "1.17.0.bcr.1", dev_dependency = True)
+bazel_dep(name = "googletest", version = "1.17.0.bcr.2", dev_dependency = True)
